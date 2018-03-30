@@ -21,3 +21,6 @@ if __name__ == "__main__":
     print("Tickets\n", tickets)
     slots = determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
     print("Slots\n", slots)
+    test_slots = determine.mn_list_to_test_slots(common.POC_MASTER_NODES_LIST, slots)
+    print("Tests Slots\n", test_slots)
+

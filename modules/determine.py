@@ -5,6 +5,7 @@ Deterministic helpers and/or classes for Bismuth PoS
 # Custom modules
 import common
 import poscrypto
+import random
 #import distance
 
 __version__ = '0.0.1'
@@ -15,18 +16,15 @@ VERBOSE = True
 REF_HASH = ''
 REF_HASH_BIN = ''
 
+# NOTE: I use distance between hashes to order the MNs, but it may be simpler to use random, seeded with previous hash, then random.shuffle()
+# TODO: perf tests.
 """
-def hash_distance(hash):
-    global REF_HASH
-    temp = distance.hamming(REF_HASH, hash)
-    print(hash, temp)
-    return temp
+Warning : "Note that even for small len(x), the total number of permutations of x can quickly grow larger than the period of most random number generators. 
+This implies that most permutations of a long sequence can never be generated. For example, a sequence of length 2080 is 
+the largest that can fit within the period of the Mersenne Twister random number generator."
 
-
-def hamming_distance(bin_hash):
-    global REF_HASH_BIN
-    return sum(ch1 != ch2 for ch1, ch2 in zip(REF_HASH_BIN, bin_hash))
 """
+
 
 def my_distance(hash):
     """
@@ -89,6 +87,85 @@ def tickets_to_delegates(tickets_list, reference_hash):
         #print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
     return tickets_list[:common.MAX_ROUND_SLOTS]
+
+
+def pick_two_not_in(address_list, avoid):
+    """
+    Pick a random couple of mn not in avoid
+    :param mn_list:
+    :param here:
+    :param nor:
+    :return:
+    """
+    candidates = [a for a in address_list if a not in avoid]
+    if len(candidates) < 2:
+        return None
+    # random sampling without replacement
+    return random.sample(candidates, 2)
+
+
+def mn_list_to_test_slots(full_mn_list, forge_slots):
+    """
+    Predict tests to be run during each slot, but avoid testing forging MN
+    :param mn_list:
+    :param forge_slots:
+    :return: list with list of tests for each slot.
+    """
+    global REF_HASH
+    # TODO: are we 100% sure random works the same on all python/os? prefer custom impl?
+    """
+    https://docs.python.org/3/library/random.html
+    Most of the random module’s algorithms and seeding functions are subject to change across Python versions, but two aspects are guaranteed not to change:
+    If a new seeding method is added, then a backward compatible seeder will be offered.
+    The generator’s random() method will continue to produce the same sequence when the compatible seeder is given the same seed.
+    """
+    random.seed(REF_HASH)
+    # Just keep the pubkeys/addresses, no dup here whatever the weight.
+    all_mns_addresses = [mn[0] for mn in full_mn_list]
+    test_slots = []
+    for slot in forge_slots:
+        #  slot is a tuple (address, ticket#)
+        tests = []
+        avoid = [slot[0]]
+        while len(tests) < common.TESTS_PER_SLOT:
+            picks = pick_two_not_in(all_mns_addresses, avoid)
+            if not picks:
+                # not enough mn left to do the required tests.
+                # TODO: this should be an alert since we will lack messages.
+                break
+            # also pick a random test
+            test_type = random.choice(common.TESTS_TYPE)
+            tests.append((picks[0], picks[1], test_type))
+        test_slots.append(tests)
+    return test_slots
+
+
+
+
+
+
+
+def timestamp_to_round_slot(ts=0):
+    """
+    Given a timestamp, returns the specific round and slot# that fits.
+    :param ts:
+    :return: tuple (round, slot in round)
+    """
+
+
+# Historical code to move out.
+"""
+def hash_distance(hash):
+    global REF_HASH
+    temp = distance.hamming(REF_HASH, hash)
+    print(hash, temp)
+    return temp
+
+
+def hamming_distance(bin_hash):
+    global REF_HASH_BIN
+    return sum(ch1 != ch2 for ch1, ch2 in zip(REF_HASH_BIN, bin_hash))
+"""
 
 
 if __name__ == "__main__":
