@@ -5,7 +5,7 @@ Deterministic helpers and/or classes for Bismuth PoS
 # Custom modules
 import common
 import poscrypto
-import distance
+#import distance
 
 __version__ = '0.0.1'
 
@@ -15,14 +15,8 @@ VERBOSE = True
 REF_HASH = ''
 REF_HASH_BIN = ''
 
-
+"""
 def hash_distance(hash):
-    """
-    Returns Hamming's distance between the REF_HASH and the given hash
-    :param hash1:
-    :param hash2:
-    :return:
-    """
     global REF_HASH
     temp = distance.hamming(REF_HASH, hash)
     print(hash, temp)
@@ -32,7 +26,7 @@ def hash_distance(hash):
 def hamming_distance(bin_hash):
     global REF_HASH_BIN
     return sum(ch1 != ch2 for ch1, ch2 in zip(REF_HASH_BIN, bin_hash))
-
+"""
 
 def my_distance(hash):
     """
@@ -50,7 +44,6 @@ def my_distance(hash):
         # Add 1 to the distance if these two characters are not equal
         if REF_HASH_BIN[i] != hash[i]:
             distance += 1  # abs(ord(REF_HASH_BIN[i]) - ord(hash[i]))
-    # Return the final count of differences
     #if VERBOSE:
     #    print(hash, distance)
     return distance
