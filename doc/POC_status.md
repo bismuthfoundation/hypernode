@@ -2,7 +2,13 @@
 
 # 1 Start of Round
 
-See round_start.py, based upon fake data
+See round_start.py, based upon fake data  
+aa012345678901aa  
+bb123456789012bb  
+cc234567890123cc  
+dd345678901234dd  
+ee456789012345ee  
+are 5 madeup MN privkey, short and easy to recognize.
 
 ## 1.1 Define Jury for a round
 
