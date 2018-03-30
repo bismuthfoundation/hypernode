@@ -40,8 +40,12 @@ if __name__ == "__main__":
             test = round(time.time())
             calc_round, calc_slot = determine.timestamp_to_round_slot(test)
             print("Current Time {}: Round {} - Slot {}".format(test, calc_round, calc_slot))
-            print("Forger is {}".format(slots[calc_slot][0]))
-            print("Tests:", test_slots[calc_slot])
+            if calc_slot < len(slots):
+                print("Forger is {}".format(slots[calc_slot][0]))
+                print("Tests:", test_slots[calc_slot])
+            else:
+                print("End of round...")
             time.sleep(60)
     except Exception as e:
+        print(e)
         pass
