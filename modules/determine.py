@@ -2,13 +2,17 @@
 Deterministic helpers and/or classes for Bismuth PoS
 """
 
+# Third party modules
+import random
+import time
+import math
+#import distance
+
 # Custom modules
 import common
 import poscrypto
-import random
-#import distance
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 # local verbose switch
 VERBOSE = True
@@ -16,14 +20,17 @@ VERBOSE = True
 REF_HASH = ''
 REF_HASH_BIN = ''
 
-# NOTE: I use distance between hashes to order the MNs, but it may be simpler to use random, seeded with previous hash, then random.shuffle()
-# TODO: perf tests.
+# NOTE: I used distance between hashes to order the MNs, but it may be simpler
+# to use random, seeded with previous hash, then random.shuffle()
+# TODO: perf tests.
 """
 Warning : "Note that even for small len(x), the total number of permutations of x can quickly grow larger than the period of most random number generators. 
 This implies that most permutations of a long sequence can never be generated. For example, a sequence of length 2080 is 
 the largest that can fit within the period of the Mersenne Twister random number generator."
 
 """
+
+# Helpers  ###########################################################
 
 
 def my_distance(hash):
@@ -45,6 +52,9 @@ def my_distance(hash):
     #if VERBOSE:
     #    print(hash, distance)
     return distance
+
+
+# List and tickets management  ###############################################
 
 
 def mn_list_to_tickets(mn_list):
@@ -74,7 +84,7 @@ def tickets_to_delegates(tickets_list, reference_hash):
     :param reference_hash:
     :return:
     """
-    # Set the reference Hash
+    # Set the reference Hash
     global REF_HASH
     global REF_HASH_BIN
     # For POC, we use the hex string, TODO: use raw digest() later.
@@ -119,12 +129,13 @@ def mn_list_to_test_slots(full_mn_list, forge_slots):
     If a new seeding method is added, then a backward compatible seeder will be offered.
     The generator’s random() method will continue to produce the same sequence when the compatible seeder is given the same seed.
     """
+    # This is what ensures everyone shuffles the same way.
     random.seed(REF_HASH)
     # Just keep the pubkeys/addresses, no dup here whatever the weight.
     all_mns_addresses = [mn[0] for mn in full_mn_list]
     test_slots = []
     for slot in forge_slots:
-        #  slot is a tuple (address, ticket#)
+        # slot is a tuple (address, ticket#)
         tests = []
         avoid = [slot[0]]
         while len(tests) < common.TESTS_PER_SLOT:
@@ -140,18 +151,26 @@ def mn_list_to_test_slots(full_mn_list, forge_slots):
     return test_slots
 
 
-
-
-
+# Timeslots helpers ###########################################################
 
 
 def timestamp_to_round_slot(ts=0):
     """
     Given a timestamp, returns the specific round and slot# that fits.
-    :param ts:
+    :param ts: timestamp to use. If 0, will use current time
     :return: tuple (round, slot in round)
     """
+    if ts == 0 :
+        ts = time.time()
+    the_round = math.floor((ts - common.ORIGIN_OF_TIME) / common.ROUND_TIME_SEC)
+    round_start = common.ORIGIN_OF_TIME + the_round * common.ROUND_TIME_SEC
+    the_slot = math.floor((ts - round_start) / common.POS_SLOT_TIME_SEC)
+    return the_round, the_slot
 
+
+# TODO: time_to_next_slot
+
+# TODO: time_to_next_round
 
 # Historical code to move out.
 """

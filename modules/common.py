@@ -28,10 +28,14 @@ Here comes tuneable algorithm variables
 """
 
 # Duration of a PoS slot in minute - each slot can be filled by a block (or stay empty)
-POS_SLOT_TIME = 5
+POS_SLOT_TIME_MIN = 5
+POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 
 # How many slots in a round? Better keep them an odd number.
 MAX_ROUND_SLOTS = 3
+
+# How many block times to wait at the end of a round to reach consensus?
+END_ROUND_SLOTS = 1
 
 # How many tests should the whole Net perform per slot?
 # each test will issue 2 messages, one from the tester, the other from the testee
@@ -50,6 +54,8 @@ REQUIRED_SOURCES_PER_BLOCK = 3
 ORIGIN_OF_TIME = 1522419000
 
 
+# Round time in seconds
+ROUND_TIME_SEC = POS_SLOT_TIME_SEC * ( MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@
 # Notes 
 
 * Tests are bi-directional:  
-  When A tests B, it also gives B info, and both A and B report the test result.
+  When A tests B, it also gives B info, both A and B report the test result.
   
 * Tests are random but predictable:
   At each round start, all tests for the round are being decided, so a node can't do random tests.   
@@ -21,6 +21,7 @@
   and :  
   raw test results, test note  
   raw test result is what was send by the tested node, test note is note (0-10) given by the tester.
+  Neither A nor B should send the result expected for the peer (or one could copy). 
 
 
 # Test types for PoS
