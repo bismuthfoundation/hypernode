@@ -1,0 +1,50 @@
+syntax = "proto2";
+
+package bismuth;
+
+message TX {
+    optional int32 int32_value=1;
+}
+
+message IP {
+    // Would "bytes" be better suited?
+    required uint32 ipv4=1;
+    optional uint64 ipv6a=2;
+    optional uint64 ipv6b=3;
+    optional uint32 port=4 [default = 5658 ];
+}
+
+
+enum ko_reason {
+    no_reason = 0;
+    version_mismatch = 1;
+    bad_ip = 2;
+    bad_pubkey = 3;
+    bad_block = 4;
+    bad_slot = 5;
+    no_resources = 6;
+}
+
+
+message Command {
+    enum Type {
+        hello = 0;
+        ok = 1;
+        ko = 2;
+        ping = 3;
+        peers = 4;
+
+        message = 10;
+    }
+    required Type command = 1;
+
+    oneof param {
+        string string_value=2;
+        int32 int32_value=3;
+        //ko_reason reason_value=4;
+    }
+
+    repeated TX txs = 5;
+
+    repeated IP ips = 6;
+}

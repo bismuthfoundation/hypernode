@@ -5,6 +5,7 @@ PoS related crypto helpers
 
 # Third party modules
 from hashlib import blake2b
+import json
 
 # our modules
 import common
@@ -32,6 +33,16 @@ def blake(buffer):
     return blake2b(buffer, digest_size=BLAKE_DIGEST_SIZE)
 
 
+def hash_from_ordered_dict(block):
+    """
+
+    :param json_block:
+    :return:
+    """
+    # TODO: decide if we base upon the protobuf block message (shorter, binary, no conversion) - issue: hash may change if protobuff block structure changes.
+    # or on a string or json encoding of the block? (means many conversions and slower checks)
+    base = json.dumps(block)
+    return blake(base)
 
 if __name__ == "__main__":
     print("I'm a module, can't run!")

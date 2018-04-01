@@ -4,6 +4,10 @@ Common variables and helpers for PoS
 
 Serves as config file for POC and tests
 """
+
+from collections import OrderedDict
+
+# Custom modules
 import poscrypto
 
 __version__ = '0.0.1'
@@ -56,6 +60,14 @@ ORIGIN_OF_TIME = 1522419000
 
 # Round time in seconds
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * ( MAX_ROUND_SLOTS + END_ROUND_SLOTS)
+
+
+# TODO: use of hexdigest is temp. for poc.
+GENESIS=OrderedDict({'height':0, 'round':0, 'sir':0, 'ts':ORIGIN_OF_TIME,
+         'previous_hash':poscrypto.blake('BIG_BANG_HASH').hexdigest(), 'messages':[],
+         'msg_count':0, 'sources':0, 'signature':'NONE'})
+GENESIS['hash']=poscrypto.hash_from_ordered_dict(GENESIS).hexdigest()
+
 
 
 if __name__ == "__main__":

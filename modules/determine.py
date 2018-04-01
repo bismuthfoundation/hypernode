@@ -172,6 +172,28 @@ def timestamp_to_round_slot(ts=0):
 
 # TODO: time_to_next_round
 
+
+
+def get_connect_to(peers, round, address):
+    """
+    Sends back the list of peers to connect to
+    :param peers:
+    :param round:
+    :param address:
+    :return:
+    """
+    # Todo: Should peers stay in params? better be known by determine, since they will be collected and stored for each round.
+    # POC: sends a subset of the peers, excluding us.
+    # Unique seed for a peer and a round
+    random.seed(address+str(round))
+    # remove our address - We could also keep it, but not connect to if it's in the list (allows same list for everyone)
+    result = [peer for peer in peers if peer[0] != address]
+    random.shuffle(result)
+    # POC: limit to 2 peers
+    return result[:2]
+
+
+
 # Historical code to move out.
 """
 def hash_distance(hash):
