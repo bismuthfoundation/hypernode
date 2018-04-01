@@ -114,3 +114,47 @@ TBD
 # End of round
 
 TBD
+
+# 3 Inter node communication
+
+## 3.1 Node server
+
+Base ok
+
+## 3.2 Node client
+
+wip
+
+## 3.3 Base node commands
+
+wip
+
+## 3.4 resources management
+
+Tiers for keeping enough open slots for selected peers. tbd.
+
+## 3.5 communication security
+
+Various checks tbd 
+
+# 4 PoS Chain object
+
+## 4.1 Base
+
+wip
+
+## 4.2 In Memory prototype
+
+wip
+
+## 4.3 SQLite prototype
+
+TBD
+
+## 4.4 Basic validity checks
+
+TBD
+
+## 4.5 Extended checks
+
+TBD
