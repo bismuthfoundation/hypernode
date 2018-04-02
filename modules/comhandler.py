@@ -8,7 +8,7 @@ import time
 # Our modules
 import commands_pb2
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 # Logical timeout
 LTIMEOUT = 45
@@ -25,26 +25,24 @@ STATS_BYTRECV = 4
 
 class Connection:
     """The connection layer and command hander"""
-    socket = None
-    logstats = True
-    peer_ip = ''
-    connected = False
-    # first 4 bytes allow to ID the protocol version, it's the message len on 4 bytes.
-    first_bytes = []
-    # connection stats
-    stats = [0,0,0,0,0]
-    # cmd : from us to peer
-    protocmd = None
-    # msg : from peer to us
-    protomsg = None
 
     def __init__(self, socket = None, logstats= True):
         """ Socket may be provided when in the context of a threaded TCP Server.
         """
+        # cmd : from us to peer
         self.protocmd = commands_pb2.Command()
+        # msg : from peer to us
         self.protomsg = commands_pb2.Command()
         self.logstats = logstats
         self.socket = socket
+        self.peer_ip = ''
+        self.connected = False
+        # first 4 bytes allow to ID the protocol version, it's the message len on 4 bytes.
+        self.first_bytes = []
+        # connection stats
+        self.stats = [0, 0, 0, 0, 0]
+        # last socket activity
+        self.last_activity = 0
         if socket:
             self.connected = True
             self.peer_ip = socket.getpeername()[0]
@@ -81,6 +79,7 @@ class Connection:
             self.stats[STATS_MSGRECV] += 1
         data=self.socket.recv(size)
         self.protomsg.ParseFromString(data)
+        self.last_activity = time.time()
         if self.logstats:
             self.stats[STATS_BYTRECV] += 4+size
 
@@ -103,6 +102,7 @@ class Connection:
         data = self.protocmd.SerializeToString()
         data_len = len(data)
         self.socket.sendall(struct.pack('>i', data_len) + data)
+        self.last_activity = time.time()
         if self.logstats:
             self.stats[STATS_BYTSENT] += 4 + data_len
 

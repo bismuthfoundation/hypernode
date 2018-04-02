@@ -3,6 +3,7 @@
 
 import sys
 _b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
+from google.protobuf.internal import enum_type_wrapper
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
@@ -19,9 +20,59 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='commands.proto',
   package='bismuth',
   syntax='proto2',
-  serialized_pb=_b('\n\x0e\x63ommands.proto\x12\x07\x62ismuth\"\x19\n\x02TX\x12\x13\n\x0bint32_value\x18\x01 \x01(\x05\"D\n\x02IP\x12\x0c\n\x04ipv4\x18\x01 \x02(\r\x12\r\n\x05ipv6a\x18\x02 \x01(\x04\x12\r\n\x05ipv6b\x18\x03 \x01(\x04\x12\x12\n\x04port\x18\x04 \x01(\r:\x04\x35\x36\x35\x38\"\xfe\x01\n\x07\x43ommand\x12&\n\x07\x63ommand\x18\x01 \x02(\x0e\x32\x15.bismuth.Command.Type\x12\x16\n\x0cstring_value\x18\x02 \x01(\tH\x00\x12\x15\n\x0bint32_value\x18\x03 \x01(\x05H\x00\x12\x18\n\x03txs\x18\x04 \x03(\x0b\x32\x0b.bismuth.TX\x12\x18\n\x03ips\x18\x05 \x03(\x0b\x32\x0b.bismuth.IP\"_\n\x04Type\x12\x0c\n\x08sendsync\x10\x00\x12\x0b\n\x07version\x10\x01\x12\x06\n\x02ok\x10\x02\x12\t\n\x05notok\x10\x03\x12\t\n\x05hello\x10\x04\x12\x06\n\x02tx\x10\x05\x12\t\n\x05peers\x10\x06\x12\x0b\n\x07message\x10\nB\x07\n\x05param')
+  serialized_pb=_b('\n\x0e\x63ommands.proto\x12\x07\x62ismuth\"\x19\n\x02TX\x12\x13\n\x0bint32_value\x18\x01 \x01(\x05\"D\n\x02IP\x12\x0c\n\x04ipv4\x18\x01 \x02(\r\x12\r\n\x05ipv6a\x18\x02 \x01(\x04\x12\r\n\x05ipv6b\x18\x03 \x01(\x04\x12\x12\n\x04port\x18\x04 \x01(\r:\x04\x35\x36\x35\x38\"\xe2\x01\n\x07\x43ommand\x12&\n\x07\x63ommand\x18\x01 \x02(\x0e\x32\x15.bismuth.Command.Type\x12\x16\n\x0cstring_value\x18\x02 \x01(\tH\x00\x12\x15\n\x0bint32_value\x18\x03 \x01(\x05H\x00\x12\x18\n\x03txs\x18\x05 \x03(\x0b\x32\x0b.bismuth.TX\x12\x18\n\x03ips\x18\x06 \x03(\x0b\x32\x0b.bismuth.IP\"C\n\x04Type\x12\t\n\x05hello\x10\x00\x12\x06\n\x02ok\x10\x01\x12\x06\n\x02ko\x10\x02\x12\x08\n\x04ping\x10\x03\x12\t\n\x05peers\x10\x04\x12\x0b\n\x07message\x10\nB\x07\n\x05param*{\n\tko_reason\x12\r\n\tno_reason\x10\x00\x12\x14\n\x10version_mismatch\x10\x01\x12\n\n\x06\x62\x61\x64_ip\x10\x02\x12\x0e\n\nbad_pubkey\x10\x03\x12\r\n\tbad_block\x10\x04\x12\x0c\n\x08\x62\x61\x64_slot\x10\x05\x12\x10\n\x0cno_resources\x10\x06')
 )
 
+_KO_REASON = _descriptor.EnumDescriptor(
+  name='ko_reason',
+  full_name='bismuth.ko_reason',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='no_reason', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='version_mismatch', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='bad_ip', index=2, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='bad_pubkey', index=3, number=3,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='bad_block', index=4, number=4,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='bad_slot', index=5, number=5,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='no_resources', index=6, number=6,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=353,
+  serialized_end=476,
+)
+_sym_db.RegisterEnumDescriptor(_KO_REASON)
+
+ko_reason = enum_type_wrapper.EnumTypeWrapper(_KO_REASON)
+no_reason = 0
+version_mismatch = 1
+bad_ip = 2
+bad_pubkey = 3
+bad_block = 4
+bad_slot = 5
+no_resources = 6
 
 
 _COMMAND_TYPE = _descriptor.EnumDescriptor(
@@ -31,42 +82,34 @@ _COMMAND_TYPE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='sendsync', index=0, number=0,
+      name='hello', index=0, number=0,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='version', index=1, number=1,
+      name='ok', index=1, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='ok', index=2, number=2,
+      name='ko', index=2, number=2,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='notok', index=3, number=3,
+      name='ping', index=3, number=3,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='hello', index=4, number=4,
+      name='peers', index=4, number=4,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='tx', index=5, number=5,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='peers', index=6, number=6,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='message', index=7, number=10,
+      name='message', index=5, number=10,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
   serialized_start=275,
-  serialized_end=370,
+  serialized_end=342,
 )
 _sym_db.RegisterEnumDescriptor(_COMMAND_TYPE)
 
@@ -184,14 +227,14 @@ _COMMAND = _descriptor.Descriptor(
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='txs', full_name='bismuth.Command.txs', index=3,
-      number=4, type=11, cpp_type=10, label=3,
+      number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='ips', full_name='bismuth.Command.ips', index=4,
-      number=5, type=11, cpp_type=10, label=3,
+      number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -213,7 +256,7 @@ _COMMAND = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=125,
-  serialized_end=379,
+  serialized_end=351,
 )
 
 _COMMAND.fields_by_name['command'].enum_type = _COMMAND_TYPE
@@ -229,6 +272,7 @@ _COMMAND.fields_by_name['int32_value'].containing_oneof = _COMMAND.oneofs_by_nam
 DESCRIPTOR.message_types_by_name['TX'] = _TX
 DESCRIPTOR.message_types_by_name['IP'] = _IP
 DESCRIPTOR.message_types_by_name['Command'] = _COMMAND
+DESCRIPTOR.enum_types_by_name['ko_reason'] = _KO_REASON
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TX = _reflection.GeneratedProtocolMessageType('TX', (_message.Message,), dict(

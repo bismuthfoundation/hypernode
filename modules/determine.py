@@ -190,7 +190,11 @@ def get_connect_to(peers, round, address):
     result = [peer for peer in peers if peer[0] != address]
     random.shuffle(result)
     # POC: limit to 2 peers
-    return result[:2]
+    #return result[:2]
+    # Temp test with 2 nodes only
+    if "aa" in address:
+        return [peers[1]]
+    return [peers[0]]
 
 
 

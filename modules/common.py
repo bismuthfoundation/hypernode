@@ -12,6 +12,10 @@ import poscrypto
 
 __version__ = '0.0.1'
 
+# POC - Will be taken from config - Always 10 chars
+# TODO: enforce 10 chars
+POSNET = 'posnet0001'
+
 # POC prefix is for POC only, will use real data later.
 
 # The reference list of active Masternodes for the round

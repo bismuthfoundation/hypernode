@@ -2,6 +2,11 @@
 
 pos chain: no mining, no tx fee - marginal cost = 0
 (chain can be pruned to reduce storage)
+no tx fee = service messages are free and can be mandatory in every block
+
+no tx spam: only mn can send tx. only jurors can send specific messages.
+spammy mn are visible and can be voted down. bad behavior penalizes the actor.
+tx from a mn can also be throttled anyway, to avoid unvoluntary spam (bug?) 
 
 No incentive in cheating: no bis, no direct advantage. Actions logged by everyone, will be seen and recorded.
 

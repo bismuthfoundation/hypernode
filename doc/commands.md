@@ -26,6 +26,7 @@ TODO: as enum or string? balance between command len and ease of use.
 ## ping
 id 3
 TX: one tx (ping params)
+*temp for poc*: ping is an empty command for now, just used for keep alive.
 
 ## peers
 id 4
@@ -54,6 +55,6 @@ Servers wait for an event, and answer.
 
 ## Keep alive
 
-* Client sends some "ping" command to keep the socket (and check it is) alive.
+* Client can send some "ping" command to keep the socket (and check it is) alive. Only needed if no command was issued for ( < timeout) time.
 
 

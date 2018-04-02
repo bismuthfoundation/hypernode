@@ -41,6 +41,7 @@ ThreadedTCPServer.request_queue_size = 100
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):  # server defined here
         global MY_NODE
+        peer_ip = 'n/a'  # in case request fails.
         peer_ip = self.request.getpeername()[0]
         """
         if threading.active_count() < thread_limit_conf or peers.is_whitelisted(peer_ip):
@@ -56,20 +57,34 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             finally:
                 return
         """
-        while True:
-            try:
-                # Failsafe
-                if self.request == -1:
-                    raise ValueError("Inbound: Closed socket from {}".format(peer_ip))
+        try:
+            com_handler = comhandler.Connection(socket=self.request)
+            while not MY_NODE.stop_event.is_set():
+                try:
+                    # Failsafe
+                    if self.request == -1:
+                        raise ValueError("Inbound: Closed socket from {}".format(peer_ip))
+                        return
+                    msg = com_handler.get_message()
+                    print("Server got message from {}".format(peer_ip), msg.__str__())
+                    if msg.command == commands_pb2.Command.hello:
+                        print("Got Hello {}".format(msg.string_value))
+                        # TODO: check and send back commands_pb2.Command.hello if something is wrong
+                        com_handler.send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address)
+                    if msg.command == commands_pb2.Command.ping:
+                        print("Got Ping {}".format(msg.string_value))
+
+
+                    #data = connections.receive(self.request, 10)
+                    print(' TCP blip', peer_ip)
+                    #print(MY_NODE.status())
+                    #time.sleep(10)
+                except Exception as e:
+                    print("TCP Server loop", peer_ip, e)
                     return
-
-                #data = connections.receive(self.request, 10)
-                print(' TCP blip', peer_ip)
-                #print(MY_NODE.status())
-                time.sleep(10)
-            except Exception as e:
-                print("TCP Server loop", e)
-
+        except Exception as e:
+            print("TCP Server init", peer_ip, e)
+            return
 
 """
 PoS MN Classe
@@ -138,7 +153,8 @@ class Posmn:
         self._check_round()
         while not self.stop_event.is_set():
             print(' Manager blip')
-            print(self.poschain.status())
+            status={'chain': self.poschain.status(), 'outgoing':list(self.clients.keys())}
+            print(status)
             if self.connecting:
                 if len(self.clients) < len(self.connect_to):
                     # Try to connect to our missing pre-selected peers
@@ -148,7 +164,7 @@ class Posmn:
                             if self.verbose:
                                 print("Trying to connect to ", peer[0])
                             """
-                            # TODO: delete from self.clients when thread closes!
+                            # Will be self-deleted from self.clients when thread closes
                             client_thread = threading.Thread(target=self.client_worker,  args=(peer,))
                             client_thread.daemon = True
                             with self.clients_lock:
@@ -163,15 +179,33 @@ class Posmn:
     def client_worker(self, peer):
         """
         Client worker, running in a thread.
-        Tries to connect to the given peer, terminates on error an delete itself on close.
+        Tries to connect to the given peer, terminates on error and deletes itself on close.
         :param peer:
         :return:
         """
         try:
             if self.verbose:
                 print("Should try to connect to", peer)
-            time.sleep(20)
-            raise ValueError("TimeOut")
+            com_handler = comhandler.Connection()
+            com_handler.connect(peer[1], peer[2])
+            com_handler.send_string(commands_pb2.Command.hello, common.POSNET+self.address)
+            msg = com_handler.get_message()
+            if msg.command == commands_pb2.Command.hello:
+                # TOOO: decompose posnet/address and check. use helper.
+                print("Worker got Hello {}".format(msg.string_value))
+            if msg.command == commands_pb2.Command.ko:
+                print("Worker got ko {}".format(msg.string_value))
+                # Wait here so we don't retry immediatly?
+                time.sleep(60)
+                return
+            while not self.stop_event.is_set():
+                time.sleep(10)
+                # Only send ping if time is due.
+                if com_handler.last_activity < time.time()-30:
+                    if self.verbose:
+                        print("Sending ping to", peer[0])
+                    com_handler.send_void(commands_pb2.Command.ping)  # keeps connection active, or raise error if connection lost
+            raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
                 print("Connection lost to {} because {}".format(peer[0], e))
