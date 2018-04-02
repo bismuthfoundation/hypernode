@@ -21,6 +21,7 @@ no param
 id 2
 string
 returns reason of error: version mismatch, bad ip, bad pubkey, bad block, bad slot, no resources, no reason
+TODO: as enum or string? balance between command len and ease of use.
 
 ## ping
 id 3
@@ -37,5 +38,22 @@ List of peers, with default port.
 id 5
 TX : list of commands_pb2.Command.TX
 One or several tx from the node mempool
+
+
+# Command flow
+
+Each node has a server, responding to requests, and some clients, initiating requests.  
+Clients send commands and wait for an answer.  
+Servers wait for an event, and answer.  
+
+## Communication starter
+
+* Client sends "Hello" with its POSNET version and PoS address
+* Server may answer "ko" with a reason, or
+* Server may answer "Hello" its own POSNET version and PoS address
+
+## Keep alive
+
+* Client sends some "ping" command to keep the socket (and check it is) alive.
 
 
