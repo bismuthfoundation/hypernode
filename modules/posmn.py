@@ -5,6 +5,7 @@ Pos Masternode class for Bismuth
 import socketserver
 import threading
 import time
+from enum import Enum
 
 # Our modules
 import commands_pb2
@@ -43,6 +44,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         global MY_NODE
         peer_ip = 'n/a'  # in case request fails.
         peer_ip = self.request.getpeername()[0]
+        # TODO: here, use tiered system to reserve safe slots for jurors, some slots for non juror mns, and some others for other clients (non mn clients)
+        # and reject right here from ip
         """
         if threading.active_count() < thread_limit_conf or peers.is_whitelisted(peer_ip):
             capacity = 1
@@ -59,6 +62,17 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         """
         try:
             com_handler = comhandler.Connection(socket=self.request)
+            # TODO: here, allow for a shorter timeout, so we don't lock up a thread for 45 sec if a node just connects and does nothing
+            msg = com_handler.get_message()
+            print("Server got message from {}".format(peer_ip), msg.__str__())
+            if msg.command == commands_pb2.Command.hello:
+                print("Got Hello {}".format(msg.string_value))
+                # TODO: check and send back commands_pb2.Command.hello if something is wrong
+                com_handler.send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address)
+                MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
+            else:
+                print("{} did not say hello".format(peer_ip))
+                return
             while not MY_NODE.stop_event.is_set():
                 try:
                     # Failsafe
@@ -67,13 +81,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         return
                     msg = com_handler.get_message()
                     print("Server got message from {}".format(peer_ip), msg.__str__())
-                    if msg.command == commands_pb2.Command.hello:
-                        print("Got Hello {}".format(msg.string_value))
-                        # TODO: check and send back commands_pb2.Command.hello if something is wrong
-                        com_handler.send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address)
                     if msg.command == commands_pb2.Command.ping:
                         print("Got Ping {}".format(msg.string_value))
-
 
                     #data = connections.receive(self.request, 10)
                     print(' TCP blip', peer_ip)
@@ -85,10 +94,25 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         except Exception as e:
             print("TCP Server init", peer_ip, e)
             return
+        finally:
+            MY_NODE.remove_inbound(peer_ip)
 
 """
 PoS MN Classe
 """
+
+
+class MNState(Enum):
+    """
+    Current State of the MN
+    """
+    START = 0
+    SYNCING = 1
+    TESTING = 2
+    STRONG_CONSENSUS = 3
+    MINIMAL_CONSENSUS = 4
+    FORGING = 5
+    SENDING = 6
 
 
 class Posmn:
@@ -102,8 +126,11 @@ class Posmn:
         self.verbose = verbose
         self.server_thread = None
         self.server = None
+        self.state = MNState.START
         # List of client threads
         self.clients = {}
+        # list of inbound server connections
+        self.inbound = {}
         # list of peers I should stay connected to for a given round
         self.connect_to = []
         # Does the node try to connect to others?
@@ -118,12 +145,43 @@ class Posmn:
         # Locks
         self.round_lock = threading.Lock()
         self.clients_lock = threading.Lock()
+        self.inbound_lock = threading.Lock()
         #  Events
         self.stop_event = threading.Event()
         # Control thread(s)
         self.manager_thread = threading.Thread(target=self.manager)
         self.manager_thread.daemon = True
         self.manager_thread.start()
+
+    def add_inbound(self, ip, properties={}):
+        """
+        Safely add a distant peer from server thread.
+        This is called only after initial exchange and approval
+        :param ip:
+        :param properties:
+        :return:
+        """
+        with self.inbound_lock:
+            self.inbound[ip] = properties
+
+    def remove_inbound(self, ip):
+        """
+        Safely remove a distant peer from server thread
+        :param ip:
+        :return:
+        """
+        with self.inbound_lock:
+            del self.inbound[ip]
+
+    def update_inbound(self, ip, properties):
+        """
+        Safely update info for a connected peer
+        :param ip:
+        :param properties:
+        :return:
+        """
+        with self.inbound_lock:
+            self.inbound[ip] = properties
 
     def stop(self):
         """
@@ -142,6 +200,20 @@ class Posmn:
             print("Closing", e)
         print("Closed.")
 
+    @property
+    def connected_count(self):
+        """
+        True is at least one client or server connection is active.
+        :return:
+        """
+        inbound_count = len(self.inbound)
+        clients_count = 0
+        # TODO: use another list to avoid counting one by one?
+        for client in self.clients:
+            if client[1]:
+                clients_count += 1
+        return inbound_count + clients_count
+
     def manager(self):
         """
         Manager thread
@@ -152,8 +224,14 @@ class Posmn:
         # Initialise round/sir data
         self._check_round()
         while not self.stop_event.is_set():
+            # Ajust state depending of the connection state
+            if self.connected_count > 0:
+                if self.state == MNState.START:
+                    self.state = MNState.SYNCING
+            elif self.state == MNState.SYNCING:
+                self.state = MNState.START
             print(' Manager blip')
-            status={'chain': self.poschain.status(), 'outgoing':list(self.clients.keys())}
+            status={'chain': self.poschain.status(), 'outgoing':list(self.clients.keys()), 'state':self.state.name}
             print(status)
             if self.connecting:
                 if len(self.clients) < len(self.connect_to):
@@ -168,8 +246,8 @@ class Posmn:
                             client_thread = threading.Thread(target=self.client_worker,  args=(peer,))
                             client_thread.daemon = True
                             with self.clients_lock:
+                                self.clients[peer[0]] = [client_thread, False]
                                 client_thread.start()
-                                self.clients[peer[0]] = client_thread
 
 
             # TODO: variable sleep time depending on the elapsed loop time
@@ -198,6 +276,10 @@ class Posmn:
                 # Wait here so we don't retry immediatly?
                 time.sleep(60)
                 return
+            # now we can enter a long term relationship with this node.
+            with self.clients_lock:
+                # Set connected status
+                self.clients[peer[0]][1] = True
             while not self.stop_event.is_set():
                 time.sleep(10)
                 # Only send ping if time is due.

@@ -34,11 +34,20 @@ IPS : list of ip and ports. commands_pb2.Command.IP
 List of peers, with default port.
 * maintain a bin version of that, in memory, within a protobuf, no need to convert each time
 
-
-## tx
+## status
 id 5
+no param
+returns a json status as string
+
+## tx
+id 6
 TX : list of commands_pb2.Command.TX
 One or several tx from the node mempool
+
+## block
+id 7
+block : a commands_pb2.Block
+A forged block from a juror.
 
 
 # Command flow

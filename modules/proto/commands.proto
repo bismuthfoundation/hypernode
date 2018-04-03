@@ -2,8 +2,41 @@ syntax = "proto2";
 
 package bismuth;
 
+
+// For POC, address are strings, but they should be bytes of fixed size, half the size.
 message TX {
-    optional int32 int32_value=1;
+    // Timestamp
+    required uint32 ts=1;
+    // Who - tester
+    required string from=2;
+    // testee
+    required string to=3;
+    // Tx or test type
+    required uint32 type=4;
+    // params of the test
+    optional string params=5;
+    // results of the test
+    required string result=6;
+    // signature = txid
+    required string signature=7;
+}
+
+message Block {
+    required uint32 height=1;
+    required uint32 round=2;
+    required uint32 sir=3;
+    // Timestamp
+    required uint32 ts=4;
+    required string previous_hash=5;
+    repeated TX txs = 6;
+    required uint32 msg_count=7;
+    required uint32 sources=8;
+    // Who - forger
+    required string from=9;
+    // Should be byte too
+    required string signature=10;
+    // Blockhash
+    required string hash=11;
 }
 
 message IP {
@@ -13,7 +46,6 @@ message IP {
     optional uint64 ipv6b=3;
     optional uint32 port=4 [default = 5658 ];
 }
-
 
 enum ko_reason {
     no_reason = 0;
@@ -33,8 +65,11 @@ message Command {
         ko = 2;
         ping = 3;
         peers = 4;
-
-        message = 10;
+        status = 5;
+        block = 6;
+        txsigs = 7;
+        txs = 8;
+        //message = 10;
     }
     required Type command = 1;
 
@@ -44,7 +79,8 @@ message Command {
         //ko_reason reason_value=4;
     }
 
-    repeated TX txs = 5;
-
-    repeated IP ips = 6;
+    repeated TX tx_values = 5;
+    repeated IP ip_values = 6;
+    repeated string sig_values = 7;
+    optional Block block_value = 8;
 }
