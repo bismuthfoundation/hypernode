@@ -29,6 +29,15 @@ find consensus on N well noted mn, then fetch full data from any and recheck sig
 keep a table with only signatures of previous rounds.
 for sir 0, use whole prev_round hash instead of last blocks? (= hash of all the blocks hashes)
 
+for past rounds, fetch one round in a single go.
+get round total hash and # of sources from peers, take the biggest from our peers, fetch from him.
+check on receive. if he lied, issue a tx and ignore him for a while.
+add a message for that. 
+
+
 # TODO
 
 Check time > slot begin + delta not to send block too fast
+
+
+When receiving a block, if last calculation of forger was not in that slot, refresh.

@@ -67,12 +67,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             print("Server got message from {}".format(peer_ip), msg.__str__())
             if msg.command == commands_pb2.Command.hello:
                 print("Got Hello {}".format(msg.string_value))
-                # TODO: check and send back commands_pb2.Command.hello if something is wrong
+                # TODO: check and send back commands_pb2.Command.ko if something is wrong
                 com_handler.send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address)
                 MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
                 print("{} did not say hello".format(peer_ip))
+                # TODO: Should we send back a proper ko message in that case?
                 return
+            # Here, the client has proved to be valid, so we enter a long term relationship
             while not MY_NODE.stop_event.is_set():
                 try:
                     # Failsafe
@@ -138,10 +140,11 @@ class Posmn:
         # Time sensitive props
         self.poschain = poschain.MemoryPosChain(verbose=verbose)
         self.is_delegate = False
-        self.round = 0
-        self.sir = 0
+        self.round = -1
+        self.sir = -1
         self.previous_round = 0
         self.previous_sir = 0
+        self.forger = None
         # Locks
         self.round_lock = threading.Lock()
         self.clients_lock = threading.Lock()
@@ -216,7 +219,7 @@ class Posmn:
 
     def manager(self):
         """
-        Manager thread
+        Manager thread. Responsible for managing inner state of the node.
         :return:
         """
         if self.verbose:
@@ -231,7 +234,12 @@ class Posmn:
             elif self.state == MNState.SYNCING:
                 self.state = MNState.START
             print(' Manager blip')
-            status={'chain': self.poschain.status(), 'outgoing':list(self.clients.keys()), 'state':self.state.name}
+            status={'chain': self.poschain.status(),
+                    'outgoing':list(self.clients.keys()),
+                    'state':{'state': self.state.name,
+                             'round':self.round,
+                             'sir':self.sir,
+                             'forger':self.forger}}
             print(status)
             if self.connecting:
                 if len(self.clients) < len(self.connect_to):
@@ -303,19 +311,32 @@ class Posmn:
         :return:
         """
         self.round, self.sir = determine.timestamp_to_round_slot(time.time())
-        if self.sir != self.previous_sir:
-            # Update all sir related info
-            if self.verbose:
-                print("New Slot {} in Round {}".format(self.sir, self.round))
-            self.previous_sir = self.sir
-            if self.round != self.previous_round:
-                # Update all round related info, we get here only once at the beginning of a new round
+        if (self.sir != self.previous_sir) or (self.round != self.previous_round):
+            with self.round_lock:
+                # Update all sir related info
                 if self.verbose:
-                    print("New Round {}".format(self.round))
-                self.previous_rounf = self.round
-                # TODO : if we have connections, drop them.
-                # wait for new list, so we keep cnx if we already are. or drop anyway? no, would add general network load at each round start.
-                self.connect_to = determine.get_connect_to(self.peers, self.round, self.address)
+                    print("New Slot {} in Round {}".format(self.sir, self.round))
+                self.previous_sir = self.sir
+                if self.round != self.previous_round:
+                    # Update all round related info, we get here only once at the beginning of a new round
+                    if self.verbose:
+                        print("New Round {}".format(self.round))
+                    self.previous_round = self.round
+                    # TODO : if we have connections, drop them.
+                    # wait for new list, so we keep cnx if we already are. or drop anyway? no, would add general network load at each round start.
+                    self.connect_to = determine.get_connect_to(self.peers, self.round, self.address)
+                    tickets = determine.mn_list_to_tickets(self.peers)
+                    # TODO: real hash
+                    self.slots = determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
+                    if self.verbose:
+                        print("Slots\n", self.slots)
+                    self.test_slots = determine.mn_list_to_test_slots(self.peers, self.slots)
+                if self.sir < len(self.slots):
+                    self.forger = self.slots[self.sir][0]
+                    if self.verbose:
+                        print("Forger is {}".format(self.forger))
+                else:
+                    self.forger = None
 
 
     def serve(self):
