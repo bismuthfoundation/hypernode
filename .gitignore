@@ -4,3 +4,8 @@ __pycache__
 *.old
 *.db
 .data
+bak
+*.log
+*.log.*
+*.lock
+*.der

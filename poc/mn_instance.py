@@ -34,9 +34,10 @@ if __name__ == "__main__":
         peers = common.POC_MASTER_NODES_LIST
         posmn.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose)
         posmn.MY_NODE.serve()
-        posmn.MY_NODE.connect()
+        """posmn.MY_NODE.connect()
         while True:
             print("Alive")
             time.sleep(60)
+        """
     except Exception as e:
         print(e)
