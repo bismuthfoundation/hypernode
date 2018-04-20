@@ -3,7 +3,7 @@ Pos Masternode class for Bismuth
 Tornado based
 """
 
-#import threading
+# import threading
 import time
 from enum import Enum
 import os
@@ -15,7 +15,7 @@ import aioprocessing
 import logging
 # pip install ConcurrentLogHandler
 from cloghandler import ConcurrentRotatingFileHandler
-# Tornado
+# Tornado
 from tornado.ioloop import IOLoop
 from tornado.options import define, options
 from tornado import gen
@@ -27,7 +27,7 @@ import tornado.log
 
 # Our modules
 import commands_pb2
-#import comhandler
+# import comhandler
 import common
 import determine
 import poschain
@@ -40,6 +40,9 @@ This looks not clean to me.
 Will have to refactor if possible all in a single object, but looks hard enough, so postponing. 
 """
 MY_NODE = None
+
+app_log = None
+access_log = None
 
 # Logical timeout (s) for socket client
 LTIMEOUT = 45
@@ -89,7 +92,7 @@ async def async_send(cmd, stream, ip):
         data = cmd.SerializeToString()
         data_len = len(data)
         await stream.write(struct.pack('>i', data_len) + data)
-        #print(MY_NODE.clients)
+        # print(MY_NODE.clients)
         MY_NODE.clients[ip][STATS_LASTACT] = time.time()
         MY_NODE.clients[ip][STATS_MSGSENT] += 1
         MY_NODE.clients[ip][STATS_BYTSENT] += 4 + data_len
@@ -141,7 +144,6 @@ async def async_send_void(cmd, stream, ip):
     """
     Sends a command to the stream, async.
     :param cmd:
-    :param value:
     :param stream:
     :param ip:
     :return:
@@ -203,7 +205,7 @@ class MnServer(TCPServer):
                 except Exception as e:
                     if not error_shown:
                         what = str(e)
-                        if not 'OK' in what:
+                        if 'OK' not in what:
                             app_log.error("handle_stream {} for ip {}".format(what, peer_ip))
                     return
         except Exception as e:
@@ -219,6 +221,7 @@ class MnServer(TCPServer):
 
     async def _handle_msg(self, msg, stream, peer_ip):
         global access_log
+        global MY_NODE
         if MY_NODE.verbose:
             access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
 
@@ -250,6 +253,7 @@ STATS_MSGRECV = 4
 STATS_BYTSENT = 5
 STATS_BYTRECV = 6
 
+
 class Posmn:
     """The PoS Masternode object"""
     # List of client routines
@@ -260,7 +264,7 @@ class Posmn:
 
     stop_event = aioprocessing.AioEvent()
 
-    def __init__(self, ip, port, address='', peers=None, verbose = False):
+    def __init__(self, ip, port, address='', peers=None, verbose=False):
         self.ip = ip
         self.port = port
         self.address = address
@@ -269,7 +273,7 @@ class Posmn:
         self.server_thread = None
         self.server = None
         self.state = MNState.START
-        # list of peers I should stay connected to for a given round
+        # list of peers I should stay connected to for a given round
         self.connect_to = []
         # Does the node try to connect to others?
         self.connecting = False
@@ -292,20 +296,20 @@ class Posmn:
         global access_log
         app_log = logging.getLogger("tornado.application")
         tornado.log.enable_pretty_logging()
-        logfile = os.path.abspath("app_tornado.log")
+        logfile = os.path.abspath("pos_app.log")
         # Rotate log after reaching 512K, keep 5 old copies.
-        rotateHandler = ConcurrentRotatingFileHandler("pos_app.log", "a", 512 * 1024, 5)
+        rotate_handler = ConcurrentRotatingFileHandler(logfile, "a", 512 * 1024, 5)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        rotateHandler.setFormatter(formatter)
-        app_log.addHandler(rotateHandler)
+        rotate_handler.setFormatter(formatter)
+        app_log.addHandler(rotate_handler)
         #
         access_log = logging.getLogger("tornado.access")
         tornado.log.enable_pretty_logging()
-        logfile2 = os.path.abspath("access_tornado.log")
-        rotateHandler2 = ConcurrentRotatingFileHandler("pos_access.log", "a", 512 * 1024, 5)
+        logfile2 = os.path.abspath("pos_access.log")
+        rotate_handler2 = ConcurrentRotatingFileHandler(logfile2, "a", 512 * 1024, 5)
         formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-        rotateHandler2.setFormatter(formatter2)
-        access_log.addHandler(rotateHandler2)
+        rotate_handler2.setFormatter(formatter2)
+        access_log.addHandler(rotate_handler2)
         app_log.info("PoS MN {} Starting with pool address {}.".format(__version__, self.address))
 
     def add_inbound(self, ip, properties=None):
@@ -349,7 +353,7 @@ class Posmn:
         global app_log
         app_log.info("Trying to close nicely...")
         self.stop_event.set()
-        # TODO: wait for potential threads to finish
+        # TODO: wait for potential threads to finish
         try:
             pass
             # A long sleep time will make nice close longer if we wait for the thread to finish
@@ -383,28 +387,28 @@ class Posmn:
         # Initialise round/sir data
         await self._check_round()
         while not self.stop_event.is_set():
-            # Ajust state depending of the connection state
+            # Adjust state depending of the connection state
             if self.connected_count > 0:
                 if self.state == MNState.START:
                     self.state = MNState.SYNCING
             elif self.state == MNState.SYNCING:
                 self.state = MNState.START
             # TODO: We have 2 different status, this one , and status() function ????
-            status={'chain': self.poschain.status(),
-                    'outbound':list(self.clients.keys()),  # those are addresses
-                    'inbound':list(self.inbound.keys()),  # those are ips, not coherent. pick one.
-                    'state':{'state': self.state.name,
-                             'round':self.round,
-                             'sir':self.sir,
-                             'forger':self.forger}}
+            status = {'chain': self.poschain.status(),
+                      'outbound': list(self.clients.keys()),
+                      'inbound': list(self.inbound.keys()),
+                      'state': {'state': self.state.name,
+                                'round': self.round,
+                                'sir': self.sir,
+                                'forger': self.forger}}
             app_log.info("Status: {}".format(json.dumps(status)))
             if self.connecting:
                 if len(self.clients) < len(self.connect_to):
-                    # Try to connect to our missing pre-selected peers
+                    # Try to connect to our missing pre-selected peers
                     for peer in self.connect_to:
                         # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
                         # tuples (address, ip, port, ?)
-                        #ip_port = "{}:{}".format(peer[1], peer[2])
+                        # ip_port = "{}:{}".format(peer[1], peer[2])
                         if peer[1] not in self.clients:
                             io_loop = IOLoop.instance()
                             with self.clients_lock:
@@ -424,12 +428,12 @@ class Posmn:
         """
         global app_log
         global LTIMEOUT
+        ip = peer[1]
         try:
             if self.verbose:
                 access_log.info("Initiating client co-routine for {}:{}".format(peer[1], peer[2]))
             tcp_client = TCPClient()
-            #ip_port = "{}:{}".format(peer[1], peer[2])
-            ip = peer[1]
+            # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
             await async_send_string(commands_pb2.Command.hello, common.POSNET+self.address, stream, ip)
@@ -441,20 +445,21 @@ class Posmn:
                 access_log.info("Worker got Hello {}".format(msg.string_value))
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))
-
                 return
-            # now we can enter a long term relationship with this node.
+            # now we can enter a long term relationship with this node.
             with self.clients_lock:
                 # Set connected status
                 self.clients[ip][STATS_ACTIVEP] = True
                 self.clients[ip][STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
                 await asyncio.sleep(10)
-                # Only send ping if time is due.
+                # Only send ping if time is due.
+                # TODO: more than 30 sec? Config
                 if self.clients[ip][STATS_LASTACT] < time.time()-30:
                     if self.verbose:
                         app_log.info("Sending ping to {}".format(ip))
-                    await async_send_void(commands_pb2.Command.ping, stream, ip)  # keeps connection active, or raise error if connection lost
+                    # keeps connection active, or raise error if connection lost
+                    await async_send_void(commands_pb2.Command.ping, stream, ip)
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
@@ -464,12 +469,12 @@ class Posmn:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
             """
-            #  Wait here so we don't retry immediatly
+            #  Wait here so we don't retry immediately
             await asyncio.sleep(30)
         finally:
             try:
                 with self.clients_lock:
-                    # We could keep it and set to inactive, but is it useful? could grow too much
+                    # We could keep it and set to inactive, but is it useful? could grow too much
                     del self.clients[ip]
             except:
                 pass
@@ -477,7 +482,7 @@ class Posmn:
     async def _check_round(self):
         """
         Adjust round/slots depending properties.
-        Always called from the manager thread only.
+        Always called from the manager co-routine only.
         Should not be called too often (1-10sec should be plenty)
         :return:
         """
@@ -485,17 +490,19 @@ class Posmn:
         self.round, self.sir = determine.timestamp_to_round_slot(time.time())
         if (self.sir != self.previous_sir) or (self.round != self.previous_round):
             with self.round_lock:
-                # Update all sir related info
+                # Update all sir related info
                 if self.verbose:
                     app_log.warning("New Slot {} in Round {}".format(self.sir, self.round))
                 self.previous_sir = self.sir
                 if self.round != self.previous_round:
-                    # Update all round related info, we get here only once at the beginning of a new round
+                    # Update all round related info, we get here only once at the beginning of a new round
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
                     self.previous_round = self.round
-                    # TODO : if we have connections, drop them.
-                    # wait for new list, so we keep cnx if we already are. or drop anyway? no, would add general network load at each round start.
+                    # TODO : if we have connections, drop them.
+                    # wait for new list, so we keep cnx if we already are. or drop anyway?
+                    # no, would add general network load at each round start.
+                    # TODO: use async here for every lenghty op
                     self.connect_to = determine.get_connect_to(self.peers, self.round, self.address)
                     tickets = determine.mn_list_to_tickets(self.peers)
                     # TODO: real hash
@@ -503,6 +510,7 @@ class Posmn:
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
                     self.test_slots = determine.mn_list_to_test_slots(self.peers, self.slots)
+                    # TODO: disconnect from non partners peers
                 if self.sir < len(self.slots):
                     self.forger = self.slots[self.sir][0]
                     if self.verbose:
@@ -521,7 +529,7 @@ class Posmn:
             app_log.info("Status: "+json.dumps(self.status()))
         try:
             server = MnServer()
-            #server.listen(port)
+            # server.listen(port)
             server.bind(self.port, backlog=128, reuse_port=True)
             server.start(1)  # Forks multiple sub-processes
             if self.verbose:
@@ -544,13 +552,12 @@ class Posmn:
         :return:
         """
         self.connecting = connect
-        # Will be handled by the manager.
+        # Will be handled by the manager.
 
     def status(self):
         """
         :return: MN Status info
         """
-        return {'config':{'ip':self.ip, 'port':self.port, 'verbose':self.verbose},
+        return {'config': {'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
                 'peers': self.peers,
-                'round':{'ts':time.time(), 'round':self.round, 'sir':self.sir}}
-
+                'round': {'ts': time.time(), 'round': self.round, 'sir': self.sir}}
