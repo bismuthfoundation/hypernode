@@ -1,3 +1,14 @@
+"""
+
+LEFT FOR HISTORICAL REASONS, NO MORE USED BECAUSE OF TORNADO
+
+WILL BE REMOVED LATER ON
+
+TODO
+
+"""
+
+
 # Command Handler
 # Abstraction for the socket connection dialog
 

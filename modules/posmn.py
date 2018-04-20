@@ -27,7 +27,7 @@ import tornado.log
 
 # Our modules
 import commands_pb2
-import comhandler
+#import comhandler
 import common
 import determine
 import poschain
@@ -41,7 +41,117 @@ Will have to refactor if possible all in a single object, but looks hard enough,
 """
 MY_NODE = None
 
+# Logical timeout (s) for socket client
+LTIMEOUT = 45
+
 # Memo : tornado.process.task_id()
+
+
+"""
+Generic stream com 
+TODO: mode into a module of its own?
+"""
+
+
+async def async_receive(stream, ip):
+    """
+    Get a command, async version
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global MY_NODE
+    protomsg = commands_pb2.Command()
+    header = await stream.read_bytes(4)
+    if len(header) < 4:
+        raise RuntimeError("Socket EOF")
+    data_len = struct.unpack('>i', header[:4])[0]
+    data = await stream.read_bytes(data_len)
+    MY_NODE.clients[ip][STATS_LASTACT] = time.time()
+    MY_NODE.clients[ip][STATS_MSGRECV] += 1
+    MY_NODE.clients[ip][STATS_BYTRECV] += 4 + data_len
+    protomsg.ParseFromString(data)
+    return protomsg
+
+
+async def async_send(cmd, stream, ip):
+    """
+    Sends a protobuf command to the stream, async.
+    :param cmd:
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global app_log
+    global MY_NODE
+    # TODO : stats and time, ping
+    try:
+        data = cmd.SerializeToString()
+        data_len = len(data)
+        await stream.write(struct.pack('>i', data_len) + data)
+        #print(MY_NODE.clients)
+        MY_NODE.clients[ip][STATS_LASTACT] = time.time()
+        MY_NODE.clients[ip][STATS_MSGSENT] += 1
+        MY_NODE.clients[ip][STATS_BYTSENT] += 4 + data_len
+    except Exception as e:
+        app_log.error("_send ip {}: {}".format(ip, e))
+        """
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
+        """
+        raise
+
+
+async def async_send_string(cmd, value, stream, ip):
+    """
+    Sends a command with string param to the stream, async.
+    :param cmd:
+    :param value:
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global app_log
+    protocmd = commands_pb2.Command()
+    protocmd.Clear()
+    protocmd.command = cmd
+    protocmd.string_value = value
+    await async_send(protocmd, stream, ip)
+
+
+async def async_send_int32(cmd, value, stream, ip):
+    """
+    Sends a command with int32 param to the stream, async.
+    :param cmd:
+    :param value:
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global app_log
+    protocmd = commands_pb2.Command()
+    protocmd.Clear()
+    protocmd.command = cmd
+    protocmd.int32_value = value
+    await async_send(protocmd, stream, ip)
+
+
+async def async_send_void(cmd, stream, ip):
+    """
+    Sends a command to the stream, async.
+    :param cmd:
+    :param value:
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global app_log
+    protocmd = commands_pb2.Command()
+    protocmd.Clear()
+    protocmd.command = cmd
+    await async_send(protocmd, stream, ip)
+
 """
 TCP Server Classes
 """
@@ -49,9 +159,6 @@ TCP Server Classes
 
 class MnServer(TCPServer):
     """Tornado asynchronous TCP server."""
-
-    # TODO: add stats to this object. to the server of the stream? better aggregate by ip?
-    stats = {}
 
     async def handle_stream(self, stream, address):
         global MY_NODE
@@ -61,19 +168,22 @@ class MnServer(TCPServer):
         error_shown = False
         if MY_NODE.verbose:
             access_log.info("Incoming connection from {}".format(peer_ip))
-        # TODO: here, use tiered system to reserve safe slots for jurors, some slots for non juror mns, and some others for other clients (non mn clients)
+        # TODO: here, use tiered system to reserve safe slots for jurors,
+        # some slots for non juror mns, and some others for other clients (non mn clients)
         try:
+            """
             # cmd : from us to peer
             self.protocmd = commands_pb2.Command()
             # msg : from peer to us
             self.protomsg = commands_pb2.Command()
-            msg = await self._receive(stream, peer_ip)
+            """
+            msg = await async_receive(stream, peer_ip)
             if MY_NODE.verbose:
                 access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
             if msg.command == commands_pb2.Command.hello:
                 access_log.info("Got Hello {} from {}".format(msg.string_value, peer_ip))
                 # TODO: check and send back commands_pb2.Command.ko if something is wrong
-                await self._send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address, stream, peer_ip)
+                await async_send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address, stream, peer_ip)
                 MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
                 access_log.info("{} did not say hello".format(peer_ip))
@@ -82,7 +192,7 @@ class MnServer(TCPServer):
             # Here the peer said Hello and we accepted its version, we can have a date.
             while not Posmn.stop_event.is_set():
                 try:
-                    msg = await self._receive(stream, peer_ip)
+                    msg = await async_receive(stream, peer_ip)
                     await self._handle_msg(msg, stream, peer_ip)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
@@ -112,56 +222,6 @@ class MnServer(TCPServer):
         if MY_NODE.verbose:
             access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
 
-    async def _receive(self, stream, ip):
-        """
-        Get a command, async version
-        :param stream:
-        :param ip:
-        :return:
-        """
-        header = await stream.read_bytes(4)
-        if len(header) < 4:
-            raise RuntimeError("Socket EOF")
-        data_len = struct.unpack('>i', header[:4])[0]
-        data = await stream.read_bytes(data_len)
-        self.protomsg.ParseFromString(data)
-        return self.protomsg
-
-    async def _send(self, cmd, stream, ip):
-        """
-        Sends a protobuf command to the stream, async.
-        :param cmd:
-        :param stream:
-        :param ip:
-        :return:
-        """
-        global app_log
-        # TODO : stats and time, ping
-        try:
-            data = cmd.SerializeToString()
-            data_len = len(data)
-            await stream.write(struct.pack('>i', data_len) + data)
-        except Exception as e:
-            app_log.error("_send ip {}: {}".format(ip, str(e)))
-            raise
-
-    async def _send_string(self, cmd, value, stream, ip):
-        """
-        Sends a command with string param to the stream, async.
-        :param cmd:
-        :param value:
-        :param stream:
-        :param ip:
-        :return:
-        """
-        global app_log
-        self.protocmd.Clear()
-        self.protocmd.command = cmd
-        self.protocmd.string_value = value
-        await self._send(self.protocmd, stream, ip)
-
-
-
 
 """
 PoS MN Class
@@ -181,9 +241,19 @@ class MNState(Enum):
     SENDING = 6
 
 
+# Index for clients stats
+STATS_ACTIVEP = 0
+STATS_COSINCE = 1
+STATS_LASTACT = 2
+STATS_MSGSENT = 3
+STATS_MSGRECV = 4
+STATS_BYTSENT = 5
+STATS_BYTRECV = 6
+
 class Posmn:
     """The PoS Masternode object"""
-    # List of client threads
+    # List of client routines
+    # Each item (key=ip) is [active, last_active, sent_msg, sent_bytes, recv_msg, recv_bytes]
     clients = {}
     # list of inbound server connections
     inbound = {}
@@ -238,7 +308,7 @@ class Posmn:
         access_log.addHandler(rotateHandler2)
         app_log.info("PoS MN {} Starting with pool address {}.".format(__version__, self.address))
 
-    def add_inbound(self, ip, properties={}):
+    def add_inbound(self, ip, properties=None):
         """
         Safely add a distant peer from server coroutine.
         This is called only after initial exchange and approval
@@ -298,7 +368,7 @@ class Posmn:
         clients_count = 0
         # TODO: use another list to avoid counting one by one?
         for client in self.clients:
-            if client[1]:
+            if client[STATS_ACTIVEP]:
                 clients_count += 1
         return inbound_count + clients_count
 
@@ -332,11 +402,14 @@ class Posmn:
                 if len(self.clients) < len(self.connect_to):
                     # Try to connect to our missing pre-selected peers
                     for peer in self.connect_to:
-                        if peer[0] not in self.clients:
+                        # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
+                        # tuples (address, ip, port, ?)
+                        #ip_port = "{}:{}".format(peer[1], peer[2])
+                        if peer[1] not in self.clients:
                             io_loop = IOLoop.instance()
                             with self.clients_lock:
-                                # first index was to store thread index. Still useful?
-                                self.clients[peer[0]] = [0, False]
+                                # first index is active or not
+                                self.clients[peer[1]] = [False, 0, 0, 0, 0, 0, 0]
                             io_loop.spawn_callback(self.client_worker, peer)
             # TODO: variable sleep time depending on the elapsed loop time - or use timeout?
             await asyncio.sleep(10)
@@ -346,18 +419,21 @@ class Posmn:
         """
         Client worker, running in a coroutine.
         Tries to connect to the given peer, terminates on error and deletes itself on close.
-        :param peer:
+        :param peer: ('aa012345678901aa', '127.0.0.1', 6969, 1)
         :return:
         """
         global app_log
+        global LTIMEOUT
         try:
-            # TODO: using complex sync com_handler. change for tornado async tcpclient
             if self.verbose:
-                access_log.info("Initiating client coroutine for {}:{}".format(peer[1], peer[2]))
-            com_handler = comhandler.Connection()
-            com_handler.connect(peer[1], peer[2])
-            com_handler.send_string(commands_pb2.Command.hello, common.POSNET+self.address)
-            msg = com_handler.get_message()
+                access_log.info("Initiating client co-routine for {}:{}".format(peer[1], peer[2]))
+            tcp_client = TCPClient()
+            #ip_port = "{}:{}".format(peer[1], peer[2])
+            ip = peer[1]
+            stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
+            connect_time = time.time()
+            await async_send_string(commands_pb2.Command.hello, common.POSNET+self.address, stream, ip)
+            msg = await async_receive(stream, peer[1])
             if self.verbose:
                 access_log.info("Worker got {}".format(msg.__str__().strip()))
             if msg.command == commands_pb2.Command.hello:
@@ -366,23 +442,23 @@ class Posmn:
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))
 
-
                 return
             # now we can enter a long term relationship with this node.
             with self.clients_lock:
                 # Set connected status
-                self.clients[peer[0]][1] = True
+                self.clients[ip][STATS_ACTIVEP] = True
+                self.clients[ip][STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
                 await asyncio.sleep(10)
                 # Only send ping if time is due.
-                if com_handler.last_activity < time.time()-30:
+                if self.clients[ip][STATS_LASTACT] < time.time()-30:
                     if self.verbose:
-                        app_log.info("Sending ping to {}".format(peer[0]))
-                    com_handler.send_void(commands_pb2.Command.ping)  # keeps connection active, or raise error if connection lost
+                        app_log.info("Sending ping to {}".format(ip))
+                    await async_send_void(commands_pb2.Command.ping, stream, ip)  # keeps connection active, or raise error if connection lost
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
-                app_log.warning("Connection lost to {} because {}. Retry in 30 sec.".format(peer[0], e))
+                app_log.warning("Connection lost to {} because {}. Retry in 30 sec.".format(peer[1], e))
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -393,7 +469,8 @@ class Posmn:
         finally:
             try:
                 with self.clients_lock:
-                    del self.clients[peer[0]]
+                    # We could keep it and set to inactive, but is it useful? could grow too much
+                    del self.clients[ip]
             except:
                 pass
 
