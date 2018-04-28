@@ -13,6 +13,7 @@ import common
 import posmn
 from posmn import Posmn
 from poschain import SqlitePosChain
+import poscrypto
 
 
 __version__ = '0.0.2'
@@ -29,17 +30,17 @@ if __name__ == "__main__":
         sys.exit()
     try:
         if args.action == 'genesis':
-            # Displays genesis block info
+            # Displays genesis block info for db insert
+            poscrypto.load_keys("mn_temp/mn0.json")
             pos_chain = SqlitePosChain()
-            print(pos_chain.genesis_dict())
-            # TODO: also add one message to have genesis forger pubkey
+            genesis = pos_chain.genesis_dict()
         else:
             my_info = common.POC_MASTER_NODES_LIST[args.index]
             ip = my_info[1]
             port = my_info[2]
             address = my_info[0]
             peers = common.POC_MASTER_NODES_LIST
-            posmn.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet="mn{}.json".format(args.index))
+            posmn.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet="mn_temp/mn{}.json".format(args.index))
             posmn.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:

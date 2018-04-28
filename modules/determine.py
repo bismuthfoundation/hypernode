@@ -6,7 +6,6 @@ Deterministic helpers and/or classes for Bismuth PoS
 import random
 import time
 import math
-#import distance
 
 # Custom modules
 import common

@@ -5,7 +5,8 @@ Common variables and helpers for PoS
 Serves as config file for POC and tests
 """
 
-from collections import OrderedDict
+#from collections import OrderedDict
+from hashlib import blake2b
 
 __version__ = '0.0.1'
 
@@ -71,7 +72,8 @@ ROUND_TIME_SEC = POS_SLOT_TIME_SEC * ( MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
 
 GENESIS_SEED = 'BIG_BANG_HASH'
-GENESIS_ADDRESS = ''
+GENESIS_HASH = blake2b(GENESIS_SEED.encode('utf-8'), digest_size=20)
+GENESIS_ADDRESS = 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne'
 GENESIS_SIGNATURE = ''
 
 
