@@ -2,6 +2,8 @@
 
 # 1 Start of Round
 
+(To be updated with new addresses of MN)
+
 See round_start.py, based upon fake data  
 aa012345678901aa  
 bb123456789012bb  
@@ -15,6 +17,7 @@ are 5 madeup MN privkey, short and easy to recognize.
 Done
 
 Commented round_start.py output:
+(To be updated with new addresses of MN)
 
 ```
 # This is the hash of the 5 or 10 last blocks from last round (constant here for poc)
@@ -119,15 +122,17 @@ TBD
 
 ## 3.1 Node server
 
-Base ok
+Base ok, Tornado converted.
 
 ## 3.2 Node client
 
-wip
+Base ok, Tornado and async/await, too.
 
 ## 3.3 Base node commands
 
 wip
+
+- Hello and ping ok
 
 ## 3.4 resources management
 
@@ -141,15 +146,16 @@ Various checks tbd
 
 ## 4.1 Base
 
-wip
+Done.
 
 ## 4.2 In Memory prototype
 
-wip
+Dropped. Would take longer than going straight with SQLite
 
 ## 4.3 SQLite prototype
 
-TBD
+DB Definition ok
+TODO: Add schema
 
 ## 4.4 Basic validity checks
 
@@ -158,3 +164,14 @@ TBD
 ## 4.5 Extended checks
 
 TBD
+
+# 5 PoS Addresses
+
+Done, Doc to be written.
+- 1 byte prefix, network id
+- 20 byte blake2b hash of pubkey
+- 4 bytes checksum
+- b58 encoded
+
+Hash size: 20 byte
+Address size: 32 bytes text format (25 bytes in raw format)
