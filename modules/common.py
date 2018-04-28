@@ -7,29 +7,33 @@ Serves as config file for POC and tests
 
 from collections import OrderedDict
 
-# Custom modules
-import poscrypto
-
 __version__ = '0.0.1'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
 POSNET = 'posnet0001'
 
+# Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
+NETWORK_ID = b'\x19'
+#NETWORK_ID = b'\x55'
+
+VERBOSE = True
+
 # POC prefix is for POC only, will use real data later.
 
 # The reference list of active Masternodes for the round
-# hex pubkey, ip, port, weight
+# address, ip, port, weight
 POC_MASTER_NODES_LIST = [
-    ('aa012345678901aa', '127.0.0.1', 6969, 1),
-    ('bb123456789012bb', '127.0.0.1', 6970, 2),
-    ('cc234567890123cc', '127.0.0.1', 6971, 1),
-    ('dd345678901234dd', '127.0.0.1', 6972, 1),
-    ('ee456789012345ee', '127.0.0.1', 6973, 1)
+    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1), # mn 0
+    ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2),
+    ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1),
+    ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1),
+    ('BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD', '127.0.0.1', 6973, 1)
     ]
 
 # The broadhash of the previous round determines the shuffle.
-POC_LAST_BROADHASH = poscrypto.blake('POC')
+# block hashes and broad hashes are 20 bytes
+POC_LAST_BROADHASH = b"123456789abcdef12345"
 
 """
 Here comes tuneable algorithm variables 
@@ -66,12 +70,9 @@ ORIGIN_OF_TIME = 1522419000
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * ( MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
 
-# TODO: use of hexdigest is temp. for poc.
-GENESIS=OrderedDict({'height':0, 'round':0, 'sir':0, 'ts':ORIGIN_OF_TIME,
-         'previous_hash':poscrypto.blake('BIG_BANG_HASH').hexdigest(), 'messages':[],
-         'msg_count':0, 'sources':0, 'signature':'NONE'})
-GENESIS['hash']=poscrypto.hash_from_ordered_dict(GENESIS).hexdigest()
-
+GENESIS_SEED = 'BIG_BANG_HASH'
+GENESIS_ADDRESS = ''
+GENESIS_SIGNATURE = ''
 
 
 if __name__ == "__main__":

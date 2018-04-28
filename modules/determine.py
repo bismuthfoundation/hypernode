@@ -17,8 +17,7 @@ __version__ = '0.0.2'
 # local verbose switch
 VERBOSE = True
 
-REF_HASH = ''
-REF_HASH_BIN = ''
+REF_ADDRESS = ''
 
 # NOTE: I used distance between hashes to order the MNs, but it may be simpler
 # to use random, seeded with previous hash, then random.shuffle()
@@ -33,24 +32,23 @@ the largest that can fit within the period of the Mersenne Twister random number
 # Helpers  ###########################################################
 
 
-def my_distance(hash):
+def my_distance(address):
     """
-    Return the Hamming distance between a ticket and the ref hash
+    Return the Hamming distance between an address and the ref hash, that was converted to be address like
     :param string:
     :return:
     """
-    global REF_HASH_BIN
+    global REF_ADDRESS
+    # distance = sum(bin(i ^ j).count("1") for i, j in zip(address[0].encode('ascii'), REF_HASH.encode('ascii')))
     # Start with a distance of zero, and count up
     distance = 0
     # Loop over the indices of the string
-    L = len(REF_HASH_BIN)
-    hash = poscrypto.bin_convert(poscrypto.blake(hash[0]+str(hash[1])).hexdigest())
-    for i in range(L):
-        # Add 1 to the distance if these two characters are not equal
-        if REF_HASH_BIN[i] != hash[i]:
-            distance += 1  # abs(ord(REF_HASH_BIN[i]) - ord(hash[i]))
-    #if VERBOSE:
-    #    print(hash, distance)
+    for i in range(34):
+        # addresses are 34 char long
+        distance += abs(ord(address[0][i]) - ord(REF_ADDRESS[i]))
+        # Better results (spread) than pure bin hamming
+    if VERBOSE:
+        print(address, distance)
     return distance
 
 
@@ -85,12 +83,8 @@ def tickets_to_delegates(tickets_list, reference_hash):
     :return:
     """
     # Set the reference Hash
-    global REF_HASH
-    global REF_HASH_BIN
-    # For POC, we use the hex string, TODO: use raw digest() later.
-    REF_HASH = reference_hash.hexdigest()
-    # TODO: this is copied from Bismuth, need to use more efficient methond, no need to take the bin string conversion path.
-    REF_HASH_BIN = poscrypto.bin_convert(REF_HASH)
+    global REF_ADDRESS
+    REF_ADDRESS = poscrypto.hash_to_addr(reference_hash)
     # sort the tickets according to their hash distance.
     tickets_list.sort(key=my_distance)
     if VERBOSE:
@@ -121,7 +115,7 @@ def mn_list_to_test_slots(full_mn_list, forge_slots):
     :param forge_slots:
     :return: list with list of tests for each slot.
     """
-    global REF_HASH
+    global REF_ADDRESS
     # TODO: are we 100% sure random works the same on all python/os? prefer custom impl?
     """
     https://docs.python.org/3/library/random.html
@@ -129,8 +123,9 @@ def mn_list_to_test_slots(full_mn_list, forge_slots):
     If a new seeding method is added, then a backward compatible seeder will be offered.
     The generator’s random() method will continue to produce the same sequence when the compatible seeder is given the same seed.
     """
+    # TODO: test and have a custom impl to be sure?
     # This is what ensures everyone shuffles the same way.
-    random.seed(REF_HASH)
+    random.seed(REF_ADDRESS)
     # Just keep the pubkeys/addresses, no dup here whatever the weight.
     all_mns_addresses = [mn[0] for mn in full_mn_list]
     test_slots = []
@@ -173,7 +168,6 @@ def timestamp_to_round_slot(ts=0):
 # TODO: time_to_next_round
 
 
-
 def get_connect_to(peers, round, address):
     """
     Sends back the list of peers to connect to
@@ -188,29 +182,14 @@ def get_connect_to(peers, round, address):
     random.seed(address+str(round))
     # remove our address - We could also keep it, but not connect to if it's in the list (allows same list for everyone)
     result = [peer for peer in peers if peer[0] != address]
+    # TODO: test for this shuffle, make sure it always behaves the same.
     random.shuffle(result)
     # POC: limit to 2 peers
-    #return result[:2]
+    # return result[:2]
     # Temp test with 2 nodes only
-    if "aa" in address:
+    if "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne" == address:
         return [peers[1]]
     return [peers[0]]
-
-
-
-# Historical code to move out.
-"""
-def hash_distance(hash):
-    global REF_HASH
-    temp = distance.hamming(REF_HASH, hash)
-    print(hash, temp)
-    return temp
-
-
-def hamming_distance(bin_hash):
-    global REF_HASH_BIN
-    return sum(ch1 != ch2 for ch1, ch2 in zip(REF_HASH_BIN, bin_hash))
-"""
 
 
 if __name__ == "__main__":

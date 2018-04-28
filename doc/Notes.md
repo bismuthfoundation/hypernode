@@ -41,3 +41,13 @@ Check time > slot begin + delta not to send block too fast
 
 
 When receiving a block, if last calculation of forger was not in that slot, refresh.
+
+
+btc messages use:
+- magic number to resync failed stream
+- checksum in header
+Both are easy to add with little overhead. reserve space for them in protobuff structure, even if not enforced at start.
+
+DONE.
+See network number + checksum and b58encoding in btc
+https://en.bitcoin.it/wiki/File:PubKeyToAddr.png

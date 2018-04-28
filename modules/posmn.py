@@ -31,6 +31,7 @@ import commands_pb2
 import common
 import determine
 import poschain
+import poscrypto
 
 __version__ = '0.0.2'
 
@@ -154,6 +155,7 @@ async def async_send_void(cmd, stream, ip):
     protocmd.command = cmd
     await async_send(protocmd, stream, ip)
 
+
 """
 TCP Server Classes
 """
@@ -264,7 +266,7 @@ class Posmn:
 
     stop_event = aioprocessing.AioEvent()
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False):
+    def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json"):
         self.ip = ip
         self.port = port
         self.address = address
@@ -279,7 +281,7 @@ class Posmn:
         self.connecting = False
         self.init_log()
         # Time sensitive props
-        self.poschain = poschain.MemoryPosChain(verbose=verbose)
+        self.poschain = poschain.SqlitePosChain(verbose=verbose)
         self.is_delegate = False
         self.round = -1
         self.sir = -1
@@ -290,6 +292,7 @@ class Posmn:
         self.round_lock = aioprocessing.Lock()
         self.clients_lock = aioprocessing.Lock()
         self.inbound_lock = aioprocessing.Lock()
+        poscrypto.load_keys(wallet)
 
     def init_log(self):
         global app_log
@@ -511,6 +514,7 @@ class Posmn:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
                     self.test_slots = determine.mn_list_to_test_slots(self.peers, self.slots)
                     # TODO: disconnect from non partners peers
+                    # TODO: save this round info to db
                 if self.sir < len(self.slots):
                     self.forger = self.slots[self.sir][0]
                     if self.verbose:

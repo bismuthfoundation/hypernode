@@ -4,8 +4,13 @@ __pycache__
 *.old
 *.db
 .data
+data
 bak
 *.log
 *.log.*
 *.lock
 *.der
+*.pem
+pos_address.txt
+.pytest_cache
+poskeys.json
