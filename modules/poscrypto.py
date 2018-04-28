@@ -6,7 +6,6 @@ PoS related crypto helpers
 # Third party modules
 import json
 import os
-import sys
 from ecdsa import SigningKey, SECP256k1, VerifyingKey, BadSignatureError
 from hashlib import blake2b
 import time
@@ -15,7 +14,13 @@ import re
 # our modules
 import base58
 from base64 import b64encode, b64decode
-import common
+try:
+    # Failsafe so we can use without common.py module
+    import common
+except:
+    # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
+    common.NETWORK_ID = b'\x19'
+
 
 __version__ = '0.0.3'
 
@@ -23,21 +28,14 @@ __version__ = '0.0.3'
 BLAKE_DIGEST_SIZE = 20
 
 # Signatures and pubkeys are 64 bytes
-# d3ccc2eb64d578582d39924246f2c2bf0768491b85235f242e37f65c3a7ce77569fec4c67cba6d457a5d9a6ad8cecc15584f51bc401e1d7683db6c470acbe776
 
 PUB_KEY = None
 PRIV_KEY = None
 ADDRESS = None
 
 
-def bin_convert(hex_hash):
-    # TODO: this is copied from Bismuth, need to use more efficient method,
-    # no need to take the bin string conversion path.
-    return ''.join(format(ord(x), '8b').replace(' ', '0') for x in hex_hash)
-
-
 def raw_to_hex(digest):
-    """Return the **printable** hex digest ofa byte buffer.
+    """Return the **printable** hex digest of a byte buffer.
     :return: The hash digest, Hexadecimal encoded.
     :rtype: string
     """
@@ -70,18 +68,6 @@ def blake(buffer):
     return blake2b(buffer, digest_size=BLAKE_DIGEST_SIZE)
 
 
-def hash_from_ordered_dict(block):
-    """
-
-    :param json_block:
-    :return:
-    """
-    # TODO: decide if we base upon the protobuf block message (shorter, binary, no conversion) - issue: hash may change if protobuff block structure changes.
-    # or on a string or json encoding of the block? (means many conversions and slower checks)
-    base = json.dumps(block)
-    return blake(base)
-
-
 def hash_to_addr(hash, network=None):
     """
     Converts a hash20 to a checksum'd + network id address, to compare to an address
@@ -110,7 +96,7 @@ def pub_key_to_addr(pub_key, network=None):
 def validate_address(address, network=None):
     """
     Decode and verify the checksum of a Base58 encoded string
-    :param v: the address string to validate
+    :param address: the address string to validate
     :param network: The network id to validate against
     :return: The 20 bytes hash of the pubkey if address matches format and network, or throw an exception
     """
@@ -207,14 +193,6 @@ def gen_keys_file(pos_filename='poswallet.json'):
     else:
         raise ValueError("File Exists: {}".format(pos_filename))
     return wallet
-
-
-"""
-if not PRIV_KEY:
-    if not hasattr(sys, '_called_from_test'):
-        # Don't mess with keys of testing.
-        load_keys()
-"""
 
 
 if __name__ == "__main__":
