@@ -1,6 +1,7 @@
 """
 A Safe thread/process object interfacing the PoS chain
 """
+
 # import threading
 import json
 import sqlite3
@@ -20,7 +21,7 @@ class PosChain:
 
     def __init__(self, verbose = False):
         self.verbose = verbose
-        self.block_height=0
+        self.block_height = 0
 
     def status(self):
         print("Virtual Method Status")
@@ -50,7 +51,7 @@ class MemoryPosChain(PosChain):
     def __init__(self, verbose = False):
         super().__init__(verbose=verbose)
         # Just a list
-        self.blocks=[common.GENESIS]
+        self.blocks = [common.GENESIS]
 
     def status(self):
         return json.dumps(self.blocks)
@@ -60,7 +61,7 @@ class SqlitePosChain(PosChain):
 
     def __init__(self, verbose = False, db_path='data/'):
         super().__init__(verbose=verbose)
-        self.db_path = db_path+'poc_pos_chain.db'
+        self.db_path = db_path + 'poc_pos_chain.db'
         # Create path
         # Create DB if needed
         # insert genesis block with fixed TS
