@@ -5,26 +5,26 @@ Start of round calculations
 
 import sys
 import time
+import asyncio
 
 # custom modules
 sys.path.append('../modules')
 import common
 import determine
 
-
 __version__ = '0.0.1'
 
 
-if __name__ == "__main__":
+async def round_start():
     print("Round Start")
     print("--------------------------")
     print("Last Round broadhash", common.POC_LAST_BROADHASH)
     print("{} candidates, {} slots".format(len(common.POC_MASTER_NODES_LIST), common.MAX_ROUND_SLOTS))
-    tickets = determine.mn_list_to_tickets(common.POC_MASTER_NODES_LIST)
+    tickets = await determine.mn_list_to_tickets(common.POC_MASTER_NODES_LIST)
     print("Tickets\n", tickets)
-    slots = determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
+    slots = await determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
     print("Slots\n", slots)
-    test_slots = determine.mn_list_to_test_slots(common.POC_MASTER_NODES_LIST, slots)
+    test_slots = await determine.mn_list_to_test_slots(common.POC_MASTER_NODES_LIST, slots)
     print("Tests Slots\n", test_slots)
     print("")
     print("Timeslots test")
@@ -49,3 +49,9 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         pass
+
+if __name__ == "__main__":
+
+    asyncio.Task(round_start())
+    loop = asyncio.get_event_loop()
+    loop.run_forever()

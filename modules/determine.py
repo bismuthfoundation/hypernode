@@ -6,6 +6,7 @@ Deterministic helpers and/or classes for Bismuth PoS
 import random
 import time
 import math
+import asyncio
 
 # Custom modules
 import common
@@ -54,7 +55,7 @@ def my_distance(address):
 # List and tickets management  ###############################################
 
 
-def mn_list_to_tickets(mn_list):
+async def mn_list_to_tickets(mn_list):
     """
     :param mn_list: list of mn with properties
     :return: list of tickets for delegates determination
@@ -74,7 +75,7 @@ def mn_list_to_tickets(mn_list):
     return tickets
 
 
-def tickets_to_delegates(tickets_list, reference_hash):
+async def tickets_to_delegates(tickets_list, reference_hash):
     """
     Order and extract only the required number of candidates from the tickets
     :param tickets_list:
@@ -107,7 +108,7 @@ def pick_two_not_in(address_list, avoid):
     return random.sample(candidates, 2)
 
 
-def mn_list_to_test_slots(full_mn_list, forge_slots):
+async def mn_list_to_test_slots(full_mn_list, forge_slots):
     """
     Predict tests to be run during each slot, but avoid testing forging MN
     :param mn_list:
@@ -167,7 +168,7 @@ def timestamp_to_round_slot(ts=0):
 # TODO: time_to_next_round
 
 
-def get_connect_to(peers, round, address):
+async def get_connect_to(peers, round, address):
     """
     Sends back the list of peers to connect to
     :param peers:
