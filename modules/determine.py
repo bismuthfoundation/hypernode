@@ -183,6 +183,7 @@ async def get_connect_to(peers, round, address):
     # remove our address - We could also keep it, but not connect to if it's in the list (allows same list for everyone)
     result = [peer for peer in peers if peer[0] != address]
     # TODO: test for this shuffle, make sure it always behaves the same.
+    # TODO: see paper notes for a simpler/safer, verifiable method
     random.shuffle(result)
     # POC: limit to 2 peers
     # return result[:2]
@@ -191,6 +192,21 @@ async def get_connect_to(peers, round, address):
         return [peers[1]]
     return [peers[0]]
 
+async def connect_ok_from(msg, access_log):
+    """
+    Checks if the peer can connect to us
+    :param msg:
+    :param access_log:
+    :return:
+    """
+    posnet, peer_address = msg[:10], msg[10:]
+    # Check 1. posnet version
+    if posnet not in common.POSNET_ALLOW:
+        access_log.warning("Bad posnet {} instead of {}".format(posnet, common.POSNET_ALLOW))
+        return False
+    # TODO: 2.check peer ip/address matches
+    # TODO: 3.check peer ip/address indeed has to connect to us for this round
+    return True
 
 if __name__ == "__main__":
     print("I'm a module, can't run!")

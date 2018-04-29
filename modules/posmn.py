@@ -31,9 +31,10 @@ import commands_pb2
 import common
 import determine
 import poschain
+import posmempool
 import poscrypto
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 """
 I use a global object to keep the state and route data between the servers and threads.
@@ -52,8 +53,8 @@ LTIMEOUT = 45
 
 
 """
-Generic stream com 
-TODO: mode into a module of its own?
+Generic async stream com 
+# TODO: move into a module of its own?
 """
 
 
@@ -186,7 +187,9 @@ class MnServer(TCPServer):
                 access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
             if msg.command == commands_pb2.Command.hello:
                 access_log.info("Got Hello {} from {}".format(msg.string_value, peer_ip))
-                # TODO: check and send back commands_pb2.Command.ko if something is wrong
+                if not await determine.connect_ok_from(msg.string_value, access_log):
+                    await async_send(commands_pb2.Command.ko, stream, peer_ip)
+                    return
                 await async_send_string(commands_pb2.Command.hello, common.POSNET + MY_NODE.address, stream, peer_ip)
                 MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
@@ -282,6 +285,7 @@ class Posmn:
         self.init_log()
         # Time sensitive props
         self.poschain = poschain.SqlitePosChain(verbose=verbose)
+        self.mempool = posmempool.SqliteMempool(verbose=verbose)
         self.is_delegate = False
         self.round = -1
         self.sir = -1
@@ -368,7 +372,8 @@ class Posmn:
     @property
     def connected_count(self):
         """
-        True is at least one client or server connection is active.
+        True if at least one client or server connection is active.
+        Returns inbound + outbound count
         :return:
         """
         inbound_count = len(self.inbound)
@@ -398,6 +403,7 @@ class Posmn:
                 self.state = MNState.START
             # TODO: We have 2 different status, this one , and status() function ????
             status = {'chain': self.poschain.status(),
+                      'mempool': self.mempool.status(),
                       'outbound': list(self.clients.keys()),
                       'inbound': list(self.inbound.keys()),
                       'state': {'state': self.state.name,
@@ -444,8 +450,11 @@ class Posmn:
             if self.verbose:
                 access_log.info("Worker got {}".format(msg.__str__().strip()))
             if msg.command == commands_pb2.Command.hello:
-                # TODO: decompose posnet/address and check. use helper.
-                access_log.info("Worker got Hello {}".format(msg.string_value))
+                # decompose posnet/address and check.
+                access_log.info("Worker got Hello {} from {}".format(msg.string_value, ip))
+                if not await determine.connect_ok_from(msg.string_value, access_log):
+                    await async_send(commands_pb2.Command.ko, stream, ip)
+                    return
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))
                 return
@@ -505,14 +514,14 @@ class Posmn:
                     # TODO : if we have connections, drop them.
                     # wait for new list, so we keep cnx if we already are. or drop anyway?
                     # no, would add general network load at each round start.
-                    # TODO: use async here for every lenghty op
-                    self.connect_to = determine.get_connect_to(self.peers, self.round, self.address)
-                    tickets = determine.mn_list_to_tickets(self.peers)
+                    # use async here for every lenghty op - won't that lead to partial sync info?
+                    self.connect_to = await determine.get_connect_to(self.peers, self.round, self.address)
+                    tickets = await determine.mn_list_to_tickets(self.peers)
                     # TODO: real hash
-                    self.slots = determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
+                    self.slots = await determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
-                    self.test_slots = determine.mn_list_to_test_slots(self.peers, self.slots)
+                    self.test_slots = await determine.mn_list_to_test_slots(self.peers, self.slots)
                     # TODO: disconnect from non partners peers
                     # TODO: save this round info to db
                 if self.sir < len(self.slots):

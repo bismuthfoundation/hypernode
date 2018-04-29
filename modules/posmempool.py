@@ -60,7 +60,8 @@ class SqliteMempool(Mempool):
     """
     Sqlite storage backend.
     """
-    def __init__(self, verbose = False, db_path='.data/'):
+    # TODO: Allow for memory mempool
+    def __init__(self, verbose = False, db_path='./data/'):
         super().__init__(verbose=verbose)
         self.db_path = db_path+'posmempool.db'
         # Create path

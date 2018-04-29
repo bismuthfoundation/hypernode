@@ -13,6 +13,7 @@ __version__ = '0.0.1'
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
 POSNET = 'posnet0001'
+POSNET_ALLOW = 'posnet0001,posnet0002'
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
 NETWORK_ID = b'\x19'
