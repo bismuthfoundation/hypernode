@@ -199,6 +199,7 @@ async def connect_ok_from(msg, access_log):
     :param access_log:
     :return:
     """
+    # TODO: 0. Check if ip in our MN list, if not drop and warn so we can add firewall rule if needed
     posnet, peer_address = msg[:10], msg[10:]
     # Check 1. posnet version
     if posnet not in common.POSNET_ALLOW:
@@ -206,6 +207,7 @@ async def connect_ok_from(msg, access_log):
         return False
     # TODO: 2.check peer ip/address matches
     # TODO: 3.check peer ip/address indeed has to connect to us for this round
+    # check 3 is only to tell if this peer can use ROUND commands
     return True
 
 if __name__ == "__main__":

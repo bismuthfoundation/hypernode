@@ -19,6 +19,9 @@ POSNET_ALLOW = 'posnet0001,posnet0002'
 NETWORK_ID = b'\x19'
 #NETWORK_ID = b'\x55'
 
+# How long to wait in the main client loop
+WAIT = 10
+
 VERBOSE = True
 
 # POC prefix is for POC only, will use real data later.

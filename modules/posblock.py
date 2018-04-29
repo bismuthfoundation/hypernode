@@ -9,8 +9,9 @@ import json
 # Our modules
 import common
 import poscrypto
+import commands_pb2
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class PosBlock:
@@ -134,6 +135,7 @@ class PosMessage():
         self.sender = ''
         self.recipient = ''
         self.what = 0
+        self.params = ''
         self.value = 0
 
     def from_list(self, tx_list):
@@ -143,7 +145,7 @@ class PosMessage():
         :return:
         """
         self.txid, self.block_height, self.timestamp, self.sender,
-        self.recipient, self.what, self.value = tx_list
+        self.recipient, self.what, self.params, self.value = tx_list
         return self
 
     def to_list(self):
@@ -152,7 +154,7 @@ class PosMessage():
         :return:
         """
         return [self.txid, self.block_height, self.timestamp, self.sender,
-        self.recipient, self.what, self.value]
+        self.recipient, self.what, self.params, self.value]
 
     def to_json(self):
         """
@@ -162,6 +164,18 @@ class PosMessage():
         tx = self.to_list()
         tx['txid'] = poscrypto.raw_to_hex(tx['txid'])
         return json.dumps(tx)
+
+    def add_to_proto(self, protocmd):
+        """
+        Adds the tx into the given protobuf
+        :param protocmd:
+        :return:
+        """
+        proto_tx = protocmd.TX.add()
+        proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, \
+            proto_tx.recipient, proto_tx.what, proto_tx.params, proto_tx.value = \
+            self.txid, self.block_height, self.timestamp, self.sender,\
+            self.recipient, self.what, self.params, self.value
 
 
 if __name__ == "__main__":

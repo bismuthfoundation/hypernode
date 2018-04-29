@@ -48,7 +48,9 @@ CREATE TABLE pos_messages (
     sender       VARCHAR (34),
     recipient    VARCHAR (34),
     what         INTEGER,
-    value        INTEGER
+    params       STRING,
+    value        INTEGER,
+    received     INTEGER
 );
 
 pos_mempool has the very same structure, with a 'block_height' field fixed to 0. 

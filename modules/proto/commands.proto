@@ -3,22 +3,23 @@ syntax = "proto2";
 package bismuth;
 
 
-// For POC, address are strings, but they should be bytes of fixed size, half the size.
 message TX {
+    // Signature - 64 bytes
+    required bytes txid=1;
+    //
+    required uint32 block_height=2;
     // Timestamp
-    required uint32 ts=1;
-    // Who - tester
-    required string from=2;
+    required uint32 timestamp=3;
+    // the tester
+    required string sender=4;
     // testee
-    required string to=3;
+    required string recipient=5;
     // Tx or test type
-    required uint32 type=4;
-    // params of the test
-    optional string params=5;
-    // results of the test
-    required string result=6;
-    // signature = txid
-    required string signature=7;
+    required uint32 what=6;
+    // params of the test and/or result
+    optional string params=7;
+    // numeric value
+    required uint32 value=8;
 }
 
 message Block {
@@ -76,7 +77,7 @@ message Command {
     oneof param {
         string string_value=2;
         int32 int32_value=3;
-        //ko_reason reason_value=4;
+        ko_reason reason_value=4;
     }
 
     repeated TX tx_values = 5;

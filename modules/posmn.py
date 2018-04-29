@@ -32,6 +32,7 @@ import common
 import determine
 import poschain
 import posmempool
+import posblock
 import poscrypto
 
 __version__ = '0.0.3'
@@ -157,6 +158,24 @@ async def async_send_void(cmd, stream, ip):
     await async_send(protocmd, stream, ip)
 
 
+async def async_send_txs(cmd, txs, stream, ip):
+    """
+    Sends a list of tx to the stream, async.
+    :param cmd:
+    :param txs: a list of tx
+    :param stream:
+    :param ip:
+    :return:
+    """
+    global app_log
+    protocmd = commands_pb2.Command()
+    protocmd.Clear()
+    protocmd.command = cmd
+    for tx in txs:
+        tx.add_to_proto(protocmd)
+    await async_send(protocmd, stream, ip)
+
+
 """
 TCP Server Classes
 """
@@ -257,6 +276,7 @@ STATS_MSGSENT = 3
 STATS_MSGRECV = 4
 STATS_BYTSENT = 5
 STATS_BYTRECV = 6
+STATS_LASTMPL = 7
 
 
 class Posmn:
@@ -464,14 +484,21 @@ class Posmn:
                 self.clients[ip][STATS_ACTIVEP] = True
                 self.clients[ip][STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
-                await asyncio.sleep(10)
+                await asyncio.sleep(common.WAIT)
+                now = time.time()
                 # Only send ping if time is due.
                 # TODO: more than 30 sec? Config
-                if self.clients[ip][STATS_LASTACT] < time.time()-30:
+                if self.clients[ip][STATS_LASTACT] < now - 30:
                     if self.verbose:
                         app_log.info("Sending ping to {}".format(ip))
                     # keeps connection active, or raise error if connection lost
                     await async_send_void(commands_pb2.Command.ping, stream, ip)
+            if self.clients[ip][STATS_LASTACT] < now - 10:
+                # TODO: get mempool (or empty)
+                if self.verbose:
+                    app_log.info("Sending mempool to {}".format(ip))
+                mempool = self.mempool.since(self.clients[ip][STATS_LASTACT])
+                await async_send_txs(commands_pb2.Command.txs, mempool, stream, ip)
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:

@@ -10,6 +10,18 @@ import poscrypto
 
 __version__ = '0.0.1'
 
+SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
+    txid         BLOB (64)    PRIMARY KEY,\
+    block_height INTEGER,\
+    timestamp    INTEGER,\
+    sender       VARCHAR (34),\
+    recipient    VARCHAR (34),\
+    what         INTEGER,\
+    params       STRING,\
+    value        INTEGER,\
+    received     INTEGER\
+);"
+
 
 class Mempool:
     """
@@ -64,6 +76,15 @@ class SqliteMempool(Mempool):
     def __init__(self, verbose = False, db_path='./data/'):
         super().__init__(verbose=verbose)
         self.db_path = db_path+'posmempool.db'
-        # Create path
+        # TODO Create path
         # Create DB
         # Load
+
+    def since(self, date):
+        """
+        returns the list of transactions we got since the given date
+        :param date:
+        :return:
+        """
+        # TODO
+        pass
