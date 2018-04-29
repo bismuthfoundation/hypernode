@@ -32,7 +32,7 @@ if __name__ == "__main__":
         if args.action == 'genesis':
             # Displays genesis block info for db insert
             poscrypto.load_keys("mn_temp/mn0.json")
-            pos_chain = SqlitePosChain()
+            pos_chain = SqlitePosChain(verbose=True)
             genesis = pos_chain.genesis_dict()
         else:
             my_info = common.POC_MASTER_NODES_LIST[args.index]
