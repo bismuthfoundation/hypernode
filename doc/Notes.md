@@ -1,3 +1,9 @@
+# 3rd party Utils
+
+* Using SQLite studio for sqlite exploration and tables definition
+* using pytest for help with tests
+
+
 # Personal notes
 
 pos chain: no mining, no tx fee - marginal cost = 0
@@ -37,11 +43,14 @@ add a message for that.
 
 # TODO
 
+Auto-update/restart when code update
+or specific message
+
+
 Check time > slot begin + delta not to send block too fast
 
 
 When receiving a block, if last calculation of forger was not in that slot, refresh.
-
 
 btc messages use:
 - magic number to resync failed stream
