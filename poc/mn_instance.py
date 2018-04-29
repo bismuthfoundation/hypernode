@@ -14,7 +14,7 @@ import posmn
 from posmn import Posmn
 from poschain import SqlitePosChain
 import poscrypto
-
+import com_helpers
 
 __version__ = '0.0.2'
 
@@ -40,8 +40,8 @@ if __name__ == "__main__":
             port = my_info[2]
             address = my_info[0]
             peers = common.POC_MASTER_NODES_LIST
-            posmn.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet="mn_temp/mn{}.json".format(args.index))
-            posmn.MY_NODE.serve()
+            com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet="mn_temp/mn{}.json".format(args.index))
+            com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:
         print(e)

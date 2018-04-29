@@ -7,6 +7,7 @@ import json
 # Our modules
 import common
 import poscrypto
+import posblock
 
 __version__ = '0.0.1'
 
@@ -28,8 +29,9 @@ class Mempool:
     Generic Class
     """
 
-    def __init__(self, verbose = False):
+    def __init__(self, verbose = False, app_log=None):
         self.verbose = verbose
+        self.app_log = app_log
 
     def status(self):
         print("Virtual Method Status")
@@ -41,7 +43,14 @@ class Mempool:
         print("Virtual Method _delete_tx")
 
     def digest_tx(self, tx, timestamp=0):
-        # todo: validity checks
+        if 'TX' == tx.__class__.__name__:
+            # Protobuff, convert to object
+            tx = posblock.PosMessage().from_proto(tx)
+        # TODO: if list, convert also
+        if self.verbose:
+            self.app_log.info("Digesting {}".format(tx.to_json()))
+        # Validity checks, will raise
+        tx.check()
         self._insert_tx(tx)
 
 
@@ -50,8 +59,8 @@ class MemoryMempool(Mempool):
     Memory Storage, POC only
     """
 
-    def __init__(self, verbose = False):
-        super().__init__(verbose=verbose)
+    def __init__(self, verbose = False, app_log=None):
+        super().__init__(verbose=verbose, app_log=app_log)
         # Just a list
         self.txs=[]
         self.lock = threading.Lock()
@@ -73,8 +82,8 @@ class SqliteMempool(Mempool):
     Sqlite storage backend.
     """
     # TODO: Allow for memory mempool
-    def __init__(self, verbose = False, db_path='./data/'):
-        super().__init__(verbose=verbose)
+    def __init__(self, verbose = False, db_path='./data/', app_log=None):
+        super().__init__(verbose=verbose, app_log=app_log)
         self.db_path = db_path+'posmempool.db'
         # TODO Create path
         # Create DB
@@ -86,5 +95,9 @@ class SqliteMempool(Mempool):
         :param date:
         :return:
         """
-        # TODO
+        # TODO - return a list of posblock.PosMessage objects
         pass
+
+    def _insert_tx(self, tx):
+        # TODO
+        print("TODO insert tx")

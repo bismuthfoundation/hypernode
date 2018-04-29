@@ -19,9 +19,10 @@ class PosChain:
     Generic Class
     """
 
-    def __init__(self, verbose = False):
+    def __init__(self, verbose = False, app_log=None):
         self.verbose = verbose
         self.block_height = 0
+        self.app_log = app_log
 
     def status(self):
         print("Virtual Method Status")
@@ -48,8 +49,8 @@ class MemoryPosChain(PosChain):
     Memory Storage, POC only
     """
 
-    def __init__(self, verbose = False):
-        super().__init__(verbose=verbose)
+    def __init__(self, verbose = False, app_log=None):
+        super().__init__(verbose=verbose, app_log=app_log)
         # Just a list
         self.blocks = [common.GENESIS]
 
@@ -59,8 +60,8 @@ class MemoryPosChain(PosChain):
 
 class SqlitePosChain(PosChain):
 
-    def __init__(self, verbose = False, db_path='data/'):
-        super().__init__(verbose=verbose)
+    def __init__(self, verbose = False, db_path='data/', app_log=None):
+        super().__init__(verbose=verbose, app_log=app_log)
         self.db_path = db_path + 'poc_pos_chain.db'
         # Create path
         # Create DB if needed

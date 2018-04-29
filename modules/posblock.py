@@ -8,6 +8,7 @@ import json
 
 # Our modules
 import common
+import time
 import poscrypto
 import commands_pb2
 
@@ -105,7 +106,6 @@ class PosBlock:
     def sign(self):
         """
         sign the raw block and calc it's hash
-        :param block:
         :return: signature, bytearray
         """
         # exception if we are not the forger
@@ -137,6 +137,40 @@ class PosMessage():
         self.what = 0
         self.params = ''
         self.value = 0
+        self.pubkey = None
+
+    def from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey =None):
+        """
+        Manually creates from user values
+        :param sender:
+        :param recipient:
+        :param what:
+        :param params:
+        :param value:
+        :return:
+        """
+        self.txid = 0
+        self.block_height = 0
+        self.timestamp = int(timestamp) if timestamp else int(time.time())
+        self.sender = str(sender) if sender else poscrypto.ADDRESS
+        self.recipient = str(recipient) if recipient else poscrypto.ADDRESS
+        self.pubkey = pubkey if pubkey else poscrypto.PUB_KEY.to_string()
+        self.what = int(what)
+        self.params = str(params)
+        self.value = int(value)
+        return self
+
+    def from_proto(self, TX):
+        """
+        Convert from protobuf to object format
+        :param TX:
+        :return:
+        """
+        # Since all fields are the same and same order, should be an easier way to do this.
+        self.txid, self.block_height, self.timestamp, self.sender, self.recipient, \
+        self.what, self.params, self.value, self.pubkey = \
+        TX.txid, TX.block_height, TX.timestamp, TX.sender, TX.recipient, TX.what, TX.value, TX.params, TX.pubkey
+        return self
 
     def from_list(self, tx_list):
         """
@@ -144,9 +178,31 @@ class PosMessage():
         :param tx_list:
         :return:
         """
-        self.txid, self.block_height, self.timestamp, self.sender,
-        self.recipient, self.what, self.params, self.value = tx_list
+        self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, self.pubkey = tx_list
         return self
+
+    def check(self):
+        """
+        Validity check when a node receives a tx.
+        :return:
+        """
+        # TODO
+        print("todo, check tx")
+        pass
+
+    def to_raw(self):
+        """
+        Raw representation of the tx object, signed parts
+        :return:
+        """
+        raw = b''
+        raw += self.timestamp.to_bytes(4, byteorder='big')
+        raw += self.sender.encode('ascii')
+        raw += self.recipient.encode('ascii')
+        raw += self.what.to_bytes(4, byteorder='big')
+        raw += self.params.encode('ascii')
+        raw += self.value.to_bytes(4, byteorder='big')
+        return raw
 
     def to_list(self):
         """
@@ -154,7 +210,7 @@ class PosMessage():
         :return:
         """
         return [self.txid, self.block_height, self.timestamp, self.sender,
-        self.recipient, self.what, self.params, self.value]
+        self.recipient, self.what, self.params, self.value, self.pubkey]
 
     def to_json(self):
         """
@@ -162,7 +218,12 @@ class PosMessage():
         :return:
         """
         tx = self.to_list()
-        tx['txid'] = poscrypto.raw_to_hex(tx['txid'])
+        if tx[0]:
+            # hex for txid
+            tx[0] = poscrypto.raw_to_hex(tx[0])
+        if tx[8]:
+            # and for pubkey
+            tx[8] = poscrypto.raw_to_hex(tx[8])
         return json.dumps(tx)
 
     def add_to_proto(self, protocmd):
@@ -171,11 +232,24 @@ class PosMessage():
         :param protocmd:
         :return:
         """
-        proto_tx = protocmd.TX.add()
+        proto_tx = protocmd.tx_values.add()
         proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, \
-            proto_tx.recipient, proto_tx.what, proto_tx.params, proto_tx.value = \
+            proto_tx.recipient, proto_tx.what, proto_tx.params, proto_tx.value, \
+            proto_tx.pubkey = \
             self.txid, self.block_height, self.timestamp, self.sender,\
-            self.recipient, self.what, self.params, self.value
+            self.recipient, self.what, self.params, self.value, self.pubkey
+
+    def sign(self):
+        """
+        sign the raw tx
+        :return: signature, bytearray
+        """
+        # exception if we are not the forger
+        raw = self.to_raw()
+        if self.verbose:
+            print(raw)
+        self.pubkey = poscrypto.PUB_KEY.to_string()
+        self.txid = poscrypto.sign(raw, verify=True)
 
 
 if __name__ == "__main__":

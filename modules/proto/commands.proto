@@ -16,10 +16,12 @@ message TX {
     required string recipient=5;
     // Tx or test type
     required uint32 what=6;
-    // params of the test and/or result
-    optional string params=7;
     // numeric value
-    required uint32 value=8;
+    required uint32 value=7;
+    // params of the test and/or result
+    optional string params=8;
+    // pubkey - 64 bytes
+    required bytes pubkey=9;
 }
 
 message Block {
@@ -68,8 +70,8 @@ message Command {
         peers = 4;
         status = 5;
         block = 6;
-        txsigs = 7;
-        txs = 8;
+        tx = 7;
+        mempool = 8;
         //message = 10;
     }
     required Type command = 1;
