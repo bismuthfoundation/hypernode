@@ -131,12 +131,16 @@ class MnServer(TCPServer):
             for tx in msg.tx_values:
                 try:
                     # Will raise if error
-                    com_helpers.MY_NODE.mempool.digest_tx(tx)
+                    await com_helpers.MY_NODE.mempool.digest_tx(tx)
                     app_log.info("Digested tx from {}".format(peer_ip))
                     await com_helpers.async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 except Exception as e:
                     app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
                     await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
+        elif msg.command == commands_pb2.Command.mempool:
+            txs = await com_helpers.MY_NODE.mempool.async_since(0)
+            # This is a list of PosMessage objects
+            await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
 
 
 """
@@ -302,8 +306,9 @@ class Posmn:
             elif self.state == MNState.SYNCING:
                 self.state = MNState.START
             # TODO: We have 2 different status, this one , and status() function ????
+            mempool_status = await self.mempool.status()
             status = {'chain': self.poschain.status(),
-                      'mempool': self.mempool.status(),
+                      'mempool': mempool_status,
                       'outbound': list(self.clients.keys()),
                       'inbound': list(self.inbound.keys()),
                       'state': {'state': self.state.name,
@@ -374,8 +379,8 @@ class Posmn:
                 # TODO: get mempool (or empty)
                 if self.verbose:
                     app_log.info("Sending mempool to {}".format(ip))
-                mempool = self.mempool.since(self.clients[ip][com_helpers.STATS_LASTACT])
-                await com_helpers.async_send_txs(commands_pb2.Command.mempool, mempool, stream, ip)
+                txs = self.mempool.since(self.clients[ip][com_helpers.STATS_LASTACT])
+                await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, ip)
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
@@ -458,6 +463,8 @@ class Posmn:
                 io_loop.start()
             except KeyboardInterrupt:
                 self.stop_event.set()
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(self.mempool.async_close())
                 io_loop.stop()
                 app_log.info("Serve: exited cleanly")
         except Exception as e:

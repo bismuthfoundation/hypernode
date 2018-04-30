@@ -5,6 +5,7 @@ and conversion between them all
 """
 
 import json
+import sqlite3
 
 # Our modules
 import common
@@ -139,6 +140,7 @@ class PosMessage():
         self.params = ''
         self.value = 0
         self.pubkey = None
+        self.received = 0
 
     # ======================== Helper conversion methods ===========================
 
@@ -174,6 +176,7 @@ class PosMessage():
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, \
         self.what, self.params, self.value, self.pubkey = \
         TX.txid, TX.block_height, TX.timestamp, TX.sender, TX.recipient, TX.what, TX.params, TX.value, TX.pubkey
+        self.received = int(time.time())
         return self
 
     def from_list(self, tx_list):
@@ -182,7 +185,8 @@ class PosMessage():
         :param tx_list:
         :return:
         """
-        self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, self.pubkey = tx_list
+        self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, \
+        self.pubkey, self.received = tx_list
         return self
 
     def to_raw(self):
@@ -206,7 +210,18 @@ class PosMessage():
         :return:
         """
         return [self.txid, self.block_height, self.timestamp, self.sender,
-        self.recipient, self.what, self.params, self.value, self.pubkey]
+                self.recipient, self.what, self.params, self.value, self.pubkey,
+                self.received]
+
+    def to_db(self):
+        """
+        List representation of the tx object for db insert. in the db order, with  received as last extra field
+        :return:
+        """
+        # sqlite3.Binary encodes bin data for sqlite.
+        return tuple([sqlite3.Binary(self.txid), self.block_height, self.timestamp, self.sender,
+                     self.recipient, self.what, self.params, self.value, sqlite3.Binary(self.pubkey),
+                     self.received])
 
     def to_json(self):
         """
