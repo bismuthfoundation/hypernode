@@ -24,7 +24,7 @@ except:
 
 __version__ = '0.0.3'
 
-# Do not change, impact addresses format
+# Do not change, impact addresses format
 BLAKE_DIGEST_SIZE = 20
 
 # Signatures and pubkeys are 64 bytes
@@ -49,11 +49,11 @@ def hex_to_raw(hex_str):
     :param hex_str:
     :return:
     """
-    bytes = []
+    bytes_array = []
     hex_str = ''.join(hex_str.split(" "))
     for i in range(0, len(hex_str), 2):
-        bytes.append(chr(int(hex_str[i:i + 2], 16)))
-    return ''.join(bytes)
+        bytes_array.append(chr(int(hex_str[i:i + 2], 16)))
+    return ''.join(bytes_array)
 
 
 def blake(buffer):
@@ -68,16 +68,16 @@ def blake(buffer):
     return blake2b(buffer, digest_size=BLAKE_DIGEST_SIZE)
 
 
-def hash_to_addr(hash, network=None):
+def hash_to_addr(hash20, network=None):
     """
-    Converts a hash20 to a checksum'd + network id address, to compare to an address
-    :param hash:
+    Converts a hash of len 20 bytes to a checksum'd + network id address, to compare to an address
+    :param hash20:
     :param network:
     :return:
     """
     if not network:
         network = common.NETWORK_ID
-    v = network + hash
+    v = network + hash20
     digest = blake2b(v, digest_size=4).digest()
     return base58.b58encode(v + digest).decode('ascii')
 
@@ -89,8 +89,8 @@ def pub_key_to_addr(pub_key, network=None):
     :param network:
     :return:
     """
-    hash = blake2b(pub_key, digest_size=BLAKE_DIGEST_SIZE).digest()
-    return hash_to_addr(hash, network)
+    hash20 = blake2b(pub_key, digest_size=BLAKE_DIGEST_SIZE).digest()
+    return hash_to_addr(hash20, network)
 
 
 def validate_address(address, network=None):
@@ -120,11 +120,11 @@ def load_keys(pos_filename='poswallet.json'):
     global PRIV_KEY
     global ADDRESS
     if not os.path.exists(pos_filename):
-        # Create new keys if none there.
+        # Create new keys if none there.
         gen_keys_file(pos_filename)
     with open(pos_filename, 'r') as fp:
         wallet = json.load(fp)
-    # TODO: handle encrypted wallet
+    # TODO: handle encrypted wallet
     PRIV_KEY = SigningKey.from_string(b64decode(wallet['privkey'].encode('ascii')), curve=SECP256k1)
     # TODO: We could verify pubkey also, and warn if there is an error
     PUB_KEY = VerifyingKey.from_string(b64decode(wallet['pubkey'].encode('ascii')), curve=SECP256k1)
@@ -165,12 +165,12 @@ def check_sig(signature, pubkey_string, message):
     """
     Raise if the signature does not match
     :param signature:
-    :param pubkey:
+    :param pubkey_string:
     :param message:
     :return:
     """
     pub_key = VerifyingKey.from_string(pubkey_string, curve=SECP256k1)
-    # Will raise
+    # Will raise
     try:
         pub_key.verify(signature, message)
     except:
@@ -185,15 +185,13 @@ def gen_keys():
     privkey = SigningKey.generate(curve=SECP256k1)
     pubkey = privkey.get_verifying_key().to_string()
     address = pub_key_to_addr(pubkey, common.NETWORK_ID)
-    return (privkey.to_string(), pubkey, address)
+    return privkey.to_string(), pubkey, address
 
 
 def gen_keys_file(pos_filename='poswallet.json'):
     """
     Generates a new set of keys and saves to json wallet
-    :param pos_priv:
-    :param pos_pub:
-    :param address_filename:
+    :param pos_filename:
     :return: the generated wallet as a dict
     """
     # we are supposed to have checked before, but make sure anyway.
@@ -201,8 +199,9 @@ def gen_keys_file(pos_filename='poswallet.json'):
         privkey, pubkey, address = gen_keys()
         if common.VERBOSE:
             print("Generated address for network 0x{:02x} is {}".format(ord(common.NETWORK_ID), address))
-        wallet = {"encrypted": False, "pubkey": b64encode(pubkey).decode('ascii') , "privkey": b64encode(privkey).decode('ascii'),
-                  "address": address, "label":"", "created": int(time.time())}
+        wallet = {"encrypted": False, "pubkey": b64encode(pubkey).decode('ascii'),
+                  "privkey": b64encode(privkey).decode('ascii'),
+                  "address": address, "label": "", "created": int(time.time())}
         print(wallet)
         with open(pos_filename, 'w') as fp:
             json.dump(wallet, fp)

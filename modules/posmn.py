@@ -7,9 +7,9 @@ Tornado based
 import time
 from enum import Enum
 import os
-import sys
+# import sys
 import json
-import struct
+# import struct
 import asyncio
 import aioprocessing
 import logging
@@ -17,8 +17,8 @@ import logging
 from cloghandler import ConcurrentRotatingFileHandler
 # Tornado
 from tornado.ioloop import IOLoop
-from tornado.options import define, options
-from tornado import gen
+# from tornado.options import define, options
+# from tornado import gen
 from tornado.iostream import StreamClosedError
 from tornado.tcpclient import TCPClient
 from tornado.tcpserver import TCPServer
@@ -32,7 +32,7 @@ import common
 import determine
 import poschain
 import posmempool
-import posblock
+# import posblock
 import poscrypto
 import com_helpers
 
@@ -85,7 +85,8 @@ class MnServer(TCPServer):
                 if not await determine.connect_ok_from(msg.string_value, access_log):
                     await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
                     return
-                await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + com_helpers.MY_NODE.address, stream, peer_ip)
+                await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET
+                                                    + com_helpers.MY_NODE.address, stream, peer_ip)
                 com_helpers.MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
                 access_log.info("{} did not say hello".format(peer_ip))
@@ -123,14 +124,14 @@ class MnServer(TCPServer):
         global access_log
         if com_helpers.MY_NODE.verbose:
             access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
-        # Don't do a thing.
-        #if msg.command == commands_pb2.Command.ping:
+        # Don't do a thing.
+        # if msg.command == commands_pb2.Command.ping:
         #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
         # TODO: rights management
         if msg.command == commands_pb2.Command.tx:
             for tx in msg.tx_values:
                 try:
-                    # Will raise if error
+                    # Will raise if error
                     await com_helpers.MY_NODE.mempool.digest_tx(tx)
                     app_log.info("Digested tx from {}".format(peer_ip))
                     await com_helpers.async_send_void(commands_pb2.Command.ok, stream, peer_ip)
@@ -138,7 +139,7 @@ class MnServer(TCPServer):
                     app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
                     await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
         elif msg.command == commands_pb2.Command.mempool:
-            # TODO: use clients stats to get real since
+            # TODO: use clients stats to get real since
             txs = await com_helpers.MY_NODE.mempool.async_since(0)
             # This is a list of PosMessage objects
             await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)

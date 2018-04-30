@@ -10,8 +10,8 @@ import asyncio
 import aiosqlite3
 
 # Our modules
-import common
-import poscrypto
+# import common
+# import poscrypto
 import posblock
 
 __version__ = '0.0.3'
@@ -45,7 +45,7 @@ class Mempool:
     Generic Class
     """
 
-    def __init__(self, verbose = False, app_log=None):
+    def __init__(self, verbose=False, app_log=None):
         self.verbose = verbose
         self.app_log = app_log
 
@@ -58,7 +58,7 @@ class Mempool:
     async def _delete_tx(self, tx):
         print("Virtual Method _delete_tx")
 
-    async def digest_tx(self, tx, timestamp=0):
+    async def digest_tx(self, tx):
         if 'TX' == tx.__class__.__name__:
             # Protobuf, convert to object
             tx = posblock.PosMessage().from_proto(tx)
@@ -77,10 +77,10 @@ class MemoryMempool(Mempool):
     Memory Storage, POC only
     """
 
-    def __init__(self, verbose = False, app_log=None):
+    def __init__(self, verbose=False, app_log=None):
         super().__init__(verbose=verbose, app_log=app_log)
         # Just a list
-        self.txs=[]
+        self.txs = []
         self.lock = threading.Lock()
 
     async def status(self):
@@ -100,7 +100,7 @@ class SqliteMempool(Mempool):
     Sqlite storage backend.
     """
     # TODO: Allow for memory mempool
-    def __init__(self, verbose = False, db_path='./data/', app_log=None, ram=False):
+    def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
         super().__init__(verbose=verbose, app_log=app_log)
         self.db_path = db_path + 'posmempool.db'
         self.db = None
@@ -117,7 +117,7 @@ class SqliteMempool(Mempool):
         """
         self.app_log.info("Mempool Check")
         # Create DB
-        # TODO: RAM Mode
+        # TODO: RAM Mode
         self.db = sqlite3.connect(self.db_path, timeout=1)
         self.db.text_factory = str
         self.cursor = self.db.cursor()
@@ -144,6 +144,7 @@ class SqliteMempool(Mempool):
         :param sql:
         :param param:
         :param cursor: optional. will use the locked shared cursor if None
+        :param commit: optional. will commit after sql
         :return:
         """
         if not self.db:
@@ -173,19 +174,18 @@ class SqliteMempool(Mempool):
         Safely execute the request
         :param sql:
         :param param:
-        :param cursor: optional. will use the locked shared cursor if None
         :param commit: If True, will commit after the request.
         :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be close.
         """
         if not self.async_db:
-            #  TODO: RAM Mode
+            # TODO: RAM Mode
             try:
                 # open
                 self.app_log.info("Opening async db")
                 self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop())
                 self.async_db.text_factory = str
             except Exception as e:
-                self.app_log.warning("async_execute: {} {}".format(e))
+                self.app_log.warning("async_execute: {}".format(e))
         # TODO: add a try count and die if we lock
         while True:
             try:
@@ -200,7 +200,6 @@ class SqliteMempool(Mempool):
                 self.app_log.warning("Database query: {} {}".format(sql, param))
                 self.app_log.warning("Database retry reason: {}".format(e))
                 asyncio.sleep(0.1)
-                return  # TEMP
         if commit:
             await self.async_commit()
             await cursor.close()

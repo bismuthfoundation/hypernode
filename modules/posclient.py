@@ -1,10 +1,10 @@
 """
-Pos client class for Bismuth
+Demo Pos client class for Bismuth
 Tornado based
 """
 
 from tornado.tcpclient import TCPClient
-import asyncio
+# import asyncio
 
 import common
 import com_helpers
@@ -15,7 +15,7 @@ import commands_pb2
 __version__ = '0.0.1'
 
 
-class Posclient():
+class Posclient:
 
     def __init__(self, ip, port, verbose=False, wallet="poswallet.json"):
         self.ip = ip
@@ -29,11 +29,12 @@ class Posclient():
         :param action:
         :return:
         """
-        if not action in ('hello', 'ping', 'status', 'tx', 'mempool'):
+        if action not in ('hello', 'ping', 'status', 'tx', 'mempool'):
             raise ValueError("Unknown action: {}".format(action))
         tcp_client = TCPClient()
         stream = await tcp_client.connect(self.ip, self.port)
-        await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + poscrypto.ADDRESS, stream, self.ip)
+        await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + poscrypto.ADDRESS,
+                                            stream, self.ip)
         msg = await com_helpers.async_receive(stream, self.ip)
         if self.verbose:
             print("Client got {}".format(msg.__str__().strip()))

@@ -20,7 +20,7 @@ STATS_LASTMPL = 7
 
 """
 Generic async stream com 
-# TODO: move into a module of its own?
+# TODO: move into a class?
 """
 
 MY_NODE = None

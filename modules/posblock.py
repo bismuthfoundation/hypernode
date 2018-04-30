@@ -1,6 +1,6 @@
 """
 An object representing a PoS block and it transaction
-Allow for different formats: json, dict, raw, protobuff
+Allow for different formats: json, dict, raw, protobuf
 and conversion between them all
 """
 
@@ -11,7 +11,7 @@ import sqlite3
 import common
 import time
 import poscrypto
-import commands_pb2
+
 
 __version__ = '0.0.3'
 
@@ -25,10 +25,10 @@ class PosBlock:
     # Properties that need encoding for string representation
     hex_encodable = ('previous_hash', 'block_hash', 'signature')
 
-    def __init__(self, verbose = False):
+    def __init__(self, verbose=False):
         self.verbose = verbose
         self.height = 0
-        self.round =0
+        self.round = 0
         self.sir = 0
         self.timestamp = 0
         self.previous_hash = None
@@ -64,9 +64,9 @@ class PosBlock:
         Converts the native object format to a dict representing a block
         :return:
         """
-        # txs
+        # txs
         block_dict = {'txs': [tx.to_list() for tx in self.txs]}
-        # Main block values
+        # Main block values
         for prop in self.props:
             block_dict[prop] = self.__dict__[prop]
         return block_dict
@@ -123,13 +123,13 @@ class PosBlock:
         pass
 
 
-class PosMessage():
+class PosMessage:
     """
     PoS Messages are the Tx
     This object represents a single tx/message
     """
 
-    def __init__(self, verbose = False):
+    def __init__(self, verbose=False):
         self.verbose = verbose
         self.txid = None
         self.block_height = 0
@@ -153,6 +153,7 @@ class PosMessage():
         :param what:
         :param params:
         :param value:
+        :param pubkey:
         :return:
         """
         self.txid = 0
@@ -166,16 +167,17 @@ class PosMessage():
         self.value = int(value)
         return self
 
-    def from_proto(self, TX):
+    def from_proto(self, proto_tx):
         """
         Convert from protobuf to object format
-        :param TX:
+        :param proto_tx:
         :return:
         """
         # Since all fields are the same and same order, should be an easier way to do this.
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, \
-        self.what, self.params, self.value, self.pubkey = \
-        TX.txid, TX.block_height, TX.timestamp, TX.sender, TX.recipient, TX.what, TX.params, TX.value, TX.pubkey
+            self.what, self.params, self.value, self.pubkey = \
+            proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, proto_tx.recipient, \
+            proto_tx.what, proto_tx.params, proto_tx.value, proto_tx.pubkey
         self.received = int(time.time())
         return self
 
@@ -186,7 +188,7 @@ class PosMessage():
         :return:
         """
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, \
-        self.pubkey, self.received = tx_list
+            self.pubkey, self.received = tx_list
         return self
 
     def to_raw(self):
@@ -233,7 +235,7 @@ class PosMessage():
             # hex for txid
             tx[0] = poscrypto.raw_to_hex(tx[0])
         if tx[8]:
-            # and for pubkey
+            # and for pubkey
             tx[8] = poscrypto.raw_to_hex(tx[8])
         return json.dumps(tx)
 

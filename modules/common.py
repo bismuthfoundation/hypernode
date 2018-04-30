@@ -5,7 +5,7 @@ Common variables and helpers for PoS
 Serves as config file for POC and tests
 """
 
-#from collections import OrderedDict
+# from collections import OrderedDict
 from hashlib import blake2b
 
 __version__ = '0.0.1'
@@ -17,9 +17,9 @@ POSNET_ALLOW = 'posnet0001,posnet0002'
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
 NETWORK_ID = b'\x19'
-#NETWORK_ID = b'\x55'
+# NETWORK_ID = b'\x55'
 
-# How long to wait in the main client loop
+# How long to wait in the main client loop
 WAIT = 10
 
 # limit, so nodes won't want to play with that.
@@ -32,7 +32,7 @@ VERBOSE = True
 # The reference list of active Masternodes for the round
 # address, ip, port, weight
 POC_MASTER_NODES_LIST = [
-    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1), # mn 0
+    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1),  # mn 0
     ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2),
     ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1),
     ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1),
@@ -54,7 +54,7 @@ POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 # How many slots in a round? Better keep them an odd number.
 MAX_ROUND_SLOTS = 3
 
-# How many block times to wait at the end of a round to reach consensus?
+# How many block times to wait at the end of a round to reach consensus?
 END_ROUND_SLOTS = 1
 
 # How many tests should the whole Net perform per slot?
@@ -75,7 +75,7 @@ ORIGIN_OF_TIME = 1522419000
 
 
 # Round time in seconds
-ROUND_TIME_SEC = POS_SLOT_TIME_SEC * ( MAX_ROUND_SLOTS + END_ROUND_SLOTS)
+ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
 
 GENESIS_SEED = 'BIG_BANG_HASH'
