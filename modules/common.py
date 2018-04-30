@@ -22,6 +22,9 @@ NETWORK_ID = b'\x19'
 # How long to wait in the main client loop
 WAIT = 10
 
+# limit, so nodes won't want to play with that.
+FUTURE_ALLOWED = 5
+
 VERBOSE = True
 
 # POC prefix is for POC only, will use real data later.

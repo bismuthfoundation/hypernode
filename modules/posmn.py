@@ -83,7 +83,7 @@ class MnServer(TCPServer):
             if msg.command == commands_pb2.Command.hello:
                 access_log.info("Got Hello {} from {}".format(msg.string_value, peer_ip))
                 if not await determine.connect_ok_from(msg.string_value, access_log):
-                    await com_helpers.async_send(commands_pb2.Command.ko, stream, peer_ip)
+                    await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
                     return
                 await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + com_helpers.MY_NODE.address, stream, peer_ip)
                 com_helpers.MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
@@ -133,8 +133,10 @@ class MnServer(TCPServer):
                     # Will raise if error
                     com_helpers.MY_NODE.mempool.digest_tx(tx)
                     app_log.info("Digested tx from {}".format(peer_ip))
+                    await com_helpers.async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 except Exception as e:
-                    app_log.warning("Error {} digesting tx {} from {}".format(e, tx.__str__(), peer_ip))
+                    app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
+                    await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
 
 
 """

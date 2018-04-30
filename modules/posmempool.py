@@ -20,8 +20,10 @@ SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     what         INTEGER,\
     params       STRING,\
     value        INTEGER,\
-    received     INTEGER\
+    received     INTEGER,\
 );"
+
+SQL_INSERT_TX = "INSERT INTO pos_message VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 
 class Mempool:
@@ -52,6 +54,7 @@ class Mempool:
         # Validity checks, will raise
         tx.check()
         self._insert_tx(tx)
+        # TODO: also add the pubkey in index if present.
 
 
 class MemoryMempool(Mempool):
@@ -101,3 +104,4 @@ class SqliteMempool(Mempool):
     def _insert_tx(self, tx):
         # TODO
         print("TODO insert tx")
+        SQL_INSERT_TX

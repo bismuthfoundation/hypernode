@@ -12,13 +12,10 @@ import time
 import poscrypto
 import commands_pb2
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class PosBlock:
-    """
-    Generic Class
-    """
     # TODO: Slots
     
     props = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count',
@@ -44,7 +41,9 @@ class PosBlock:
 
     def status(self):
         print("PosBlock, virtual Method Status")
-        
+
+    # ======================== Helper conversion methods ===========================
+
     def from_dict(self, block_dict):
         """
         Converts a dict representing a block to the native object format
@@ -103,6 +102,8 @@ class PosBlock:
         raw += self.previous_hash
         return raw
 
+    # =========================== Really useful methods ===========================
+
     def sign(self):
         """
         sign the raw block and calc it's hash
@@ -139,9 +140,12 @@ class PosMessage():
         self.value = 0
         self.pubkey = None
 
-    def from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey =None):
+    # ======================== Helper conversion methods ===========================
+
+    def from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey=None):
         """
         Manually creates from user values
+        :param timestamp:
         :param sender:
         :param recipient:
         :param what:
@@ -169,7 +173,7 @@ class PosMessage():
         # Since all fields are the same and same order, should be an easier way to do this.
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, \
         self.what, self.params, self.value, self.pubkey = \
-        TX.txid, TX.block_height, TX.timestamp, TX.sender, TX.recipient, TX.what, TX.value, TX.params, TX.pubkey
+        TX.txid, TX.block_height, TX.timestamp, TX.sender, TX.recipient, TX.what, TX.params, TX.value, TX.pubkey
         return self
 
     def from_list(self, tx_list):
@@ -181,20 +185,12 @@ class PosMessage():
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, self.pubkey = tx_list
         return self
 
-    def check(self):
-        """
-        Validity check when a node receives a tx.
-        :return:
-        """
-        # TODO
-        print("todo, check tx")
-        pass
-
     def to_raw(self):
         """
         Raw representation of the tx object, signed parts
         :return:
         """
+        print(self.sender, self.recipient, self.params)
         raw = b''
         raw += self.timestamp.to_bytes(4, byteorder='big')
         raw += self.sender.encode('ascii')
@@ -239,6 +235,8 @@ class PosMessage():
             self.txid, self.block_height, self.timestamp, self.sender,\
             self.recipient, self.what, self.params, self.value, self.pubkey
 
+    # =========================== Really useful methods ===========================
+
     def sign(self):
         """
         sign the raw tx
@@ -250,6 +248,26 @@ class PosMessage():
             print(raw)
         self.pubkey = poscrypto.PUB_KEY.to_string()
         self.txid = poscrypto.sign(raw, verify=True)
+
+    def check(self):
+        """
+        Validity check when a node receives a tx.
+        Raise on error
+        :return:
+        """
+        # Check 1. timestamp not in the future
+        if self.timestamp > time.time() + common.FUTURE_ALLOWED:
+            raise ValueError("Transaction in the future, not allowed")
+        # Check 2. sender is valid address
+        poscrypto.validate_address(self.sender)
+        # Check 3. recipient is valid address
+        poscrypto.validate_address(self.recipient)
+        # Check 4. pubkey matches sender for current network
+        check_address = poscrypto.pub_key_to_addr(self.pubkey)
+        if self.sender != check_address:
+            raise ValueError("Address mismatch pubkey {} instead of {}".format(self.sender, check_address))
+        # Check 5. Verify signature validity
+        poscrypto.check_sig(self.txid, self.pubkey, self.to_raw())
 
 
 if __name__ == "__main__":

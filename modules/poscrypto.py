@@ -161,6 +161,22 @@ def sign(message, verify=True, priv_key=None, pub_key=None):
     return signature
 
 
+def check_sig(signature, pubkey_string, message):
+    """
+    Raise if the signature does not match
+    :param signature:
+    :param pubkey:
+    :param message:
+    :return:
+    """
+    pub_key = VerifyingKey.from_string(pubkey_string, curve=SECP256k1)
+    # Will raise
+    try:
+        pub_key.verify(signature, message)
+    except:
+        raise ValueError("Invalid Signature")
+
+
 def gen_keys():
     """
     Generates a new set of keys

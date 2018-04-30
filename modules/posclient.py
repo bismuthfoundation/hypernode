@@ -4,6 +4,7 @@ Tornado based
 """
 
 from tornado.tcpclient import TCPClient
+import asyncio
 
 import common
 import com_helpers
@@ -49,12 +50,18 @@ class Posclient():
         if 'tx' == action:
             tx = posblock.PosMessage().from_values(recipient='BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', value='1')
             try:
-                print(tx.to_json())
                 tx.sign()
+                # tx.value = 5  # uncomment to trigger invalid signature
                 print(tx.to_json())
                 await com_helpers.async_send_txs(commands_pb2.Command.tx, [tx], stream, self.ip)
             except Exception as e:
                 print(e)
+        if 'mempool' == action:
+            try:
+                # mempool with an "1" int value means send full mempool, unfiltered
+                await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
+            except Exception as e:
+                print(e)
+
         msg = await com_helpers.async_receive(stream, self.ip)
-        if self.verbose:
-            print("Client got {}".format(msg.__str__().strip()))
+        print("Client got {}".format(msg.__str__().strip()))
