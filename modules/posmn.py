@@ -138,6 +138,7 @@ class MnServer(TCPServer):
                     app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
                     await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
         elif msg.command == commands_pb2.Command.mempool:
+            # TODO: use clients stats to get real since
             txs = await com_helpers.MY_NODE.mempool.async_since(0)
             # This is a list of PosMessage objects
             await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
@@ -327,7 +328,7 @@ class Posmn:
                             io_loop = IOLoop.instance()
                             with self.clients_lock:
                                 # first index is active or not
-                                self.clients[peer[1]] = [False, 0, 0, 0, 0, 0, 0]
+                                self.clients[peer[1]] = [False, 0, 0, 0, 0, 0, 0, 0]
                             io_loop.spawn_callback(self.client_worker, peer)
             # TODO: variable sleep time depending on the elapsed loop time - or use timeout?
             await asyncio.sleep(10)
@@ -375,12 +376,13 @@ class Posmn:
                         app_log.info("Sending ping to {}".format(ip))
                     # keeps connection active, or raise error if connection lost
                     await com_helpers.async_send_void(commands_pb2.Command.ping, stream, ip)
-            if self.clients[ip][com_helpers.STATS_LASTACT] < now - 10:
-                # TODO: get mempool (or empty)
-                if self.verbose:
-                    app_log.info("Sending mempool to {}".format(ip))
-                txs = self.mempool.since(self.clients[ip][com_helpers.STATS_LASTACT])
-                await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, ip)
+                if self.clients[ip][com_helpers.STATS_LASTMPL] < now - 10:
+                    # Send our new tx from mempool if any, will get the new from peer.
+                    if self.verbose:
+                        app_log.info("Sending mempool to {}".format(ip))
+                    txs = await self.mempool.async_since(self.clients[ip][com_helpers.STATS_LASTMPL])
+                    self.clients[ip][com_helpers.STATS_LASTMPL] = time.time()
+                    await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, ip)
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
