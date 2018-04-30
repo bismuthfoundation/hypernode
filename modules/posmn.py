@@ -35,6 +35,8 @@ import posmempool
 # import posblock
 import poscrypto
 import com_helpers
+from com_helpers import async_receive, async_send_string, async_send_int32
+from com_helpers import async_send_void, async_send_txs
 
 __version__ = '0.0.3'
 
@@ -61,46 +63,57 @@ TCP Server Classes
 class MnServer(TCPServer):
     """Tornado asynchronous TCP server."""
 
+    def __init__(self):
+        self.verbose = False
+        self.node = None
+        self.mempool = None
+        super().__init__()
+
     async def handle_stream(self, stream, address):
+        """
+        Handles the lifespan of a client, from connection to end of stream
+        :param stream:
+        :param address:
+        :return:
+        """
         global access_log
         global app_log
         peer_ip, fileno = address
         error_shown = False
-        if com_helpers.MY_NODE.verbose:
-            access_log.info("Incoming connection from {}".format(peer_ip))
+        access_log.info("Incoming connection from {}".format(peer_ip))
         # TODO: here, use tiered system to reserve safe slots for jurors,
         # some slots for non juror mns, and some others for other clients (non mn clients)
         try:
-            """
-            # cmd : from us to peer
-            self.protocmd = commands_pb2.Command()
-            # msg : from peer to us
-            self.protomsg = commands_pb2.Command()
-            """
-            msg = await com_helpers.async_receive(stream, peer_ip)
-            if com_helpers.MY_NODE.verbose:
+            # Get first message, we expect an hello with version number and address
+            msg = await async_receive(stream, peer_ip)
+            if self.verbose:
                 access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
             if msg.command == commands_pb2.Command.hello:
                 access_log.info("Got Hello {} from {}".format(msg.string_value, peer_ip))
                 if not await determine.connect_ok_from(msg.string_value, access_log):
-                    await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
+                    # TODO: send reason of deny?
+                    # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
+                    await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
                     return
-                await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET
+                # Right version, we send our hello as well.
+                await async_send_string(commands_pb2.Command.hello, common.POSNET
                                                     + com_helpers.MY_NODE.address, stream, peer_ip)
-                com_helpers.MY_NODE.add_inbound(peer_ip, {'hello': msg.string_value})
+                # Add the peer to inbound list
+                self.node.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
                 access_log.info("{} did not say hello".format(peer_ip))
-                # TODO: Should we send back a proper ko message in that case?
+                # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
+                await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
                 return
             # Here the peer said Hello and we accepted its version, we can have a date.
             while not Posmn.stop_event.is_set():
                 try:
-                    msg = await com_helpers.async_receive(stream, peer_ip)
+                    # Loop over the requests until disconnect or end of server.
+                    msg = await async_receive(stream, peer_ip)
                     await self._handle_msg(msg, stream, peer_ip)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
-                    if com_helpers.MY_NODE.verbose:
-                        access_log.info("Peer {} left.".format(peer_ip))
+                    access_log.info("Peer {} left.".format(peer_ip))
                     error_shown = True
                     return
                 except Exception as e:
@@ -118,31 +131,41 @@ class MnServer(TCPServer):
             """
             return
         finally:
-            com_helpers.MY_NODE.remove_inbound(peer_ip)
+            self.node.remove_inbound(peer_ip)
 
     async def _handle_msg(self, msg, stream, peer_ip):
+        """
+        Handles a single command received by the server.
+        :param msg:
+        :param stream:
+        :param peer_ip:
+        :return:
+        """
         global access_log
-        if com_helpers.MY_NODE.verbose:
+        if self.verbose:
             access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
         # Don't do a thing.
         # if msg.command == commands_pb2.Command.ping:
         #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
         # TODO: rights management
         if msg.command == commands_pb2.Command.tx:
+            # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
+            # external txs from a "controller / wallet or such
             for tx in msg.tx_values:
                 try:
                     # Will raise if error
-                    await com_helpers.MY_NODE.mempool.digest_tx(tx)
+                    await self.mempool.digest_tx(tx)
                     app_log.info("Digested tx from {}".format(peer_ip))
-                    await com_helpers.async_send_void(commands_pb2.Command.ok, stream, peer_ip)
+                    await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 except Exception as e:
                     app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
-                    await com_helpers.async_send_void(commands_pb2.Command.ko, stream, peer_ip)
+                    await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
         elif msg.command == commands_pb2.Command.mempool:
+            # TODO: digest the received txs
             # TODO: use clients stats to get real since
-            txs = await com_helpers.MY_NODE.mempool.async_since(0)
+            txs = await self.mempool.async_since(0)
             # This is a list of PosMessage objects
-            await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
+            await async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
 
 
 """
@@ -454,6 +477,9 @@ class Posmn:
             app_log.info("Status: "+json.dumps(self.status()))
         try:
             server = MnServer()
+            server.verbose = self.verbose
+            server.mempool = self.mempool
+            server.node = self
             # server.listen(port)
             server.bind(self.port, backlog=128, reuse_port=True)
             server.start(1)  # Forks multiple sub-processes
