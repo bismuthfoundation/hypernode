@@ -101,7 +101,7 @@ End of round...
 
 ## 2.2 Forging
 
-TBD
+WIP
 
 ## 2.3 Block sending
 

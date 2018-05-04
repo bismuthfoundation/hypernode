@@ -1,3 +1,5 @@
+This address Network / Nodes tests, not functional code testing.
+
 # Test Goals
 
 * Ensures the node is alive
@@ -44,9 +46,9 @@ Ping is the most basic test. It does in fact check several things:
 
 TODO
 
-## 3 - Bandwith test
+## 3 - Bandwidth test
 
-* bandwith test from real data or not
+* bandwidth test from real data or not
 
 # Random Notes
 
@@ -62,5 +64,5 @@ TODO
  
 * anti tx flood : cap tx per node (ip and address) per block and round
 
-* When do MN send round status, with connected peers, connexions attemps, so they can decide for active mn next round?  
+* When do MN send round status, with connected peers, connexions attempts, so they can decide for active mn next round?  
  avoid everyone at the same time. but not evenly either, or some will report old data.

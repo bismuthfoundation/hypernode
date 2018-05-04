@@ -50,6 +50,7 @@ CREATE TABLE pos_messages (
     what         INTEGER,
     params       STRING,
     value        INTEGER,
+    pubkey       BLOB (64),
     received     INTEGER
 );
 

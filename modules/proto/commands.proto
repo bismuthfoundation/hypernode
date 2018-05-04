@@ -30,16 +30,15 @@ message Block {
     required uint32 sir=3;
     // Timestamp
     required uint32 ts=4;
-    required string previous_hash=5;
+    required bytes previous_hash=5;
     repeated TX txs = 6;
     required uint32 msg_count=7;
     required uint32 sources=8;
-    // Who - forger
-    required string from=9;
-    // Should be byte too
-    required string signature=10;
+    required bytes signature=9;
     // Blockhash
-    required string hash=11;
+    required bytes block_hash=10;
+    // Who - forger
+    required string forger=11;
 }
 
 message IP {
@@ -50,6 +49,7 @@ message IP {
     optional uint32 port=4 [default = 5658 ];
 }
 
+// Deprecated - will use string
 enum ko_reason {
     no_reason = 0;
     version_mismatch = 1;
@@ -79,11 +79,12 @@ message Command {
     oneof param {
         string string_value=2;
         int32 int32_value=3;
-        ko_reason reason_value=4;
+        // ko_reason reason_value=4;
+        Block block_value = 4;
     }
 
     repeated TX tx_values = 5;
     repeated IP ip_values = 6;
     repeated string sig_values = 7;
-    optional Block block_value = 8;
+    // optional Block block_value = 8;
 }

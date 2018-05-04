@@ -1,6 +1,6 @@
 # Chain coupling
 
-What I'll need:
+What the MNs need:
 
 ## 1. A way to get active MNs for a round.
 

@@ -7,24 +7,24 @@ commands_pb2.Command.*
 
 
 ## Hello
-id 0
-string_value : the peer version (10 char) plus the sender pubkey   
+id 0 - ok
+string_value : the peer version (10 char) plus the sender pubkey (34 chars)   
 
 ex:
-posnet0016aa012345678901aa 
+posnet0001BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV 
 
 ## ok
-id 1
+id 1 - ok
 no param
 
 ## ko
-id 2
+id 2 - ok
 string
 returns reason of error: version mismatch, bad ip, bad pubkey, bad block, bad slot, no resources, no reason
-TODO: as enum or string? balance between command len and ease of use.
+As enum or string? balance between command len and ease of use => string for now.
 
 ## ping
-id 3
+id 3 - ok
 TX: one tx (ping params)
 *temp for poc*: ping is an empty command for now, just used for keep alive.
 
@@ -40,14 +40,19 @@ no param
 returns a json status as string
 
 ## tx
-id 6
+id 6 - ok
 TX : list of commands_pb2.Command.TX
-One or several tx from the node mempool
+One or several tx from the a node client
 
 ## block
 id 7
 block : a commands_pb2.Block
 A forged block from a juror.
+
+## mempool
+id 8 - WIP
+TX : list of commands_pb2.Command.TX
+One or several tx from the peer mempool
 
 
 # Command flow
@@ -65,5 +70,9 @@ Servers wait for an event, and answer.
 ## Keep alive
 
 * Client can send some "ping" command to keep the socket (and check it is) alive. Only needed if no command was issued for ( < timeout) time.
+
+## Mempool Sync
+* Every (time) the client sends its mempool (new tx only) to the server it's connected to, and gets the peer new tx as well to digest.
+TODO: continue to "sync" when it's our turn to forge? 
 
 

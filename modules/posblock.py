@@ -11,6 +11,7 @@ import sqlite3
 import common
 import time
 import poscrypto
+import commands_pb2
 
 
 __version__ = '0.0.3'
@@ -31,11 +32,11 @@ class PosBlock:
         self.round = 0
         self.sir = 0
         self.timestamp = 0
-        self.previous_hash = None
+        self.previous_hash = b''
         self.msg_count = 0
         self.unique_sources = 0
-        self.signature = None
-        self.block_hash = None
+        self.signature = b''
+        self.block_hash = b''
         self.received_by = ''
         self.forger = ''
         self.txs = list()
@@ -53,10 +54,16 @@ class PosBlock:
         """
         # Main block values
         for prop in self.props:
-            value = block_dict[prop] if prop in block_dict else None
-            self.__dict__[prop] = value
+            if prop in block_dict:
+                # do not override what may not be passed
+                value = block_dict[prop]
+                self.__dict__[prop] = value
         # txs
-        self.txs = [PosMessage().from_list(tx) for tx in block_dict['txs']]
+        try:
+            self.txs = [PosMessage().from_list(tx) for tx in block_dict['txs']]
+        except Exception as e:
+            print(e)
+            self.txs = []
         return self
 
     def to_dict(self):
@@ -84,6 +91,16 @@ class PosBlock:
         block['txs'] = [tx.to_json() for tx in self.txs]
         return json.dumps(block)
 
+    def to_db(self):
+        """
+        List representation of the block object for db insert, without tx. In the db order
+        :return:
+        """
+        # sqlite3.Binary encodes bin data for sqlite.
+        return tuple([self.height, self.round, self.sir, self.timestamp, sqlite3.Binary(self.previous_hash),
+                      self.msg_count, self.unique_sources, sqlite3.Binary(self.signature),
+                      sqlite3.Binary(self.block_hash), self.received_by, self.forger])
+
     def to_raw(self):
         """
         Gives a raw binary buffer image of the signed block elements
@@ -103,6 +120,26 @@ class PosBlock:
         raw += self.previous_hash
         return raw
 
+    def to_proto(self):
+        """
+        create a protobuf object
+        :return:
+        """
+        protocmd = commands_pb2.Command()
+        protocmd.Clear()
+        protocmd.command = commands_pb2.Command.block
+        block = protocmd.block_value  # commands_pb2.Block()
+        block.height, block.round, block.sir = self.height, self.round, self.sir
+        block.ts, block.previous_hash = self.timestamp, self.previous_hash
+        for tx in self.txs:
+            tx.add_to_proto(protocmd)
+        # todo: unify sources / names
+        block.msg_count, block.sources = self.msg_count, self.unique_sources
+        block.signature, block.block_hash = self.signature, self.block_hash
+        block.forger = self.forger
+        # protocmd.block_value = block
+        return protocmd
+
     # =========================== Really useful methods ===========================
 
     def sign(self):
@@ -111,10 +148,15 @@ class PosBlock:
         :return: signature, bytearray
         """
         # exception if we are not the forger
-        assert poscrypto.ADDRESS == self.forger
+        print(poscrypto.ADDRESS, self.forger)
+        if poscrypto.ADDRESS != self.forger:
+            raise RuntimeError("Bad Forger")
         raw = self.to_raw()
         if self.verbose:
             print(raw)
+        self.msg_count = len(self.txs)
+        # set removes duplicates.
+        self.unique_sources = len(set([tx.sender for tx in self.txs]))
         self.signature = poscrypto.sign(raw, verify=True)
         self.block_hash = poscrypto.blake(raw).digest()
 
@@ -131,7 +173,7 @@ class PosMessage:
 
     def __init__(self, verbose=False):
         self.verbose = verbose
-        self.txid = None
+        self.txid = b''
         self.block_height = 0
         self.timestamp = 0
         self.sender = ''
@@ -139,7 +181,7 @@ class PosMessage:
         self.what = 0
         self.params = ''
         self.value = 0
-        self.pubkey = None
+        self.pubkey = b''
         self.received = 0
 
     # ======================== Helper conversion methods ===========================

@@ -6,7 +6,7 @@ Deterministic helpers and/or classes for Bismuth PoS
 import random
 import time
 import math
-import asyncio
+# import asyncio
 
 # Custom modules
 import common
@@ -23,7 +23,8 @@ REF_ADDRESS = ''
 # to use random, seeded with previous hash, then random.shuffle()
 # TODO: perf tests.
 """
-Warning : "Note that even for small len(x), the total number of permutations of x can quickly grow larger than the period of most random number generators. 
+Warning : "Note that even for small len(x), the total number of permutations of x can quickly grow larger than the 
+period of most random number generators. 
 This implies that most permutations of a long sequence can never be generated. For example, a sequence of length 2080 is 
 the largest that can fit within the period of the Mersenne Twister random number generator."
 
@@ -35,7 +36,7 @@ the largest that can fit within the period of the Mersenne Twister random number
 def my_distance(address):
     """
     Return the Hamming distance between an address and the ref hash, that was converted to be address like
-    :param string:
+    :param address:
     :return:
     """
     global REF_ADDRESS
@@ -65,13 +66,13 @@ async def mn_list_to_tickets(mn_list):
     # If we have less candidates than seats, re-add the list until we have enough.
     # Always parse the full list even if this means adding too many candidates
     # (this ensures everyone gets the same chance)
-    id = 0
+    tid = 0
     while len(tickets) < common.MAX_ROUND_SLOTS:
         for mn in mn_list:
             # a more compact and faster version can be written, I prefer to aim at clarity
             for chances in range(mn[3]):  # index 3 is the weight
-                tickets.append((mn[0], id))
-                id += 1
+                tickets.append((mn[0], tid))
+                tid += 1
     return tickets
 
 
@@ -88,7 +89,7 @@ async def tickets_to_delegates(tickets_list, reference_hash):
     # sort the tickets according to their hash distance.
     tickets_list.sort(key=my_distance)
     if VERBOSE:
-        #print("Ref Hash Bin", REF_HASH_BIN)
+        # print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
     return tickets_list[:common.MAX_ROUND_SLOTS]
 
@@ -96,9 +97,8 @@ async def tickets_to_delegates(tickets_list, reference_hash):
 def pick_two_not_in(address_list, avoid):
     """
     Pick a random couple of mn not in avoid
-    :param mn_list:
-    :param here:
-    :param nor:
+    :param address_list:
+    :param avoid:
     :return:
     """
     candidates = [a for a in address_list if a not in avoid]
@@ -111,7 +111,7 @@ def pick_two_not_in(address_list, avoid):
 async def mn_list_to_test_slots(full_mn_list, forge_slots):
     """
     Predict tests to be run during each slot, but avoid testing forging MN
-    :param mn_list:
+    :param full_mn_list:
     :param forge_slots:
     :return: list with list of tests for each slot.
     """
@@ -119,9 +119,11 @@ async def mn_list_to_test_slots(full_mn_list, forge_slots):
     # TODO: are we 100% sure random works the same on all python/os? prefer custom impl?
     """
     https://docs.python.org/3/library/random.html
-    Most of the random module’s algorithms and seeding functions are subject to change across Python versions, but two aspects are guaranteed not to change:
+    Most of the random module’s algorithms and seeding functions are subject to change across Python versions, 
+    but two aspects are guaranteed not to change:
     If a new seeding method is added, then a backward compatible seeder will be offered.
-    The generator’s random() method will continue to produce the same sequence when the compatible seeder is given the same seed.
+    The generator’s random() method will continue to produce the same sequence when the compatible seeder 
+    is given the same seed.
     """
     # TODO: test and have a custom impl to be sure?
     # This is what ensures everyone shuffles the same way.
@@ -155,7 +157,7 @@ def timestamp_to_round_slot(ts=0):
     :param ts: timestamp to use. If 0, will use current time
     :return: tuple (round, slot in round)
     """
-    if ts == 0 :
+    if ts == 0:
         ts = time.time()
     the_round = math.floor((ts - common.ORIGIN_OF_TIME) / common.ROUND_TIME_SEC)
     round_start = common.ORIGIN_OF_TIME + the_round * common.ROUND_TIME_SEC
@@ -168,22 +170,23 @@ def timestamp_to_round_slot(ts=0):
 # TODO: time_to_next_round
 
 
-async def get_connect_to(peers, round, address):
+async def get_connect_to(peers, pos_round, address):
     """
     Sends back the list of peers to connect to
     :param peers:
-    :param round:
+    :param pos_round:
     :param address:
     :return:
     """
-    # Todo: Should peers stay in params? better be known by determine, since they will be collected and stored for each round.
+    # Todo: Should peers stay in params? better be known by determine,
+    # since they will be collected and stored for each round.
     # POC: sends a subset of the peers, excluding us.
     # Unique seed for a peer and a round
-    random.seed(address+str(round))
+    random.seed(address+str(pos_round))
     # remove our address - We could also keep it, but not connect to if it's in the list (allows same list for everyone)
     result = [peer for peer in peers if peer[0] != address]
     # TODO: test for this shuffle, make sure it always behaves the same.
-    # TODO: see paper notes for a simpler/safer, verifiable method
+    # TODO: see paper notes for a simpler/safer, verifiable method
     random.shuffle(result)
     # POC: limit to 2 peers
     # return result[:2]
@@ -192,23 +195,28 @@ async def get_connect_to(peers, round, address):
         return [peers[1]]
     return [peers[0]]
 
+
 async def connect_ok_from(msg, access_log):
     """
     Checks if the peer can connect to us
     :param msg:
     :param access_log:
-    :return:
+    :return: reason (string), ok (boolean)
     """
-    # TODO: 0. Check if ip in our MN list, if not drop and warn so we can add firewall rule if needed
+    # TODO: 0. Check if ip in our MN list, if not drop and warn so we can add firewall rule if needed
     posnet, peer_address = msg[:10], msg[10:]
+    reason = None
+    ok = True
     # Check 1. posnet version
     if posnet not in common.POSNET_ALLOW:
         access_log.warning("Bad posnet {} instead of {}".format(posnet, common.POSNET_ALLOW))
-        return False
+        reason = "Bad Posnet {}".format(posnet)
+        ok = False
     # TODO: 2.check peer ip/address matches
     # TODO: 3.check peer ip/address indeed has to connect to us for this round
     # check 3 is only to tell if this peer can use ROUND commands
-    return True
+    return reason, ok
+
 
 if __name__ == "__main__":
     print("I'm a module, can't run!")

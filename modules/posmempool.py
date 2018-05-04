@@ -15,8 +15,10 @@ import aiosqlite3
 # import common
 # import poscrypto
 import posblock
+from sqlitebase import SqliteBase
 
-__version__ = '0.0.3'
+
+__version__ = '0.0.4'
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -41,6 +43,9 @@ SQL_CLEAR = "DELETE FROM pos_messages"
 
 SQL_SINCE = "SELECT * FROM pos_messages WHERE timestamp >= ? ORDER BY timestamp ASC"
 
+# How old a transaction can be to be embedded in a block ? Don't pick too large a delta T
+NOT_OLDER_THAN_SECONDS = 60*30 * 1000
+
 
 class Mempool:
     """
@@ -52,7 +57,7 @@ class Mempool:
         self.app_log = app_log
 
     async def status(self):
-        print("Virtual Method Status")
+        print("Mempool Virtual Method Status")
 
     async def _insert_tx(self, tx):
         print("Virtual Method _insert_tx")
@@ -73,10 +78,17 @@ class Mempool:
         # self._insert_tx(tx)
         # TODO: also add the pubkey in index if present.
 
+    async def async_all(self):
+        """
+        Returns all tx to embed in current block
+        :return:
+        """
+        print("Virtual Method all_tx")
+
 
 class MemoryMempool(Mempool):
     """
-    Memory Storage, POC only
+    Memory Storage, POC only - Deprecated
     """
 
     def __init__(self, verbose=False, app_log=None):
@@ -97,18 +109,23 @@ class MemoryMempool(Mempool):
             self.txs.remove(tx)
 
 
-class SqliteMempool(Mempool):
+class SqliteMempool(Mempool, SqliteBase):
     """
     Sqlite storage backend.
     """
+
     # TODO: Allow for memory mempool
     def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
-        super().__init__(verbose=verbose, app_log=app_log)
+        Mempool.__init__(self, verbose=verbose, app_log=app_log)
+        SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='posmempool.db', app_log=app_log, ram=ram)
+        """
+        # Moved to ancestor
         self.db_path = db_path + 'posmempool.db'
         self.db = None
         self.cursor = None
         self.check()
         self.async_db = None
+        """
 
     # ========================= Generic DB Handling Methods ====================
 
@@ -140,143 +157,6 @@ class SqliteMempool(Mempool):
         self.db = None
         self.cursor = None
 
-    def execute(self, sql, param=None, cursor=None, commit=False):
-        """
-        Safely execute the request
-        :param sql:
-        :param param:
-        :param cursor: optional. will use the locked shared cursor if None
-        :param commit: optional. will commit after sql
-        :return:
-        """
-        if not self.db:
-            raise ValueError("Closed mempool DB")
-        # TODO: add a try count and die if we lock
-        while True:
-            try:
-                if not cursor:
-                    cursor = self.cursor
-                if param:
-                    cursor.execute(sql, param)
-                else:
-                    cursor.execute(sql)
-                break
-            except Exception as e:
-                self.app_log.warning("Database query: {} {}".format(cursor, sql))
-                self.app_log.warning("Database retry reason: {}".format(e))
-                time.sleep(0.1)
-        if commit:
-            self.commit()
-            cursor.close()
-            cursor = None
-        return cursor
-
-    async def async_execute(self, sql, param=None, commit=False):
-        """
-        Safely execute the request
-        :param sql:
-        :param param:
-        :param commit: If True, will commit after the request.
-        :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be close.
-        """
-        if not self.async_db:
-            # TODO: RAM Mode
-            try:
-                # open
-                self.app_log.info("Opening async db")
-                self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop())
-                self.async_db.text_factory = str
-            except Exception as e:
-                self.app_log.warning("async_execute: {}".format(e))
-        # TODO: add a try count and die if we lock
-        while True:
-            try:
-                cursor = await self.async_db.cursor()
-                if param:
-                    # print(sql, param)
-                    await cursor.execute(sql, param)
-                else:
-                    await cursor.execute(sql)
-                break
-            except Exception as e:
-                self.app_log.warning("Database query: {} {}".format(sql, param))
-                self.app_log.warning("Database retry reason: {}".format(e))
-                asyncio.sleep(0.1)
-        if commit:
-            await self.async_commit()
-            await cursor.close()
-            cursor = None
-        return cursor
-
-    def commit(self):
-        """
-        Safe commit
-        :return:
-        """
-        if not self.db:
-            raise ValueError("Closed mempool DB")
-        while True:
-            try:
-                self.db.commit()
-                break
-            except Exception as e:
-                self.app_log.warning("Database retry reason: {}".format(e))
-                time.sleep(0.1)
-
-    async def async_commit(self):
-        """
-        Safe commit
-        :return:
-        """
-        while True:
-            try:
-                await self.async_db.commit()
-                break
-            except Exception as e:
-                self.app_log.warning("Database retry reason: {}".format(e))
-                asyncio.sleep(0.1)
-
-    async def async_fetchone(self, sql, param=None):
-        """
-        Fetch one and Returns data
-        :param sql:
-        :param param:
-        :return:
-        """
-        cursor = await self.async_execute(sql, param)
-        data = await cursor.fetchone()
-        await cursor.close()
-        return data
-
-    async def async_fetchall(self, sql, param=None):
-        """
-        Fetch all and Returns data
-        :param sql:
-        :param param:
-        :return:
-        """
-        cursor = await self.async_execute(sql, param)
-        data = await cursor.fetchall()
-        await cursor.close()
-        return data
-
-    async def async_vacuum(self):
-        """
-        Maintenance
-        :return:
-        """
-        await self.async_execute("VACUUM", commit=True)
-
-    def close(self):
-        if self.db:
-            self.db.close()
-
-    async def async_close(self):
-        # TODO: make sure we call when closing.
-        if self.async_db:
-            await self.async_db.close()
-        print('async close')
-
     # ========================= Real useful Methods ====================
 
     async def async_purge(self):
@@ -284,22 +164,22 @@ class SqliteMempool(Mempool):
         Purge old txs
         :return:
         """
+        # TODO: To be called somehow
         await self.async_execute(SQL_PURGE, commit=True)
 
-    def clear(self):
+    async def clear(self):
         """
         Empty mempool
         :return:
         """
-        self.async_execute(SQL_CLEAR, commit=True)
+        await self.async_execute(SQL_CLEAR, commit=True)
 
     async def async_since(self, date=0):
         """
         returns the list of transactions we got since the given date
         :param date:
-        :return:
+        :return: a list of posblock.PosMessage objects
         """
-        # TODO - return a list of posblock.PosMessage objects
         res = await self.async_fetchall(SQL_SINCE, (date, ))
         res = [posblock.PosMessage().from_list(tx) for tx in res]
         return res
@@ -310,7 +190,14 @@ class SqliteMempool(Mempool):
         :param tx:
         :return:
         """
-        print("TODO insert tx", tx.to_db())
         res = await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=True)
-        # res = self.execute(SQL_INSERT_TX, tx.to_db(), commit=True)
-        print('inserted', res)
+
+    async def async_all(self):
+        """
+        Retuirns all tx from mempool
+        :return:
+        """
+        res = await self.async_fetchall(SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS, ))
+        res = [posblock.PosMessage().from_list(tx) for tx in res]
+        return res
+
