@@ -35,6 +35,8 @@ if __name__ == "__main__":
             pos_chain = SqlitePosChain(verbose=True)
             genesis = pos_chain.genesis_dict()
         else:
+            # If we are updating, let our previous instance close.
+            time.sleep(1)
             my_info = common.POC_MASTER_NODES_LIST[args.index]
             ip = my_info[1]
             port = my_info[2]

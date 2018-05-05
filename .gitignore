@@ -12,5 +12,6 @@ bak
 *.der
 *.pem
 pos_address.txt
+poswallet.json
 .pytest_cache
 poskeys.json

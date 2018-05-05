@@ -7,8 +7,10 @@ Tornado based
 import time
 from enum import Enum
 import os
-# import sys
+import sys
 import json
+from distutils.version import LooseVersion
+import requests
 # import struct
 import asyncio
 import aioprocessing
@@ -38,7 +40,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_int32
 from com_helpers import async_send_void, async_send_txs
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 """
 I use a global object to keep the state and route data between the servers and threads.
@@ -167,6 +169,37 @@ class MnServer(TCPServer):
             txs = await self.mempool.async_since(0)
             # This is a list of PosMessage objects
             await async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
+        elif msg.command == commands_pb2.Command.update:
+            # TODO: rights/auth and config management
+            await self.update(msg.string_value, stream, peer_ip)
+
+    async def update(self, url, stream, peer_ip):
+            app_log.info('Checking version from {}'.format(url))
+            version_url=url+'version.txt'
+            try:
+                version = requests.get(version_url).text.strip()
+                # compare to our version
+                if LooseVersion(__version__) < LooseVersion(version):
+                    app_log.info("Newer {} version, updating.".format(version))
+                    # fetch archive and extract
+                    await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
+                    # restart
+                    args = sys.argv[:]
+                    app_log.warning('Re-spawning {}'.format(' '.join(args)))
+                    args.insert(0, sys.executable)
+                    if sys.platform == 'win32':
+                        args = ['"%s"' % arg for arg in args]
+                    os.execv(sys.executable, args)
+                    self.node.stop()
+                else:
+                    msg = "Keeping our {} version vs distant {}".format(__version__, version)
+                    app_log.info(msg)
+                    await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
+            except Exception as e:
+                app_log.warning("Error {} updating from {}".format(e, url))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
 
 
 """

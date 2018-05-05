@@ -10,10 +10,11 @@ from ecdsa import SigningKey, SECP256k1, VerifyingKey, BadSignatureError
 from hashlib import blake2b
 import time
 import re
+from base64 import b64encode, b64decode
+
 
 # our modules
 import base58
-from base64 import b64encode, b64decode
 try:
     # Failsafe so we can use without common.py module
     import common

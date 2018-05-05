@@ -72,7 +72,7 @@ message Command {
         block = 6;
         tx = 7;
         mempool = 8;
-        //message = 10;
+        update = 9;
     }
     required Type command = 1;
 

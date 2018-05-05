@@ -2,7 +2,6 @@
 Temp Util. Generates a PoS address
 Run from the command line
 
-Not useful, since the poscrypto module does generate a set anyway if none exists.
 """
 
 import sys
@@ -25,12 +24,15 @@ def ensure_no_file(filename):
 
 
 if __name__ == "__main__":
+    """
     # Generates 50 mn addresses
     for i in range(49):
         poscrypto.gen_keys_file("mn{}.json".format(i+1))
+    """
     ensure_no_file(wallet_filename)
     print("Generating keys...")
     try:
         poscrypto.gen_keys_file(wallet_filename)
     except Exception as e:
         print("Error", e)
+    print("{} file created".format(wallet_filename))
