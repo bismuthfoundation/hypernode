@@ -1,4 +1,7 @@
 aioprocessing
+aiosqlite3
 ConcurrentLogHandler
 tornado
 requests
+ecdsa
+protobuf
