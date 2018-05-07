@@ -16,12 +16,12 @@ from poschain import SqlitePosChain
 import poscrypto
 import com_helpers
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS node')
-    parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4]')
+    parser.add_argument("-i", "--index", type=int, default = -1, help='Demo address index [0-4]')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("--action", type=str, default=None, help='Specific action. ')
     args = parser.parse_args()
@@ -42,7 +42,11 @@ if __name__ == "__main__":
             port = my_info[2]
             address = my_info[0]
             peers = common.POC_MASTER_NODES_LIST
-            com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet="mn_temp/mn{}.json".format(args.index))
+            if args.index >= 0:
+                wallet_name = "mn_temp/mn{}.json".format(args.index)
+            else:
+                wallet_name = "poswallet.json"
+            com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet=wallet_name)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:

@@ -29,7 +29,13 @@ async def round_start():
     print("")
     print("Timeslots test")
     print("--------------------------")
-    expected = [(common.ORIGIN_OF_TIME, 0, 0), (common.ORIGIN_OF_TIME+common.POS_SLOT_TIME_SEC*(1.5), 0, 1), (common.ORIGIN_OF_TIME+common.ROUND_TIME_SEC+common.POS_SLOT_TIME_SEC*1.5, 1, 1)]
+    expected = [(common.ORIGIN_OF_TIME, 0, 0),
+                (common.ORIGIN_OF_TIME+common.POS_SLOT_TIME_SEC*(1.5), 0, 1),
+                (common.ORIGIN_OF_TIME+common.ROUND_TIME_SEC+common.POS_SLOT_TIME_SEC*0.5, 1, 0),
+                (common.ORIGIN_OF_TIME+common.ROUND_TIME_SEC+common.POS_SLOT_TIME_SEC*1.5, 1, 1),
+                (common.ORIGIN_OF_TIME+common.ROUND_TIME_SEC+common.POS_SLOT_TIME_SEC*2.5, 1, 2),
+                (common.ORIGIN_OF_TIME+common.ROUND_TIME_SEC+common.POS_SLOT_TIME_SEC*3.5, 1, 3)
+                ]
     for (test, expected_round, expected_slot) in expected:
         calc_round, calc_slot = determine.timestamp_to_round_slot(test)
         print("Time {}: Round {} - Slot {} (expected {} - {})".format(test, calc_round, calc_slot, expected_round, expected_slot))

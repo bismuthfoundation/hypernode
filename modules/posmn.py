@@ -175,13 +175,15 @@ class MnServer(TCPServer):
 
     async def update(self, url, stream, peer_ip):
             app_log.info('Checking version from {}'.format(url))
-            version_url=url+'version.txt'
+            version_url = url + 'version.txt'
             try:
                 version = requests.get(version_url).text.strip()
                 # compare to our version
                 if LooseVersion(__version__) < LooseVersion(version):
                     app_log.info("Newer {} version, updating.".format(version))
                     # fetch archive and extract
+                    common.update_source(url + "mnd.tgz", app_log)
+                    # Todo: bootstrap db on condition or other message ?
                     await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                     # restart
                     args = sys.argv[:]
@@ -563,6 +565,7 @@ class Posmn:
                 self.previous_sir = self.sir
                 if self.round != self.previous_round:
                     # Update all round related info, we get here only once at the beginning of a new round
+                    await self.refresh_last_block()
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
                     self.previous_round = self.round
@@ -573,7 +576,7 @@ class Posmn:
                     self.connect_to = await determine.get_connect_to(self.peers, self.round, self.address)
                     tickets = await determine.mn_list_to_tickets(self.peers)
                     # TODO: real hash
-                    self.slots = await determine.tickets_to_delegates(tickets, common.POC_LAST_BROADHASH)
+                    self.slots = await determine.tickets_to_delegates(tickets, self.previous_hash)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
                     self.test_slots = await determine.mn_list_to_test_slots(self.peers, self.slots)

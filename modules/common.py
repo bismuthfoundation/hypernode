@@ -5,10 +5,14 @@ Common variables and helpers for PoS
 Serves as config file for POC and tests
 """
 
+import os
+import shutil
+import requests
+import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.1'
+__version__ = '0.0.12'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -82,6 +86,60 @@ GENESIS_SEED = 'BIG_BANG_HASH'
 GENESIS_HASH = blake2b(GENESIS_SEED.encode('utf-8'), digest_size=20)
 GENESIS_ADDRESS = 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne'
 GENESIS_SIGNATURE = ''
+
+
+# GENERIC HELPERS
+
+
+def download_file(url, filename):
+    """
+    Fetch a file from an URL with progres indicator
+    :param url:
+    :param filename:
+    :return:
+    """
+    try:
+        r = requests.get(url, stream=True)
+        total_size = int(r.headers.get('content-length')) / 1024
+        with open(filename, 'wb') as filename:
+            chunkno = 0
+            for chunk in r.iter_content(chunk_size=1024):
+                if chunk:
+                    chunkno = chunkno + 1
+                    if chunkno % 10000 == 0:  # every x chunks
+                        print("Downloaded {} %".format(int(100 * ((chunkno) / total_size))))
+
+                    filename.write(chunk)
+                    filename.flush()
+            print("Downloaded 100 %")
+
+        return filename
+    except:
+        raise
+
+
+def update_source(url, app_log=None):
+    """
+    Update source file from an url
+    :param url: url of the tgz archive
+    :param app_log: optional log handler
+    :return:
+    """
+    try:
+        archive_path = "./mnd.tgz"
+        download_file(url, archive_path)
+        tar = tarfile.open(archive_path)
+        tar.extractall("./")
+        tar.close()
+        # move to current dir
+        from_dir = "./mnd_zip/"
+        files = os.listdir(from_dir)
+        for f in files:
+            shutil.move(from_dir + f, './' + f)
+    except:
+        if app_log:
+            app_log.warning("Something went wrong while update_source, aborted")
+        raise
 
 
 if __name__ == "__main__":
