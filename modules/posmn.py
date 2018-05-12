@@ -81,6 +81,7 @@ class MnServer(TCPServer):
         global access_log
         global app_log
         peer_ip, fileno = address
+        peer_port = '00000'
         error_shown = False
         access_log.info("SRV: Incoming connection from {}".format(peer_ip))
         # TODO: here, use tiered system to reserve safe slots for jurors,
@@ -93,16 +94,16 @@ class MnServer(TCPServer):
             if msg.command == commands_pb2.Command.hello:
                 access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, peer_ip))
                 reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
+                peer_port = msg.string_value[10:15]
                 if not ok:
                     # TODO: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
                     await async_send_string(commands_pb2.Command.ko, reason, stream, peer_ip)
                     return
                 # Right version, we send our hello as well.
-                await async_send_string(commands_pb2.Command.hello, common.POSNET
-                                        + com_helpers.MY_NODE.address, stream, peer_ip)
+                await async_send_string(commands_pb2.Command.hello, self.node.hello_string(), stream, peer_ip)
                 # Add the peer to inbound list
-                self.node.add_inbound(peer_ip, {'hello': msg.string_value})
+                self.node.add_inbound(peer_ip, peer_port, {'hello': msg.string_value})
             else:
                 access_log.info("SRV: {} did not say hello".format(peer_ip))
                 # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -134,7 +135,7 @@ class MnServer(TCPServer):
             """
             return
         finally:
-            self.node.remove_inbound(peer_ip)
+            self.node.remove_inbound(peer_ip, peer_port)
 
     async def _handle_msg(self, msg, stream, peer_ip):
         """
@@ -302,36 +303,42 @@ class Posmn:
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
 
-    def add_inbound(self, ip, properties=None):
+    def add_inbound(self, ip, port, properties=None):
         """
         Safely add a distant peer from server coroutine.
         This is called only after initial exchange and approval
         :param ip:
+        :param port:
         :param properties:
         :return:
         """
+        ip = '{}:{}'.format(ip, port)
         with self.inbound_lock:
             self.inbound[ip] = properties
 
-    def remove_inbound(self, ip):
+    def remove_inbound(self, ip, port):
         """
         Safely remove a distant peer from server coroutine
         :param ip:
+        :param port:
         :return:
         """
         try:
             with self.inbound_lock:
+                ip = '{}:{}'.format(ip, port)
                 del self.inbound[ip]
         except:
             pass
 
-    def update_inbound(self, ip, properties):
+    def update_inbound(self, ip, port, properties):
         """
         Safely update info for a connected peer
         :param ip:
+        :param port:
         :param properties:
         :return:
         """
+        ip = '{}:{}'.format(ip, port)
         with self.inbound_lock:
             self.inbound[ip] = properties
 
@@ -455,7 +462,6 @@ class Posmn:
         try:
             nb = 0
             total = 0
-            print(txs)
             for tx in txs:
                 # Will raise if error digesting, return false if already present in mempool or chain
                 if await self.mempool.digest_tx(tx, poschain=self.poschain):
@@ -506,6 +512,13 @@ class Posmn:
             app_log.error("Error forging: {}".format(e))
             return False
 
+    def hello_string(self):
+        """
+        Builds up the hello string
+        :return:
+        """
+        return common.POSNET + str(self.port).zfill(5) + self.address
+
     async def client_worker(self, peer):
         """
         Client worker, running in a coroutine.
@@ -523,7 +536,7 @@ class Posmn:
             # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET+self.address, stream, ip)
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, ip)
             msg = await com_helpers.async_receive(stream, peer[1])
             if self.verbose:
                 access_log.info("Worker got {}".format(msg.__str__().strip()))
@@ -561,8 +574,8 @@ class Posmn:
                         msg = await com_helpers.async_receive(stream, peer[1])
                         if msg.command != commands_pb2.Command.mempool:
                             raise ValueError("Bad answer to mempool command")
-                        if self.verbose:
-                            access_log.info("Worker got mempool answer {}".format(msg.__str__().strip()))
+                        # if self.verbose:
+                        #    access_log.info("Worker got mempool answer {}".format(msg.__str__().strip()))
                         try:
                             await self.digest_txs(msg.tx_values, ip)
                         except Exception as e:
