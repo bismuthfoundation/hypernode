@@ -3,6 +3,8 @@ A Safe thread/process object interfacing the PoS chain
 """
 
 # import threading
+import os
+import sys
 import json
 import sqlite3
 
@@ -16,8 +18,6 @@ from sqlitebase import SqliteBase
 __version__ = '0.0.4'
 
 
-SQL_CREATE_POSCHAIN = ""
-
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
 
 SQL_INSERT_BLOCK = "INSERT INTO pos_chain VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -26,8 +26,75 @@ SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 SQL_TX_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
 
+SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
+
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages WHERE block_height = ? "
 
+""" pos chain db structure """
+
+SQL_CREATE_ADDRESSES = "CREATE TABLE addresses (\
+    address VARCHAR (34) PRIMARY KEY,\
+    pubkey  BLOB (64),\
+    ip      VARCHAR (32),\
+    alias   VARCHAR (32),\
+    extra   STRING\
+    );"
+
+SQL_CREATE_POS_CHAIN = "CREATE TABLE pos_chain (\
+    height          INTEGER      PRIMARY KEY,\
+    round           INTEGER,\
+    sir             INTEGER,\
+    timestamp       INTEGER,\
+    previous_hash   BLOB (20),\
+    msg_count       INTEGER,\
+    uniques_sources INTEGER,\
+    signature       BLOB (64),\
+    block_hash      BLOB (20),\
+    received_by     VARCHAR34,\
+    forger          VARCHAR (34),\
+    UNIQUE (\
+        round,\
+        sir\
+    )\
+    ON CONFLICT FAIL\
+    );"
+
+SQL_CREATE_POS_MESSAGES = "CREATE TABLE pos_messages (\
+    txid         BLOB (64)    PRIMARY KEY,\
+    block_height INTEGER,\
+    timestamp    INTEGER,\
+    sender       VARCHAR (34),\
+    recipient    VARCHAR (34),\
+    what         INTEGER,\
+    params       STRING,\
+    value        INTEGER,\
+    pubkey       BLOB (64),\
+    received     INTEGER\
+    );"
+
+SQL_CREATE_POS_ROUNDS = "CREATE TABLE pos_rounds (\
+    round      INTEGER PRIMARY KEY,\
+    active_mns TEXT,\
+    slots      STRING,\
+    test_slots STRING\
+    );"
+
+SQL_INSERT_GENESIS = "INSERT INTO pos_chain (forger, received_by, block_hash,\
+                          signature, uniques_sources, msg_count, previous_hash,\
+                          timestamp, sir, round, height) VALUES (\
+                          'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne',\
+                          NULL,\
+                          X'9094D7B35AC3E924C20545486F75D6E10C8B1EA7',\
+                          X'323C6766C8C0267C6CB5B8D4161F1D4E0F7DB0F64DD52942A086240AE9561B2D2A3E1DC91FEBBF83C636E7E092931E8FD96E2EB4103BA466C225128A6339F9B7',\
+                          0,\
+                          0,\
+                          X'C0CB310E2877D73E2F29A949AABB8FEF0EA00EDF',\
+                          1522419000,\
+                          0,\
+                          0,\
+                          0\
+                      );\
+                    "
 
 class PosChain:
     """
@@ -39,7 +106,7 @@ class PosChain:
         self.block_height = 0
         self.app_log = app_log
 
-    def status(self):
+    async def status(self):
         print("PosChain Virtual Method Status")
 
     def genesis_block(self):
@@ -69,6 +136,13 @@ class PosChain:
         """
         print("PosChain Virtual Method last_block")
 
+    async def tx_exists(self, txid):
+        """
+        Tell is the given txid is in our mempool
+        :return:
+        """
+        print("Virtual Method tx_exists")
+
 
 class MemoryPosChain(PosChain):
     """
@@ -80,8 +154,8 @@ class MemoryPosChain(PosChain):
         # Just a list
         self.blocks = [self.genesis_block()]
 
-    def status(self):
-        return json.dumps(self.blocks)
+    async def status(self):
+        return self.blocks
 
 
 class SqlitePosChain(PosChain, SqliteBase):
@@ -100,47 +174,79 @@ class SqlitePosChain(PosChain, SqliteBase):
         # insert genesis block with fixed TS
 
         self.app_log.info("pos chain Check")
-        # Create DB
-        self.db = sqlite3.connect(self.db_path, timeout=1)
-        self.db.text_factory = str
-        self.cursor = self.db.cursor()
-        # check if db needs recreating
-        self.cursor.execute("PRAGMA table_info('addresses')")
-        res = self.cursor.fetchall()
-        #print(len(res), res)
-        self.cursor.execute("PRAGMA table_info('pos_chain')")
-        res = self.cursor.fetchall()
-        #print(len(res), res)
-        self.cursor.execute("PRAGMA table_info('pos_messages')")
-        res = self.cursor.fetchall()
-        #print(len(res), res)
-        self.cursor.execute("PRAGMA table_info('pos_rounds')")
-        res = self.cursor.fetchall()
-        #print(len(res), res)
-        # TODO
-        """
-        5 [(0, 'address', 'VARCHAR (34)', 0, None, 1), (1, 'pubkey', 'BLOB (64)', 0, None, 0), (2, 'ip', 'VARCHAR (32)', 0, None, 0), (3, 'alias', 'VARCHAR (32)', 0, None, 0), (4, 'extra', 'STRING', 0, None, 0)]
-        11 [(0, 'height', 'INTEGER', 0, None, 1), (1, 'round', 'INTEGER', 0, None, 0), (2, 'sir', 'INTEGER', 0, None, 0), (3, 'timestamp', 'INTEGER', 0, None, 0), (4, 'previous_hash', 'BLOB (20)', 0, None, 0), (5, 'msg_count', 'INTEGER', 0, None, 0), (6, 'uniques_sources', 'INTEGER', 0, None, 0), (7, 'signature', 'BLOB (64)', 0, None, 0), (8, 'block_hash', 'BLOB (20)', 0, None, 0), (9, 'received_by', 'STRING', 0, None, 0), (10, 'forger', 'VARCHAR (34)', 0, None, 0)]
-        10 [(0, 'txid', 'BLOB (64)', 0, None, 1), (1, 'block_height', 'INTEGER', 0, None, 0), (2, 'timestamp', 'INTEGER', 0, None, 0), (3, 'sender', 'VARCHAR (34)', 0, None, 0), (4, 'recipient', 'VARCHAR (34)', 0, None, 0), (5, 'what', 'INTEGER', 0, None, 0), (6, 'params', 'STRING', 0, None, 0), (7, 'value', 'INTEGER', 0, None, 0), (8, 'pubkey', 'BLOB (64)', 0, None, 0), (9, 'received', 'INTEGER', 0, None, 0)]
-        4 [(0, 'round', 'INTEGER', 0, None, 1), (1, 'active_mns', 'TEXT', 0, None, 0), (2, 'slots', 'STRING', 0, None, 0), (3, 'test_slots', 'STRING', 0, None, 0)]
-        """
+        try:
+            if not os.path.isfile(self.db_path):
+                res = -1
+            else:
+                # Test DB
+                res = 1
+                self.db = sqlite3.connect(self.db_path, timeout=1)
+                self.db.text_factory = str
+                self.cursor = self.db.cursor()
+                # check if db needs recreating
+                self.cursor.execute("PRAGMA table_info('addresses')")
+                res1 = self.cursor.fetchall()
+                print(len(res1), res1)
+                if res1 != 5:
+                    res = 0
+                self.cursor.execute("PRAGMA table_info('pos_chain')")
+                res2 = self.cursor.fetchall()
+                print(len(res2), res2)
+                if res2 != 11:
+                    res = 0
+                self.cursor.execute("PRAGMA table_info('pos_messages')")
+                res3 = self.cursor.fetchall()
+                print(len(res3), res3)
+                if res3 != 10:
+                    res = 0
+                self.cursor.execute("PRAGMA table_info('pos_rounds')")
+                res4 = self.cursor.fetchall()
+                print(len(res4), res4)
+                if res4 != 4:
+                    res = 0
 
-        """
-        if len(res) != 10:
-            self.db.close()
-            os.remove(self.db_path)
-            self.db = sqlite3.connect(self.db_path, timeout=1)
-            self.db.text_factory = str
-            self.cursor = self.db.cursor()
-            self.execute(SQL_CREATE_MEMPOOL)
-            self.commit()
-            self.app_log.info("Status: Recreated mempool file")
-        """
-        test = self.execute(SQL_LAST_BLOCK).fetchone()
-        if not test:
-            # empty db, try to bootstrap
-            gen = self.genesis_block()
-            self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
+            # TODO
+            """
+            5 [(0, 'address', 'VARCHAR (34)', 0, None, 1), (1, 'pubkey', 'BLOB (64)', 0, None, 0), (2, 'ip', 'VARCHAR (32)', 0, None, 0), (3, 'alias', 'VARCHAR (32)', 0, None, 0), (4, 'extra', 'STRING', 0, None, 0)]
+            11 [(0, 'height', 'INTEGER', 0, None, 1), (1, 'round', 'INTEGER', 0, None, 0), (2, 'sir', 'INTEGER', 0, None, 0), (3, 'timestamp', 'INTEGER', 0, None, 0), (4, 'previous_hash', 'BLOB (20)', 0, None, 0), (5, 'msg_count', 'INTEGER', 0, None, 0), (6, 'uniques_sources', 'INTEGER', 0, None, 0), (7, 'signature', 'BLOB (64)', 0, None, 0), (8, 'block_hash', 'BLOB (20)', 0, None, 0), (9, 'received_by', 'STRING', 0, None, 0), (10, 'forger', 'VARCHAR (34)', 0, None, 0)]
+            10 [(0, 'txid', 'BLOB (64)', 0, None, 1), (1, 'block_height', 'INTEGER', 0, None, 0), (2, 'timestamp', 'INTEGER', 0, None, 0), (3, 'sender', 'VARCHAR (34)', 0, None, 0), (4, 'recipient', 'VARCHAR (34)', 0, None, 0), (5, 'what', 'INTEGER', 0, None, 0), (6, 'params', 'STRING', 0, None, 0), (7, 'value', 'INTEGER', 0, None, 0), (8, 'pubkey', 'BLOB (64)', 0, None, 0), (9, 'received', 'INTEGER', 0, None, 0)]
+            4 [(0, 'round', 'INTEGER', 0, None, 1), (1, 'active_mns', 'TEXT', 0, None, 0), (2, 'slots', 'STRING', 0, None, 0), (3, 'test_slots', 'STRING', 0, None, 0)]
+            """
+
+            if res == -1:
+                try:
+                    self.db.close()
+                except:
+                    pass
+                try:
+                    os.remove(self.db_path)
+                except:
+                    pass
+                self.db = sqlite3.connect(self.db_path, timeout=1)
+                self.db.text_factory = str
+                self.cursor = self.db.cursor()
+                self.execute(SQL_CREATE_ADDRESSES)
+                self.execute(SQL_CREATE_POS_CHAIN)
+                self.execute(SQL_CREATE_POS_MESSAGES)
+                self.execute(SQL_CREATE_POS_ROUNDS)
+                self.commit()
+                self.app_log.info("Status: Recreated poschain database")
+
+            # Now test data
+            test = self.execute(SQL_LAST_BLOCK).fetchone()
+            if not test:
+                # empty db, try to bootstrap - only Genesis MN can do this
+                if poscrypto.ADDRESS == common.GENESIS_ADDRESS:
+                    gen = self.genesis_block()
+                    self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
+                else:
+                    self.execute(SQL_INSERT_GENESIS)
+                    self.commit()
+        except Exception as e:
+            self.app_log.error("Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
 
         self.db.close()
         self.db = None
@@ -153,7 +259,12 @@ class SqlitePosChain(PosChain, SqliteBase):
         """
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
         # print(block)
+        self.block_height = block['height']
         return block
+
+    async def status(self):
+        status = {"block_height": self.block_height, "Genesis": common.GENESIS_ADDRESS}
+        return status
 
     async def insert_block(self, block):
         """
@@ -162,10 +273,25 @@ class SqlitePosChain(PosChain, SqliteBase):
         :return:
         """
         # Save the txs
+        # TODO: if error inserting block, delete the txs...
         for tx in block.txs:
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         # Then the block and commit
         res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+        if block.height > self.block_height:
+            # update our height
+            self.block_height = block.height
+
+    async def tx_exists(self, txid):
+        """
+        Tell is the given txid is in our chain
+        :return:
+        """
+        exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid, ) )
+        if exists:
+            self.app_log.info("{} already in our chain".format(txid))
+            return True
+        return False
 
 
 if __name__ == "__main__":

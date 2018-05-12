@@ -5,6 +5,7 @@ __pycache__
 *.db
 .data
 data
+data*
 bak
 *.log
 *.log.*

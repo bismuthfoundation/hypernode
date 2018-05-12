@@ -44,9 +44,12 @@ if __name__ == "__main__":
             peers = common.POC_MASTER_NODES_LIST
             if args.index >= 0:
                 wallet_name = "mn_temp/mn{}.json".format(args.index)
+                # allows to run several MN on the same machine - debug/dev only
+                datadir = "./data{}".format(args.index)
             else:
                 wallet_name = "poswallet.json"
-            com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet=wallet_name)
+                datadir = "./data"
+            com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet=wallet_name, datadir=datadir)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:

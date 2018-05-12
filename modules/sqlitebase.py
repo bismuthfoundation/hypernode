@@ -45,7 +45,7 @@ class SqliteBase():
         """
         if not self.db:
             raise ValueError("Closed {} DB".format(self.db_name))
-        # TODO: add a try count and die if we lock
+        tries = 0
         while True:
             try:
                 if not cursor:
@@ -58,7 +58,12 @@ class SqliteBase():
             except Exception as e:
                 self.app_log.warning("Database query {}: {}".format(self.db_name, sql))
                 self.app_log.warning("Database retry reason: {}".format(e))
+                tries += 1
+                if tries >= 10:
+                    self.app_log.error("Database Error, closing")
+                    raise ValueError("Too many retries")
                 time.sleep(0.1)
+
         if commit:
             self.commit()
             cursor.close()
@@ -144,6 +149,8 @@ class SqliteBase():
         cursor = await self.async_execute(sql, param)
         data = await cursor.fetchone()
         await cursor.close()
+        if not data:
+            return None
         if as_dict:
             return dict(data)
         return tuple(data)

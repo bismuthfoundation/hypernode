@@ -82,16 +82,16 @@ class MnServer(TCPServer):
         global app_log
         peer_ip, fileno = address
         error_shown = False
-        access_log.info("Incoming connection from {}".format(peer_ip))
+        access_log.info("SRV: Incoming connection from {}".format(peer_ip))
         # TODO: here, use tiered system to reserve safe slots for jurors,
         # some slots for non juror mns, and some others for other clients (non mn clients)
         try:
             # Get first message, we expect an hello with version number and address
             msg = await async_receive(stream, peer_ip)
             if self.verbose:
-                access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
+                access_log.info("SRV: Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
             if msg.command == commands_pb2.Command.hello:
-                access_log.info("Got Hello {} from {}".format(msg.string_value, peer_ip))
+                access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, peer_ip))
                 reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
                 if not ok:
                     # TODO: send reason of deny?
@@ -104,7 +104,7 @@ class MnServer(TCPServer):
                 # Add the peer to inbound list
                 self.node.add_inbound(peer_ip, {'hello': msg.string_value})
             else:
-                access_log.info("{} did not say hello".format(peer_ip))
+                access_log.info("SRV: {} did not say hello".format(peer_ip))
                 # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
                 await async_send_string(commands_pb2.Command.ko, "Did not say hello", stream, peer_ip)
                 return
@@ -116,17 +116,17 @@ class MnServer(TCPServer):
                     await self._handle_msg(msg, stream, peer_ip)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
-                    access_log.info("Peer {} left.".format(peer_ip))
+                    access_log.info("SRV: Peer {} left.".format(peer_ip))
                     error_shown = True
                     return
                 except Exception as e:
                     if not error_shown:
                         what = str(e)
                         if 'OK' not in what:
-                            app_log.error("handle_stream {} for ip {}".format(what, peer_ip))
+                            app_log.error("SRV: handle_stream {} for ip {}".format(what, peer_ip))
                     return
         except Exception as e:
-            app_log.error("TCP Server init {}: Error {}".format(peer_ip, e))
+            app_log.error("SRV: TCP Server init {}: Error {}".format(peer_ip, e))
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -146,7 +146,7 @@ class MnServer(TCPServer):
         """
         global access_log
         if self.verbose:
-            access_log.info("Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
+            access_log.info("SRV: Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
         # Don't do a thing.
         # if msg.command == commands_pb2.Command.ping:
         #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
@@ -154,19 +154,22 @@ class MnServer(TCPServer):
         if msg.command == commands_pb2.Command.tx:
             # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
             # external txs from a "controller / wallet or such
-            for tx in msg.tx_values:
-                try:
-                    # Will raise if error
-                    await self.mempool.digest_tx(tx)
-                    app_log.info("Digested tx from {}".format(peer_ip))
-                    await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
-                except Exception as e:
-                    app_log.warning("Error {} digesting tx from {}".format(e, peer_ip))
-                    await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
+            try:
+                await self.digest_txs(msg.tx_values, peer_ip)
+                await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
+            except Exception as e:
+                app_log.warning("SRV: Error {} digesting tx from {}".format(e, peer_ip))
+                await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
         elif msg.command == commands_pb2.Command.mempool:
-            # TODO: digest the received txs
+            # peer mempool extract
+            try:
+                await self.node.digest_txs(msg.tx_values, peer_ip)
+            except Exception as e:
+                app_log.warning("SRV: Error {} digesting tx from {}".format(e, peer_ip))
             # TODO: use clients stats to get real since
             txs = await self.mempool.async_since(0)
+            if self.verbose:
+                app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
             # This is a list of PosMessage objects
             await async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
         elif msg.command == commands_pb2.Command.update:
@@ -232,7 +235,7 @@ class Posmn:
 
     stop_event = aioprocessing.AioEvent()
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json"):
+    def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json", datadir="data"):
         global app_log
         global access_log
         self.ip = ip
@@ -243,31 +246,38 @@ class Posmn:
         self.server_thread = None
         self.server = None
         self.state = MNState.START
+        self.datadir = datadir
         # list of peers I should stay connected to for a given round
         self.connect_to = []
         # Does the node try to connect to others?
         self.connecting = False
-        self.init_log()
-        poscrypto.load_keys(wallet)
-        # Time sensitive props
-        self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log)
-        self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log)
-        self.is_delegate = False
-        self.round = -1
-        self.sir = -1
-        self.previous_round = 0
-        self.previous_sir = 0
-        self.forger = None
-        self.forged = False
-        #
-        self.last_height = 0
-        self.previous_hash = ''
-        self.last_round = 0
-        self.last_sir = 0
-        # Locks - Are they needed?
-        self.round_lock = aioprocessing.Lock()
-        self.clients_lock = aioprocessing.Lock()
-        self.inbound_lock = aioprocessing.Lock()
+        try:
+            self.init_log()
+            poscrypto.load_keys(wallet)
+            # Time sensitive props
+            self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log, db_path=datadir+'/')
+            self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/')
+            self.is_delegate = False
+            self.round = -1
+            self.sir = -1
+            self.previous_round = 0
+            self.previous_sir = 0
+            self.forger = None
+            self.forged = False
+            #
+            self.last_height = 0
+            self.previous_hash = ''
+            self.last_round = 0
+            self.last_sir = 0
+            # Locks - Are they needed?
+            self.round_lock = aioprocessing.Lock()
+            self.clients_lock = aioprocessing.Lock()
+            self.inbound_lock = aioprocessing.Lock()
+        except Exception as e:
+            print("Error creating posmn: {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
 
     def init_log(self):
         global app_log
@@ -288,7 +298,9 @@ class Posmn:
         formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
-        app_log.info("PoS MN {} Starting with pool address {}.".format(__version__, self.address))
+        app_log.info("PoS MN {} Starting with pool address {}, data dir '{}'.".format(__version__, self.address, self.datadir))
+        if not os.path.isdir(self.datadir):
+            os.makedirs(self.datadir)
 
     def add_inbound(self, ip, properties=None):
         """
@@ -434,6 +446,25 @@ class Posmn:
         self.last_height, self.previous_hash = last_block['height'], last_block['block_hash']
         self.last_round, self.last_sir = last_block['round'], last_block['sir']
 
+    async def digest_txs(self, txs, peer_ip):
+        """
+        Checks tx and digest if they are new
+        :param txs:
+        :return:
+        """
+        try:
+            nb = 0
+            total = 0
+            print(txs)
+            for tx in txs:
+                # Will raise if error digesting, return false if already present in mempool or chain
+                if await self.mempool.digest_tx(tx, poschain=self.poschain):
+                    nb += 1
+                total += 1
+            app_log.info("Digested {}/{} tx(s) from {}".format(nb, total, peer_ip))
+        except Exception as e:
+            app_log.warning("Error {} digesting tx".format(e))
+
     async def forge(self):
         """
         Consensus has been reached, we are forger, forge and send block
@@ -526,6 +557,17 @@ class Posmn:
                         txs = await self.mempool.async_since(self.clients[ip][com_helpers.STATS_LASTMPL])
                         self.clients[ip][com_helpers.STATS_LASTMPL] = time.time()
                         await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, ip)
+                        # Peer will answer with its mempool
+                        msg = await com_helpers.async_receive(stream, peer[1])
+                        if msg.command != commands_pb2.Command.mempool:
+                            raise ValueError("Bad answer to mempool command")
+                        if self.verbose:
+                            access_log.info("Worker got mempool answer {}".format(msg.__str__().strip()))
+                        try:
+                            await self.digest_txs(msg.tx_values, ip)
+                        except Exception as e:
+                            app_log.warning("Error {} digesting tx from {}".format(e, ip))
+
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
@@ -636,9 +678,10 @@ class Posmn:
         :return: MN Status info
         """
         global app_log
+        poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
-                  'chain': self.poschain.status(),
+                  'chain': poschain_status,
                   'mempool': mempool_status,
                   'outbound': list(self.clients.keys()),
                   'inbound': list(self.inbound.keys()),

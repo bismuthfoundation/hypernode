@@ -133,6 +133,7 @@ Base ok, Tornado and async/await, too.
 wip
 
 - Hello and ping ok
+- Memool sync in progress, base ok
 
 ## 3.4 resources management
 
@@ -155,7 +156,7 @@ Dropped. Would take longer than going straight with SQLite
 ## 4.3 SQLite prototype
 
 DB Definition ok
-TODO: Add schema
+Schema ok
 
 ## 4.4 Basic validity checks
 
