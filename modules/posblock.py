@@ -329,5 +329,77 @@ class PosMessage:
         poscrypto.check_sig(self.txid, self.pubkey, self.to_raw())
 
 
+class PosHeight:
+    """
+    PoS Height is the status of the chain state
+    This object represents the current height and content of a given node.
+    """
+
+    props = ('height', 'round', 'sir', 'block_hash', 'uniques', 'uniques10', 'forgers', 'forgers10')
+
+    # Properties that need encoding for string representation
+    hex_encodable = ('block_hash')
+
+    def __init__(self, verbose=False):
+        self.verbose = verbose
+        self.height = 0
+        self.round = 0
+        self.sir = 0
+        self.block_hash = b''
+        self.uniques = 0
+        self.uniques10 = 0
+        self.forgers = 0
+        self.forgers10 = 0
+
+    def to_proto(self, height):
+        """
+        Fills in the protobuf object "Height" section
+        :return:
+        """
+        height.height, height.round, height.sir = self.height, self.round, self.sir
+        height.block_hash = self.block_hash
+        height.uniques, height.uniques10 = self.uniques, self.uniques10
+        height.forgers, height.forgers10 = self.forgers, self.forgers10
+
+    def from_proto(self, height_proto):
+        """
+        creates from a protobuf Height object
+        :return:
+        """
+        self.height, self.round, self.sir = height_proto.height, height_proto.round, height_proto.sir
+        self.block_hash = height_proto.block_hash
+        self.uniques, self.uniques10 =  height_proto.uniques, height_proto.uniques10
+        self.forgers, self.forgers10 = height_proto.forgers, height_proto.forgers10
+        return self
+
+    def from_dict(self, height_dict):
+        """
+        Converts a dict to the native object format
+        :param height_dict:
+        :return:
+        """
+        for prop in self.props:
+            if prop in height_dict:
+                # do not override what may not be passed
+                value = height_dict[prop]
+                self.__dict__[prop] = value
+        return self
+
+    def to_dict(self, as_hex=False):
+        """
+        Converts the native object format to a dict representing a height status
+        :param as_hex: convert raw buffers to ghex string so we can json_encode later.
+        :return:
+        """
+        # txs
+        height_dict = dict()
+        # Main block values
+        for prop in self.props:
+            height_dict[prop] = self.__dict__[prop]
+            if as_hex and prop in self.hex_encodable:
+                height_dict[prop] = poscrypto.raw_to_hex(height_dict[prop])
+        return height_dict
+
+
 if __name__ == "__main__":
     print("I'm a module, can't run!")

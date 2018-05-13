@@ -12,7 +12,7 @@ import math
 import common
 import poscrypto
 
-__version__ = '0.0.2'
+__version__ = '0.0.21'
 
 # local verbose switch
 VERBOSE = True
@@ -188,8 +188,8 @@ async def get_connect_to(peers, pos_round, address):
     # TODO: test for this shuffle, make sure it always behaves the same.
     # TODO: see paper notes for a simpler/safer, verifiable method
     random.shuffle(result)
-    # POC: limit to 2 peers
-    # return result[:2]
+    # POC: limit to 3 peers
+    return result[:3]
     # Temp test with 2 nodes only
     if "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne" == address:
         return [peers[1]]

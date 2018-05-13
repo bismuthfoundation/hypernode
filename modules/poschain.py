@@ -12,10 +12,10 @@ import sqlite3
 # Our modules
 import common
 import poscrypto
-from posblock import PosBlock, PosMessage
+from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -29,6 +29,15 @@ SQL_TX_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages WHERE block_height = ? "
+
+SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
+
+SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
+SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers10 FROM pos_chain WHERE height > ?"
+
+SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
+SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques10 FROM pos_messages WHERE block_height > ?"
+
 
 """ pos chain db structure """
 
@@ -96,6 +105,7 @@ SQL_INSERT_GENESIS = "INSERT INTO pos_chain (forger, received_by, block_hash,\
                       );\
                     "
 
+
 class PosChain:
     """
     Generic Class
@@ -105,6 +115,7 @@ class PosChain:
         self.verbose = verbose
         self.block_height = 0
         self.app_log = app_log
+        self.height_status = None
 
     async def status(self):
         print("PosChain Virtual Method Status")
@@ -264,6 +275,8 @@ class SqlitePosChain(PosChain, SqliteBase):
 
     async def status(self):
         status = {"block_height": self.block_height, "Genesis": common.GENESIS_ADDRESS}
+        height_status = await self.async_height()
+        status.update(height_status.to_dict(as_hex=True))
         return status
 
     async def insert_block(self, block):
@@ -278,6 +291,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         # Then the block and commit
         res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+        self._invalidate_height_status()
         if block.height > self.block_height:
             # update our height
             self.block_height = block.height
@@ -292,6 +306,42 @@ class SqlitePosChain(PosChain, SqliteBase):
             self.app_log.info("{} already in our chain".format(txid))
             return True
         return False
+
+    def _invalidate_height_status(self):
+        """
+        Something changed in our chain, invalidate the height status.
+        It will then be recalc when needed.
+        :return:
+        """
+        self.height_status = None
+
+    async def async_height(self):
+        """
+        returns a BlockHeight object with our current state
+        :return:
+        """
+        global SQL_STATE_1
+        global SQL_STATE_2
+        global SQL_STATE_3
+        global SQL_STATE_4
+        global SQL_STATE_5
+        if self.height_status:
+            # cached info
+            return self.height_status
+        # Or compute and store
+        status1 = await self.async_fetchone(SQL_STATE_1, as_dict=True)
+        status2 = await self.async_fetchone(SQL_STATE_2, as_dict=True)
+        status1.update(status2)
+        status3 = await self.async_fetchone(SQL_STATE_3, (status1['height'] - 10, ), as_dict=True)
+        status1.update(status3)
+        status4 = await self.async_fetchone(SQL_STATE_4, as_dict=True)
+        status1.update(status4)
+        status5 = await self.async_fetchone(SQL_STATE_5, (status1['height'] - 10, ), as_dict=True)
+        status1.update(status5)
+        # print(status1)
+        self.height_status = PosHeight().from_dict(status1)
+        return self.height_status
+
 
 
 if __name__ == "__main__":

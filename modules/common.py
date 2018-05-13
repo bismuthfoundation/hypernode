@@ -142,5 +142,12 @@ def update_source(url, app_log=None):
         raise
 
 
+def same_height(peer_status, our_status):
+    for key in ("height", "round", "sir", "block_hash"):
+        if peer_status[key] != our_status[key]:
+            return False
+    return True
+
+
 if __name__ == "__main__":
     print("I'm a module, can't run!")

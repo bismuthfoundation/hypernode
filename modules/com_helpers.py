@@ -4,7 +4,7 @@ import time
 import commands_pb2
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.31'
 
 
 # Index for clients stats
@@ -26,6 +26,15 @@ Generic async stream com
 MY_NODE = None
 
 
+def cmd_to_text(command):
+    """
+    Converts a protobuf Command id to a text
+    :param command:
+    :return:
+    """
+    return commands_pb2._COMMAND_TYPE.values[command].name
+
+
 async def async_receive(stream, ip):
     """
     Get a command, async version
@@ -41,9 +50,9 @@ async def async_receive(stream, ip):
     data_len = struct.unpack('>i', header[:4])[0]
     data = await stream.read_bytes(data_len)
     try:
-        MY_NODE.clients[ip][STATS_LASTACT] = time.time()
-        MY_NODE.clients[ip][STATS_MSGRECV] += 1
-        MY_NODE.clients[ip][STATS_BYTRECV] += 4 + data_len
+        MY_NODE.clients[ip]['stats'][STATS_LASTACT] = time.time()
+        MY_NODE.clients[ip]['stats'][STATS_MSGRECV] += 1
+        MY_NODE.clients[ip]['stats'][STATS_BYTRECV] += 4 + data_len
     except:
         pass
     protomsg.ParseFromString(data)
@@ -67,9 +76,9 @@ async def async_send(cmd, stream, ip):
         await stream.write(struct.pack('>i', data_len) + data)
         # print(MY_NODE.clients)
         try:
-            MY_NODE.clients[ip][STATS_LASTACT] = time.time()
-            MY_NODE.clients[ip][STATS_MSGSENT] += 1
-            MY_NODE.clients[ip][STATS_BYTSENT] += 4 + data_len
+            MY_NODE.clients[ip]['stats'][STATS_LASTACT] = time.time()
+            MY_NODE.clients[ip]['stats'][STATS_MSGSENT] += 1
+            MY_NODE.clients[ip]['stats'][STATS_BYTSENT] += 4 + data_len
         except:
             pass
     except Exception as e:
@@ -142,4 +151,20 @@ async def async_send_txs(cmd, txs, stream, ip):
     protocmd.command = cmd
     for tx in txs:
         tx.add_to_proto(protocmd)
+    await async_send(protocmd, stream, ip)
+
+
+async def async_send_height(cmd, height, stream, ip):
+    """
+    Sends a height status to the stream, async.
+    :param cmd:
+    :param height: a PosHeight object
+    :param stream:
+    :param ip:
+    :return:
+    """
+    protocmd = commands_pb2.Command()
+    protocmd.Clear()
+    protocmd.command = cmd
+    height.to_proto(protocmd.height_value)
     await async_send(protocmd, stream, ip)
