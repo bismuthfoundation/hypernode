@@ -95,6 +95,7 @@ class MnServer(TCPServer):
                 access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, peer_ip))
                 reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
                 peer_port = msg.string_value[10:15]
+                full_peer = peer_ip + ':' + peer_port
                 if not ok:
                     # TODO: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -114,17 +115,17 @@ class MnServer(TCPServer):
                 try:
                     # Loop over the requests until disconnect or end of server.
                     msg = await async_receive(stream, peer_ip)
-                    await self._handle_msg(msg, stream, peer_ip)
+                    await self._handle_msg(msg, stream, peer_ip, peer_port)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
-                    access_log.info("SRV: Peer {} left.".format(peer_ip))
+                    access_log.info("SRV: Peer {} left.".format(full_peer))
                     error_shown = True
                     return
                 except Exception as e:
                     if not error_shown:
                         what = str(e)
                         if 'OK' not in what:
-                            app_log.error("SRV: handle_stream {} for ip {}".format(what, peer_ip))
+                            app_log.error("SRV: handle_stream {} for ip {}".format(what, full_peer))
                     return
         except Exception as e:
             app_log.error("SRV: TCP Server init {}: Error {}".format(peer_ip, e))
@@ -137,7 +138,7 @@ class MnServer(TCPServer):
         finally:
             self.node.remove_inbound(peer_ip, peer_port)
 
-    async def _handle_msg(self, msg, stream, peer_ip):
+    async def _handle_msg(self, msg, stream, peer_ip, peer_port):
         """
         Handles a single command received by the server.
         :param msg:
@@ -147,7 +148,8 @@ class MnServer(TCPServer):
         """
         global access_log
         if self.verbose:
-            access_log.info("SRV: Got msg >{}< from {}".format(msg.__str__().strip(), peer_ip))
+            access_log.info("SRV: Got msg >{}< from {}:{}".format(msg.__str__().strip(), peer_ip, peer_port))
+        full_peer = peer_ip + ':' + peer_port
         # Don't do a thing.
         # if msg.command == commands_pb2.Command.ping:
         #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
@@ -156,26 +158,26 @@ class MnServer(TCPServer):
             # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
             # external txs from a "controller / wallet or such
             try:
-                await self.digest_txs(msg.tx_values, peer_ip)
-                await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
+                await self.digest_txs(msg.tx_values, full_peer)
+                await async_send_void(commands_pb2.Command.ok, stream, full_peer)
             except Exception as e:
-                app_log.warning("SRV: Error {} digesting tx from {}".format(e, peer_ip))
-                await async_send_void(commands_pb2.Command.ko, stream, peer_ip)
+                app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                await async_send_void(commands_pb2.Command.ko, stream, full_peer)
         elif msg.command == commands_pb2.Command.mempool:
             # peer mempool extract
             try:
-                await self.node.digest_txs(msg.tx_values, peer_ip)
+                await self.node.digest_txs(msg.tx_values, full_peer)
             except Exception as e:
-                app_log.warning("SRV: Error {} digesting tx from {}".format(e, peer_ip))
+                app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
             # TODO: use clients stats to get real since
             txs = await self.mempool.async_since(0)
             if self.verbose:
                 app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
             # This is a list of PosMessage objects
-            await async_send_txs(commands_pb2.Command.mempool, txs, stream, peer_ip)
+            await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
         elif msg.command == commands_pb2.Command.update:
             # TODO: rights/auth and config management
-            await self.update(msg.string_value, stream, peer_ip)
+            await self.update(msg.string_value, stream, full_peer)
 
     async def update(self, url, stream, peer_ip):
             app_log.info('Checking version from {}'.format(url))
@@ -403,6 +405,9 @@ class Posmn:
                     # await asyncio.sleep(10)
                     self.forged = True
                     await self.change_state_to(MNState.SYNCING)
+                else:
+                    if self.verbose:
+                        app_log.info("My slot, but too low a consensus to forge now.")
 
             # TODO: don't display each time
             await self.status(log=True)
@@ -415,11 +420,12 @@ class Posmn:
                         # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
                         # tuples (address, ip, port, ?)
                         # ip_port = "{}:{}".format(peer[1], peer[2])
-                        if peer[1] not in self.clients:
+                        full_peer = peer[1]+':'+str(peer[2]).zfill(5)
+                        if full_peer not in self.clients:
                             io_loop = IOLoop.instance()
                             with self.clients_lock:
                                 # first index is active or not
-                                self.clients[peer[1]] = [False, 0, 0, 0, 0, 0, 0, 0]
+                                self.clients[full_peer] = [False, 0, 0, 0, 0, 0, 0, 0, 0]
                             io_loop.spawn_callback(self.client_worker, peer)
             # TODO: variable sleep time depending on the elapsed loop time - or use timeout?
             await asyncio.sleep(10)
@@ -442,7 +448,9 @@ class Posmn:
         """
         # TODO
         # in self.clients we should have the latest blocks of every peer we are connected to
-        return 80
+        print("clients", self.clients)
+        print("inbound", self.inbound)
+        return 40
 
     async def refresh_last_block(self):
         """
@@ -529,6 +537,7 @@ class Posmn:
         global app_log
         global LTIMEOUT
         ip = peer[1]
+        full_peer = peer[1] + ':' + str(peer[2]).zfill(5)
         try:
             if self.verbose:
                 access_log.info("Initiating client co-routine for {}:{}".format(peer[1], peer[2]))
@@ -536,50 +545,44 @@ class Posmn:
             # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, ip)
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
             msg = await com_helpers.async_receive(stream, peer[1])
             if self.verbose:
                 access_log.info("Worker got {}".format(msg.__str__().strip()))
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                access_log.info("Worker got Hello {} from {}".format(msg.string_value, ip))
+                access_log.info("Worker got Hello {} from {}".format(msg.string_value, full_peer))
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))
                 return
             # now we can enter a long term relationship with this node.
             with self.clients_lock:
                 # Set connected status
-                self.clients[ip][com_helpers.STATS_ACTIVEP] = True
-                self.clients[ip][com_helpers.STATS_COSINCE] = connect_time
+                self.clients[full_peer][com_helpers.STATS_ACTIVEP] = True
+                self.clients[full_peer][com_helpers.STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
                 await asyncio.sleep(common.WAIT)
                 now = time.time()
-                # Only send ping if time is due.
-                # TODO: more than 30 sec? Config
-                if self.clients[ip][com_helpers.STATS_LASTACT] < now - 30:
-                    if self.verbose:
-                        app_log.info("Sending ping to {}".format(ip))
-                    # keeps connection active, or raise error if connection lost
-                    await com_helpers.async_send_void(commands_pb2.Command.ping, stream, ip)
                 if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS):
                     # If we are trying to reach consensus, don't ask for mempool sync. Peers may send anyway.
-                    if self.clients[ip][com_helpers.STATS_LASTMPL] < now - 10:
+                    height_delay = 10
+                    if self.clients[full_peer][com_helpers.STATS_LASTMPL] < now - 10:
                         # Send our new tx from mempool if any, will get the new from peer.
-                        if self.verbose:
-                            app_log.info("Sending mempool to {}".format(ip))
-                        txs = await self.mempool.async_since(self.clients[ip][com_helpers.STATS_LASTMPL])
-                        self.clients[ip][com_helpers.STATS_LASTMPL] = time.time()
-                        await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, ip)
-                        # Peer will answer with its mempool
-                        msg = await com_helpers.async_receive(stream, peer[1])
-                        if msg.command != commands_pb2.Command.mempool:
-                            raise ValueError("Bad answer to mempool command")
-                        # if self.verbose:
-                        #    access_log.info("Worker got mempool answer {}".format(msg.__str__().strip()))
-                        try:
-                            await self.digest_txs(msg.tx_values, ip)
-                        except Exception as e:
-                            app_log.warning("Error {} digesting tx from {}".format(e, ip))
+                        await self._exchange_mempool(stream, full_peer)
+                else:
+                    # Not looking for consensus, but send our height every now and then to stay sync
+                    height_delay = 30
+                if self.clients[full_peer][com_helpers.STATS_LASTHGT] < now - height_delay:
+                    # Time to send our last block info to the peer, he will answer back with his
+                    await self._exchange_height(stream, full_peer)
+
+                # Only send ping if time is due.
+                # TODO: more than 30 sec? Config
+                if self.clients[full_peer][com_helpers.STATS_LASTACT] < now - 30:
+                    if self.verbose:
+                        app_log.info("Sending ping to {}".format(full_peer))
+                    # keeps connection active, or raise error if connection lost
+                    await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
 
             raise ValueError("Closing")
         except Exception as e:
@@ -596,9 +599,45 @@ class Posmn:
             try:
                 with self.clients_lock:
                     # We could keep it and set to inactive, but is it useful? could grow too much
-                    del self.clients[ip]
+                    del self.clients[full_peer]
             except:
                 pass
+
+    async def _exchange_height(self, stream, full_peer):
+        global app_log
+        # TODO: do not send if our height did not change since the last time. Will spare net resources.
+        if self.verbose:
+            app_log.info("Sending height to {}".format(full_peer))
+        height = await self.poschain.async_height()
+        self.clients[full_peer][com_helpers.STATS_LASTHGT] = time.time()
+        await com_helpers.async_send_height(commands_pb2.Command.height, height, stream, full_peer)
+        # Peer will answer with its height
+        msg = await com_helpers.async_receive(stream, full_peer)
+        if msg.command != commands_pb2.Command.height:
+            raise ValueError("Bad answer to height command from {}".format(full_peer))
+        try:
+            pass
+            # await self.digest_txs(msg.tx_values, full_peer)
+        except Exception as e:
+            app_log.warning("Error {} digesting height from {}".format(e, full_peer))
+
+    async def _exchange_mempool(self, stream, full_peer):
+        global app_log
+        if self.verbose:
+            app_log.info("Sending mempool to {}".format(full_peer))
+        txs = await self.mempool.async_since(self.clients[full_peer][com_helpers.STATS_LASTMPL])
+        self.clients[full_peer][com_helpers.STATS_LASTMPL] = time.time()
+        await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
+        # Peer will answer with its mempool
+        msg = await com_helpers.async_receive(stream, full_peer)
+        if msg.command != commands_pb2.Command.mempool:
+            raise ValueError("Bad answer to mempool command from {}".format(full_peer))
+        # if self.verbose:
+        #    access_log.info("Worker got mempool answer {}".format(msg.__str__().strip()))
+        try:
+            await self.digest_txs(msg.tx_values, full_peer)
+        except Exception as e:
+            app_log.warning("Error {} digesting tx from {}".format(e, full_peer))
 
     async def _check_round(self):
         """

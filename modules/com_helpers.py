@@ -16,7 +16,7 @@ STATS_MSGRECV = 4
 STATS_BYTSENT = 5
 STATS_BYTRECV = 6
 STATS_LASTMPL = 7
-
+STATS_LASTHGT = 8
 
 """
 Generic async stream com 

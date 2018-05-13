@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package bismuth;
 
-
+// A single tx
 message TX {
     // Signature - 64 bytes
     required bytes txid=1;
@@ -24,6 +24,7 @@ message TX {
     required bytes pubkey=9;
 }
 
+// A pos block with txs
 message Block {
     required uint32 height=1;
     required uint32 round=2;
@@ -39,6 +40,24 @@ message Block {
     required bytes block_hash=10;
     // Who - forger
     required string forger=11;
+}
+
+// a height status info block
+message Height {
+    // last block we have - both id and content
+    required uint32 height=1;
+    required uint32 round=2;
+    required uint32 sir=3;
+    required bytes block_hash=4;
+    // validity of the chain
+    // total unique sources for whole chain
+    required uint32 uniques=5;
+    // uniques for last 10 blocks
+    required uint32 uniques10=6;
+    // total unique forgers for whole chain
+    required uint32 forgers=7;
+    // uniques forgersfor last 10 blocks
+    required uint32 forgers10=8;
 }
 
 message IP {
@@ -73,6 +92,7 @@ message Command {
         tx = 7;
         mempool = 8;
         update = 9;
+        height = 10;
     }
     required Type command = 1;
 
@@ -81,10 +101,11 @@ message Command {
         int32 int32_value=3;
         // ko_reason reason_value=4;
         Block block_value = 4;
+        Height height_value = 5;
     }
 
-    repeated TX tx_values = 5;
-    repeated IP ip_values = 6;
-    repeated string sig_values = 7;
+    repeated TX tx_values = 6;
+    repeated IP ip_values = 7;
+    repeated string sig_values = 8;
     // optional Block block_value = 8;
 }

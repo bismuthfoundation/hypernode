@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='commands.proto',
   package='bismuth',
   syntax='proto2',
-  serialized_pb=_b('\n\x0e\x63ommands.proto\x12\x07\x62ismuth\"\x9b\x01\n\x02TX\x12\x0c\n\x04txid\x18\x01 \x02(\x0c\x12\x14\n\x0c\x62lock_height\x18\x02 \x02(\r\x12\x11\n\ttimestamp\x18\x03 \x02(\r\x12\x0e\n\x06sender\x18\x04 \x02(\t\x12\x11\n\trecipient\x18\x05 \x02(\t\x12\x0c\n\x04what\x18\x06 \x02(\r\x12\r\n\x05value\x18\x07 \x02(\r\x12\x0e\n\x06params\x18\x08 \x01(\t\x12\x0e\n\x06pubkey\x18\t \x02(\x0c\"\xcb\x01\n\x05\x42lock\x12\x0e\n\x06height\x18\x01 \x02(\r\x12\r\n\x05round\x18\x02 \x02(\r\x12\x0b\n\x03sir\x18\x03 \x02(\r\x12\n\n\x02ts\x18\x04 \x02(\r\x12\x15\n\rprevious_hash\x18\x05 \x02(\x0c\x12\x18\n\x03txs\x18\x06 \x03(\x0b\x32\x0b.bismuth.TX\x12\x11\n\tmsg_count\x18\x07 \x02(\r\x12\x0f\n\x07sources\x18\x08 \x02(\r\x12\x11\n\tsignature\x18\t \x02(\x0c\x12\x12\n\nblock_hash\x18\n \x02(\x0c\x12\x0e\n\x06\x66orger\x18\x0b \x02(\t\"D\n\x02IP\x12\x0c\n\x04ipv4\x18\x01 \x02(\r\x12\r\n\x05ipv6a\x18\x02 \x01(\x04\x12\r\n\x05ipv6b\x18\x03 \x01(\x04\x12\x12\n\x04port\x18\x04 \x01(\r:\x04\x35\x36\x35\x38\"\xd4\x02\n\x07\x43ommand\x12&\n\x07\x63ommand\x18\x01 \x02(\x0e\x32\x15.bismuth.Command.Type\x12\x16\n\x0cstring_value\x18\x02 \x01(\tH\x00\x12\x15\n\x0bint32_value\x18\x03 \x01(\x05H\x00\x12%\n\x0b\x62lock_value\x18\x04 \x01(\x0b\x32\x0e.bismuth.BlockH\x00\x12\x1e\n\ttx_values\x18\x05 \x03(\x0b\x32\x0b.bismuth.TX\x12\x1e\n\tip_values\x18\x06 \x03(\x0b\x32\x0b.bismuth.IP\x12\x12\n\nsig_values\x18\x07 \x03(\t\"n\n\x04Type\x12\t\n\x05hello\x10\x00\x12\x06\n\x02ok\x10\x01\x12\x06\n\x02ko\x10\x02\x12\x08\n\x04ping\x10\x03\x12\t\n\x05peers\x10\x04\x12\n\n\x06status\x10\x05\x12\t\n\x05\x62lock\x10\x06\x12\x06\n\x02tx\x10\x07\x12\x0b\n\x07mempool\x10\x08\x12\n\n\x06update\x10\tB\x07\n\x05param*{\n\tko_reason\x12\r\n\tno_reason\x10\x00\x12\x14\n\x10version_mismatch\x10\x01\x12\n\n\x06\x62\x61\x64_ip\x10\x02\x12\x0e\n\nbad_pubkey\x10\x03\x12\r\n\tbad_block\x10\x04\x12\x0c\n\x08\x62\x61\x64_slot\x10\x05\x12\x10\n\x0cno_resources\x10\x06')
+  serialized_pb=_b('\n\x0e\x63ommands.proto\x12\x07\x62ismuth\"\x9b\x01\n\x02TX\x12\x0c\n\x04txid\x18\x01 \x02(\x0c\x12\x14\n\x0c\x62lock_height\x18\x02 \x02(\r\x12\x11\n\ttimestamp\x18\x03 \x02(\r\x12\x0e\n\x06sender\x18\x04 \x02(\t\x12\x11\n\trecipient\x18\x05 \x02(\t\x12\x0c\n\x04what\x18\x06 \x02(\r\x12\r\n\x05value\x18\x07 \x02(\r\x12\x0e\n\x06params\x18\x08 \x01(\t\x12\x0e\n\x06pubkey\x18\t \x02(\x0c\"\xcb\x01\n\x05\x42lock\x12\x0e\n\x06height\x18\x01 \x02(\r\x12\r\n\x05round\x18\x02 \x02(\r\x12\x0b\n\x03sir\x18\x03 \x02(\r\x12\n\n\x02ts\x18\x04 \x02(\r\x12\x15\n\rprevious_hash\x18\x05 \x02(\x0c\x12\x18\n\x03txs\x18\x06 \x03(\x0b\x32\x0b.bismuth.TX\x12\x11\n\tmsg_count\x18\x07 \x02(\r\x12\x0f\n\x07sources\x18\x08 \x02(\r\x12\x11\n\tsignature\x18\t \x02(\x0c\x12\x12\n\nblock_hash\x18\n \x02(\x0c\x12\x0e\n\x06\x66orger\x18\x0b \x02(\t\"\x90\x01\n\x06Height\x12\x0e\n\x06height\x18\x01 \x02(\r\x12\r\n\x05round\x18\x02 \x02(\r\x12\x0b\n\x03sir\x18\x03 \x02(\r\x12\x12\n\nblock_hash\x18\x04 \x02(\x0c\x12\x0f\n\x07uniques\x18\x05 \x02(\r\x12\x11\n\tuniques10\x18\x06 \x02(\r\x12\x0f\n\x07\x66orgers\x18\x07 \x02(\r\x12\x11\n\tforgers10\x18\x08 \x02(\r\"D\n\x02IP\x12\x0c\n\x04ipv4\x18\x01 \x02(\r\x12\r\n\x05ipv6a\x18\x02 \x01(\x04\x12\r\n\x05ipv6b\x18\x03 \x01(\x04\x12\x12\n\x04port\x18\x04 \x01(\r:\x04\x35\x36\x35\x38\"\x89\x03\n\x07\x43ommand\x12&\n\x07\x63ommand\x18\x01 \x02(\x0e\x32\x15.bismuth.Command.Type\x12\x16\n\x0cstring_value\x18\x02 \x01(\tH\x00\x12\x15\n\x0bint32_value\x18\x03 \x01(\x05H\x00\x12%\n\x0b\x62lock_value\x18\x04 \x01(\x0b\x32\x0e.bismuth.BlockH\x00\x12\'\n\x0cheight_value\x18\x05 \x01(\x0b\x32\x0f.bismuth.HeightH\x00\x12\x1e\n\ttx_values\x18\x06 \x03(\x0b\x32\x0b.bismuth.TX\x12\x1e\n\tip_values\x18\x07 \x03(\x0b\x32\x0b.bismuth.IP\x12\x12\n\nsig_values\x18\x08 \x03(\t\"z\n\x04Type\x12\t\n\x05hello\x10\x00\x12\x06\n\x02ok\x10\x01\x12\x06\n\x02ko\x10\x02\x12\x08\n\x04ping\x10\x03\x12\t\n\x05peers\x10\x04\x12\n\n\x06status\x10\x05\x12\t\n\x05\x62lock\x10\x06\x12\x06\n\x02tx\x10\x07\x12\x0b\n\x07mempool\x10\x08\x12\n\n\x06update\x10\t\x12\n\n\x06height\x10\nB\x07\n\x05param*{\n\tko_reason\x12\r\n\tno_reason\x10\x00\x12\x14\n\x10version_mismatch\x10\x01\x12\n\n\x06\x62\x61\x64_ip\x10\x02\x12\x0e\n\nbad_pubkey\x10\x03\x12\r\n\tbad_block\x10\x04\x12\x0c\n\x08\x62\x61\x64_slot\x10\x05\x12\x10\n\x0cno_resources\x10\x06')
 )
 
 _KO_REASON = _descriptor.EnumDescriptor(
@@ -60,8 +60,8 @@ _KO_REASON = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=804,
-  serialized_end=927,
+  serialized_start=1004,
+  serialized_end=1127,
 )
 _sym_db.RegisterEnumDescriptor(_KO_REASON)
 
@@ -121,11 +121,15 @@ _COMMAND_TYPE = _descriptor.EnumDescriptor(
       name='update', index=9, number=9,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='height', index=10, number=10,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=683,
-  serialized_end=793,
+  serialized_start=871,
+  serialized_end=993,
 )
 _sym_db.RegisterEnumDescriptor(_COMMAND_TYPE)
 
@@ -318,6 +322,86 @@ _BLOCK = _descriptor.Descriptor(
 )
 
 
+_HEIGHT = _descriptor.Descriptor(
+  name='Height',
+  full_name='bismuth.Height',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='height', full_name='bismuth.Height.height', index=0,
+      number=1, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='round', full_name='bismuth.Height.round', index=1,
+      number=2, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sir', full_name='bismuth.Height.sir', index=2,
+      number=3, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='block_hash', full_name='bismuth.Height.block_hash', index=3,
+      number=4, type=12, cpp_type=9, label=2,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='uniques', full_name='bismuth.Height.uniques', index=4,
+      number=5, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='uniques10', full_name='bismuth.Height.uniques10', index=5,
+      number=6, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='forgers', full_name='bismuth.Height.forgers', index=6,
+      number=7, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='forgers10', full_name='bismuth.Height.forgers10', index=7,
+      number=8, type=13, cpp_type=3, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=392,
+  serialized_end=536,
+)
+
+
 _IP = _descriptor.Descriptor(
   name='IP',
   full_name='bismuth.IP',
@@ -365,8 +449,8 @@ _IP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=391,
-  serialized_end=459,
+  serialized_start=538,
+  serialized_end=606,
 )
 
 
@@ -406,22 +490,29 @@ _COMMAND = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='tx_values', full_name='bismuth.Command.tx_values', index=4,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='height_value', full_name='bismuth.Command.height_value', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='ip_values', full_name='bismuth.Command.ip_values', index=5,
+      name='tx_values', full_name='bismuth.Command.tx_values', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='sig_values', full_name='bismuth.Command.sig_values', index=6,
-      number=7, type=9, cpp_type=9, label=3,
+      name='ip_values', full_name='bismuth.Command.ip_values', index=6,
+      number=7, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='sig_values', full_name='bismuth.Command.sig_values', index=7,
+      number=8, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -442,13 +533,14 @@ _COMMAND = _descriptor.Descriptor(
       name='param', full_name='bismuth.Command.param',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=462,
-  serialized_end=802,
+  serialized_start=609,
+  serialized_end=1002,
 )
 
 _BLOCK.fields_by_name['txs'].message_type = _TX
 _COMMAND.fields_by_name['command'].enum_type = _COMMAND_TYPE
 _COMMAND.fields_by_name['block_value'].message_type = _BLOCK
+_COMMAND.fields_by_name['height_value'].message_type = _HEIGHT
 _COMMAND.fields_by_name['tx_values'].message_type = _TX
 _COMMAND.fields_by_name['ip_values'].message_type = _IP
 _COMMAND_TYPE.containing_type = _COMMAND
@@ -461,8 +553,12 @@ _COMMAND.fields_by_name['int32_value'].containing_oneof = _COMMAND.oneofs_by_nam
 _COMMAND.oneofs_by_name['param'].fields.append(
   _COMMAND.fields_by_name['block_value'])
 _COMMAND.fields_by_name['block_value'].containing_oneof = _COMMAND.oneofs_by_name['param']
+_COMMAND.oneofs_by_name['param'].fields.append(
+  _COMMAND.fields_by_name['height_value'])
+_COMMAND.fields_by_name['height_value'].containing_oneof = _COMMAND.oneofs_by_name['param']
 DESCRIPTOR.message_types_by_name['TX'] = _TX
 DESCRIPTOR.message_types_by_name['Block'] = _BLOCK
+DESCRIPTOR.message_types_by_name['Height'] = _HEIGHT
 DESCRIPTOR.message_types_by_name['IP'] = _IP
 DESCRIPTOR.message_types_by_name['Command'] = _COMMAND
 DESCRIPTOR.enum_types_by_name['ko_reason'] = _KO_REASON
@@ -481,6 +577,13 @@ Block = _reflection.GeneratedProtocolMessageType('Block', (_message.Message,), d
   # @@protoc_insertion_point(class_scope:bismuth.Block)
   ))
 _sym_db.RegisterMessage(Block)
+
+Height = _reflection.GeneratedProtocolMessageType('Height', (_message.Message,), dict(
+  DESCRIPTOR = _HEIGHT,
+  __module__ = 'commands_pb2'
+  # @@protoc_insertion_point(class_scope:bismuth.Height)
+  ))
+_sym_db.RegisterMessage(Height)
 
 IP = _reflection.GeneratedProtocolMessageType('IP', (_message.Message,), dict(
   DESCRIPTOR = _IP,

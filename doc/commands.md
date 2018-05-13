@@ -8,10 +8,10 @@ commands_pb2.Command.*
 
 ## Hello
 id 0 - ok
-string_value : the peer version (10 char) plus the sender pubkey (34 chars)   
+string_value : the peer version (10 char) plus the node port (5 chars, left padded with 0) plus the sender pubkey (34 chars)   
 
 ex:
-posnet0001BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV 
+posnet000106969BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV 
 
 ## ok
 id 1 - ok
@@ -42,7 +42,7 @@ returns a json status as string
 ## tx
 id 6 - ok
 TX : list of commands_pb2.Command.TX
-One or several tx from the a node client
+One or several tx from the a node client. Server sends back "ok" or "ko"
 
 ## block
 id 7
@@ -53,7 +53,13 @@ A forged block from a juror.
 id 8 - WIP
 TX : list of commands_pb2.Command.TX
 One or several tx from the peer mempool
+Almost similar to tx. Difference is TX does not require the mempool back, 
+whereas this mempool message asks for the peer mempool in return.
 
+## height
+id 10 - wip
+The current height status of a chain.  
+Embeds current height as well as metrics about the variety of the chain (number of uniques sources and forgers)
 
 # Command flow
 
@@ -63,9 +69,9 @@ Servers wait for an event, and answer.
 
 ## Communication starter
 
-* Client sends "Hello" with its POSNET version and PoS address
+* Client sends "Hello" with its POSNET version, port and PoS address
 * Server may answer "ko" with a reason, or
-* Server may answer "Hello" its own POSNET version and PoS address
+* Server may answer "Hello" its own POSNET version, port and PoS address
 
 ## Keep alive
 
@@ -73,6 +79,6 @@ Servers wait for an event, and answer.
 
 ## Mempool Sync
 * Every (time) the client sends its mempool (new tx only) to the server it's connected to, and gets the peer new tx as well to digest.
-TODO: continue to "sync" when it's our turn to forge? 
+ 
 
 
