@@ -140,6 +140,14 @@ class PosChain:
             print(block.to_json())
         return block
 
+    async def insert_block(self, block):
+        """
+        Saves to block object in db
+        :param block: a native PosBlock object
+        :return:
+        """
+        print("PosChain Virtual Method insert_block")
+
     async def last_block(self):
         """
         Returns last know block as a dict
@@ -153,6 +161,35 @@ class PosChain:
         :return:
         """
         print("Virtual Method tx_exists")
+
+    def _invalidate_height_status(self):
+        """
+        Something changed in our chain, invalidate the height status.
+        It will then be recalc when needed.
+        :return:
+        """
+        self.height_status = None
+
+    async def async_height(self):
+        """
+        returns a BlockHeight object with our current state
+        :return:
+        """
+        print("Virtual Method async_height")
+        return self.height_status
+
+    async def digest_block(self, proto_block, from_miner=False):
+        """
+        Checks if the block is valid and saves it
+        :param proto_block: a protobuf 'block' object
+        :param from_miner: True if came from a live miner (current slot)
+        :return:
+        """
+        block = PosBlock().from_proto(proto_block)
+        print(block.to_json())
+        # TODO: checks
+        await self.insert_block(block)
+        return True
 
 
 class MemoryPosChain(PosChain):
@@ -286,7 +323,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         :return:
         """
         # Save the txs
-        # TODO: if error inserting block, delete the txs...
+        # TODO: if error inserting block, delete the txs... transaction?
         for tx in block.txs:
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         # Then the block and commit
@@ -306,14 +343,6 @@ class SqlitePosChain(PosChain, SqliteBase):
             self.app_log.info("{} already in our chain".format(txid))
             return True
         return False
-
-    def _invalidate_height_status(self):
-        """
-        Something changed in our chain, invalidate the height status.
-        It will then be recalc when needed.
-        :return:
-        """
-        self.height_status = None
 
     async def async_height(self):
         """

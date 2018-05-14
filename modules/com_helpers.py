@@ -168,3 +168,15 @@ async def async_send_height(cmd, height, stream, ip):
     protocmd.command = cmd
     height.to_proto(protocmd.height_value)
     await async_send(protocmd, stream, ip)
+
+
+async def async_send_block(proto_block, stream, ip):
+    """
+    Sends a block to the stream, async.
+    :param cmd:
+    :param proto_block: a full protobuf command with a block
+    :param stream:
+    :param ip:
+    :return:
+    """
+    await async_send(proto_block, stream, ip)

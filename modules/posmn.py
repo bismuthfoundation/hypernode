@@ -34,7 +34,7 @@ import posmempool
 import posblock
 import poscrypto
 import com_helpers
-from com_helpers import async_receive, async_send_string
+from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
 __version__ = '0.0.5'
@@ -102,6 +102,12 @@ class MnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.hello, self.node.hello_string(), stream, peer_ip)
                 # Add the peer to inbound list
                 self.node.add_inbound(peer_ip, peer_port, {'hello': msg.string_value})
+            elif msg.command == commands_pb2.Command.block:
+                # block sending does not require hello
+                access_log.info("SRV: Got forged block from {}".format(peer_ip))
+                # TODO: check that this ip is in the current forging round, or add to anomalies buffer
+                self.node.poschain.digest_block(msg.block_value, from_miner=True)
+                return
             else:
                 access_log.info("SRV: {} did not say hello".format(peer_ip))
                 # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -484,7 +490,7 @@ class Posmn:
         pc = round(nb * 100 / total)
         app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
         # print("inbound", self.inbound)
-        return 40
+        return pc
 
     async def refresh_last_block(self):
         """
@@ -528,6 +534,26 @@ class Posmn:
             # Client
             self.clients[full_peer]['height_status'] = height.to_dict(as_hex=True)
 
+    async def post_block(self, proto_block, peer_ip, peer_port):
+        """
+        Co routine to send the block we forged to a given peer
+        Should we use threads instead and a simpler tcp client? Perfs to be tested.
+        :param proto_block:
+        :param peer_ip:
+        :param peer_port:
+        :return:
+        """
+        global app_log
+        if self.verbose:
+            app_log.info("Sending block to {}:{}".format(peer_ip, peer_port))
+        try:
+            full_peer = peer_ip + ':' + str(peer_port).zfill(5)
+            tcp_client = TCPClient()
+            stream = await tcp_client.connect(peer_ip, peer_port, timeout=5)
+            await async_send_block(proto_block, stream, full_peer)
+        except Exception as e:
+            app_log.warning("Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port))
+
     async def forge(self):
         """
         Consensus has been reached, we are forger, forge and send block
@@ -560,9 +586,15 @@ class Posmn:
             # TODO: Shall we pass that one through "digest" to make sure?
             await self.poschain.insert_block(block)
             await self.change_state_to(MNState.SENDING)
-            # TODO: Send the block to our peers (unless we were unable to insert it in our db
+            # TODO: Send the block to our peers (unless we were unable to insert it in our db)
             block = block.to_proto()
             app_log.error("Block Forged, I should send it")
+            # build the list of jurors to send to. Exclude ourselves.
+            to_send = [self.post_block(block, peer[1], peer[2]) for peer in common.POC_MASTER_NODES_LIST if peer[1] != self.ip and peer[2] != self.port]
+            try:
+                await asyncio.wait(to_send, timeout=30)
+            except Exception as e:
+                app_log.error("Timeout sending block: {}".format(e))
             # print(block.__str__())
             return True
         except Exception as e:
