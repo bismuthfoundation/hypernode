@@ -106,7 +106,7 @@ class MnServer(TCPServer):
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current forging round, or add to anomalies buffer
-                self.node.poschain.digest_block(msg.block_value, from_miner=True)
+                await self.node.poschain.digest_block(msg.block_value, from_miner=True)
                 return
             else:
                 access_log.info("SRV: {} did not say hello".format(peer_ip))
@@ -407,7 +407,7 @@ class Posmn:
                 await self.change_state_to(MNState.STRONG_CONSENSUS)
 
             if self.state == MNState.STRONG_CONSENSUS:
-                if await self.consensus() > 50 :
+                if await self.consensus() >= 40:
                     await self.change_state_to(MNState.FORGING)
                     # Forge will send also
                     await self.forge()
@@ -590,7 +590,7 @@ class Posmn:
             block = block.to_proto()
             app_log.error("Block Forged, I should send it")
             # build the list of jurors to send to. Exclude ourselves.
-            to_send = [self.post_block(block, peer[1], peer[2]) for peer in common.POC_MASTER_NODES_LIST if peer[1] != self.ip and peer[2] != self.port]
+            to_send = [self.post_block(block, peer[1], peer[2]) for peer in common.POC_MASTER_NODES_LIST if not (peer[1] == self.ip and peer[2] == self.port)]
             try:
                 await asyncio.wait(to_send, timeout=30)
             except Exception as e:
