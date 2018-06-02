@@ -12,7 +12,7 @@ import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.12'
+__version__ = '0.0.13'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -26,10 +26,17 @@ NETWORK_ID = b'\x19'
 # How long to wait in the main client loop
 WAIT = 10
 
+# Wait time when catching up, to speed things up.
+SHORT_WAIT = 0.1
+
 # limit, so nodes won't want to play with that.
 FUTURE_ALLOWED = 5
 
 VERBOSE = True
+
+# Debug/Dev only - Never forge if True
+DO_NOT_FORGE = True
+
 
 # POC prefix is for POC only, will use real data later.
 
@@ -147,6 +154,19 @@ def same_height(peer_status, our_status):
         if peer_status[key] != our_status[key]:
             return False
     return True
+
+
+def peer_to_fullpeer(peer):
+    """
+    converts a tuple (address, ip, port, active) to a string ip:0port
+    :param peer:
+    :return:
+    """
+    return peer[1] + ':' + str(peer[2]).zfill(5)
+
+
+def ipport_to_fullpeer(ip, port):
+    return ip + ':' + str(port).zfill(5)
 
 
 if __name__ == "__main__":

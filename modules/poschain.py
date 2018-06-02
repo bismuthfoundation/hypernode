@@ -7,11 +7,12 @@ import os
 import sys
 import json
 import sqlite3
-
+import asyncio
 
 # Our modules
 import common
 import poscrypto
+import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
@@ -37,6 +38,12 @@ SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers10 FROM pos_chain WHERE 
 
 SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques10 FROM pos_messages WHERE block_height > ?"
+
+# Block info for a given height. no xx10 info
+SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
+SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
+SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ? "
+
 
 
 """ pos chain db structure """
@@ -370,6 +377,48 @@ class SqlitePosChain(PosChain, SqliteBase):
         # print(status1)
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
+
+    async def async_blockinfo(self, height):
+        """
+        Returns partial height info of a given block
+        :return:
+        """
+        global SQL_INFO_1
+        global SQL_INFO_2
+        global SQL_INFO_4
+        status1 = await self.async_fetchone(SQL_INFO_1, (height, ), as_dict=True)
+        status2 = await self.async_fetchone(SQL_INFO_2, (height, ), as_dict=True)
+        status1.update(status2)
+        status4 = await self.async_fetchone(SQL_INFO_4, (height, ), as_dict=True)
+        status1.update(status4)
+        height_info = PosHeight().from_dict(status1)
+        return height_info
+
+    async def async_blocksync(self, height):
+        """
+        returns N blocks starting with the given height.
+        TODO: Harmonize. this one needs a proto as output (proto command with list of blocks)
+        :param height:
+        :return:
+        """
+
+        self.app_log.error("async_blocksync NOT done yet")
+        await asyncio.sleep(10)
+        return
+
+        protocmd = commands_pb2.Command()
+        protocmd.Clear()
+        protocmd.command = commands_pb2.Command.blocksync
+
+
+        # GET blocks
+        # for each block, add block and txs
+        block = protocmd.block_values.add()
+
+        block.height, block.round, block.sir = self.height, self.round, self.sir
+        block.ts, block.previous_hash = self.timestamp, self.previous_hash
+        for tx in self.txs:
+            tx.add_to_proto(protocmd)
 
 
 

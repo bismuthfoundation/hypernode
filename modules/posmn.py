@@ -4,6 +4,7 @@ Tornado based
 """
 
 import time
+import random
 from enum import Enum
 import os
 import sys
@@ -15,6 +16,7 @@ import aioprocessing
 import logging
 # pip install ConcurrentLogHandler
 from cloghandler import ConcurrentRotatingFileHandler
+from operator import itemgetter
 # Tornado
 from tornado.ioloop import IOLoop
 # from tornado.options import define, options
@@ -37,7 +39,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 """
 I use a global object to keep the state and route data between the servers and threads.
@@ -50,6 +52,11 @@ access_log = None
 
 # Logical timeout (s) for socket client
 LTIMEOUT = 45
+
+# Minimum required connectivity before we are able to operate
+# TODO: could depend on the jurors count.
+MINIMUM_CONNECTIVITY = 2
+
 
 # Memo : tornado.process.task_id()
 
@@ -92,7 +99,7 @@ class MnServer(TCPServer):
                 access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, peer_ip))
                 reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
                 peer_port = msg.string_value[10:15]
-                full_peer = peer_ip + ':' + peer_port
+                full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
                 if not ok:
                     # TODO: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -117,7 +124,7 @@ class MnServer(TCPServer):
             while not Posmn.stop_event.is_set():
                 try:
                     # Loop over the requests until disconnect or end of server.
-                    msg = await async_receive(stream, peer_ip)
+                    msg = await async_receive(stream, full_peer)
                     await self._handle_msg(msg, stream, peer_ip, peer_port)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
@@ -153,7 +160,7 @@ class MnServer(TCPServer):
         if self.verbose:
             # access_log.info("SRV: Got msg >{}< from {}:{}".format(msg.__str__().strip(), peer_ip, peer_port))
             access_log.info("SRV: Got msg >{}< from {}:{}".format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
-        full_peer = peer_ip + ':' + peer_port
+        full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
         # Don't do a thing.
         # if msg.command == commands_pb2.Command.ping:
         #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
@@ -183,6 +190,12 @@ class MnServer(TCPServer):
             await self.node.digest_height(msg.height_value, full_peer, server=True)
             height = await self.node.poschain.async_height()
             await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
+        elif msg.command == commands_pb2.Command.blockinfo:
+            height = await self.node.poschain.async_blockinfo(msg.int32_value)
+            await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
+        elif msg.command == commands_pb2.Command.blocksync:
+            blocks = await self.node.poschain.async_blocksync(msg.int32_value)
+            await async_send_block(blocks, stream, full_peer)
 
         elif msg.command == commands_pb2.Command.update:
             # TODO: rights/auth and config management
@@ -235,6 +248,11 @@ class MNState(Enum):
     MINIMAL_CONSENSUS = 4
     FORGING = 5
     SENDING = 6
+    CATCHING_UP_CONNECT1 = 7
+    CATCHING_UP_CONNECT2 = 8
+    CATCHING_UP_ELECT = 9
+    CATCHING_UP_PRESYNC = 10
+    CATCHING_UP_SYNC = 11
 
 
 class Posmn:
@@ -281,6 +299,11 @@ class Posmn:
             self.previous_hash = ''
             self.last_round = 0
             self.last_sir = 0
+            self.connected_count = 0
+            self.consensus_nb = 0
+            self.consensus_pc = 0
+            self.net_height = None
+            self.sync_from = None
             # Locks - Are they needed?
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
@@ -370,44 +393,63 @@ class Posmn:
         except Exception as e:
             app_log.error("Closing {}".format(e))
 
-    @property
-    def connected_count(self):
-        """
-        True if at least one client or server connection is active.
-        Returns inbound + outbound count
-        :return:
-        """
-        inbound_count = len(self.inbound)
-        clients_count = 0
-        # TODO: use another list to avoid counting one by one?
-        for client in self.clients.values():
-            if client['stats'][com_helpers.STATS_ACTIVEP]:
-                clients_count += 1
-        return inbound_count + clients_count
-
     async def manager(self):
         """
         Manager thread. Responsible for managing inner state of the node.
         :return:
         """
         global app_log
+        global MINIMUM_CONNECTIVITY
         if self.verbose:
             app_log.info("Started MN Manager")
         # Initialise round/sir data
         await self.refresh_last_block()
+        # TODO: _check_round should get consensus and network current height/round
         await self._check_round()
         while not self.stop_event.is_set():
+            # updates our current view of the peers we are connected to and net global status/consensus
+            await self._update_network()
             # Adjust state depending of the connection state
-            if self.connected_count > 0:
+            if self.connected_count >= MINIMUM_CONNECTIVITY:
                 if self.state == MNState.START:
                     await self.change_state_to(MNState.SYNCING)
-            elif self.state == MNState.SYNCING:
+            # elif self.state == MNState.SYNCING:
+            else:
                 await self.change_state_to(MNState.START)
+            # If we should sync, but we are late compared to the net, then go in to "catching up state"
+            try:
+                # can throw if net_height not known yet.
+                if self.state == MNState.SYNCING and self.net_height['round'] > self.poschain.height_status.round:
+                    app_log.warning("We are late, catching up!")
+                    # TODO: set time to trigger CATCHING_UP_CONNECT2
+                    await self.change_state_to(MNState.CATCHING_UP_CONNECT1)
+                    # on "connect 1 phase, we wait to be connect to at least .. peers
+                    # on connect2 phase, we add random peers other than our round peers to get enough
+                    await self.change_state_to(MNState.CATCHING_UP_ELECT)
+                    # TODO: more magic here to be sure we got a good one - here, just pick a random one from the top chain.
+                    self.sync_from = random.choice(self.net_height['peers'])
+                    app_log.warning("Sync From {}".format(self.sync_from))
+                    await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
+
+            except:
+                pass
+            if self.state == MNState.CATCHING_UP_PRESYNC:
+                # If we have no client worker, add one
+                if self.sync_from not in self.clients:
+                    io_loop = IOLoop.instance()
+                    with self.clients_lock:
+                        # first index is active or not
+                        self.clients[self.sync_from] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
+                    ip, port = self.sync_from.split(':')
+                    io_loop.spawn_callback(self.client_worker, ('N/A', ip, port, 1))
+                # TODO: add some timeout so we can retry another one if this one fails.
+                # TODO: The given worker will be responsible for changing state on ok or failed status
+
             if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
                 await self.change_state_to(MNState.STRONG_CONSENSUS)
 
             if self.state == MNState.STRONG_CONSENSUS:
-                if await self.consensus() >= 40:
+                if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
                     await self.change_state_to(MNState.FORGING)
                     # Forge will send also
                     await self.forge()
@@ -429,7 +471,7 @@ class Posmn:
                         # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
                         # tuples (address, ip, port, ?)
                         # ip_port = "{}:{}".format(peer[1], peer[2])
-                        full_peer = peer[1]+':'+str(peer[2]).zfill(5)
+                        full_peer = common.peer_to_fullpeer(peer)
                         if full_peer not in self.clients:
                             io_loop = IOLoop.instance()
                             with self.clients_lock:
@@ -437,7 +479,7 @@ class Posmn:
                                 self.clients[full_peer] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
                             io_loop.spawn_callback(self.client_worker, peer)
             # TODO: variable sleep time depending on the elapsed loop time - or use timeout?
-            await asyncio.sleep(10)
+            await asyncio.sleep(common.WAIT)
             await self._check_round()
 
     async def change_state_to(self, new_state):
@@ -450,7 +492,7 @@ class Posmn:
         if self.verbose:
             await self.status(log=True)
 
-    async def consensus(self):
+    async def _consensus(self):
         """
         Returns the % of jurors we agree with
         :return:
@@ -465,8 +507,23 @@ class Posmn:
         app_log.info('Inbound {}'.format(json.dumps(self.inbound)))
         """
         nb = 0
+        # global status of known peers
+        peers_status = {}
         for ip, peer in self.clients.items():
+            # print(peer)
+            """
+            'height_status': {'height': 94, 'round': 3361, 'sir': 0,
+                              'block_hash': '796748324623f516639d71850ea3397d08a301ba', 'uniques': 0, 'uniques10': 0,
+                              'forgers': 4, 'forgers10': 3}
+            """
             try:
+                if peer['height_status']['block_hash'] in peers_status:
+                    peers_status[peer['height_status']['block_hash']]['count'] += 1
+                    peers_status[peer['height_status']['block_hash']]['peers'].append(ip)
+                else:
+                    peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
+                    peers_status[peer['height_status']['block_hash']]['count'] = 1
+                    peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                 if common.same_height(peer['height_status'], our_status):
                     app_log.info('Peer {} agrees'.format(ip))
                     # TODO: only count if in our common.POC_MASTER_NODES_LIST list?
@@ -477,7 +534,15 @@ class Posmn:
                 pass
         for ip, peer in self.inbound.items():
             if ip not in self.clients:
+                # print(peer)
                 try:
+                    if peer['height_status']['block_hash'] in peers_status:
+                        peers_status[peer['height_status']['block_hash']]['count'] += 1
+                        peers_status[peer['height_status']['block_hash']]['peers'].append(ip)
+                    else:
+                        peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
+                        peers_status[peer['height_status']['block_hash']]['count'] = 1
+                        peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                     if common.same_height(peer['height_status'], our_status):
                         app_log.info('Peer {} agrees'.format(ip))
                         nb += 1
@@ -489,7 +554,22 @@ class Posmn:
         total = len(common.POC_MASTER_NODES_LIST)
         pc = round(nb * 100 / total)
         app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
+        peers_status = peers_status.values()
+        # print('> peers status', peers_status)
+        peers_status = sorted(peers_status, key=itemgetter('forgers', 'uniques', 'height', 'round'), reverse=True)
+        print('> sorted peers status')
+        # TEMP
+        for h in peers_status:
+            print(' ', h)
         # print("inbound", self.inbound)
+        self.consensus_nb = nb
+        self.consensus_pc = pc
+        try:
+            # TODO: move precise checks, here we just take the most valued chain. We should take number of peers at this height, too.
+            # If too weak, use the next one.
+            self.net_height = peers_status[0]
+        except:
+            self.net_height = None
         return pc
 
     async def refresh_last_block(self):
@@ -547,7 +627,7 @@ class Posmn:
         if self.verbose:
             app_log.info("Sending block to {}:{}".format(peer_ip, peer_port))
         try:
-            full_peer = peer_ip + ':' + str(peer_port).zfill(5)
+            full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
             tcp_client = TCPClient()
             stream = await tcp_client.connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
@@ -618,7 +698,7 @@ class Posmn:
         global app_log
         global LTIMEOUT
         ip = peer[1]
-        full_peer = peer[1] + ':' + str(peer[2]).zfill(5)
+        full_peer = common.peer_to_fullpeer(peer)
         try:
             if self.verbose:
                 access_log.info("Initiating client co-routine for {}:{}".format(peer[1], peer[2]))
@@ -627,7 +707,7 @@ class Posmn:
             stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
-            msg = await com_helpers.async_receive(stream, peer[1])
+            msg = await com_helpers.async_receive(stream, full_peer)
             if self.verbose:
                 access_log.info("Worker got {}".format(com_helpers.cmd_to_text(msg.command)))
             if msg.command == commands_pb2.Command.hello:
@@ -643,28 +723,61 @@ class Posmn:
                 self.clients[full_peer]['stats'][com_helpers.STATS_ACTIVEP] = True
                 self.clients[full_peer]['stats'][com_helpers.STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
-                await asyncio.sleep(common.WAIT)
-                now = time.time()
-                if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS):
-                    # If we are trying to reach consensus, don't ask for mempool sync. Peers may send anyway.
-                    height_delay = 10
-                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - 10:
-                        # Send our new tx from mempool if any, will get the new from peer.
-                        await self._exchange_mempool(stream, full_peer)
-                else:
-                    # Not looking for consensus, but send our height every now and then to stay sync
-                    height_delay = 30
-                if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
-                    # Time to send our last block info to the peer, he will answer back with his
-                    await self._exchange_height(stream, full_peer)
+                if self.state in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC) and self.sync_from == full_peer:
+                    # Faster sync
+                    await asyncio.sleep(common.SHORT_WAIT)
+                    if self.state == MNState.CATCHING_UP_PRESYNC:
+                        # Here, we check if our last block matches the peer's one.
+                        # If not, we rollback one block at a time until we agree.
+                        await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
+                                                            self.poschain.height_status.height, stream,full_peer)
+                        msg = await com_helpers.async_receive(stream, full_peer)
+                        # TODO: check message is blockinfo
+                        info = posblock.PosHeight().from_proto(msg.height_value)
+                        # print('self', self.poschain.height_status.to_dict(as_hex=True))
+                        # print('peer', info.to_dict(as_hex=True))
+                        if self.poschain.height_status.block_hash == info.block_hash and self.poschain.height_status.round == info.round:
+                            # we are ok, move to next state
+                            self.change_state_to(MNState.CATCHING_UP_SYNC)
+                        else:
+                            # todo
+                            app_log.error("Block mismatch but rollback is not implemented yet.")
+                            print('self', self.poschain.height_status.to_dict(as_hex=True))
+                            print('peer', info.to_dict(as_hex=True))
+                            await asyncio.sleep(10)
+                            self.stop_event.set()
 
-                # Only send ping if time is due.
-                # TODO: more than 30 sec? Config
-                if self.clients[full_peer]['stats'][com_helpers.STATS_LASTACT] < now - 30:
-                    if self.verbose:
-                        app_log.info("Sending ping to {}".format(full_peer))
-                    # keeps connection active, or raise error if connection lost
-                    await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
+                    if self.state == MNState.CATCHING_UP_SYNC:
+                        # We are on a compatible branch, lets get the missing blocks until we are sync.
+                        # The peer will send as many blocks as he wants, and sends empty when it's over.
+                        await com_helpers.async_send_int32(commands_pb2.Command.blocksync,
+                                                           self.poschain.height_status.height + 1, stream, full_peer)
+                        msg = await com_helpers.async_receive(stream, full_peer)
+                        print(msg)
+
+                else:
+                    await asyncio.sleep(common.WAIT)
+                    now = time.time()
+                    if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS):
+                        # If we are trying to reach consensus, don't ask for mempool sync. Peers may send anyway.
+                        height_delay = 10
+                        if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - 10:
+                            # Send our new tx from mempool if any, will get the new from peer.
+                            await self._exchange_mempool(stream, full_peer)
+                    else:
+                        # Not looking for consensus, but send our height every now and then to stay sync
+                        height_delay = 30
+                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
+                        # Time to send our last block info to the peer, he will answer back with his
+                        await self._exchange_height(stream, full_peer)
+
+                    # Only send ping if time is due.
+                    # TODO: more than 30 sec? Config
+                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTACT] < now - 30:
+                        if self.verbose:
+                            app_log.info("Sending ping to {}".format(full_peer))
+                        # keeps connection active, or raise error if connection lost
+                        await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
 
             raise ValueError("Closing")
         except Exception as e:
@@ -720,6 +833,25 @@ class Posmn:
             await self.digest_txs(msg.tx_values, full_peer)
         except Exception as e:
             app_log.warning("Error {} digesting tx from {}".format(e, full_peer))
+
+    async def _update_network(self):
+        """
+        Adjust peers and network properties.
+        Always called from the manager co-routine only.
+        :return:
+        """
+        inbound_count = len(self.inbound)
+        clients_count = 0
+        # Improve: use another list to avoid counting one by one?
+        for who, client in self.clients.items():
+            # Don't count the same peer twice
+            if who not in self.inbound:
+                # Only count the ones we are effectively connected to
+                if client['stats'][com_helpers.STATS_ACTIVEP]:
+                    clients_count += 1
+        self.connected_count = inbound_count + clients_count
+        # update our view of the network state
+        await self._consensus()
 
     async def _check_round(self):
         """
@@ -817,8 +949,12 @@ class Posmn:
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
                   'chain': poschain_status,
                   'mempool': mempool_status,
-                  'outbound': list(self.clients.keys()),
-                  'inbound': list(self.inbound.keys()),
+                  'peers': {
+                    'connected_count': self.connected_count,
+                    'outbound': list(self.clients.keys()),
+                    'inbound': list(self.inbound.keys()),
+                    'net_height': self.net_height
+                  },
                   'state': {'state': self.state.name,
                             'round': self.round,
                             'sir': self.sir,
@@ -826,7 +962,5 @@ class Posmn:
         # 'peers': self.peers
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
-            # Todo: temp, debug
-            await self.consensus()
         return status
 

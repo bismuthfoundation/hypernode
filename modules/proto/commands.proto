@@ -65,20 +65,8 @@ message IP {
     required uint32 ipv4=1;
     optional uint64 ipv6a=2;
     optional uint64 ipv6b=3;
-    optional uint32 port=4 [default = 5658 ];
+    optional uint32 port=4 [default = 5658];
 }
-
-// Deprecated - will use string
-enum ko_reason {
-    no_reason = 0;
-    version_mismatch = 1;
-    bad_ip = 2;
-    bad_pubkey = 3;
-    bad_block = 4;
-    bad_slot = 5;
-    no_resources = 6;
-}
-
 
 message Command {
     enum Type {
@@ -88,24 +76,25 @@ message Command {
         ping = 3;
         peers = 4;
         status = 5;
-        block = 6;
+        block = 6; // send forged block
         tx = 7;
         mempool = 8;
         update = 9;
-        height = 10;
+        height = 10;  // Share - exchange height
+        blockinfo = 11; // ask info for a specific block height. question comes with an int32, answer with a height
+        blocksync = 12; // ask info for a list of blocks starting with the given one. question comes with an int32, answer with block(s)
     }
     required Type command = 1;
 
     oneof param {
         string string_value=2;
         int32 int32_value=3;
-        // ko_reason reason_value=4;
-        Block block_value = 4;
-        Height height_value = 5;
+        Height height_value = 4;
     }
-
+    // Can be one block for block command, or a series of block
+    repeated Block block_value = 5;
     repeated TX tx_values = 6;
     repeated IP ip_values = 7;
-    repeated string sig_values = 8;
-    // optional Block block_value = 8;
+    // Can be TX signatures or block hashs
+    repeated bytes hash_values = 8;
 }
