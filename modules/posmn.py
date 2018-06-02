@@ -738,7 +738,7 @@ class Posmn:
                         # print('peer', info.to_dict(as_hex=True))
                         if self.poschain.height_status.block_hash == info.block_hash and self.poschain.height_status.round == info.round:
                             # we are ok, move to next state
-                            self.change_state_to(MNState.CATCHING_UP_SYNC)
+                            await self.change_state_to(MNState.CATCHING_UP_SYNC)
                         else:
                             # todo
                             app_log.error("Block mismatch but rollback is not implemented yet.")
