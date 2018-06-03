@@ -29,10 +29,11 @@ SQL_TX_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY 
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
-SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages WHERE block_height = ? "
+SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages WHERE block_height = ?"
 
 SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
 
+# TODO: some of these may be costly. check perfs.
 SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
 SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers10 FROM pos_chain WHERE height > ?"
 
@@ -42,9 +43,9 @@ SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques10 FROM pos_messages WHE
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
 SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
-SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ? "
+SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
-
+SQL_BLOCK_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
 
 """ pos chain db structure """
 
@@ -120,7 +121,8 @@ class PosChain:
 
     def __init__(self, verbose = False, app_log=None):
         self.verbose = verbose
-        self.block_height = 0
+        # self.block_height = 0  # double usage with height_status and block ?
+        self.block = None
         self.app_log = app_log
         self.height_status = None
 
@@ -160,7 +162,12 @@ class PosChain:
         Returns last know block as a dict
         :return:
         """
-        print("PosChain Virtual Method last_block")
+        if not self.block:
+            self.block = await self._last_block()
+        return self.block
+
+    async def _last_block(self):
+        print("PosChain Virtual Method _last_block")
 
     async def tx_exists(self, txid):
         """
@@ -169,21 +176,26 @@ class PosChain:
         """
         print("Virtual Method tx_exists")
 
-    def _invalidate_height_status(self):
+    def _invalidate(self):
         """
-        Something changed in our chain, invalidate the height status.
+        Something changed in our chain, invalidate the status.
         It will then be recalc when needed.
         :return:
         """
         self.height_status = None
+        self.block = None
 
     async def async_height(self):
         """
         returns a BlockHeight object with our current state
         :return:
         """
-        print("Virtual Method async_height")
+        if not self.height_status:
+            self.height_status = await self._height_status()
         return self.height_status
+
+    async def _height_status(self):
+        print("Virtual Method async_height")
 
     async def digest_block(self, proto_block, from_miner=False):
         """
@@ -192,11 +204,32 @@ class PosChain:
         :param from_miner: True if came from a live miner (current slot)
         :return:
         """
-        block = PosBlock().from_proto(proto_block)
-        print(block.to_json())
-        # TODO: checks
-        await self.insert_block(block)
-        return True
+        try:
+            block = PosBlock().from_proto(proto_block)
+            block_from = 'from Peer'
+            if from_miner :
+                block_from = 'from Miner'
+            self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
+            # Good height? - TODO: harmonize, use objects everywhere?
+            if block.height != self.block['height'] + 1:
+                self.app_log.error("Digesting block {} : bad height, our current height is {}".format(block.height, self.block['height']))
+                return False;
+            # Good hash?
+            if block.previous_hash != self.block['block_hash']:
+                self.app_log.error("Digesting block {} : bad hash {} vs our {}".format(block.height, block.previous_hash, self.block['block_hash']))
+                return False;
+
+            # TODO: more checks
+            # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
+            await self.insert_block(block)
+            self.app_log.warning("Digested block {}".format(block.height))
+            return True
+        except Exception as e:
+            self.app_log.error("digest_block Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            return False
 
 
 class MemoryPosChain(PosChain):
@@ -307,18 +340,19 @@ class SqlitePosChain(PosChain, SqliteBase):
         self.db = None
         self.cursor = None
 
-    async def last_block(self, with_tx=False):
+    async def _last_block(self, with_tx=False):
         """
         Returns last know block as a dict
         :return:
         """
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
         # print(block)
-        self.block_height = block['height']
+        # self.block_height = block['height']
         return block
 
     async def status(self):
-        status = {"block_height": self.block_height, "Genesis": common.GENESIS_ADDRESS}
+        last_block = await self.last_block()
+        status = {"block_height": last_block['height'], "Genesis": common.GENESIS_ADDRESS}
         height_status = await self.async_height()
         status.update(height_status.to_dict(as_hex=True))
         return status
@@ -335,10 +369,11 @@ class SqlitePosChain(PosChain, SqliteBase):
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         # Then the block and commit
         res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
-        self._invalidate_height_status()
-        if block.height > self.block_height:
-            # update our height
-            self.block_height = block.height
+        self._invalidate()
+        self.block = block.to_dict()
+        # force Recalc - could it be an incremental job ?
+        await self._height_status()
+        return True
 
     async def tx_exists(self, txid):
         """
@@ -351,7 +386,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             return True
         return False
 
-    async def async_height(self):
+    async def _height_status(self):
         """
         returns a BlockHeight object with our current state
         :return:
@@ -402,24 +437,36 @@ class SqlitePosChain(PosChain, SqliteBase):
         :return:
         """
 
+        """
         self.app_log.error("async_blocksync NOT done yet")
         await asyncio.sleep(10)
         return
+        """
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.blocksync
 
-        protocmd = commands_pb2.Command()
-        protocmd.Clear()
-        protocmd.command = commands_pb2.Command.blocksync
+            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, 10))
+            # print(">> BLOCKS")
+            for block in blocks:
+                block = PosBlock().from_dict(dict(block))
+                # TODO: add the block txs
+                txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+                for tx in txs:
+                    tx = PosMessage().from_dict(dict(tx))
+                    block.txs.append(tx)
+                block.add_to_proto(protocmd)
+                # print(block.to_dict())
+            await asyncio.sleep(1)
+            return protocmd
 
-
-        # GET blocks
-        # for each block, add block and txs
-        block = protocmd.block_values.add()
-
-        block.height, block.round, block.sir = self.height, self.round, self.sir
-        block.ts, block.previous_hash = self.timestamp, self.previous_hash
-        for tx in self.txs:
-            tx.add_to_proto(protocmd)
-
+        except Exception as e:
+            self.app_log.error("SRV: async_blocksync: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
 
 if __name__ == "__main__":

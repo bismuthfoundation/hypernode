@@ -136,14 +136,18 @@ class MnServer(TCPServer):
                         what = str(e)
                         if 'OK' not in what:
                             app_log.error("SRV: handle_stream {} for ip {}".format(what, full_peer))
+                        exc_type, exc_obj, exc_tb = sys.exc_info()
+                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                        print(exc_type, fname, exc_tb.tb_lineno)
+
                     return
         except Exception as e:
             app_log.error("SRV: TCP Server init {}: Error {}".format(peer_ip, e))
-            """
+
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
-            """
+
             return
         finally:
             self.node.remove_inbound(peer_ip, peer_port)
@@ -157,49 +161,58 @@ class MnServer(TCPServer):
         :return:
         """
         global access_log
-        if self.verbose:
-            # access_log.info("SRV: Got msg >{}< from {}:{}".format(msg.__str__().strip(), peer_ip, peer_port))
-            access_log.info("SRV: Got msg >{}< from {}:{}".format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
-        full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
-        # Don't do a thing.
-        # if msg.command == commands_pb2.Command.ping:
-        #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
-        # TODO: rights management
-        if msg.command == commands_pb2.Command.tx:
-            # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
-            # external txs from a "controller / wallet or such
-            try:
-                await self.node.digest_txs(msg.tx_values, full_peer)
-                await async_send_void(commands_pb2.Command.ok, stream, full_peer)
-            except Exception as e:
-                app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
-                await async_send_void(commands_pb2.Command.ko, stream, full_peer)
-        elif msg.command == commands_pb2.Command.mempool:
-            # peer mempool extract
-            try:
-                await self.node.digest_txs(msg.tx_values, full_peer)
-            except Exception as e:
-                app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
-            # TODO: use clients stats to get real since
-            txs = await self.mempool.async_since(0)
+        try:
             if self.verbose:
-                app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
-            # This is a list of PosMessage objects
-            await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
-        elif msg.command == commands_pb2.Command.height:
-            await self.node.digest_height(msg.height_value, full_peer, server=True)
-            height = await self.node.poschain.async_height()
-            await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
-        elif msg.command == commands_pb2.Command.blockinfo:
-            height = await self.node.poschain.async_blockinfo(msg.int32_value)
-            await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
-        elif msg.command == commands_pb2.Command.blocksync:
-            blocks = await self.node.poschain.async_blocksync(msg.int32_value)
-            await async_send_block(blocks, stream, full_peer)
+                # access_log.info("SRV: Got msg >{}< from {}:{}".format(msg.__str__().strip(), peer_ip, peer_port))
+                access_log.info("SRV: Got msg >{}< from {}:{}".format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
+            full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
+            # Don't do a thing.
+            # if msg.command == commands_pb2.Command.ping:
+            #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
+            # TODO: rights management
+            if msg.command == commands_pb2.Command.tx:
+                # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
+                # external txs from a "controller / wallet or such
+                try:
+                    await self.node.digest_txs(msg.tx_values, full_peer)
+                    await async_send_void(commands_pb2.Command.ok, stream, full_peer)
+                except Exception as e:
+                    app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                    await async_send_void(commands_pb2.Command.ko, stream, full_peer)
+            elif msg.command == commands_pb2.Command.mempool:
+                # peer mempool extract
+                try:
+                    await self.node.digest_txs(msg.tx_values, full_peer)
+                except Exception as e:
+                    app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                # TODO: use clients stats to get real since
+                txs = await self.mempool.async_since(0)
+                if self.verbose:
+                    app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
+                # This is a list of PosMessage objects
+                await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
+            elif msg.command == commands_pb2.Command.height:
+                await self.node.digest_height(msg.height_value, full_peer, server=True)
+                height = await self.node.poschain.async_height()
+                await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
+            elif msg.command == commands_pb2.Command.blockinfo:
+                height = await self.node.poschain.async_blockinfo(msg.int32_value)
+                await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
+            elif msg.command == commands_pb2.Command.blocksync:
+                print(msg)
+                blocks = await self.node.poschain.async_blocksync(msg.int32_value)
+                await async_send_block(blocks, stream, full_peer)
 
-        elif msg.command == commands_pb2.Command.update:
-            # TODO: rights/auth and config management
-            await self.update(msg.string_value, stream, full_peer)
+            elif msg.command == commands_pb2.Command.update:
+                # TODO: rights/auth and config management
+                await self.update(msg.string_value, stream, full_peer)
+
+        except Exception as e:
+            app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     async def update(self, url, stream, peer_ip):
             app_log.info('Checking version from {}'.format(url))
@@ -701,7 +714,7 @@ class Posmn:
         full_peer = common.peer_to_fullpeer(peer)
         try:
             if self.verbose:
-                access_log.info("Initiating client co-routine for {}:{}".format(peer[1], peer[2]))
+                access_log.info("Initiating client co-routine for {}".format(full_peer))
             tcp_client = TCPClient()
             # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
@@ -725,6 +738,7 @@ class Posmn:
             while not self.stop_event.is_set():
                 if self.state in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC) and self.sync_from == full_peer:
                     # Faster sync
+                    app_log.warning("Entering presync with {}".format(full_peer))
                     await asyncio.sleep(common.SHORT_WAIT)
                     if self.state == MNState.CATCHING_UP_PRESYNC:
                         # Here, we check if our last block matches the peer's one.
@@ -739,9 +753,10 @@ class Posmn:
                         if self.poschain.height_status.block_hash == info.block_hash and self.poschain.height_status.round == info.round:
                             # we are ok, move to next state
                             await self.change_state_to(MNState.CATCHING_UP_SYNC)
+                            app_log.warning("Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
                         else:
                             # todo
-                            app_log.error("Block mismatch but rollback is not implemented yet.")
+                            app_log.error("Block mismatch but Rollback is not implemented yet.")
                             print('self', self.poschain.height_status.to_dict(as_hex=True))
                             print('peer', info.to_dict(as_hex=True))
                             await asyncio.sleep(10)
@@ -750,15 +765,28 @@ class Posmn:
                     if self.state == MNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.
                         # The peer will send as many blocks as he wants, and sends empty when it's over.
-                        await com_helpers.async_send_int32(commands_pb2.Command.blocksync,
-                                                           self.poschain.height_status.height + 1, stream, full_peer)
-                        msg = await com_helpers.async_receive(stream, full_peer)
-                        print(msg)
 
+                        # warning: we use a property that can be None instead of the method.
+                        while self.net_height['height'] > self.poschain.height_status.height:
+                            await com_helpers.async_send_int32(commands_pb2.Command.blocksync,
+                                                               self.poschain.height_status.height + 1, stream, full_peer)
+                            msg = await com_helpers.async_receive(stream, full_peer)
+                            # print(msg)
+                            if not msg.block_value:
+                                app_log.warning("No more blocks from {}".format(full_peer))
+                            else:
+                                blocks_count = 0
+                                for block in msg.block_value:
+                                    if await self.poschain.digest_block(block, from_miner=False):
+                                        blocks_count += 1
+                                app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
+
+                        app_log.warning("Net Synced via {}".format(full_peer))
+                        await self.change_state_to(MNState.SYNCING)
                 else:
                     await asyncio.sleep(common.WAIT)
                     now = time.time()
-                    if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS):
+                    if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS, MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
                         # If we are trying to reach consensus, don't ask for mempool sync. Peers may send anyway.
                         height_delay = 10
                         if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - 10:
@@ -767,9 +795,10 @@ class Posmn:
                     else:
                         # Not looking for consensus, but send our height every now and then to stay sync
                         height_delay = 30
-                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
-                        # Time to send our last block info to the peer, he will answer back with his
-                        await self._exchange_height(stream, full_peer)
+                    if self.state not in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
+                        if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
+                            # Time to send our last block info to the peer, he will answer back with his
+                            await self._exchange_height(stream, full_peer)
 
                     # Only send ping if time is due.
                     # TODO: more than 30 sec? Config

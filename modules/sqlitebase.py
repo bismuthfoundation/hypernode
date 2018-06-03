@@ -10,7 +10,7 @@ import time
 import asyncio
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 class SqliteBase():
@@ -21,6 +21,8 @@ class SqliteBase():
         self.db_path = db_path + db_name
         self.db_name = db_name
         self.db = None
+        self.verbose = verbose
+        self.app_log = app_log
         self.cursor = None
         self.check()
         self.async_db = None
@@ -33,6 +35,7 @@ class SqliteBase():
         :return:
         """
         self.app_log.info("Virtual Method {} Check".format(self.db_name))
+        # pass
 
     def execute(self, sql, param=None, cursor=None, commit=False):
         """

@@ -6,6 +6,8 @@ and conversion between them all
 
 import json
 import sqlite3
+import os
+import sys
 
 # Our modules
 import common
@@ -14,8 +16,7 @@ import poscrypto
 import commands_pb2
 
 
-__version__ = '0.0.4'
-
+__version__ = '0.0.6'
 
 
 class PosMessage:
@@ -305,7 +306,7 @@ class PosBlock:
         protocmd = commands_pb2.Command()
         protocmd.Clear()
         protocmd.command = commands_pb2.Command.block
-        block = protocmd.block_value  # commands_pb2.Block()
+        block = protocmd.block_value.add()  # protocmd.block_value  # commands_pb2.Block()
         block.height, block.round, block.sir = self.height, self.round, self.sir
         block.ts, block.previous_hash = self.timestamp, self.previous_hash
         for tx in self.txs:
@@ -316,6 +317,30 @@ class PosBlock:
         block.forger = self.forger
         # protocmd.block_value = block
         return protocmd
+
+    def add_to_proto(self, protocmd):
+        """
+        Adds the block to an existing protobuf command object
+        :return:
+        """
+        try:
+            block = protocmd.block_value.add()
+            block.height, block.round, block.sir = self.height, self.round, self.sir
+            block.ts, block.previous_hash = self.timestamp, self.previous_hash
+            for tx in self.txs:
+                tx.add_to_proto(protocmd)
+            # todo: unify sources / names
+            block.msg_count, block.sources = self.msg_count, self.unique_sources
+            block.signature, block.block_hash = self.signature, self.block_hash
+            block.forger = self.forger
+            # protocmd.block_value = block
+            return protocmd
+        except Exception as e:
+            print("SRV: async_blocksync: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     # =========================== Really useful methods ===========================
 
@@ -351,7 +376,7 @@ class PosHeight:
     props = ('height', 'round', 'sir', 'block_hash', 'uniques', 'uniques10', 'forgers', 'forgers10')
 
     # Properties that need encoding for string representation
-    hex_encodable = ('block_hash')
+    hex_encodable = ('block_hash', )
 
     def __init__(self, verbose=False):
         self.verbose = verbose
