@@ -35,7 +35,7 @@ FUTURE_ALLOWED = 5
 VERBOSE = True
 
 # Debug/Dev only - Never forge if True
-DO_NOT_FORGE = True
+DO_NOT_FORGE = False
 
 
 # POC prefix is for POC only, will use real data later.

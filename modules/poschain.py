@@ -205,6 +205,7 @@ class PosChain:
         :return:
         """
         try:
+            print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
             block_from = 'from Peer'
             if from_miner :

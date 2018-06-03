@@ -113,7 +113,8 @@ class MnServer(TCPServer):
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current forging round, or add to anomalies buffer
-                await self.node.poschain.digest_block(msg.block_value, from_miner=True)
+                for block in msg.block_value:
+                    await self.node.poschain.digest_block(block, from_miner=True)
                 return
             else:
                 access_log.info("SRV: {} did not say hello".format(peer_ip))
