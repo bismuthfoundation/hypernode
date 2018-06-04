@@ -34,6 +34,7 @@ SHORT_WAIT = 0.1
 # limit, so nodes won't want to play with that.
 FUTURE_ALLOWED = 5
 # How many blocks - at most - to send in a single message when syncing catching up nodes
+# TODO: Estimate block size depending on the MN count
 BLOCK_SYNC_COUNT = 10
 
 # Debug/Dev only - Never forge if True
