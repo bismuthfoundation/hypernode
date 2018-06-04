@@ -47,6 +47,9 @@ SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE 
 
 SQL_BLOCK_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
 
+SQL_ROLLBACK_BLOCK = "DELETE FROM pos_chain WHERE height >= ?"
+SQL_ROLLBACK_BLOCKTX = "DELETE FROM pos_messages WHERE block_height >= ?"
+
 """ pos chain db structure """
 
 SQL_CREATE_ADDRESSES = "CREATE TABLE addresses (\
@@ -157,6 +160,13 @@ class PosChain:
         """
         print("PosChain Virtual Method insert_block")
 
+    async def rollback(self, block_count=1):
+        """
+        revert latest block_count blocks
+        :return:
+        """
+        print("PosChain Virtual Method rollback")
+
     async def last_block(self):
         """
         Returns last know block as a dict
@@ -205,7 +215,7 @@ class PosChain:
         :return:
         """
         try:
-            print(">> protoblock", proto_block)
+            # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
             block_from = 'from Peer'
             if from_miner :
@@ -349,6 +359,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
         # print(block)
         # self.block_height = block['height']
+        self.block = block
         return block
 
     async def status(self):
@@ -375,6 +386,22 @@ class SqlitePosChain(PosChain, SqliteBase):
         # force Recalc - could it be an incremental job ?
         await self._height_status()
         return True
+
+    async def rollback(self, block_count=1):
+        """
+        revert latest block_count blocks
+        :return:
+        """
+        global SQL_ROLLBACK_BLOCK
+        global SQL_ROLLBACK_BLOCKTX
+        res = await self.async_execute(SQL_ROLLBACK_BLOCK, (self.height_status.height, ), commit=True)
+        res = await self.async_execute(SQL_ROLLBACK_BLOCKTX, (self.height_status.height, ), commit=True)
+        self._invalidate()
+        # force Recalc - could it be an incremental job ?
+        await self._last_block()
+        await self._height_status()
+        return True
+
 
     async def tx_exists(self, txid):
         """
@@ -422,13 +449,20 @@ class SqlitePosChain(PosChain, SqliteBase):
         global SQL_INFO_1
         global SQL_INFO_2
         global SQL_INFO_4
-        status1 = await self.async_fetchone(SQL_INFO_1, (height, ), as_dict=True)
-        status2 = await self.async_fetchone(SQL_INFO_2, (height, ), as_dict=True)
-        status1.update(status2)
-        status4 = await self.async_fetchone(SQL_INFO_4, (height, ), as_dict=True)
-        status1.update(status4)
-        height_info = PosHeight().from_dict(status1)
-        return height_info
+        status1 = {}
+        try:
+            status1 = await self.async_fetchone(SQL_INFO_1, (height, ), as_dict=True)
+            status2 = await self.async_fetchone(SQL_INFO_2, (height, ), as_dict=True)
+            status1.update(status2)
+            status4 = await self.async_fetchone(SQL_INFO_4, (height, ), as_dict=True)
+            status1.update(status4)
+        except:
+            pass
+        finally:
+            if not status1:
+                status1 = {}
+            height_info = PosHeight().from_dict(status1)
+            return height_info
 
     async def async_blocksync(self, height):
         """

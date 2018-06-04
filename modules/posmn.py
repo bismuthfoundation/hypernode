@@ -749,19 +749,30 @@ class Posmn:
                         msg = await com_helpers.async_receive(stream, full_peer)
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
-                        # print('self', self.poschain.height_status.to_dict(as_hex=True))
-                        # print('peer', info.to_dict(as_hex=True))
+                        print('self', self.poschain.height_status.to_dict(as_hex=True))
+                        print('peer', info.to_dict(as_hex=True))
                         if self.poschain.height_status.block_hash == info.block_hash and self.poschain.height_status.round == info.round:
                             # we are ok, move to next state
                             await self.change_state_to(MNState.CATCHING_UP_SYNC)
                             app_log.warning("Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
                         else:
                             # todo
-                            app_log.error("Block mismatch but Rollback is not implemented yet.")
-                            print('self', self.poschain.height_status.to_dict(as_hex=True))
-                            print('peer', info.to_dict(as_hex=True))
-                            await asyncio.sleep(10)
-                            self.stop_event.set()
+                            app_log.warning("Block mismatch, will rollback")
+                            # TODO: find the common ancestor faster via height/hash list
+                            while self.poschain.height_status.block_hash != info.block_hash:
+                                print('self', self.poschain.height_status.to_dict(as_hex=True))
+                                print('peer', info.to_dict(as_hex=True))
+                                await self.poschain.rollback()
+                                await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
+                                                                   self.poschain.height_status.height, stream,
+                                                                   full_peer)
+                                msg = await com_helpers.async_receive(stream, full_peer)
+                                #  TODO: check message is blockinfo
+                                info = posblock.PosHeight().from_proto(msg.height_value)
+                                # await asyncio.sleep(5)
+                            app_log.warning("Should have rolled back to {} level.".format(full_peer))
+                            #self.stop_event.set()
+                            #sys.exit()
 
                     if self.state == MNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.

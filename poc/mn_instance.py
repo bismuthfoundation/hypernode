@@ -9,6 +9,7 @@ import time
 
 # custom modules
 sys.path.append('../modules')
+import os
 import common
 import posmn
 from posmn import Posmn
@@ -37,20 +38,27 @@ if __name__ == "__main__":
         else:
             # If we are updating, let our previous instance close.
             time.sleep(1)
-            my_info = common.POC_MASTER_NODES_LIST[args.index]
-            ip = my_info[1]
-            port = my_info[2]
-            address = my_info[0]
             peers = common.POC_MASTER_NODES_LIST
             if args.index >= 0:
+                my_info = common.POC_MASTER_NODES_LIST[args.index]
+                ip = my_info[1]
+                port = my_info[2]
+                address = my_info[0]
                 wallet_name = "mn_temp/mn{}.json".format(args.index)
                 # allows to run several MN on the same machine - debug/dev only
                 datadir = "./data{}".format(args.index)
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"
+                my_info = common.POC_MASTER_NODES_LIST[args.index]
+                ip = '127.0.0.1'  # TODO DEV only
+                port = 6960
+                address = "BAnNdHZSWBJxEya5o33Qbqrzg1m13GZmxy"  # TODO: take from wallet
             com_helpers.MY_NODE = Posmn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet=wallet_name, datadir=datadir)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:
         print(e)
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
