@@ -200,7 +200,7 @@ class MnServer(TCPServer):
                 height = await self.node.poschain.async_blockinfo(msg.int32_value)
                 await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
             elif msg.command == commands_pb2.Command.blocksync:
-                print(msg)
+                # print(msg)
                 blocks = await self.node.poschain.async_blocksync(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
 

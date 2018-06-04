@@ -16,7 +16,7 @@ import poscrypto
 import commands_pb2
 
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 class PosMessage:
@@ -24,6 +24,12 @@ class PosMessage:
     PoS Messages are the Tx
     This object represents a single tx/message
     """
+
+    props = ('txid', 'block_height', 'timestamp', 'sender', 'recipient',
+             'what', 'params', 'value', 'pubkey', 'received')
+
+    # Properties that need encoding for string representation
+    hex_encodable = ('txid', 'pubkey')
 
     def __init__(self, verbose=False):
         self.verbose = verbose
@@ -86,6 +92,21 @@ class PosMessage:
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, \
             self.pubkey, self.received = tx_list
         return self
+
+    def from_dict(self, tx_dict):
+        """
+        Converts a dict representing a message to the native object format
+        :param tx_dict:
+        :return:
+        """
+        # Main block values
+        for prop in self.props:
+            if prop in tx_dict:
+                # do not override what may not be passed
+                value = tx_dict[prop]
+                self.__dict__[prop] = value
+        return self
+
 
     def to_raw(self):
         """

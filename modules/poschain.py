@@ -448,18 +448,16 @@ class SqlitePosChain(PosChain, SqliteBase):
             protocmd.Clear()
             protocmd.command = commands_pb2.Command.blocksync
 
-            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, 10))
-            # print(">> BLOCKS")
+            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, common.BLOCK_SYNC_COUNT))
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
-                # TODO: add the block txs
+                # Add the block txs
                 txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
                 for tx in txs:
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
                 block.add_to_proto(protocmd)
-                # print(block.to_dict())
-            await asyncio.sleep(1)
+            # await asyncio.sleep(1)
             return protocmd
 
         except Exception as e:

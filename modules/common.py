@@ -12,7 +12,7 @@ import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.13'
+__version__ = '0.0.14'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -23,6 +23,8 @@ POSNET_ALLOW = 'posnet0001,posnet0002'
 NETWORK_ID = b'\x19'
 # NETWORK_ID = b'\x55'
 
+VERBOSE = True
+
 # How long to wait in the main client loop
 WAIT = 10
 
@@ -31,14 +33,12 @@ SHORT_WAIT = 0.1
 
 # limit, so nodes won't want to play with that.
 FUTURE_ALLOWED = 5
-
-VERBOSE = True
+# How many blocks - at most - to send in a single message when syncing catching up nodes
+BLOCK_SYNC_COUNT = 10
 
 # Debug/Dev only - Never forge if True
 DO_NOT_FORGE = False
 
-
-# POC prefix is for POC only, will use real data later.
 
 # The reference list of active Masternodes for the round
 # address, ip, port, weight
