@@ -52,12 +52,12 @@ message Height {
     // validity of the chain
     // total unique sources for whole chain
     required uint32 uniques=5;
-    // uniques for last 10 blocks
-    required uint32 uniques10=6;
+    // uniques for blocks of current round
+    required uint32 uniques_round=6;
     // total unique forgers for whole chain
     required uint32 forgers=7;
-    // uniques forgersfor last 10 blocks
-    required uint32 forgers10=8;
+    // uniques forgers for current round
+    required uint32 forgers_round=8;
 }
 
 message IP {

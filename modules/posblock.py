@@ -16,7 +16,7 @@ import poscrypto
 import commands_pb2
 
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 
 class PosMessage:
@@ -394,7 +394,7 @@ class PosHeight:
     This object represents the current height and content of a given node.
     """
 
-    props = ('height', 'round', 'sir', 'block_hash', 'uniques', 'uniques10', 'forgers', 'forgers10')
+    props = ('height', 'round', 'sir', 'block_hash', 'uniques', 'uniques_round', 'forgers', 'forgers_round')
 
     # Properties that need encoding for string representation
     hex_encodable = ('block_hash', )
@@ -406,9 +406,9 @@ class PosHeight:
         self.sir = 0
         self.block_hash = b''
         self.uniques = 0
-        self.uniques10 = 0
+        self.uniques_round = 0
         self.forgers = 0
-        self.forgers10 = 0
+        self.forgers_round = 0
 
     def to_proto(self, height):
         """
@@ -417,8 +417,8 @@ class PosHeight:
         """
         height.height, height.round, height.sir = self.height, self.round, self.sir
         height.block_hash = self.block_hash
-        height.uniques, height.uniques10 = self.uniques, self.uniques10
-        height.forgers, height.forgers10 = self.forgers, self.forgers10
+        height.uniques, height.uniques_round = self.uniques, self.uniques_round
+        height.forgers, height.forgers_round = self.forgers, self.forgers_round
 
     def from_proto(self, height_proto):
         """
@@ -427,8 +427,8 @@ class PosHeight:
         """
         self.height, self.round, self.sir = height_proto.height, height_proto.round, height_proto.sir
         self.block_hash = height_proto.block_hash
-        self.uniques, self.uniques10 =  height_proto.uniques, height_proto.uniques10
-        self.forgers, self.forgers10 = height_proto.forgers, height_proto.forgers10
+        self.uniques, self.uniques_round =  height_proto.uniques, height_proto.uniques_round
+        self.forgers, self.forgers_round = height_proto.forgers, height_proto.forgers_round
         return self
 
     def from_dict(self, height_dict):

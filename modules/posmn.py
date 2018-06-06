@@ -188,6 +188,7 @@ class MnServer(TCPServer):
                     app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
                 # TODO: use clients stats to get real since
                 txs = await self.mempool.async_since(0)
+                # TODO: filter out the tx we got from the peer also.
                 if self.verbose:
                     app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
                 # This is a list of PosMessage objects
@@ -299,8 +300,8 @@ class Posmn:
             self.init_log()
             poscrypto.load_keys(wallet)
             # Time sensitive props
-            self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log, db_path=datadir+'/')
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/')
+            self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log, db_path=datadir+'/', mempool=self.mempool)
             self.is_delegate = False
             self.round = -1
             self.sir = -1
@@ -418,11 +419,14 @@ class Posmn:
             app_log.info("Started MN Manager")
         # Initialise round/sir data
         await self.refresh_last_block()
-        # TODO: _check_round should get consensus and network current height/round
         await self._check_round()
         while not self.stop_event.is_set():
             # updates our current view of the peers we are connected to and net global status/consensus
             await self._update_network()
+            if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.poschain.height_status.forgers != self.address:
+                # We did not reach consensus in time, and we passed our turn.
+                app_log.warning("Too late to forge, back to Sync")
+                await self.change_state_to(MNState.SYNCING)
             # Adjust state depending of the connection state
             if self.connected_count >= MINIMUM_CONNECTIVITY:
                 if self.state == MNState.START:
@@ -527,8 +531,8 @@ class Posmn:
             # print(peer)
             """
             'height_status': {'height': 94, 'round': 3361, 'sir': 0,
-                              'block_hash': '796748324623f516639d71850ea3397d08a301ba', 'uniques': 0, 'uniques10': 0,
-                              'forgers': 4, 'forgers10': 3}
+                              'block_hash': '796748324623f516639d71850ea3397d08a301ba', 'uniques': 0, 'uniques_round': 0,
+                              'forgers': 4, 'forgers_round': 3}
             """
             try:
                 if peer['height_status']['block_hash'] in peers_status:
@@ -799,14 +803,18 @@ class Posmn:
                     await asyncio.sleep(common.WAIT)
                     now = time.time()
                     if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS, MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
-                        # If we are trying to reach consensus, don't ask for mempool sync. Peers may send anyway.
+                        # If we are trying to reach consensus, don't ask for mempool sync so often. Peers may send anyway.
                         height_delay = 10
-                        if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - 10:
-                            # Send our new tx from mempool if any, will get the new from peer.
-                            await self._exchange_mempool(stream, full_peer)
+                        mempool_delay = 30
                     else:
                         # Not looking for consensus, but send our height every now and then to stay sync
                         height_delay = 30
+                        mempool_delay = 20
+                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - mempool_delay:
+                        # Send our new tx from mempool if any, will get the new from peers.
+                        if await self.mempool.tx_count():
+                            #  Just don't waste bandwith if our mempool is empty.
+                            await self._exchange_mempool(stream, full_peer)
                     if self.state not in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
                         if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
                             # Time to send our last block info to the peer, he will answer back with his
@@ -948,6 +956,7 @@ class Posmn:
         if self.verbose:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.status(log=True))
+        loop.run_until_complete(self.init_check())
         try:
             server = MnServer()
             server.verbose = self.verbose
@@ -979,6 +988,24 @@ class Posmn:
         """
         self.connecting = connect
         # Will be handled by the manager.
+
+    async def init_check(self):
+        """
+        Initial coherence check
+        # TODO: more checks
+        :return:
+        """
+        app_log.info("Initial coherence check")
+        # Now test coherence and mempool
+        await self.mempool.async_purge()
+        mem_txs = await self.mempool.async_alltxids()
+        txs = []
+        for tx in mem_txs:
+            if await self.poschain.tx_exists(tx):
+                app_log.info("Tx {} in our chain, removing from mempool".format(tx))
+                txs.append(tx)
+        if len(txs):
+            self.mempool.async_del_txids(txs)
 
     async def status(self, log=True):
         """

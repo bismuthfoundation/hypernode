@@ -32,13 +32,14 @@ SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages WHERE block_height = ?"
 
 SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
+SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 
 # TODO: some of these may be costly. check perfs.
 SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
-SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers10 FROM pos_chain WHERE height > ?"
+SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
 
 SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
-SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques10 FROM pos_messages WHERE block_height > ?"
+SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
 
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
@@ -122,12 +123,13 @@ class PosChain:
     Generic Class
     """
 
-    def __init__(self, verbose = False, app_log=None):
+    def __init__(self, verbose = False, app_log=None, mempool=None):
         self.verbose = verbose
         # self.block_height = 0  # double usage with height_status and block ?
         self.block = None
         self.app_log = app_log
         self.height_status = None
+        self.mempool = mempool
 
     async def status(self):
         print("PosChain Virtual Method Status")
@@ -259,7 +261,7 @@ class MemoryPosChain(PosChain):
 
 class SqlitePosChain(PosChain, SqliteBase):
 
-    def __init__(self, verbose = False, db_path='data/', app_log=None):
+    def __init__(self, verbose = False, db_path='data/', app_log=None, mempool=None):
         PosChain.__init__(self, verbose=verbose, app_log=app_log)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='poc_pos_chain.db', app_log=app_log)
 
@@ -428,14 +430,18 @@ class SqlitePosChain(PosChain, SqliteBase):
             # cached info
             return self.height_status
         # Or compute and store
+        # TODO: All this need way too many requests. Refactor to a single one, or adjust db structure to alleviate
+        # Some things could also be incremental and not queried each time.
         status1 = await self.async_fetchone(SQL_STATE_1, as_dict=True)
+        height_of_round = await self.async_fetchone(SQL_HEIGHT_OF_ROUND, (status1['round'], ), as_dict=True)
+        # self.app_log.info("Height of round {} is {}".format(status1['round'], height_of_round['height']))
         status2 = await self.async_fetchone(SQL_STATE_2, as_dict=True)
         status1.update(status2)
-        status3 = await self.async_fetchone(SQL_STATE_3, (status1['height'] - 10, ), as_dict=True)
+        status3 = await self.async_fetchone(SQL_STATE_3, (status1['round'], ), as_dict=True)
         status1.update(status3)
         status4 = await self.async_fetchone(SQL_STATE_4, as_dict=True)
         status1.update(status4)
-        status5 = await self.async_fetchone(SQL_STATE_5, (status1['height'] - 10, ), as_dict=True)
+        status5 = await self.async_fetchone(SQL_STATE_5, (height_of_round['height'], ), as_dict=True)
         status1.update(status5)
         # print(status1)
         self.height_status = PosHeight().from_dict(status1)

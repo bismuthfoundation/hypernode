@@ -34,7 +34,7 @@ SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     received     INTEGER\
 );"
 
-SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+SQL_INSERT_TX = "INSERT OR IGNORE INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 # Purge old txs that may be stuck
 SQL_PURGE = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour')"
@@ -47,6 +47,11 @@ SQL_SINCE = "SELECT * FROM pos_messages WHERE timestamp >= ? ORDER BY timestamp 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
 SQL_STATUS = "SELECT COUNT(*) AS NB, COUNT(distinct sender) as SENDERS, count(distinct recipient) as RECIPIENTS FROM pos_messages"
+
+SQL_COUNT = "SELECT COUNT(*) AS NB FROM pos_messages"
+
+SQL_LIST_TXIDS = "SELECT txid FROM pos_messages"
+SQL_REMOVE_TXID = "DELETE FROM pos_messages where txid = ?"
 
 # How old a transaction can be to be embedded in a block ? Don't pick too large a delta T
 NOT_OLDER_THAN_SECONDS = 60*30 * 1000
@@ -63,6 +68,9 @@ class Mempool:
 
     async def status(self):
         print("Mempool Virtual Method Status")
+
+    async def tx_count(self, tx):
+        print("Virtual Method tx_count")
 
     async def _insert_tx(self, tx):
         print("Virtual Method _insert_tx")
@@ -200,6 +208,10 @@ class SqliteMempool(Mempool, SqliteBase):
         res = await self.async_fetchall(SQL_STATUS)
         return dict(res[0])
 
+    async def tx_count(self):
+        res = await self.async_fetchone(SQL_COUNT)
+        return res
+
     async def async_purge(self):
         """
         Purge old txs
@@ -254,3 +266,25 @@ class SqliteMempool(Mempool, SqliteBase):
             self.app_log.info("{} already in our mempool".format(txid))
             return True
         return False
+
+    async def async_alltxids(self):
+        """
+        Returns all txids from mempool
+        :return:
+        """
+        res = await self.async_fetchall(SQL_LIST_TXIDS)
+        print(dict(res))
+        return dict(res)
+
+    async def async_del_txids(self, txids):
+        """
+        Deletes a list of the txs from mempool
+        :param txids:
+        :return:
+        """
+        for tx in txids:
+            res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
+        tx = 0
+        res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
+        return True
+
