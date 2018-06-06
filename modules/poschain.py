@@ -262,7 +262,7 @@ class MemoryPosChain(PosChain):
 class SqlitePosChain(PosChain, SqliteBase):
 
     def __init__(self, verbose = False, db_path='data/', app_log=None, mempool=None):
-        PosChain.__init__(self, verbose=verbose, app_log=app_log)
+        PosChain.__init__(self, verbose=verbose, app_log=app_log, mempool=mempool)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='poc_pos_chain.db', app_log=app_log)
 
     def check(self):
@@ -379,8 +379,13 @@ class SqlitePosChain(PosChain, SqliteBase):
         """
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
+        tx_ids = []
         for tx in block.txs:
+            tx_ids.append(tx.txid)
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        # batch delete from mempool
+        if len(tx_ids):
+            await self.mempool.async_del_txids(tx_ids)
         # Then the block and commit
         res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
         self._invalidate()

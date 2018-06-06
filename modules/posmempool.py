@@ -282,6 +282,7 @@ class SqliteMempool(Mempool, SqliteBase):
         :param txids:
         :return:
         """
+        # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
         for tx in txids:
             res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
         tx = 0

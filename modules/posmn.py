@@ -423,6 +423,9 @@ class Posmn:
         while not self.stop_event.is_set():
             # updates our current view of the peers we are connected to and net global status/consensus
             await self._update_network()
+            if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
+                await self.change_state_to(MNState.STRONG_CONSENSUS)
+
             if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.poschain.height_status.forgers != self.address:
                 # We did not reach consensus in time, and we passed our turn.
                 app_log.warning("Too late to forge, back to Sync")
@@ -434,6 +437,22 @@ class Posmn:
             # elif self.state == MNState.SYNCING:
             else:
                 await self.change_state_to(MNState.START)
+
+            if self.net_height:
+                # TODO: replace this lengthy condition by a readable function of its own -
+                if self.state == MNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
+                        (self.net_height['forgers_round'] > self.poschain.height_status.forgers_round or \
+                        self.net_height['uniques_round'] > self.poschain.height_status.uniques_round ) and \
+                        self.net_height['count'] >= 2 :
+                    # We are in the right round, but a most valuable chain is there.
+                    app_log.warning("Better net chain, will analyse - TODO")
+                    self.sync_from = random.choice(self.net_height['peers'])
+                    # TODO: get whole round in one message, fast analyse without storing to check it's true,
+                    # digest if ok.
+                    # This is temp only, recycle late sync for now.
+                    app_log.warning("Round Sync From {}".format(self.sync_from))
+                    await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
+
             # If we should sync, but we are late compared to the net, then go in to "catching up state"
             try:
                 # can throw if net_height not known yet.
@@ -448,7 +467,6 @@ class Posmn:
                     self.sync_from = random.choice(self.net_height['peers'])
                     app_log.warning("Sync From {}".format(self.sync_from))
                     await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
-
             except:
                 pass
             if self.state == MNState.CATCHING_UP_PRESYNC:
@@ -462,9 +480,6 @@ class Posmn:
                     io_loop.spawn_callback(self.client_worker, ('N/A', ip, port, 1))
                 # TODO: add some timeout so we can retry another one if this one fails.
                 # TODO: The given worker will be responsible for changing state on ok or failed status
-
-            if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
-                await self.change_state_to(MNState.STRONG_CONSENSUS)
 
             if self.state == MNState.STRONG_CONSENSUS:
                 if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
@@ -575,10 +590,11 @@ class Posmn:
         peers_status = peers_status.values()
         # print('> peers status', peers_status)
         peers_status = sorted(peers_status, key=itemgetter('forgers', 'uniques', 'height', 'round'), reverse=True)
-        print('> sorted peers status')
         # TEMP
-        for h in peers_status:
-            print(' ', h)
+        if self.verbose:
+            print('> sorted peers status')
+            for h in peers_status:
+                print(' ', h)
         # print("inbound", self.inbound)
         self.consensus_nb = nb
         self.consensus_pc = pc
