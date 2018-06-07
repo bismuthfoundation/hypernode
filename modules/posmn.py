@@ -426,7 +426,7 @@ class Posmn:
             if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
                 await self.change_state_to(MNState.STRONG_CONSENSUS)
 
-            if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.poschain.height_status.forgers != self.address:
+            if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.forger != poscrypto.ADDRESS:
                 # We did not reach consensus in time, and we passed our turn.
                 app_log.warning("Too late to forge, back to Sync")
                 await self.change_state_to(MNState.SYNCING)
@@ -689,19 +689,22 @@ class Posmn:
                 app_log.info("Forging block {} Round {} SIR {}".format(self.last_height + 1, self.round, self.sir))
             block = posblock.PosBlock().from_dict(block_dict)
             # txs are native objects
-            block.txs = await self.mempool.async_all()
+            block.txs = await self.mempool.async_all(self.last_height + 1)
             if not len(block.txs):
                 # not enough TX, won't pass in prod
                 # raise ValueError("No TX to embed, block won't be valid.")
                 app_log.error("No TX to embed, block won't be valid.")
             # Remove from mempool
             await self.mempool.clear()
+            print(block.to_dict())
             block.sign()
+            print(block.to_dict())
             # TODO: Shall we pass that one through "digest" to make sure?
             await self.poschain.insert_block(block)
             await self.change_state_to(MNState.SENDING)
             # TODO: Send the block to our peers (unless we were unable to insert it in our db)
             block = block.to_proto()
+            print("proto", block)
             app_log.error("Block Forged, I should send it")
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2]) for peer in common.POC_MASTER_NODES_LIST if not (peer[1] == self.ip and peer[2] == self.port)]
@@ -972,7 +975,11 @@ class Posmn:
         if self.verbose:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.status(log=True))
-        loop.run_until_complete(self.init_check())
+        try:
+            loop.run_until_complete(self.init_check())
+        except Exception as e:
+            app_log.error("Serve Init: {}".format(str(e)))
+            return
         try:
             server = MnServer()
             server.verbose = self.verbose
@@ -1012,16 +1019,23 @@ class Posmn:
         :return:
         """
         app_log.info("Initial coherence check")
-        # Now test coherence and mempool
-        await self.mempool.async_purge()
-        mem_txs = await self.mempool.async_alltxids()
-        txs = []
-        for tx in mem_txs:
-            if await self.poschain.tx_exists(tx):
-                app_log.info("Tx {} in our chain, removing from mempool".format(tx))
-                txs.append(tx)
-        if len(txs):
-            self.mempool.async_del_txids(txs)
+        try:
+            # Now test coherence and mempool
+            await self.mempool.async_purge()
+            mem_txs = await self.mempool.async_alltxids()
+            txs = []
+            for tx in mem_txs:
+                if await self.poschain.tx_exists(tx):
+                    app_log.info("Tx {} in our chain, removing from mempool".format(tx))
+                    txs.append(tx)
+            if len(txs):
+                self.mempool.async_del_txids(txs)
+        except Exception as e:
+            app_log.error("Coherence Check: {}".format(str(e)))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     async def status(self, log=True):
         """

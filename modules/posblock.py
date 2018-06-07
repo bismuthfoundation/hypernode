@@ -158,7 +158,7 @@ class PosMessage:
 
     def add_to_proto(self, protocmd):
         """
-        Adds the tx into the given protobuf
+        Adds the tx into the given protobuf command (not in a block)
         :param protocmd:
         :return:
         """
@@ -168,6 +168,20 @@ class PosMessage:
             proto_tx.pubkey = \
             self.txid, self.block_height, self.timestamp, self.sender,\
             self.recipient, self.what, self.params, self.value, self.pubkey
+
+    def add_to_proto_block(self, protoblock):
+        """
+        Adds the tx into the given block
+        :param protoblock: a block value of a proto command
+        :return:
+        """
+        proto_tx = protoblock.txs.add()
+        proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, \
+            proto_tx.recipient, proto_tx.what, proto_tx.params, proto_tx.value, \
+            proto_tx.pubkey = \
+            self.txid, self.block_height, self.timestamp, self.sender,\
+            self.recipient, self.what, self.params, self.value, self.pubkey
+
 
     # =========================== Really useful methods ===========================
 
@@ -310,9 +324,11 @@ class PosBlock:
     def from_proto(self, block_proto):
         self.height, self.round, self.sir = block_proto.height, block_proto.round, block_proto.sir
         self.timestamp, self.previous_hash = block_proto.ts, block_proto.previous_hash
-        self.tx = list()
+        self.txs = list()
         for tx in block_proto.txs:
-            self.tx.append(PosMessage().from_list(tx.to_list))
+            my_tx = PosMessage().from_proto(tx)
+            # print('my_tx', my_tx.to_list())
+            self.txs.append(my_tx)
         # todo: unify sources / names
         self.msg_count, self.unique_sources = block_proto.msg_count, block_proto.sources
         self.signature, self.block_hash = block_proto.signature, block_proto.block_hash
@@ -331,7 +347,7 @@ class PosBlock:
         block.height, block.round, block.sir = self.height, self.round, self.sir
         block.ts, block.previous_hash = self.timestamp, self.previous_hash
         for tx in self.txs:
-            tx.add_to_proto(protocmd)
+            tx.add_to_proto_block(block)
         # todo: unify sources / names
         block.msg_count, block.sources = self.msg_count, self.unique_sources
         block.signature, block.block_hash = self.signature, self.block_hash
@@ -349,7 +365,7 @@ class PosBlock:
             block.height, block.round, block.sir = self.height, self.round, self.sir
             block.ts, block.previous_hash = self.timestamp, self.previous_hash
             for tx in self.txs:
-                tx.add_to_proto(protocmd)
+                tx.add_to_proto_block(block)
             # todo: unify sources / names
             block.msg_count, block.sources = self.msg_count, self.unique_sources
             block.signature, block.block_hash = self.signature, self.block_hash

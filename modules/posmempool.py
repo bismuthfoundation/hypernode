@@ -112,7 +112,7 @@ class Mempool:
         """
         print("Virtual Method tx_exists")
 
-    async def async_all(self):
+    async def async_all(self, block_height=0):
         """
         Returns all tx to embed in current block
         :return:
@@ -247,13 +247,17 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         res = await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=True)
 
-    async def async_all(self):
+    async def async_all(self, block_height=0):
         """
         Returns all tx from mempool
         :return:
         """
         res = await self.async_fetchall(SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS, ))
         res = [posblock.PosMessage().from_list(tx) for tx in res]
+        if block_height:
+            # Set blockheight to be embedded in.
+            for tx in res:
+                tx.block_height = block_height
         return res
 
     async def tx_exists(self, txid):
@@ -272,9 +276,16 @@ class SqliteMempool(Mempool, SqliteBase):
         Returns all txids from mempool
         :return:
         """
-        res = await self.async_fetchall(SQL_LIST_TXIDS)
-        print(dict(res))
-        return dict(res)
+        try:
+            res = await self.async_fetchall(SQL_LIST_TXIDS, )
+            res = [tx['txid'] for tx in res]
+            return res
+        except Exception as e:
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     async def async_del_txids(self, txids):
         """
