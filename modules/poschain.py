@@ -217,9 +217,9 @@ class PosChain:
         :return:
         """
         try:
-            print(">> protoblock", proto_block)
+            # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
-            print(">> dictblock", block.to_dict())
+            # print(">> dictblock", block.to_dict())
             block_from = 'from Peer'
             if from_miner :
                 block_from = 'from Miner'
@@ -386,6 +386,7 @@ class SqlitePosChain(PosChain, SqliteBase):
                 self.app_log.warning("TX had bad height {} instead of {}, fixed. - TODO: do not digest?".format(tx.block_height, block.height))
                 tx.block_height = block.height
             tx_ids.append(tx.txid)
+            # TODO: optimize push in a batch and do a single sql with all tx in a row
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         # batch delete from mempool
         if len(tx_ids):
@@ -412,7 +413,6 @@ class SqlitePosChain(PosChain, SqliteBase):
         await self._last_block()
         await self._height_status()
         return True
-
 
     async def tx_exists(self, txid):
         """

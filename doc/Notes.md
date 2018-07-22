@@ -15,7 +15,7 @@ spammy mn are visible and can be voted down. bad behavior penalizes the actor.
 tx from a mn can also be throttled anyway, to avoid unvoluntary spam (bug?) 
 
 No incentive in cheating: no bis, no direct advantage. Actions logged by everyone, will be seen and recorded.
-rewards are NOT related to PoS forged blocks. 
+rewards are NOT directly related to PoS forged blocks. 
 
 
 Code for light tests only, can launch with only partial tests/checks, and update later on.
@@ -47,6 +47,9 @@ add a message for that.
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
+
+Allow sync from jurors for non juror MNs (for current round)
+same if juror missed a forged block: allow for late sync.
 
 Auto-update/restart when code update or specific message (WIP - needs proper sync and bootstrap first) 
 
