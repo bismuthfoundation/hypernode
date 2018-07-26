@@ -61,6 +61,23 @@ id 10 - wip
 The current height status of a chain.  
 Embeds current height as well as metrics about the variety of the chain (number of uniques sources and forgers)
 
+## blockinfo
+id 11 - wip
+Ask info for a specific block height. Question comes with an int32, answer with a height
+
+## blocksync
+id 12 - wip 
+Ask info for a list of blocks starting with the given one. Question comes with an int32, answer with block(s)
+
+## roundblocks
+id 13 - wip
+Ask the full block data for a given round. Question comes with an int32, answer with block(s)
+
+
+
+
+
+
 # Command flow
 
 Each node has a server, responding to requests, and some clients, initiating requests.  
@@ -71,7 +88,7 @@ Servers wait for an event, and answer.
 
 * Client sends "Hello" with its POSNET version, port and PoS address
 * Server may answer "ko" with a reason, or
-* Server may answer "Hello" its own POSNET version, port and PoS address
+* Server may answer "Hello" with its own POSNET version, port and PoS address
 
 ## Keep alive
 

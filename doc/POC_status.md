@@ -2,15 +2,13 @@
 
 # 1 Start of Round
 
-(To be updated with new addresses of MN)
-
 See round_start.py, based upon fake data  
-aa012345678901aa  
-bb123456789012bb  
-cc234567890123cc  
-dd345678901234dd  
-ee456789012345ee  
-are 5 madeup MN privkey, short and easy to recognize.
+BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH
+B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC
+BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV
+BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD
+Those are 5 debug MN pubkeys, never to be used IRL.
 
 ## 1.1 Define Jury for a round
 
@@ -101,15 +99,11 @@ End of round...
 
 ## 2.2 Forging
 
-WIP
+Done
 
 ## 2.3 Block sending
 
-TBD
-
-## 2.4 Late Sync
-
-TBD
+Done
 
 
 ## [...]
@@ -130,7 +124,7 @@ Base ok, Tornado and async/await, too.
 
 ## 3.3 Base node commands
 
-wip
+WIP to OK
 
 - Hello and ping ok
 - Memool sync in progress, base ok
@@ -160,11 +154,11 @@ Schema ok
 
 ## 4.4 Basic validity checks
 
-TBD
+Done
 
 ## 4.5 Extended checks
 
-TBD
+To check.
 
 # 5 PoS Addresses
 
@@ -175,4 +169,30 @@ Done, Doc to be written.
 - b58 encoded
 
 Hash size: 20 byte
-Address size: 32 bytes text format (25 bytes in raw format)
+Address size: 34 bytes text format (25 bytes in raw format)
+
+
+
+# 6 Syncing
+
+PoS chain syncing
+
+## 6.1 Online Sync
+
+We are a juror, we get live blocks as they are forged.
+We can only sync this way from the juror of the current slot.
+Only jurors get live blocks. Other Hypernodes are synced via Round sync.
+Done.
+
+## 6.2 Round Sync 
+
+Another chain is better than ours for the current round.
+Evaluate and swap if needed.
+We can only sync from a juror of the current round (whatever the slot).
+WIP
+
+## 6.3 Late sync
+
+We are 1 round or more late.
+Sync from the existing network consensus.
+Done. More tests TBD

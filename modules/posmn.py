@@ -39,12 +39,12 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 """
 I use a global object to keep the state and route data between the servers and threads.
 This looks not clean to me.
-Will have to refactor if possible all in a single object, but looks hard enough, so postponing. 
+Will have to refactor if possible all in a single object, but looks hard enough, therefore postponing. 
 """
 
 app_log = None
@@ -204,10 +204,20 @@ class MnServer(TCPServer):
                 # print(msg)
                 blocks = await self.node.poschain.async_blocksync(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
+            elif msg.command == commands_pb2.Command.roundblocks:
+                # print(msg)
+                blocks = await self.node.poschain.async_roundblocks(msg.int32_value)
+                await async_send_block(blocks, stream, full_peer)
+
 
             elif msg.command == commands_pb2.Command.update:
                 # TODO: rights/auth and config management
                 await self.update(msg.string_value, stream, full_peer)
+
+            else:
+                # if self.verbose:
+                #    app_log.warning("SRV unknown message {}, closing.".format(com_helpers.cmd_to_text(msg.command)))
+                raise ValueError("unknown message {}".format(com_helpers.cmd_to_text(msg.command)))
 
         except Exception as e:
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
@@ -268,17 +278,19 @@ class MNState(Enum):
     CATCHING_UP_ELECT = 9
     CATCHING_UP_PRESYNC = 10
     CATCHING_UP_SYNC = 11
+    ROUND_SYNC = 12
 
 
 class Posmn:
     """The PoS Masternode object"""
+    # There is only one instance of this class per node.
     # List of client routines
     # Each item (key=ip) is [active, last_active, sent_msg, sent_bytes, recv_msg, recv_bytes]
     clients = {}
     # list of inbound server connections
     inbound = {}
 
-    stop_event = aioprocessing.AioEvent()
+    stop_event = aioprocessing.AioEvent()  # Move these to instance prop?
 
     def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json", datadir="data"):
         global app_log
@@ -292,6 +304,8 @@ class Posmn:
         self.server = None
         self.state = MNState.START
         self.datadir = datadir
+        # Used when round syncing, to save previous state and our expectations about the end result.
+        self.saved_state = {"state": self.state, "height_target": None}
         # list of peers I should stay connected to for a given round
         self.connect_to = []
         # Does the node try to connect to others?
@@ -332,6 +346,8 @@ class Posmn:
     def init_log(self):
         global app_log
         global access_log
+        if common.DEBUG:
+            logging.basicConfig(level=logging.DEBUG)
         app_log = logging.getLogger("tornado.application")
         tornado.log.enable_pretty_logging()
         logfile = os.path.abspath("pos_app.log")
@@ -438,6 +454,8 @@ class Posmn:
             else:
                 await self.change_state_to(MNState.START)
 
+            """
+            # Done in _consensus - replace here?
             if self.net_height:
                 # TODO: replace this lengthy condition by a readable function of its own -
                 if self.state == MNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
@@ -452,6 +470,7 @@ class Posmn:
                     # This is temp only, recycle late sync for now.
                     app_log.warning("Round Sync From {}".format(self.sync_from))
                     await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
+            """
 
             # If we should sync, but we are late compared to the net, then go in to "catching up state"
             try:
@@ -531,17 +550,22 @@ class Posmn:
         :return:
         """
         # TODO
+        peers_status = {}
         our_status = await self.poschain.async_height()
         our_status = our_status.to_dict(as_hex=True)
+        our_status['count'] = 1
+        our_status['peers'] = []
+        if self.verbose:
+            print("Our status", our_status)
+        # peers_status = {'WE': our_status}
         # in self.clients we should have the latest blocks of every peer we are connected to
         """
         # TEMP - DEBUG - DEV
         app_log.info('Clients {}'.format(json.dumps(self.clients)))
         app_log.info('Inbound {}'.format(json.dumps(self.inbound)))
         """
-        nb = 0
+        nb = 0  # Nb of peers with same height as ours.
         # global status of known peers
-        peers_status = {}
         for ip, peer in self.clients.items():
             # print(peer)
             """
@@ -577,10 +601,12 @@ class Posmn:
                         peers_status[peer['height_status']['block_hash']]['count'] = 1
                         peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                     if common.same_height(peer['height_status'], our_status):
-                        app_log.info('Peer {} agrees'.format(ip))
                         nb += 1
+                        if self.verbose:
+                            app_log.info('Peer {} agrees'.format(ip))
                     else:
-                        app_log.warning('Peer {} disagrees'.format(ip))
+                        if self.verbose:
+                            app_log.warning('Peer {} disagrees'.format(ip))
                 except:
                     pass
         # print("clients", self.clients)
@@ -589,7 +615,8 @@ class Posmn:
         app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
         peers_status = peers_status.values()
         # print('> peers status', peers_status)
-        peers_status = sorted(peers_status, key=itemgetter('forgers', 'uniques', 'height', 'round'), reverse=True)
+        # peers_status = sorted(peers_status, key=itemgetter('forgers', 'uniques', 'height', 'round'), reverse=True)
+        peers_status = sorted(peers_status, key=itemgetter('forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'), reverse=True)
         # TEMP
         if self.verbose:
             print('> sorted peers status')
@@ -599,12 +626,80 @@ class Posmn:
         self.consensus_nb = nb
         self.consensus_pc = pc
         try:
-            # TODO: move precise checks, here we just take the most valued chain. We should take number of peers at this height, too.
-            # If too weak, use the next one.
-            self.net_height = peers_status[0]
-        except:
+            if len(peers_status):
+                # TODO: more precise checks? Here we just take the most valued chain. We should take number of peers at this height, too.
+                # If too weak, use the next one.
+                self.net_height = peers_status[0]
+                if common.first_height_is_better(self.net_height, our_status):
+                    if self.net_height["round"] == our_status["round"]:
+                        best_peers = self.net_height['peers']
+                        app_log.warning('There is a better chain for our round on the net: "{}"'.format(','.join(best_peers)))
+                        if self.state in [MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS, MNState.SYNCING]:
+                            app_log.info('State {} force round sync and check'.format(self.state))
+                            await self._round_sync(our_status["round"], best_peers)
+                        else:
+                            app_log.warning('State is {}, ignoring for now.'.format(self.state))
+            else:
+                self.net_height = None
+        except Exception as e:
+            app_log.error('Consensus error {}'.format(e))
             self.net_height = None
         return pc
+
+    async def _round_sync(self, round, best_peers):
+        """
+        Tries to sync from a peer advertising a better chain than ours.
+        :return: Boolean (success)
+        """
+        res = False
+        # Store the current state and target
+        self.saved_state = {"state": self.state, "height_target":best_peers}
+        await self.change_state_to(MNState.ROUND_SYNC)
+        # pick a peer - if sync fails, we will try another random one next time
+        peer = random.choice(best_peers)
+        print(">> CHOSEN PEER ", peer)
+        try:
+            # TODO: get the whole round data from that peer - We suppose it fits in memory
+            the_blocks = await self._get_round_blocks(peer, round)
+            print(the_blocks)  # debug
+            await asyncio.sleep(10)  # temp debug
+            # TODO: check the data fits and count sources/forgers
+            # TODO: Check it matches the target, if it does merge into the sqlite
+            # TODO: Send TX about what we did and result
+        except Exception as e:
+            app_log.error('_round_sync {}'.format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+        # Set previous state again
+        await self.change_state_to(self.saved_state['state'])
+        return res
+
+    async def _get_round_blocks(self, peer, round):
+        """
+        Request full blocks from a full (or partial) round from a given peer
+        :param peer:
+        :param round:
+        :return: list of blocks
+        """
+        try:
+            # TODO Do we have a stream to this peer? if yes, use it instead of creating a new one ? - means add to self.clients
+            # if self.verbose:
+            app_log.error('_get_round_blocks({}, {})'.format(peer, round))
+            ip, port = peer.split(':')
+            stream = await self._get_peer_stream(ip, int(port))
+            print("Stream", stream)
+            # request the info
+            await com_helpers.async_send_int32(commands_pb2.Command.roundblocks, round, stream, peer)
+            blocks = await com_helpers.async_receive(stream, peer)
+            return blocks
+        except Exception as e:
+            app_log.error('_get_round_blocks {}'.format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            return None
+
 
     async def refresh_last_block(self):
         """
@@ -725,6 +820,44 @@ class Posmn:
         """
         return common.POSNET + str(self.port).zfill(5) + self.address
 
+    async def _get_peer_stream(self, ip, port):
+        """
+        Returns a stream with communication already established
+        stream has to be closed after use
+        :param ip: 127.0.0.1
+        :param port 6969
+        # :param peer: ('aa012345678901aa', '127.0.0.1', 6969, 1)
+        :return: IOStream
+        """
+        global LTIMEOUT
+        full_peer = common.ipport_to_fullpeer(ip, port)
+        try:
+            # TODO: dup code, use that in the client_worker co-routine?
+            if self.verbose:
+                access_log.info("Initiating client connection to {}".format(full_peer))
+            # ip_port = "{}:{}".format(peer[1], peer[2])
+            stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
+            connect_time = time.time()
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
+            msg = await com_helpers.async_receive(stream, full_peer)
+            if self.verbose:
+                access_log.info("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
+            if msg.command == commands_pb2.Command.hello:
+                # decompose posnet/address and check.
+                access_log.info("Client got Hello {} from {}".format(msg.string_value, full_peer))
+                self.clients[full_peer]['hello'] = msg.string_value
+            if msg.command == commands_pb2.Command.ko:
+                access_log.info("Client got Ko {}".format(msg.string_value))
+                return
+            # now we can enter a long term relationship with this node.
+            return stream
+        except Exception as e:
+            if self.verbose:
+                app_log.warning("Connection lost to {} because {}. No Retry".format(full_peer, e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+
     async def client_worker(self, peer):
         """
         Client worker, running in a coroutine.
@@ -734,14 +867,13 @@ class Posmn:
         """
         global app_log
         global LTIMEOUT
-        ip = peer[1]
+        # ip = peer[1]
         full_peer = common.peer_to_fullpeer(peer)
         try:
             if self.verbose:
                 access_log.info("Initiating client co-routine for {}".format(full_peer))
-            tcp_client = TCPClient()
             # ip_port = "{}:{}".format(peer[1], peer[2])
-            stream = await tcp_client.connect(peer[1], peer[2], timeout=LTIMEOUT)
+            stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
             msg = await com_helpers.async_receive(stream, full_peer)
@@ -846,25 +978,34 @@ class Posmn:
                             app_log.info("Sending ping to {}".format(full_peer))
                         # keeps connection active, or raise error if connection lost
                         await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
-
+            try:
+                stream.close()
+            except:
+                pass
             raise ValueError("Closing")
         except Exception as e:
             if self.verbose:
-                app_log.warning("Connection lost to {} because {}. Retry in 20 sec.".format(peer[1], e))
+                app_log.warning("Connection lost to {} because {}. Retry in {} sec.".format(peer[1], e, common.PEER_RETRY_SECONDS))
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
             """
+            try:
+                stream.close()
+            except:
+                pass
             #  Wait here so we don't retry immediately
-            await asyncio.sleep(20)
+            await asyncio.sleep(common.PEER_RETRY_SECONDS)
         finally:
+            # TODO: Free tcp_client and stream?
             try:
                 with self.clients_lock:
                     # We could keep it and set to inactive, but is it useful? could grow too much
                     del self.clients[full_peer]
             except:
                 pass
+
 
     async def _exchange_height(self, stream, full_peer):
         global app_log
@@ -972,8 +1113,10 @@ class Posmn:
         :return:
         """
         global app_log
+        loop = asyncio.get_event_loop()
+        if common.DEBUG:
+            loop.set_debug(True)
         if self.verbose:
-            loop = asyncio.get_event_loop()
             loop.run_until_complete(self.status(log=True))
         try:
             loop.run_until_complete(self.init_check())

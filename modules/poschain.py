@@ -486,12 +486,6 @@ class SqlitePosChain(PosChain, SqliteBase):
         :param height:
         :return:
         """
-
-        """
-        self.app_log.error("async_blocksync NOT done yet")
-        await asyncio.sleep(10)
-        return
-        """
         try:
             protocmd = commands_pb2.Command()
             protocmd.Clear()
@@ -506,15 +500,50 @@ class SqlitePosChain(PosChain, SqliteBase):
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
                 block.add_to_proto(protocmd)
-            # await asyncio.sleep(1)
             return protocmd
-
         except Exception as e:
             self.app_log.error("SRV: async_blocksync: Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
             raise
+
+    async def async_roundblocks(self, round):
+        """
+        Command id 13
+        returns all blocks of the given round.
+        TODO: Harmonize. this one needs a proto as output (proto command with list of blocks)
+        :param round:
+        :return: protocmd with all blocks
+        """
+
+        self.app_log.error("async_roundblocks NOT done yet")
+        await asyncio.sleep(1)
+        return
+
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.blocksync
+
+            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, common.BLOCK_SYNC_COUNT))
+            for block in blocks:
+                block = PosBlock().from_dict(dict(block))
+                # Add the block txs
+                txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+                for tx in txs:
+                    tx = PosMessage().from_dict(dict(tx))
+                    block.txs.append(tx)
+                block.add_to_proto(protocmd)
+            return protocmd
+
+        except Exception as e:
+            self.app_log.error("SRV: async_roundblocks: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
+
 
 
 if __name__ == "__main__":

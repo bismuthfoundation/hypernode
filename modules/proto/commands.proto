@@ -81,8 +81,9 @@ message Command {
         mempool = 8;
         update = 9;
         height = 10;  // Share - exchange height
-        blockinfo = 11; // ask info for a specific block height. question comes with an int32, answer with a height
-        blocksync = 12; // ask info for a list of blocks starting with the given one. question comes with an int32, answer with block(s)
+        blockinfo = 11; // ask info for a specific block height. Question comes with an int32, answer with a height
+        blocksync = 12; // ask info for a list of blocks starting with the given one. Question comes with an int32, answer with block(s)
+        roundblocks = 13; // ask the full block data for a given round. Question comes with an int32, answer with block(s)
     }
     required Type command = 1;
 

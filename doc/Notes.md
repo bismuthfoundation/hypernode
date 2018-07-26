@@ -2,6 +2,7 @@
 
 * Using SQLite studio for sqlite exploration and tables definition
 * using pytest for help with tests
+* pycharm as code editor/linter/debug
 
 
 # Personal notes
@@ -44,6 +45,9 @@ add a message for that.
 
 # TODO
 
+since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
+
+Reread docs and code, change occurences of MN to HN
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
@@ -63,6 +67,7 @@ Do not trigger "catching up" state if we are just at the beginning of a round: w
 When receiving a block, if last calculation of forger was not in that slot, refresh.
 
 reference repo for bootstrapping.
+update repo for auto updating (can be disabled)
 
 
 If same round than at least N peers, but peers get more valuable chain, get current round from one and fast check.

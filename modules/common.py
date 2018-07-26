@@ -12,7 +12,7 @@ import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.14'
+__version__ = '0.0.15'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -31,8 +31,12 @@ WAIT = 10
 # Wait time when catching up, to speed things up.
 SHORT_WAIT = 0.1
 
+# How long to wait before retrying a failed peer?
+PEER_RETRY_SECONDS = 20
+
 # limit, so nodes won't want to play with that.
 FUTURE_ALLOWED = 5
+
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 # TODO: Estimate block size depending on the MN count
 BLOCK_SYNC_COUNT = 10
@@ -40,6 +44,8 @@ BLOCK_SYNC_COUNT = 10
 # Debug/Dev only - Never forge if True
 DO_NOT_FORGE = False
 
+# Dev only - break nice color
+DEBUG = False
 
 # The reference list of active Masternodes for the round
 # address, ip, port, weight
@@ -94,7 +100,6 @@ GENESIS_SEED = 'BIG_BANG_HASH'
 GENESIS_HASH = blake2b(GENESIS_SEED.encode('utf-8'), digest_size=20)
 GENESIS_ADDRESS = 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne'
 GENESIS_SIGNATURE = ''
-
 
 # GENERIC HELPERS
 
@@ -151,11 +156,40 @@ def update_source(url, app_log=None):
 
 
 def same_height(peer_status, our_status):
+    """
+    Compares not only the height but the whole properties, including Round, Slot In Round and block hash.
+    :param peer_status:
+    :param our_status:
+    :return: Boolean
+    """
     for key in ("height", "round", "sir", "block_hash"):
         if peer_status[key] != our_status[key]:
             return False
     return True
 
+
+def first_height_is_better(height_A, height_B):
+    """
+    Compares properties of the heights to tell which one is to keep in case of forks.
+    Uses 'forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'
+    :param height_A:
+    :param height_B:
+    :return: Boolean, True if A is > B
+    """
+    if height_A['forgers'] > height_B['forgers']:
+        return True
+    if height_A['forgers_round'] > height_B['forgers_round']:
+        return True
+    if height_A['uniques'] > height_B['uniques']:
+        return True
+    if height_A['uniques_round'] > height_B['uniques_round']:
+        return True
+    if height_A['round'] > height_B['round']:
+        return True
+    if height_A['height'] > height_B['height']:
+        return True
+
+    return False
 
 def peer_to_fullpeer(peer):
     """
