@@ -12,7 +12,7 @@ import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.15'
+__version__ = '0.0.16'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -34,11 +34,14 @@ SHORT_WAIT = 0.1
 # How long to wait before retrying a failed peer?
 PEER_RETRY_SECONDS = 20
 
+# Seconds between pings
+PING_DELAY = 30
+
 # limit, so nodes won't want to play with that.
 FUTURE_ALLOWED = 5
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
-# TODO: Estimate block size depending on the MN count
+# TODO: Estimate block size depending on the MN count
 BLOCK_SYNC_COUNT = 10
 
 # Debug/Dev only - Never forge if True
@@ -190,6 +193,7 @@ def first_height_is_better(height_A, height_B):
         return True
 
     return False
+
 
 def peer_to_fullpeer(peer):
     """
