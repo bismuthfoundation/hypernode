@@ -16,13 +16,14 @@ import os
 import sys
 # sys.path.insert(0, os.path.abspath('../modules'))
 # sys.path.insert(0, os.path.abspath('../../poc'))
+sys.path.insert(0, os.path.abspath('../../poc'))
 sys.path.insert(0, os.path.abspath('../../modules'))
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'Bismuth Hypernodes'
-copyright = '2018, EggdraSyl'
+copyright = '2018, Bismuth Foundation'
 author = 'EggdraSyl'
 
 # The short X.Y version

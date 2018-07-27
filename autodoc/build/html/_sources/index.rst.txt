@@ -11,6 +11,7 @@ Welcome to Bismuth Hypernodes's documentation!
    :caption: Contents:
 
    modules
+   poc
 
 
 

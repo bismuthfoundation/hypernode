@@ -1,4 +1,4 @@
-pos_poc
+Modules
 =======
 
 .. toctree::
