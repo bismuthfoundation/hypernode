@@ -171,7 +171,7 @@ def same_height(peer_status, our_status):
     return True
 
 
-def first_height_is_better(height_A, height_B):
+def first_height_is_better(height_a, height_b):
     """
     Compares properties of the heights to tell which one is to keep in case of forks.
     Uses 'forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'
@@ -179,20 +179,33 @@ def first_height_is_better(height_A, height_B):
     :param height_B:
     :return: Boolean, True if A is > B
     """
-    if height_A['forgers'] > height_B['forgers']:
+    if height_a['forgers'] > height_b['forgers']:
         return True
-    if height_A['forgers_round'] > height_B['forgers_round']:
+    if height_a['forgers_round'] > height_b['forgers_round']:
         return True
-    if height_A['uniques'] > height_B['uniques']:
+    if height_a['uniques'] > height_b['uniques']:
         return True
-    if height_A['uniques_round'] > height_B['uniques_round']:
+    if height_a['uniques_round'] > height_b['uniques_round']:
         return True
-    if height_A['round'] > height_B['round']:
+    if height_a['round'] > height_b['round']:
         return True
-    if height_A['height'] > height_B['height']:
+    if height_a['height'] > height_b['height']:
         return True
-
     return False
+
+
+def heights_match(height_a, height_b):
+    """
+    Checks if simulated height_b fits the predicate height_a
+    only checks the current round info, not the whole chain.
+    :param height_a: a height dict
+    :param height_b: a height dict
+    :return: boolean
+    """
+    for key in ('height', 'round', 'sir', 'block_hash', 'uniques_round', 'forgers_round'):
+        if height_a.get(key) != height_b.get(key):
+            return False
+    return True
 
 
 def peer_to_fullpeer(peer):

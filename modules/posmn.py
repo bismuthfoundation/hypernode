@@ -1,5 +1,5 @@
 """
-Pos Masternode class for Bismuth
+Pos Masternode class for Bismuth Cryptocurrency
 Tornado based
 
 Note:
@@ -44,16 +44,19 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.7'
+__version__ = '0.0.71'
 
 """
-I use a global object to keep the state and route data between the servers and threads.
+# FR: I use a global object to keep the state and route data between the servers and threads.
 This looks not clean to me.
 Will have to refactor if possible all in a single object, but looks hard enough, therefore postponing. 
 """
 
 app_log = None
 access_log = None
+
+# The following is here rather than in common, because I don't consider that a param, but a constant for every node.
+# FR: More extensive sort (constants vs params) TBD later when we have more perspective.
 
 # Logical timeout (s) for socket client
 LTIMEOUT = 45
@@ -63,11 +66,8 @@ LTIMEOUT = 45
 MINIMUM_CONNECTIVITY = 2
 
 
-# Memo : tornado.process.task_id()
-
-
 """
-TCP Server Classes
+TCP Server Classe
 """
 
 
@@ -142,14 +142,18 @@ class MnServer(TCPServer):
                         app_log.error("SRV: handle_stream {} for ip {}".format(what, full_peer))
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                    print(exc_type, fname, exc_tb.tb_lineno)
+                    app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
                     return
 
         except Exception as e:
             app_log.error("SRV: TCP Server init {}: Error {}".format(peer_ip, e))
+            # FR: the following code logs extra info for debug.
+            # factorize in a single function with common.EXTRA_LOG switch to activate.
+            # Maybe also log in a distinct file since these are supposed to be unexpected exceptions
+            # Used also in other files.
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             return
 
         finally:
@@ -218,13 +222,13 @@ class MnServer(TCPServer):
             else:
                 # if self.verbose:
                 #    app_log.warning("SRV unknown message {}, closing.".format(com_helpers.cmd_to_text(msg.command)))
-                raise ValueError("unknown message {}".format(com_helpers.cmd_to_text(msg.command)))
+                raise ValueError("Unknown message {}".format(com_helpers.cmd_to_text(msg.command)))
 
         except Exception as e:
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
     async def update(self, url, stream, peer_ip):
@@ -252,10 +256,10 @@ class MnServer(TCPServer):
                     app_log.info(msg)
                     await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
             except Exception as e:
-                app_log.warning("Error {} updating from {}".format(e, url))
+                app_log.error("Error {} updating from {}".format(e, url))
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
+                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
 
 """
@@ -291,7 +295,7 @@ class Posmn:
     # list of inbound server connections
     inbound = {}
 
-    stop_event = aioprocessing.AioEvent()  # Move these to instance prop?
+    stop_event = aioprocessing.AioEvent()  # FR: Move these to instance prop?
 
     def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json", datadir="data"):
         global app_log
@@ -335,15 +339,15 @@ class Posmn:
             self.consensus_pc = 0
             self.net_height = None
             self.sync_from = None
-            # Locks - Are they needed?
+            # Locks - Are they needed? - not if one process is enough
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
         except Exception as e:
-            print("Error creating posmn: {}".format(e))
+            app_log.error("Error creating posmn: {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
     def init_log(self):
         global app_log
@@ -373,7 +377,7 @@ class Posmn:
 
     def add_inbound(self, ip, port, properties=None):
         """
-        Safely add a distant peer from server coroutine.
+        Safely add a distant peer from server co-routine.
         This is called only after initial exchange and approval
         :param ip:
         :param port:
@@ -386,7 +390,7 @@ class Posmn:
 
     def remove_inbound(self, ip, port):
         """
-        Safely remove a distant peer from server coroutine
+        Safely remove a distant peer from server co-routine
         :param ip:
         :param port:
         :return:
@@ -395,7 +399,13 @@ class Posmn:
             with self.inbound_lock:
                 ip = '{}:{}'.format(ip, port)
                 del self.inbound[ip]
-        except:
+        except KeyError:
+            pass
+        except Exception as e:
+            app_log.error(">> remove_inbound")
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             pass
 
     def update_inbound(self, ip, port, properties):
@@ -440,45 +450,45 @@ class Posmn:
         await self.refresh_last_block()
         await self._check_round()
         while not self.stop_event.is_set():
-            # updates our current view of the peers we are connected to and net global status/consensus
-            await self._update_network()
-            if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
-                await self.change_state_to(MNState.STRONG_CONSENSUS)
-
-            if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.forger != poscrypto.ADDRESS:
-                # We did not reach consensus in time, and we passed our turn.
-                app_log.warning("Too late to forge, back to Sync")
-                await self.change_state_to(MNState.SYNCING)
-            # Adjust state depending of the connection state
-            if self.connected_count >= MINIMUM_CONNECTIVITY:
-                if self.state == MNState.START:
-                    await self.change_state_to(MNState.SYNCING)
-            # elif self.state == MNState.SYNCING:
-            else:
-                await self.change_state_to(MNState.START)
-
-            """
-            # Done in _consensus - replace here?
-            if self.net_height:
-                # TODO: replace this lengthy condition by a readable function of its own -
-                if self.state == MNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
-                        (self.net_height['forgers_round'] > self.poschain.height_status.forgers_round or \
-                        self.net_height['uniques_round'] > self.poschain.height_status.uniques_round ) and \
-                        self.net_height['count'] >= 2 :
-                    # We are in the right round, but a most valuable chain is there.
-                    app_log.warning("Better net chain, will analyse - TODO")
-                    self.sync_from = random.choice(self.net_height['peers'])
-                    # TODO: get whole round in one message, fast analyse without storing to check it's true,
-                    # digest if ok.
-                    # This is temp only, recycle late sync for now.
-                    app_log.warning("Round Sync From {}".format(self.sync_from))
-                    await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
-            """
-
-            # If we should sync, but we are late compared to the net, then go in to "catching up state"
             try:
-                # can throw if net_height not known yet.
-                if self.state == MNState.SYNCING and self.net_height['round'] > self.poschain.height_status.round:
+                # updates our current view of the peers we are connected to and net global status/consensus
+                await self._update_network()
+                if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
+                    await self.change_state_to(MNState.STRONG_CONSENSUS)
+
+                if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.forger != poscrypto.ADDRESS:
+                    # We did not reach consensus in time, and we passed our turn.
+                    app_log.warning("Too late to forge, back to Sync")
+                    await self.change_state_to(MNState.SYNCING)
+                # Adjust state depending of the connection state
+                if self.connected_count >= MINIMUM_CONNECTIVITY:
+                    if self.state == MNState.START:
+                        await self.change_state_to(MNState.SYNCING)
+                # elif self.state == MNState.SYNCING:
+                else:
+                    await self.change_state_to(MNState.START)
+
+                """
+                # Done in _consensus - replace here? would be more logic.
+                if self.net_height:
+                    # TODO: replace this lengthy condition by a readable function of its own -
+                    if self.state == MNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
+                            (self.net_height['forgers_round'] > self.poschain.height_status.forgers_round or \
+                            self.net_height['uniques_round'] > self.poschain.height_status.uniques_round ) and \
+                            self.net_height['count'] >= 2 :
+                        # We are in the right round, but a most valuable chain is there.
+                        app_log.warning("Better net chain, will analyse - TODO")
+                        self.sync_from = random.choice(self.net_height['peers'])
+                        # TODO: get whole round in one message, fast analyse without storing to check it's true,
+                        # digest if ok.
+                        # This is temp only, recycle late sync for now.
+                        app_log.warning("Round Sync From {}".format(self.sync_from))
+                        await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
+                """
+
+                # If we should sync, but we are late compared to the net, then go in to "catching up state"
+                if self.state == MNState.SYNCING and self.net_height \
+                        and self.net_height['round'] > self.poschain.height_status.round:
                     app_log.warning("We are late, catching up!")
                     # FR: set time to trigger CATCHING_UP_CONNECT2
                     await self.change_state_to(MNState.CATCHING_UP_CONNECT1)
@@ -489,53 +499,58 @@ class Posmn:
                     self.sync_from = random.choice(self.net_height['peers'])
                     app_log.warning("Sync From {}".format(self.sync_from))
                     await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
-            except:
-                pass
-            if self.state == MNState.CATCHING_UP_PRESYNC:
-                # If we have no client worker, add one
-                if self.sync_from not in self.clients:
-                    io_loop = IOLoop.instance()
-                    with self.clients_lock:
-                        # first index is active or not
-                        self.clients[self.sync_from] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
-                    ip, port = self.sync_from.split(':')
-                    io_loop.spawn_callback(self.client_worker, ('N/A', ip, port, 1))
-                # FR: add some timeout so we can retry another one if this one fails.
-                # FR: The given worker will be responsible for changing state on ok or failed status
+                if self.state == MNState.CATCHING_UP_PRESYNC:
+                    # If we have no client worker, add one
+                    if self.sync_from not in self.clients:
+                        io_loop = IOLoop.instance()
+                        with self.clients_lock:
+                            # first index is active or not
+                            self.clients[self.sync_from] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
+                        ip, port = self.sync_from.split(':')
+                        io_loop.spawn_callback(self.client_worker, ('N/A', ip, port, 1))
+                    # FR: add some timeout so we can retry another one if this one fails.
+                    # FR: The given worker will be responsible for changing state on ok or failed status
 
-            if self.state == MNState.STRONG_CONSENSUS:
-                if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
-                    await self.change_state_to(MNState.FORGING)
-                    # Forge will send also
-                    await self.forge()
-                    # await asyncio.sleep(10)
-                    self.forged = True
-                    await self.change_state_to(MNState.SYNCING)
-                else:
-                    if self.verbose:
-                        app_log.info("My slot, but too low a consensus to forge now.")
+                if self.state == MNState.STRONG_CONSENSUS:
+                    if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
+                        await self.change_state_to(MNState.FORGING)
+                        # Forge will send also
+                        await self.forge()
+                        # await asyncio.sleep(10)
+                        self.forged = True
+                        await self.change_state_to(MNState.SYNCING)
+                    else:
+                        if self.verbose:
+                            app_log.info("My slot, but too low a consensus to forge now.")
 
-            # FR: Maybe don't display each time
-            await self.status(log=True)
-            if self.connecting:
-                # TODO: if we are looking for consensus, then we will connect to
-                # every juror, not just our round peers, then disconnect once block submitted
-                if len(self.clients) < len(self.connect_to):
-                    # Try to connect to our missing pre-selected peers
-                    for peer in self.connect_to:
-                        # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
-                        # tuples (address, ip, port, ?)
-                        # ip_port = "{}:{}".format(peer[1], peer[2])
-                        full_peer = common.peer_to_fullpeer(peer)
-                        if full_peer not in self.clients:
-                            io_loop = IOLoop.instance()
-                            with self.clients_lock:
-                                # first index is active or not
-                                self.clients[full_peer] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
-                            io_loop.spawn_callback(self.client_worker, peer)
-            # FR: variable sleep time depending on the elapsed loop time - or use timeout?
-            await asyncio.sleep(common.WAIT)
-            await self._check_round()
+                # FR: Maybe don't display each time
+                await self.status(log=True)
+                if self.connecting:
+                    # TODO: if we are looking for consensus, then we will connect to
+                    # every juror, not just our round peers, then disconnect once block submitted
+                    if len(self.clients) < len(self.connect_to):
+                        # Try to connect to our missing pre-selected peers
+                        for peer in self.connect_to:
+                            # [('aa012345678901aa', '127.0.0.1', 6969, 1)]
+                            # tuples (address, ip, port, ?)
+                            # ip_port = "{}:{}".format(peer[1], peer[2])
+                            full_peer = common.peer_to_fullpeer(peer)
+                            if full_peer not in self.clients:
+                                io_loop = IOLoop.instance()
+                                with self.clients_lock:
+                                    # first index is active or not
+                                    self.clients[full_peer] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
+                                io_loop.spawn_callback(self.client_worker, peer)
+                # FR: variable sleep time depending on the elapsed loop time - or use timeout?
+                await asyncio.sleep(common.WAIT)
+                await self._check_round()
+
+            except Exception as e:
+                app_log.error("Error in manager {}".format(e))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+
 
     async def change_state_to(self, new_state):
         """
@@ -633,7 +648,7 @@ class Posmn:
                                         .format(','.join(best_peers)))
                         if self.state in [MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS, MNState.SYNCING]:
                             app_log.info('State {} force round sync and check'.format(self.state))
-                            await self._round_sync(our_status["round"], best_peers)
+                            await self._round_sync(our_status["round"], self.net_height)
                         else:
                             app_log.warning('State is {}, ignoring for now.'.format(self.state))
             else:
@@ -643,33 +658,51 @@ class Posmn:
             self.net_height = None
         return pc
 
-    async def _round_sync(self, a_round, best_peers):
+    async def _round_sync(self, a_round, promised_height):
         """
         Tries to sync from a peer advertising a better chain than ours.
+        :param a_round: Round # to fetch
+        :param promised_height: dict of the supposedly best available height
         :return: Boolean (success)
         """
         res = False
-        # Store the current state and target
-        self.saved_state = {"state": self.state, "height_target": best_peers}
+        # Store the current state
+        self.saved_state = self.state
         await self.change_state_to(MNState.ROUND_SYNC)
         # pick a peer - if sync fails, we will try another random one next time
-        peer = random.choice(best_peers)
+        peer = random.choice(promised_height['peers'])
         try:
             # Get the whole round data from that peer - We suppose it fits in memory
             the_blocks = await self._get_round_blocks(peer, a_round)
-            print("\n>> The_Blocks", the_blocks)  # debug
-            await asyncio.sleep(10)  # temp debug
-            # TODO: check the data fits and count sources/forgers
-            # TODO: Check it matches the target, if it does merge into the sqlite
-            # TODO: Send TX about what we did and result
+            # print("\n>> The_Blocks", the_blocks)  # debug
+            if not the_blocks:
+                raise ValueError("Did not get blocks from {}".format(peer))
+            # check the data fits and count sources/forgers
+            simulated_target = await self.poschain.check_round(a_round, the_blocks, fast_check=True)
+            print("expected", promised_height)
+            print("simulated", simulated_target)
+            # Check it matches the target,
+            if common.heights_match(promised_height, simulated_target):
+                if self.verbose:
+                    app_log.info('Distant Round {} Data from {} fits expectations.'.format(a_round, peer))
+                # TODO: Merge into the sqlite
+                app_log.info("TODO - MERGE NOT IMPLEMENTED YET")
+                await asyncio.sleep(10)  # temp debug
+                # TODO: emit tx or add to buffer
+            else:
+                app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
+                # TODO: emit tx or add to buffer
+        except ValueError as e:  # innocuous error, will retry.
+            app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
             app_log.error('_round_sync error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-        # Set previous state again
-        await self.change_state_to(self.saved_state['state'])
-        return res
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+        finally:
+            # Set previous state again
+            await self.change_state_to(self.saved_state)
+            return res
 
     async def _get_round_blocks(self, peer, a_round):
         """
@@ -686,14 +719,25 @@ class Posmn:
             ip, port = peer.split(':')
             stream = await self._get_peer_stream(ip, int(port))
             # request the info
-            await com_helpers.async_send_int32(commands_pb2.Command.roundblocks, a_round, stream, peer)
-            blocks = await com_helpers.async_receive(stream, peer)
-            return blocks
+            if stream:
+                await com_helpers.async_send_int32(commands_pb2.Command.roundblocks, a_round, stream, peer)
+                blocks = await com_helpers.async_receive(stream, peer)
+                try:
+                    stream.close()
+                except Exception as e:
+                    app_log.error('_get_round_blocks error closing stream "{}"'.format(e))
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                return blocks
+            else:
+                app_log.warning("Couldn't get temp stream from {}'.format(peer))")
+                return None
         except Exception as e:
             app_log.error('_get_round_blocks error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             return None
 
     async def refresh_last_block(self):
@@ -843,7 +887,7 @@ class Posmn:
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
                 access_log.info("Client got Hello {} from {}".format(msg.string_value, full_peer))
-                self.clients[full_peer]['hello'] = msg.string_value
+                # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Client got Ko {}".format(msg.string_value))
                 return
@@ -854,7 +898,7 @@ class Posmn:
                 app_log.warning("Connection lost to {} because {}. No Retry".format(full_peer, e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
     async def client_worker(self, peer):
         """
@@ -986,15 +1030,19 @@ class Posmn:
             except:
                 pass
             raise ValueError("Closing")
-        except Exception as e:
+        except tornado.iostream.StreamClosedError as e:
             if self.verbose:
                 app_log.warning("Connection lost to {} because {}. Retry in {} sec."
                                 .format(peer[1], e, common.PEER_RETRY_SECONDS))
-            """
+        except Exception as e:
+            if self.verbose:
+                app_log.error("Connection lost to {} because {}. Retry in {} sec."
+                                .format(peer[1], e, common.PEER_RETRY_SECONDS))
+
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
-            """
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+
             try:
                 stream.close()
             except:
@@ -1179,7 +1227,7 @@ class Posmn:
             app_log.error("Coherence Check: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
     async def status(self, log=True):

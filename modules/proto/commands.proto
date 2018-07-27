@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package bismuth;
 
+// version 0.0.5
+
 // A single tx
 message TX {
     // Signature - 64 bytes

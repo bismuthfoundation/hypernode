@@ -5,6 +5,17 @@
 * pycharm as code editor/linter/debug
 
 
+# Logging
+
+Tornado log module with pretty printing is used.
+
+log level
+
+- INFO is used for verbose logging of regular messages
+- WARNING is used for expected logic errors that are know to happen during execution, like a timeout.
+- ERROR are only used for unexpected exceptions and should be reported to the devs.
+
+
 # Personal notes
 
 pos chain: no mining, no tx fee - marginal cost = 0
