@@ -1,5 +1,5 @@
 """
-Test MN Client
+Test HyperNode Client
 Run from the command line with the instance index from common .py
 """
 
@@ -10,19 +10,19 @@ import asyncio
 
 # custom modules
 sys.path.append('../modules')
-import common
+# import common
 import posclient
 import com_helpers
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS client')
     parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4]')
-    parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='MN Host to connect to (127.0.0.1)')
-    parser.add_argument("-p", "--port", type=str, default = 6969, help='MN port (6969)')
+    parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='HN Host to connect to (127.0.0.1)')
+    parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
 
     parser.add_argument("--action", type=str, default=None, help='Specific action. hello, ping, status, tx, mempool')

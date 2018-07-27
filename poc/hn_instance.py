@@ -17,7 +17,7 @@ from poschain import SqlitePosChain
 import poscrypto
 import com_helpers
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 if __name__ == "__main__":
@@ -47,6 +47,7 @@ if __name__ == "__main__":
                 wallet_name = "mn_temp/mn{}.json".format(args.index)
                 # allows to run several HN on the same machine - debug/dev only
                 datadir = "./data{}".format(args.index)
+                suffix = str(args.index)
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"
@@ -54,7 +55,9 @@ if __name__ == "__main__":
                 ip = '127.0.0.1'  # TODO DEV only
                 port = 6960
                 address = "BAnNdHZSWBJxEya5o33Qbqrzg1m13GZmxy"  # TODO: take from wallet
-            com_helpers.MY_NODE = Poshn(ip, port, address=address, peers=peers, verbose = args.verbose, wallet=wallet_name, datadir=datadir)
+                suffix=''
+            com_helpers.MY_NODE = Poshn(ip, port, address=address, peers=peers, verbose = args.verbose,
+                                        wallet=wallet_name, datadir=datadir, suffix=suffix)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:

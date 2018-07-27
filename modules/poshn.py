@@ -44,7 +44,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.71'
+__version__ = '0.0.72'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -295,7 +295,8 @@ class Poshn:
 
     stop_event = aioprocessing.AioEvent()  # FR: Move these to instance prop?
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False, wallet="poswallet.json", datadir="data"):
+    def __init__(self, ip, port, address='', peers=None, verbose=False,
+                 wallet="poswallet.json", datadir="data", suffix=''):
         global app_log
         global access_log
         self.ip = ip
@@ -307,6 +308,8 @@ class Poshn:
         self.server = None
         self.state = HNState.START
         self.datadir = datadir
+        # Helps id the instance for multi-instances dev and unique log files.
+        self.suffix = suffix
         # Used when round syncing, to save previous state and our expectations about the end result.
         self.saved_state = {"state": self.state, "height_target": None}
         # list of peers I should stay connected to for a given round
@@ -354,7 +357,7 @@ class Poshn:
             logging.basicConfig(level=logging.DEBUG)
         app_log = logging.getLogger("tornado.application")
         tornado.log.enable_pretty_logging()
-        logfile = os.path.abspath("pos_app.log")
+        logfile = os.path.abspath("logs/pos_app{}.log".format(self.suffix))
         # Rotate log after reaching 512K, keep 5 old copies.
         rotate_handler = ConcurrentRotatingFileHandler(logfile, "a", 512 * 1024, 5)
         formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -363,13 +366,13 @@ class Poshn:
         #
         access_log = logging.getLogger("tornado.access")
         tornado.log.enable_pretty_logging()
-        logfile2 = os.path.abspath("pos_access.log")
+        logfile2 = os.path.abspath("logs/pos_access{}.log".format(self.suffix))
         rotate_handler2 = ConcurrentRotatingFileHandler(logfile2, "a", 512 * 1024, 5)
         formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
-        app_log.info("PoS HN {} Starting with pool address {}, data dir '{}'."
-                     .format(__version__, self.address, self.datadir))
+        app_log.info("PoS HN {} Starting with pool address {}, data dir '{}' suffix {}."
+                     .format(__version__, self.address, self.datadir, self.suffix))
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
 
