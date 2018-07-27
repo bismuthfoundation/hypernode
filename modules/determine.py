@@ -49,7 +49,7 @@ def my_distance(address):
         distance += abs(ord(address[0][i]) - ord(REF_ADDRESS[i]))
         # Better results (spread) than pure bin hamming
     if VERBOSE:
-        print(address, distance)
+        print("my_distance", address, distance)
     return distance
 
 
@@ -182,7 +182,7 @@ async def get_connect_to(peers, pos_round, address):
     # since they will be collected and stored for each round.
     # POC: sends a subset of the peers, excluding us.
     # Unique seed for a peer and a round
-    random.seed(address+str(pos_round))
+    random.seed(address + str(pos_round))
     # remove our address - We could also keep it, but not connect to if it's in the list (allows same list for everyone)
     result = [peer for peer in peers if peer[0] != address]
     # TODO: test for this shuffle, make sure it always behaves the same.

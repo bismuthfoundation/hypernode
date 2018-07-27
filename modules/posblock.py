@@ -107,13 +107,11 @@ class PosMessage:
                 self.__dict__[prop] = value
         return self
 
-
     def to_raw(self):
         """
         Raw representation of the tx object, signed parts
         :return:
         """
-        print(self.sender, self.recipient, self.params)
         raw = b''
         raw += self.timestamp.to_bytes(4, byteorder='big')
         raw += self.sender.encode('ascii')
@@ -182,7 +180,6 @@ class PosMessage:
             self.txid, self.block_height, self.timestamp, self.sender,\
             self.recipient, self.what, self.params, self.value, self.pubkey
 
-
     # =========================== Really useful methods ===========================
 
     def sign(self):
@@ -219,8 +216,7 @@ class PosMessage:
 
 
 class PosBlock:
-    # TODO: Slots
-    
+
     props = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count',
              'unique_sources', 'signature', 'block_hash', 'received_by', 'forger')
 
@@ -262,8 +258,10 @@ class PosBlock:
         # txs
         try:
             self.txs = [PosMessage().from_list(tx) for tx in block_dict['txs']]
+        except IndexError:
+            self.txs = []
         except Exception as e:
-            print(e)
+            print("posblock from_dict exception ", e)
             self.txs = []
         return self
 
@@ -327,9 +325,8 @@ class PosBlock:
         self.txs = list()
         for tx in block_proto.txs:
             my_tx = PosMessage().from_proto(tx)
-            # print('my_tx', my_tx.to_list())
             self.txs.append(my_tx)
-        # todo: unify sources / names
+        # Todo: unify sources / names
         self.msg_count, self.unique_sources = block_proto.msg_count, block_proto.sources
         self.signature, self.block_hash = block_proto.signature, block_proto.block_hash
         self.forger = block_proto.forger
@@ -373,7 +370,7 @@ class PosBlock:
             # protocmd.block_value = block
             return protocmd
         except Exception as e:
-            print("SRV: async_blocksync: Error {}".format(e))
+            print("add_to_proto: Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
@@ -387,7 +384,8 @@ class PosBlock:
         :return: signature, bytearray
         """
         # exception if we are not the forger
-        print(poscrypto.ADDRESS, self.forger)
+        if self.verbose:
+            print(poscrypto.ADDRESS, self.forger)
         if poscrypto.ADDRESS != self.forger:
             raise RuntimeError("Bad Forger")
         raw = self.to_raw()
@@ -400,7 +398,7 @@ class PosBlock:
         self.block_hash = poscrypto.blake(raw).digest()
 
     def old_digest_block(self, block, timestamp=0):
-        # todo: validity checks - done here or rather in poschain?
+        # validity checks - done here or rather in poschain?
         pass
 
 
@@ -443,7 +441,7 @@ class PosHeight:
         """
         self.height, self.round, self.sir = height_proto.height, height_proto.round, height_proto.sir
         self.block_hash = height_proto.block_hash
-        self.uniques, self.uniques_round =  height_proto.uniques, height_proto.uniques_round
+        self.uniques, self.uniques_round = height_proto.uniques, height_proto.uniques_round
         self.forgers, self.forgers_round = height_proto.forgers, height_proto.forgers_round
         return self
 

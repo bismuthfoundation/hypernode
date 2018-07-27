@@ -29,7 +29,7 @@ VERBOSE = True
 WAIT = 10
 
 # Wait time when catching up, to speed things up.
-SHORT_WAIT = 0.1
+SHORT_WAIT = 0.001
 
 # How long to wait before retrying a failed peer?
 PEER_RETRY_SECONDS = 20
@@ -114,24 +114,18 @@ def download_file(url, filename):
     :param filename:
     :return:
     """
-    try:
-        r = requests.get(url, stream=True)
-        total_size = int(r.headers.get('content-length')) / 1024
-        with open(filename, 'wb') as filename:
-            chunkno = 0
-            for chunk in r.iter_content(chunk_size=1024):
-                if chunk:
-                    chunkno = chunkno + 1
-                    if chunkno % 10000 == 0:  # every x chunks
-                        print("Downloaded {} %".format(int(100 * ((chunkno) / total_size))))
-
-                    filename.write(chunk)
-                    filename.flush()
-            print("Downloaded 100 %")
-
-        return filename
-    except:
-        raise
+    r = requests.get(url, stream=True)
+    total_size = int(r.headers.get('content-length')) / 1024
+    with open(filename, 'wb') as filename:
+        chunkno = 0
+        for chunk in r.iter_content(chunk_size=1024):
+            if chunk:
+                chunkno = chunkno + 1
+                if chunkno % 10000 == 0:  # every x chunks
+                    print("Downloaded {} %".format(int(100 * (chunkno / total_size))))
+                filename.write(chunk)
+                filename.flush()
+        print("Downloaded 100 %")
 
 
 def update_source(url, app_log=None):
@@ -152,9 +146,9 @@ def update_source(url, app_log=None):
         files = os.listdir(from_dir)
         for f in files:
             shutil.move(from_dir + f, './' + f)
-    except:
+    except Exception as e:
         if app_log:
-            app_log.warning("Something went wrong while update_source, aborted")
+            app_log.warning("Something went wrong in update_source: {}, aborted".format(e))
         raise
 
 
@@ -175,9 +169,9 @@ def first_height_is_better(height_a, height_b):
     """
     Compares properties of the heights to tell which one is to keep in case of forks.
     Uses 'forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'
-    :param height_A:
-    :param height_B:
-    :return: Boolean, True if A is > B
+    :param height_a:
+    :param height_b:
+    :return: Boolean, True if a is > b
     """
     if height_a['forgers'] > height_b['forgers']:
         return True

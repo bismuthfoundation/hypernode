@@ -207,11 +207,9 @@ class HnServer(TCPServer):
                 height = await self.node.poschain.async_blockinfo(msg.int32_value)
                 await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
             elif msg.command == commands_pb2.Command.blocksync:
-                # print(msg)
                 blocks = await self.node.poschain.async_blocksync(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
             elif msg.command == commands_pb2.Command.roundblocks:
-                # print(msg)
                 blocks = await self.node.poschain.async_roundblocks(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
 
@@ -579,7 +577,6 @@ class Poshn:
         nb = 0  # Nb of peers with same height as ours.
         # global status of known peers
         for ip, peer in self.clients.items():
-            # print(peer)
             """
             'height_status': {'height': 94, 'round': 3361, 'sir': 0,
                               'block_hash': '796748324623f516639d71850ea3397d08a301ba', 'uniques': 0, 'uniques_round':0,
@@ -620,7 +617,6 @@ class Poshn:
                             app_log.warning('Peer {} disagrees'.format(ip))
                 except:
                     pass
-        # print("clients", self.clients)
         total = len(common.POC_HYPER_NODES_LIST)
         pc = round(nb * 100 / total)
         app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
@@ -674,13 +670,12 @@ class Poshn:
         try:
             # Get the whole round data from that peer - We suppose it fits in memory
             the_blocks = await self._get_round_blocks(peer, a_round)
-            # print("\n>> The_Blocks", the_blocks)  # debug
             if not the_blocks:
                 raise ValueError("Did not get blocks from {}".format(peer))
             # check the data fits and count sources/forgers
             simulated_target = await self.poschain.check_round(a_round, the_blocks, fast_check=True)
-            print("expected", promised_height)
-            print("simulated", simulated_target)
+            # print("expected", promised_height)
+            # print("simulated", simulated_target)
             # Check it matches the target,
             if common.heights_match(promised_height, simulated_target):
                 if self.verbose:
@@ -828,19 +823,20 @@ class Poshn:
             if not len(block.txs):
                 # not enough TX, won't pass in prod
                 # raise ValueError("No TX to embed, block won't be valid.")
-                app_log.error("No TX to embed, block won't be valid.")
+                app_log.warning("No TX to embed, block won't be valid.")
             # Remove from mempool
             await self.mempool.clear()
-            print(block.to_dict())
+            # print(block.to_dict())
             block.sign()
-            print(block.to_dict())
+            # print(block.to_dict())
             # FR: Shall we pass that one through "digest" to make sure?
             await self.poschain.insert_block(block)
             await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
             block = block.to_proto()
-            print("proto", block)
-            app_log.error("Block Forged, I should send it")
+            if self.verbose:
+                print("proto", block)
+            app_log.info("Block Forged, I will send it")
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2])
                        for peer in common.POC_HYPER_NODES_LIST
@@ -893,9 +889,11 @@ class Poshn:
                 return
             # now we can enter a long term relationship with this node.
             return stream
-        except Exception as e:
+        except tornado.iostream.StreamClosedError as e:
             if self.verbose:
-                app_log.warning("Connection lost to {} because {}. No Retry".format(full_peer, e))
+                app_log.warning("Connection lost to {} because {}. No retry.".format(full_peer, e))
+        except Exception as e:
+            app_log.error("Connection lost to {} because {}. No Retry.".format(full_peer, e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
@@ -938,7 +936,7 @@ class Poshn:
                 if self.state in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC) \
                         and self.sync_from == full_peer:
                     # Faster sync
-                    app_log.warning("Entering presync with {}".format(full_peer))
+                    app_log.info(">> Entering presync with {}".format(full_peer))
                     await asyncio.sleep(common.SHORT_WAIT)
                     if self.state == HNState.CATCHING_UP_PRESYNC:
                         # Here, we check if our last block matches the peer's one.
@@ -948,20 +946,21 @@ class Poshn:
                         msg = await com_helpers.async_receive(stream, full_peer)
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
-                        print('self', self.poschain.height_status.to_dict(as_hex=True))
-                        print('peer', info.to_dict(as_hex=True))
+                        if self.verbose:  # FR: to remove later on
+                            print('self', self.poschain.height_status.to_dict(as_hex=True))
+                            print('peer', info.to_dict(as_hex=True))
                         if self.poschain.height_status.block_hash == info.block_hash \
                                 and self.poschain.height_status.round == info.round:
                             # we are ok, move to next state
                             await self.change_state_to(HNState.CATCHING_UP_SYNC)
-                            app_log.warning("Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
+                            app_log.info(">> Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
                         else:
-                            # todo
-                            app_log.warning("Block mismatch, will rollback")
+                            app_log.info(">> Block mismatch, will rollback")
                             # FR: find the common ancestor faster via height/hash list
                             while self.poschain.height_status.block_hash != info.block_hash:
-                                print('self', self.poschain.height_status.to_dict(as_hex=True))
-                                print('peer', info.to_dict(as_hex=True))
+                                if self.verbose:  # FR: remove later on
+                                    print('self', self.poschain.height_status.to_dict(as_hex=True))
+                                    print('peer', info.to_dict(as_hex=True))
                                 await self.poschain.rollback()
                                 await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
                                                                    self.poschain.height_status.height, stream,
@@ -970,7 +969,7 @@ class Poshn:
                                 #  TODO: check message is blockinfo
                                 info = posblock.PosHeight().from_proto(msg.height_value)
                                 # await asyncio.sleep(5)
-                            app_log.warning("Should have rolled back to {} level.".format(full_peer))
+                            app_log.info(">> Should have rolled back to {} level.".format(full_peer))
                             # self.stop_event.set()
                             # sys.exit()
 
@@ -984,9 +983,8 @@ class Poshn:
                                 commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
                                 stream, full_peer)
                             msg = await com_helpers.async_receive(stream, full_peer)
-                            # print(msg)
                             if not msg.block_value:
-                                app_log.warning("No more blocks from {}".format(full_peer))
+                                app_log.info("No more blocks from {}".format(full_peer))
                             else:
                                 blocks_count = 0
                                 for block in msg.block_value:
@@ -994,7 +992,7 @@ class Poshn:
                                         blocks_count += 1
                                 app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
 
-                        app_log.warning("Net Synced via {}".format(full_peer))
+                        app_log.info(">> Net Synced via {}".format(full_peer))
                         await self.change_state_to(HNState.SYNCING)
                 else:
                     await asyncio.sleep(common.WAIT)
@@ -1128,7 +1126,7 @@ class Poshn:
                 self.forged = False
                 # Update all sir related info
                 if self.verbose:
-                    app_log.warning("New Slot {} in Round {}".format(self.sir, self.round))
+                    app_log.info(">> New Slot {} in Round {}".format(self.sir, self.round))
                 self.previous_sir = self.sir
                 if self.round != self.previous_round:
                     # Update all round related info, we get here only once at the beginning of a new round
