@@ -26,6 +26,7 @@ iseq, bseq, buffer = (
 def scrub_input(v):
     """
     Converts string to byte object
+
     :param v:
     :return:
     """
@@ -41,6 +42,7 @@ def scrub_input(v):
 def b58encode_int(i):
     """
     Encode an integer using Base58
+
     :param i:
     :return:
     """
@@ -54,6 +56,7 @@ def b58encode_int(i):
 def b58encode(v):
     """
     Encode a string or byte object using Base58
+
     :param v:
     :return:
     """
@@ -72,6 +75,7 @@ def b58encode(v):
 def b58decode_int(v):
     """
     Decode a Base58 encoded string as an integer
+
     :param v:
     :return:
     """
@@ -85,6 +89,7 @@ def b58decode_int(v):
 def b58decode(v):
     """
     Decode a Base58 encoded string and returns a byte object
+
     :param v:
     :return:
     """

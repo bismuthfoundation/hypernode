@@ -4,7 +4,8 @@ Tornado based
 
 Note:
     TODO: are prioritary actions TBD
-    FR: are features request. Think of them as second class TODO items that are less urgent
+    FR: are features request. Think of them as second class
+    TODO items that are less urgent
     FR: will go into TODO: as TODO: is cleared.
 """
 
@@ -83,6 +84,7 @@ class HnServer(TCPServer):
     async def handle_stream(self, stream, address):
         """
         Handles the lifespan of a client, from connection to end of stream
+
         :param stream:
         :param address:
         :return:
@@ -162,6 +164,7 @@ class HnServer(TCPServer):
     async def _handle_msg(self, msg, stream, peer_ip, peer_port):
         """
         Handles a single command received by the server.
+
         :param msg:
         :param stream:
         :param peer_ip:
@@ -379,7 +382,8 @@ class Poshn:
     def add_inbound(self, ip, port, properties=None):
         """
         Safely add a distant peer from server co-routine.
-        This is called only after initial exchange and approval
+        This is called only after initial exchange and approval.
+
         :param ip:
         :param port:
         :param properties:
@@ -392,6 +396,7 @@ class Poshn:
     def remove_inbound(self, ip, port):
         """
         Safely remove a distant peer from server co-routine
+
         :param ip:
         :param port:
         :return:
@@ -412,6 +417,7 @@ class Poshn:
     def update_inbound(self, ip, port, properties):
         """
         Safely update info for a connected peer
+
         :param ip:
         :param port:
         :param properties:
@@ -424,6 +430,7 @@ class Poshn:
     def stop(self):
         """
         Signal to stop cleanly
+
         :return:
         """
         global app_log
@@ -441,6 +448,7 @@ class Poshn:
     async def manager(self):
         """
         Manager thread. Responsible for managing inner state of the node.
+
         :return:
         """
         global app_log
@@ -556,6 +564,7 @@ class Poshn:
     async def change_state_to(self, new_state):
         """
         Sets new status and logs change.
+
         :param new_state:
         :return:
         """
@@ -566,7 +575,8 @@ class Poshn:
     async def _consensus(self):
         """
         Returns the % of jurors we agree with
-        :return:
+
+        :return: double
         """
         peers_status = {}
         our_status = await self.poschain.async_height()
@@ -660,6 +670,8 @@ class Poshn:
     async def _round_sync(self, a_round, promised_height):
         """
         Tries to sync from a peer advertising a better chain than ours.
+        BEWARE: this is only ok if the peer is a juror for the current round.
+
         :param a_round: Round # to fetch
         :param promised_height: dict of the supposedly best available height
         :return: Boolean (success)
@@ -684,6 +696,9 @@ class Poshn:
                 if self.verbose:
                     app_log.info('Distant Round {} Data from {} fits expectations.'.format(a_round, peer))
                 # TODO: Merge into the sqlite
+                # Delete the round to replace
+                await self.poschain.delete_round(a_round)
+                # digest the blocks
                 app_log.info("TODO - MERGE NOT IMPLEMENTED YET")
                 await asyncio.sleep(10)  # temp debug
                 # TODO: emit tx or add to buffer
@@ -705,6 +720,7 @@ class Poshn:
     async def _get_round_blocks(self, peer, a_round):
         """
         Request full blocks from a full (or partial) round from a given peer
+
         :param peer:
         :param a_round:
         :return: list of blocks
@@ -741,6 +757,7 @@ class Poshn:
     async def refresh_last_block(self):
         """
         Fetch fresh info from the PoS chain
+
         :return:
         """
         last_block = await self.poschain.last_block()
@@ -785,10 +802,11 @@ class Poshn:
         """
         Co routine to send the block we forged to a given peer
         Should we use threads instead and a simpler tcp client? Perfs to be tested.
-        :param proto_block:
-        :param peer_ip:
-        :param peer_port:
-        :return:
+
+        :param proto_block: a protobuf block
+        :param peer_ip: the peer ip
+        :param peer_port: the peer port
+        :return: None
         """
         global app_log
         if self.verbose:
@@ -804,6 +822,7 @@ class Poshn:
     async def forge(self):
         """
         Consensus has been reached, we are forger, forge and send block
+
         :return:
         """
         global app_log
@@ -857,17 +876,18 @@ class Poshn:
     def hello_string(self):
         """
         Builds up the hello string
+
         :return:
         """
         return common.POSNET + str(self.port).zfill(5) + self.address
 
     async def _get_peer_stream(self, ip, port):
         """
-        Returns a stream with communication already established
-        stream has to be closed after use
+        Returns a stream with communication already established.
+        stream has to be closed after use.
+
         :param ip: 127.0.0.1
-        :param port 6969
-        # :param peer: ('aa012345678901aa', '127.0.0.1', 6969, 1)
+        :param port: 6969
         :return: IOStream
         """
         global LTIMEOUT
@@ -905,6 +925,7 @@ class Poshn:
         """
         Client worker, running in a coroutine.
         Tries to connect to the given peer, terminates on error and deletes itself on close.
+
         :param peer: ('aa012345678901aa', '127.0.0.1', 6969, 1)
         :return:
         """
@@ -1098,6 +1119,7 @@ class Poshn:
         """
         Adjust peers and network properties.
         Always called from the manager co-routine only.
+
         :return:
         """
         inbound_count = len(self.inbound)
@@ -1118,6 +1140,7 @@ class Poshn:
         Adjust round/slots depending properties.
         Always called from the manager co-routine only.
         Should not be called too often (1-10sec should be plenty)
+
         :return:
         """
         global app_log
@@ -1161,6 +1184,7 @@ class Poshn:
         """
         Run the socket server.
         Once we called that, the calling thread is stopped until the server closes.
+
         :return:
         """
         global app_log
@@ -1201,6 +1225,7 @@ class Poshn:
     def connect(self, connect=True):
         """
         Initiate outgoing connections
+
         :return:
         """
         self.connecting = connect
@@ -1210,6 +1235,7 @@ class Poshn:
         """
         Initial coherence check
         # FR: more checks
+
         :return:
         """
         app_log.info("Initial coherence check")
@@ -1233,6 +1259,7 @@ class Poshn:
 
     async def status(self, log=True):
         """
+
         :return: HN Status info
         """
         global app_log

@@ -4,6 +4,7 @@
 * using pytest for help with tests
 * pycharm as code editor/linter/debug
 
+* Sphinx for autodoc generation from docstrings.
 
 # Logging
 

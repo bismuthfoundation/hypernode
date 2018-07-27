@@ -242,6 +242,7 @@ class PosChain:
                                      .format(block.height, block.previous_hash, self.block['block_hash']))
                 return False
             # TODO: more checks
+            # timestamp of blocks
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
             await self.insert_block(block)
             self.app_log.warning("Digested block {}".format(block.height))
