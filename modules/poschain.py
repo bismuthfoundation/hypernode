@@ -16,7 +16,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -47,6 +47,7 @@ SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE hei
 SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
 SQL_BLOCK_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
+SQL_ROUND_BLOCKS = "SELECT * FROM pos_chain WHERE round = ? ORDER BY height ASC"
 
 SQL_ROLLBACK_BLOCK = "DELETE FROM pos_chain WHERE height >= ?"
 SQL_ROLLBACK_BLOCKTX = "DELETE FROM pos_messages WHERE block_height >= ?"
@@ -517,16 +518,18 @@ class SqlitePosChain(PosChain, SqliteBase):
         :return: protocmd with all blocks
         """
 
+        """
         self.app_log.error("async_roundblocks NOT done yet")
         await asyncio.sleep(1)
         return
+        """
 
         try:
             protocmd = commands_pb2.Command()
             protocmd.Clear()
             protocmd.command = commands_pb2.Command.blocksync
 
-            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, common.BLOCK_SYNC_COUNT))
+            blocks = await self.async_fetchall(SQL_ROUND_BLOCKS, (round,))
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
                 # Add the block txs
