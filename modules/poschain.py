@@ -99,7 +99,7 @@ SQL_CREATE_POS_MESSAGES = "CREATE TABLE pos_messages (\
 
 SQL_CREATE_POS_ROUNDS = "CREATE TABLE pos_rounds (\
     round      INTEGER PRIMARY KEY,\
-    active_mns TEXT,\
+    active_hns TEXT,\
     slots      STRING,\
     test_slots STRING\
     );"
@@ -395,7 +395,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             'INTEGER', 0, None, 0), (3, 'sender', 'VARCHAR (34)', 0, None, 0), (4, 'recipient', 'VARCHAR (34)', 0, 
             None, 0), (5, 'what', 'INTEGER', 0, None, 0), (6, 'params', 'STRING', 0, None, 0), (7, 'value', 'INTEGER', 
             0, None, 0), (8, 'pubkey', 'BLOB (64)', 0, None, 0), (9, 'received', 'INTEGER', 0, None, 0)]
-            4 [(0, 'round', 'INTEGER', 0, None, 1), (1, 'active_mns', 'TEXT', 0, None, 0), (2, 'slots', 'STRING', 0, 
+            4 [(0, 'round', 'INTEGER', 0, None, 1), (1, 'active_hns', 'TEXT', 0, None, 0), (2, 'slots', 'STRING', 0, 
             None, 0), (3, 'test_slots', 'STRING', 0, None, 0)]
             """
 
@@ -421,7 +421,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             # Now test data
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:
-                # empty db, try to bootstrap - only Genesis MN can do this
+                # empty db, try to bootstrap - only Genesis HN can do this
                 if poscrypto.ADDRESS == common.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)

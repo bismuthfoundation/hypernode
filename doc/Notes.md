@@ -12,7 +12,7 @@ Tornado log module with pretty printing is used.
 log level
 
 - INFO is used for verbose logging of regular messages
-- WARNING is used for expected logic errors that are know to happen during execution, like a timeout.
+- WARNING is used for expected logic errors that are known to happen during execution, like a timeout.
 - ERROR are only used for unexpected exceptions and should be reported to the devs.
 
 
@@ -58,7 +58,7 @@ add a message for that.
 
 since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
 
-Reread docs and code, change occurences of MN to HN
+Reread docs and code, change occurences of MN to HN (code ok)
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.

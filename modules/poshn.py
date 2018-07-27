@@ -1,5 +1,5 @@
 """
-Pos Masternode class for Bismuth Cryptocurrency
+Pos Hypernode class for Bismuth Cryptocurrency
 Tornado based
 
 Note:
@@ -71,7 +71,7 @@ TCP Server Classe
 """
 
 
-class MnServer(TCPServer):
+class HnServer(TCPServer):
     """Tornado asynchronous TCP server."""
 
     def __init__(self):
@@ -93,7 +93,7 @@ class MnServer(TCPServer):
         peer_port = '00000'
         access_log.info("SRV: Incoming connection from {}".format(peer_ip))
         # TODO: here, use tiered system to reserve safe slots for jurors,
-        # some slots for non juror mns, and some others for other clients (non mn clients)
+        # some slots for non juror hns, and some others for other clients (non hn clients)
         try:
             # Get first message, we expect an hello with version number and address
             msg = await async_receive(stream, peer_ip)
@@ -126,7 +126,7 @@ class MnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.ko, "Did not say hello", stream, peer_ip)
                 return
             # Here the peer said Hello and we accepted its version, we can have a date.
-            while not Posmn.stop_event.is_set():
+            while not Poshn.stop_event.is_set():
                 try:
                     # Loop over the requests until disconnect or end of server.
                     msg = await async_receive(stream, full_peer)
@@ -240,7 +240,7 @@ class MnServer(TCPServer):
                 if LooseVersion(__version__) < LooseVersion(version):
                     app_log.info("Newer {} version, updating.".format(version))
                     # fetch archive and extract
-                    common.update_source(url + "mnd.tgz", app_log)
+                    common.update_source(url + "hnd.tgz", app_log)
                     # FR: bootstrap db on condition or other message ?
                     await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                     # restart
@@ -263,13 +263,13 @@ class MnServer(TCPServer):
 
 
 """
-PoS MN Class
+PoS HN Class
 """
 
 
-class MNState(Enum):
+class HNState(Enum):
     """
-    Current State of the MN
+    Current State of the HN
     """
     START = 0
     SYNCING = 1
@@ -286,8 +286,8 @@ class MNState(Enum):
     ROUND_SYNC = 12
 
 
-class Posmn:
-    """The PoS Masternode object"""
+class Poshn:
+    """The PoS Hypernode object"""
     # There is only one instance of this class per node.
     # List of client routines
     # Each item (key=ip) is [active, last_active, sent_msg, sent_bytes, recv_msg, recv_bytes]
@@ -307,7 +307,7 @@ class Posmn:
         self.verbose = verbose
         self.server_thread = None
         self.server = None
-        self.state = MNState.START
+        self.state = HNState.START
         self.datadir = datadir
         # Used when round syncing, to save previous state and our expectations about the end result.
         self.saved_state = {"state": self.state, "height_target": None}
@@ -344,7 +344,7 @@ class Posmn:
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
         except Exception as e:
-            app_log.error("Error creating posmn: {}".format(e))
+            app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
@@ -370,7 +370,7 @@ class Posmn:
         formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
-        app_log.info("PoS MN {} Starting with pool address {}, data dir '{}'."
+        app_log.info("PoS HN {} Starting with pool address {}, data dir '{}'."
                      .format(__version__, self.address, self.datadir))
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
@@ -445,7 +445,7 @@ class Posmn:
         global app_log
         global MINIMUM_CONNECTIVITY
         if self.verbose:
-            app_log.info("Started MN Manager")
+            app_log.info("Started HN Manager")
         # Initialise round/sir data
         await self.refresh_last_block()
         await self._check_round()
@@ -453,26 +453,26 @@ class Posmn:
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()
-                if self.state == MNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
-                    await self.change_state_to(MNState.STRONG_CONSENSUS)
+                if self.state == HNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
+                    await self.change_state_to(HNState.STRONG_CONSENSUS)
 
-                if self.state in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS) and self.forger != poscrypto.ADDRESS:
+                if self.state in (HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS) and self.forger != poscrypto.ADDRESS:
                     # We did not reach consensus in time, and we passed our turn.
                     app_log.warning("Too late to forge, back to Sync")
-                    await self.change_state_to(MNState.SYNCING)
+                    await self.change_state_to(HNState.SYNCING)
                 # Adjust state depending of the connection state
                 if self.connected_count >= MINIMUM_CONNECTIVITY:
-                    if self.state == MNState.START:
-                        await self.change_state_to(MNState.SYNCING)
-                # elif self.state == MNState.SYNCING:
+                    if self.state == HNState.START:
+                        await self.change_state_to(HNState.SYNCING)
+                # elif self.state == HNState.SYNCING:
                 else:
-                    await self.change_state_to(MNState.START)
+                    await self.change_state_to(HNState.START)
 
                 """
                 # Done in _consensus - replace here? would be more logic.
                 if self.net_height:
                     # TODO: replace this lengthy condition by a readable function of its own -
-                    if self.state == MNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
+                    if self.state == HNState.SYNCING and self.net_height['round'] == self.poschain.height_status.round and \
                             (self.net_height['forgers_round'] > self.poschain.height_status.forgers_round or \
                             self.net_height['uniques_round'] > self.poschain.height_status.uniques_round ) and \
                             self.net_height['count'] >= 2 :
@@ -483,23 +483,23 @@ class Posmn:
                         # digest if ok.
                         # This is temp only, recycle late sync for now.
                         app_log.warning("Round Sync From {}".format(self.sync_from))
-                        await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
+                        await self.change_state_to(HNState.CATCHING_UP_PRESYNC)
                 """
 
                 # If we should sync, but we are late compared to the net, then go in to "catching up state"
-                if self.state == MNState.SYNCING and self.net_height \
+                if self.state == HNState.SYNCING and self.net_height \
                         and self.net_height['round'] > self.poschain.height_status.round:
                     app_log.warning("We are late, catching up!")
                     # FR: set time to trigger CATCHING_UP_CONNECT2
-                    await self.change_state_to(MNState.CATCHING_UP_CONNECT1)
+                    await self.change_state_to(HNState.CATCHING_UP_CONNECT1)
                     # on "connect 1 phase, we wait to be connect to at least .. peers
                     # on connect2 phase, we add random peers other than our round peers to get enough
-                    await self.change_state_to(MNState.CATCHING_UP_ELECT)
+                    await self.change_state_to(HNState.CATCHING_UP_ELECT)
                     # FR: more magic here to be sure we got a good one - here, just pick one from the top chain.
                     self.sync_from = random.choice(self.net_height['peers'])
                     app_log.warning("Sync From {}".format(self.sync_from))
-                    await self.change_state_to(MNState.CATCHING_UP_PRESYNC)
-                if self.state == MNState.CATCHING_UP_PRESYNC:
+                    await self.change_state_to(HNState.CATCHING_UP_PRESYNC)
+                if self.state == HNState.CATCHING_UP_PRESYNC:
                     # If we have no client worker, add one
                     if self.sync_from not in self.clients:
                         io_loop = IOLoop.instance()
@@ -511,14 +511,14 @@ class Posmn:
                     # FR: add some timeout so we can retry another one if this one fails.
                     # FR: The given worker will be responsible for changing state on ok or failed status
 
-                if self.state == MNState.STRONG_CONSENSUS:
+                if self.state == HNState.STRONG_CONSENSUS:
                     if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
-                        await self.change_state_to(MNState.FORGING)
+                        await self.change_state_to(HNState.FORGING)
                         # Forge will send also
                         await self.forge()
                         # await asyncio.sleep(10)
                         self.forged = True
-                        await self.change_state_to(MNState.SYNCING)
+                        await self.change_state_to(HNState.SYNCING)
                     else:
                         if self.verbose:
                             app_log.info("My slot, but too low a consensus to forge now.")
@@ -595,7 +595,7 @@ class Posmn:
                     peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                 if common.same_height(peer['height_status'], our_status):
                     app_log.info('Peer {} agrees'.format(ip))
-                    # TODO: only count if in our common.POC_MASTER_NODES_LIST list?
+                    # TODO: only count if in our common.POC_HYPER_NODES_LIST list?
                     nb += 1
                 else:
                     app_log.warning('Peer {} disagrees'.format(ip))
@@ -621,7 +621,7 @@ class Posmn:
                 except:
                     pass
         # print("clients", self.clients)
-        total = len(common.POC_MASTER_NODES_LIST)
+        total = len(common.POC_HYPER_NODES_LIST)
         pc = round(nb * 100 / total)
         app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
         peers_status = peers_status.values()
@@ -646,7 +646,7 @@ class Posmn:
                         best_peers = self.net_height['peers']
                         app_log.warning('There is a better chain for our round on the net: "{}"'
                                         .format(','.join(best_peers)))
-                        if self.state in [MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS, MNState.SYNCING]:
+                        if self.state in [HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS, HNState.SYNCING]:
                             app_log.info('State {} force round sync and check'.format(self.state))
                             await self._round_sync(our_status["round"], self.net_height)
                         else:
@@ -668,7 +668,7 @@ class Posmn:
         res = False
         # Store the current state
         self.saved_state = self.state
-        await self.change_state_to(MNState.ROUND_SYNC)
+        await self.change_state_to(HNState.ROUND_SYNC)
         # pick a peer - if sync fails, we will try another random one next time
         peer = random.choice(promised_height['peers'])
         try:
@@ -836,14 +836,14 @@ class Posmn:
             print(block.to_dict())
             # FR: Shall we pass that one through "digest" to make sure?
             await self.poschain.insert_block(block)
-            await self.change_state_to(MNState.SENDING)
+            await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
             block = block.to_proto()
             print("proto", block)
             app_log.error("Block Forged, I should send it")
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2])
-                       for peer in common.POC_MASTER_NODES_LIST
+                       for peer in common.POC_HYPER_NODES_LIST
                        if not (peer[1] == self.ip and peer[2] == self.port)]
             try:
                 await asyncio.wait(to_send, timeout=30)
@@ -935,12 +935,12 @@ class Posmn:
                 self.clients[full_peer]['stats'][com_helpers.STATS_ACTIVEP] = True
                 self.clients[full_peer]['stats'][com_helpers.STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
-                if self.state in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC) \
+                if self.state in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC) \
                         and self.sync_from == full_peer:
                     # Faster sync
                     app_log.warning("Entering presync with {}".format(full_peer))
                     await asyncio.sleep(common.SHORT_WAIT)
-                    if self.state == MNState.CATCHING_UP_PRESYNC:
+                    if self.state == HNState.CATCHING_UP_PRESYNC:
                         # Here, we check if our last block matches the peer's one.
                         # If not, we rollback one block at a time until we agree.
                         await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
@@ -953,7 +953,7 @@ class Posmn:
                         if self.poschain.height_status.block_hash == info.block_hash \
                                 and self.poschain.height_status.round == info.round:
                             # we are ok, move to next state
-                            await self.change_state_to(MNState.CATCHING_UP_SYNC)
+                            await self.change_state_to(HNState.CATCHING_UP_SYNC)
                             app_log.warning("Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
                         else:
                             # todo
@@ -974,7 +974,7 @@ class Posmn:
                             # self.stop_event.set()
                             # sys.exit()
 
-                    if self.state == MNState.CATCHING_UP_SYNC:
+                    if self.state == HNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.
                         # The peer will send as many blocks as he wants, and sends empty when it's over.
 
@@ -995,12 +995,12 @@ class Posmn:
                                 app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
 
                         app_log.warning("Net Synced via {}".format(full_peer))
-                        await self.change_state_to(MNState.SYNCING)
+                        await self.change_state_to(HNState.SYNCING)
                 else:
                     await asyncio.sleep(common.WAIT)
                     now = time.time()
-                    if self.state not in (MNState.STRONG_CONSENSUS, MNState.MINIMAL_CONSENSUS,
-                                          MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
+                    if self.state not in (HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS,
+                                          HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC):
                         # If we are trying to reach consensus, don't ask for mempool sync so often.
                         # Peers may send anyway.
                         height_delay = 10
@@ -1014,7 +1014,7 @@ class Posmn:
                         if await self.mempool.tx_count():
                             #  Just don't waste bandwith if our mempool is empty.
                             await self._exchange_mempool(stream, full_peer)
-                    if self.state not in (MNState.CATCHING_UP_PRESYNC, MNState.CATCHING_UP_SYNC):
+                    if self.state not in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC):
                         if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
                             # Time to send our last block info to the peer, he will answer back with his
                             await self._exchange_height(stream, full_peer)
@@ -1141,12 +1141,12 @@ class Posmn:
                     # no, would add general network load at each round start.
                     # use async here for every lenghty op - won't that lead to partial sync info?
                     self.connect_to = await determine.get_connect_to(self.peers, self.round, self.address)
-                    tickets = await determine.mn_list_to_tickets(self.peers)
+                    tickets = await determine.hn_list_to_tickets(self.peers)
                     # TODO: real hash
                     self.slots = await determine.tickets_to_delegates(tickets, self.previous_hash)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
-                    self.test_slots = await determine.mn_list_to_test_slots(self.peers, self.slots)
+                    self.test_slots = await determine.hn_list_to_test_slots(self.peers, self.slots)
                     # TODO: disconnect from non partners peers
                     # TODO: save this round info to db
                 if self.sir < len(self.slots):
@@ -1174,7 +1174,7 @@ class Posmn:
             app_log.error("Serve Init: {}".format(str(e)))
             return
         try:
-            server = MnServer()
+            server = HnServer()
             server.verbose = self.verbose
             server.mempool = self.mempool
             server.node = self
@@ -1232,7 +1232,7 @@ class Posmn:
 
     async def status(self, log=True):
         """
-        :return: MN Status info
+        :return: HN Status info
         """
         global app_log
         poschain_status = await self.poschain.status()

@@ -19,7 +19,7 @@ VERBOSE = True
 
 REF_ADDRESS = ''
 
-# NOTE: I used distance between hashes to order the MNs, but it may be simpler
+# NOTE: I used distance between hashes to order the HNs, but it may be simpler
 # to use random, seeded with previous hash, then random.shuffle()
 # TODO: perf tests.
 """
@@ -56,22 +56,22 @@ def my_distance(address):
 # List and tickets management  ###############################################
 
 
-async def mn_list_to_tickets(mn_list):
+async def hn_list_to_tickets(hn_list):
     """
-    :param mn_list: list of mn with properties
+    :param hn_list: list of hn with properties
     :return: list of tickets for delegates determination
     """
-    # mn_list is supposed to be ordered the same for everyone
+    # hn_list is supposed to be ordered the same for everyone
     tickets = []
     # If we have less candidates than seats, re-add the list until we have enough.
     # Always parse the full list even if this means adding too many candidates
     # (this ensures everyone gets the same chance)
     tid = 0
     while len(tickets) < common.MAX_ROUND_SLOTS:
-        for mn in mn_list:
+        for hn in hn_list:
             # a more compact and faster version can be written, I prefer to aim at clarity
-            for chances in range(mn[3]):  # index 3 is the weight
-                tickets.append((mn[0], tid))
+            for chances in range(hn[3]):  # index 3 is the weight
+                tickets.append((hn[0], tid))
                 tid += 1
     return tickets
 
@@ -96,7 +96,7 @@ async def tickets_to_delegates(tickets_list, reference_hash):
 
 def pick_two_not_in(address_list, avoid):
     """
-    Pick a random couple of mn not in avoid
+    Pick a random couple of hn not in avoid
     :param address_list:
     :param avoid:
     :return:
@@ -108,10 +108,10 @@ def pick_two_not_in(address_list, avoid):
     return random.sample(candidates, 2)
 
 
-async def mn_list_to_test_slots(full_mn_list, forge_slots):
+async def hn_list_to_test_slots(full_hn_list, forge_slots):
     """
-    Predict tests to be run during each slot, but avoid testing forging MN
-    :param full_mn_list:
+    Predict tests to be run during each slot, but avoid testing forging HN
+    :param full_hn_list:
     :param forge_slots:
     :return: list with list of tests for each slot.
     """
@@ -129,16 +129,16 @@ async def mn_list_to_test_slots(full_mn_list, forge_slots):
     # This is what ensures everyone shuffles the same way.
     random.seed(REF_ADDRESS)
     # Just keep the pubkeys/addresses, no dup here whatever the weight.
-    all_mns_addresses = [mn[0] for mn in full_mn_list]
+    all_hns_addresses = [hn[0] for hn in full_hn_list]
     test_slots = []
     for slot in forge_slots:
         # slot is a tuple (address, ticket#)
         tests = []
         avoid = [slot[0]]
         while len(tests) < common.TESTS_PER_SLOT:
-            picks = pick_two_not_in(all_mns_addresses, avoid)
+            picks = pick_two_not_in(all_hns_addresses, avoid)
             if not picks:
-                # not enough mn left to do the required tests.
+                # not enough hn left to do the required tests.
                 # TODO: this should be an alert since we will lack messages.
                 break
             # also pick a random test
@@ -203,9 +203,9 @@ async def connect_ok_from(msg, access_log):
     :param access_log:
     :return: reason (string), ok (boolean)
     """
-    # TODO: 0. Check if ip in our MN list, if not drop and warn so we can add firewall rule if needed
+    # TODO: 0. Check if ip in our HN list, if not drop and warn so we can add firewall rule if needed
     posnet, port, peer_address = msg[:10], msg[10:15], msg[15:]
-    # TODO: except for dev, we could force port to be fixed (thus disallowing multiple MN per ip)
+    # TODO: except for dev, we could force port to be fixed (thus disallowing multiple HN per ip)
     reason = None
     ok = True
     # Check 1. posnet version

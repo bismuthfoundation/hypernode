@@ -12,7 +12,7 @@ import tarfile
 # from collections import OrderedDict
 from hashlib import blake2b
 
-__version__ = '0.0.16'
+__version__ = '0.0.17'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars
@@ -41,7 +41,7 @@ PING_DELAY = 30
 FUTURE_ALLOWED = 5
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
-# TODO: Estimate block size depending on the MN count
+# TODO: Estimate block size depending on the HN count
 BLOCK_SYNC_COUNT = 10
 
 # Debug/Dev only - Never forge if True
@@ -50,10 +50,10 @@ DO_NOT_FORGE = False
 # Dev only - break nice color
 DEBUG = False
 
-# The reference list of active Masternodes for the round
+# The reference list of active Hypernodes for the round
 # address, ip, port, weight
-POC_MASTER_NODES_LIST = [
-    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1),  # mn 0
+POC_HYPER_NODES_LIST = [
+    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1),  # hn 0
     ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2),
     ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1),
     ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1),
@@ -142,13 +142,13 @@ def update_source(url, app_log=None):
     :return:
     """
     try:
-        archive_path = "./mnd.tgz"
+        archive_path = "./hnd.tgz"
         download_file(url, archive_path)
         tar = tarfile.open(archive_path)
         tar.extractall("./")
         tar.close()
         # move to current dir
-        from_dir = "./mnd_zip/"
+        from_dir = "./hnd_zip/"
         files = os.listdir(from_dir)
         for f in files:
             shutil.move(from_dir + f, './' + f)
