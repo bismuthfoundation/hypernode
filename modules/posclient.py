@@ -15,7 +15,7 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.3'
+__version__ = '0.0.31'
 
 
 class Posclient:
@@ -66,8 +66,12 @@ class Posclient:
                     return
 
             if 'block' == action:
-                # TODO
-                return
+                await com_helpers.async_send_int32(commands_pb2.Command.getblock, int(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.getblock:
+                    block = posblock.PosBlock().from_proto(msg.block_value[0])
+                    print(block.to_json())
+                    return
             if 'tx' == action:
                 # TODO
                 return

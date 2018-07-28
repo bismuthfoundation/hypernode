@@ -94,12 +94,24 @@
 </div>
 <div class="section" id="action-status">
 <h4>–action=status<a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
-<p>WIP</p>
+<p>Returns full Hypernode status as a Json string</p>
 </div>
 <div class="section" id="action-block-param-block-height">
 <h4>–action=block –param=block_height<a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
 <p>WIP -
 Returns block info and list of transactions for given height</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=block --param=53
+</pre></div>
+</div>
+<p>Sample output:</p>
+<p><code class="docutils literal notranslate"><span class="pre">{&quot;txs&quot;:</span> <span class="pre">[[&quot;8bdc804328d9e8ac0...53a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span>
+<span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
+<span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...72e7da47b2967&quot;,</span> <span class="pre">1532772325]],</span> <span class="pre">&quot;height&quot;:</span> <span class="pre">53,</span>
+<span class="pre">&quot;round&quot;:</span> <span class="pre">4969,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;timestamp&quot;:</span> <span class="pre">1528382103,</span>
+<span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;msg_count&quot;:</span> <span class="pre">1,</span>
+<span class="pre">&quot;unique_sources&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f76...74f84282c39f87&quot;,</span>
+<span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;received_by&quot;:</span> <span class="pre">&quot;&quot;,</span>
+<span class="pre">&quot;forger&quot;:</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;}</span></code></p>
 </div>
 <div class="section" id="action-tx-param-tx-signature">
 <h4>–action=tx –param=tx_signature<a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>

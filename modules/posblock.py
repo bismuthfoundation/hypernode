@@ -291,7 +291,8 @@ class PosBlock:
         # Then convert the bin data to base64 for proper json encoding
         for key in self.hex_encodable:
             block[key] = poscrypto.raw_to_hex(block[key])
-        block['txs'] = [tx.to_json() for tx in self.txs]
+        # We need to_json to convert to hex, but then decode again to have a list we will json encode in the block.
+        block['txs'] = [json.loads(tx.to_json()) for tx in self.txs]
         return json.dumps(block)
 
     def to_db(self):

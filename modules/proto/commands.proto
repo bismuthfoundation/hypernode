@@ -86,6 +86,7 @@ message Command {
         blockinfo = 11; // ask info for a specific block height. Question comes with an int32, answer with a height
         blocksync = 12; // ask info for a list of blocks starting with the given one. Question comes with an int32, answer with block(s)
         roundblocks = 13; // ask the full block data for a given round. Question comes with an int32, answer with block(s)
+        getblock = 14; // ask for full block content of a given height. Question comes with an int32, answer with block
     }
     required Type command = 1;
 

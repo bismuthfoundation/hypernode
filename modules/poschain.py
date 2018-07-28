@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.6'
+__version__ = '0.0.61'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -51,6 +51,7 @@ SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE 
 
 SQL_BLOCK_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
 SQL_ROUND_BLOCKS = "SELECT * FROM pos_chain WHERE round = ? ORDER BY height ASC"
+SQL_HEIGHT_BLOCK = "SELECT * FROM pos_chain WHERE height = ? LIMIT 1"
 
 SQL_ROLLBACK_BLOCK = "DELETE FROM pos_chain WHERE height >= ?"
 SQL_ROLLBACK_BLOCKTX = "DELETE FROM pos_messages WHERE block_height >= ?"
@@ -611,7 +612,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         try:
             protocmd = commands_pb2.Command()
             protocmd.Clear()
-            protocmd.command = commands_pb2.Command.blocksync
+            protocmd.command = commands_pb2.Command.roundblocks
 
             blocks = await self.async_fetchall(SQL_ROUND_BLOCKS, (a_round,))
             for block in blocks:
@@ -630,6 +631,38 @@ class SqlitePosChain(PosChain, SqliteBase):
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
+
+    async def async_getblock(self, a_height):
+        """
+        Command id 14
+        returns the block of the given height.
+        FR: Harmonize. this one needs a proto as output (proto command with list of blocks)
+        :param a_height: int
+        :return: protocmd with the block if exists or None
+        """
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.getblock
+
+            block = await self.async_fetchone(SQL_HEIGHT_BLOCK, (a_height,), as_dict=True)
+            block = PosBlock().from_dict(dict(block))
+            # Add the block txs
+            txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+            for tx in txs:
+                tx = PosMessage().from_dict(dict(tx))
+                block.txs.append(tx)
+            block.add_to_proto(protocmd)
+            return protocmd
+
+        except Exception as e:
+            self.app_log.error("SRV: async_getblock: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            raise
+
+
 
 
 if __name__ == "__main__":

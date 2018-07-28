@@ -52,6 +52,21 @@ Returns full Hypernode status as a Json string
 WIP -
 Returns block info and list of transactions for given height
 
+.. code-block:: text
+
+  python3 hn_client.py --action=block --param=53
+
+Sample output:
+
+``{"txs": [["8bdc804328d9e8ac0...53a53f0dffe1f", 53, 1528381933,
+"BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH",
+0, "", 1, "2275e088ef7dde5972...72e7da47b2967", 1532772325]], "height": 53,
+"round": 4969, "sir": 1, "timestamp": 1528382103,
+"previous_hash": "7b12101dcb088170285b5d5cad68e7e79e4cb6b4", "msg_count": 1,
+"unique_sources": 0, "signature": "d0feb58827e614f76...74f84282c39f87",
+"block_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3", "received_by": "",
+"forger": "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV"}``
+
 --action=tx --param=tx_signature
 ---------------------------------
 WIP - Returns detail of the given transaction
@@ -81,7 +96,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.41'
 
 
 if __name__ == "__main__":
@@ -102,7 +117,7 @@ if __name__ == "__main__":
         com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="mn_temp/mn{}.json".format(args.index),
                                                   verbose=args.verbose)
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(com_helpers.MY_NODE.action(args.action))
+        loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))
 
     except Exception as e:
         print(e)

@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.73'
+__version__ = '0.0.74'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -224,6 +224,12 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.roundblocks:
                 blocks = await self.node.poschain.async_roundblocks(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.getblock:
+                block = await self.node.poschain.async_getblock(msg.int32_value)
+                print(block)
+                await async_send_block(block, stream, full_peer)
+
 
             elif msg.command == commands_pb2.Command.update:
                 # TODO: rights/auth and config management
