@@ -59,7 +59,11 @@ SQL_ROUND_BLOCKS = "SELECT * FROM pos_chain WHERE round = ? ORDER BY height ASC"
 SQL_HEIGHT_BLOCK = "SELECT * FROM pos_chain WHERE height = ? LIMIT 1"
 
 SQL_ROLLBACK_BLOCK = "DELETE FROM pos_chain WHERE height >= ?"
-SQL_ROLLBACK_BLOCKTX = "DELETE FROM pos_messages WHERE block_height >= ?"
+SQL_ROLLBACK_BLOCK_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
+
+SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN " \
+                       "(SELECT block_height FROM pos_chain WHERE round = ?)"
+SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
 
 """ pos chain db structure """
 
@@ -498,8 +502,6 @@ class SqlitePosChain(PosChain, SqliteBase):
             await self.mempool.async_del_txids(tx_ids)
         # Then the block and commit
         res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
-        if not res:
-            self.app_log.error("Error inserting block {}".format(block.height))
         self._invalidate()
         self.block = block.to_dict()
         # force Recalc - could it be an incremental job ?
@@ -512,12 +514,11 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         :return:
         """
-        global SQL_ROLLBACK_BLOCK
-        global SQL_ROLLBACK_BLOCKTX
         res = await self.async_execute(SQL_ROLLBACK_BLOCK, (self.height_status.height, ), commit=True)
         if not res:
             self.app_log.error("Error rollback block {}".format(self.height_status.height))
-        res = await self.async_execute(SQL_ROLLBACK_BLOCKTX, (self.height_status.height, ), commit=True)
+        # TODO: this deletes the TX, but we want to move them back to mempool I suppose
+        res = await self.async_execute(SQL_ROLLBACK_BLOCK_TXS, (self.height_status.height,), commit=True)
         if not res:
             self.app_log.error("Error rollback block {}".format(self.height_status.height))
         self._invalidate()
@@ -528,14 +529,35 @@ class SqlitePosChain(PosChain, SqliteBase):
 
     async def tx_exists(self, txid):
         """
-        Tell is the given txid is in our chain
+        Tell if the given txid is in our chain
+
         :return:
         """
+        # TODO: WARNING, see binary blob sqlite3 and conversion.
+        self.app_log.warning("tx_exists")
+        print(txid)  # debug
+        # What is fed to this function? Bytes or hex string?
         exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))
         if exists:
             self.app_log.info("{} already in our chain".format(txid))
             return True
         return False
+
+    async def delete_round(self, a_round):
+        """
+        Remove round and transactions data for this round
+        The caller is responsible for updating state if necessary
+
+        :param a_round:
+        :return: None
+        """
+        # First delete the tx
+        # TODO: this deletes the TX, but we want to move them back to mempool !important
+        res = await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=False)
+        # Then the block data itself
+        res = await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
+        # reset status so future block digestions will be ok.
+        self._invalidate()
 
     async def _height_status(self):
         """

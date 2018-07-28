@@ -294,6 +294,8 @@ class SqliteMempool(Mempool, SqliteBase):
         :return:
         """
         # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
+        # TODO: Could not work, see binary and conversion.
+        self.app_log.warning("TODO:check async_del_txids")
         for tx in txids:
             res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
         tx = 0

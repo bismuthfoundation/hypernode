@@ -2,7 +2,7 @@
 Bismuth
 Common variables and helpers for PoS
 
-Serves as config file for POC and tests
+Also serves as config file for POC and tests
 """
 
 import os
@@ -109,7 +109,8 @@ GENESIS_SIGNATURE = ''
 
 def download_file(url, filename):
     """
-    Fetch a file from an URL with progres indicator
+    Fetch a file from an URL with progress indicator
+
     :param url:
     :param filename:
     :return:
@@ -131,6 +132,7 @@ def download_file(url, filename):
 def update_source(url, app_log=None):
     """
     Update source file from an url
+
     :param url: url of the tgz archive
     :param app_log: optional log handler
     :return:
@@ -155,6 +157,7 @@ def update_source(url, app_log=None):
 def same_height(peer_status, our_status):
     """
     Compares not only the height but the whole properties, including Round, Slot In Round and block hash.
+
     :param peer_status:
     :param our_status:
     :return: Boolean
@@ -169,6 +172,7 @@ def first_height_is_better(height_a, height_b):
     """
     Compares properties of the heights to tell which one is to keep in case of forks.
     Uses 'forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'
+
     :param height_a:
     :param height_b:
     :return: Boolean, True if a is > b
@@ -177,14 +181,15 @@ def first_height_is_better(height_a, height_b):
         return True
     if height_a['forgers_round'] > height_b['forgers_round']:
         return True
-    if height_a['uniques'] > height_b['uniques']:
-        return True
     if height_a['uniques_round'] > height_b['uniques_round']:
         return True
     if height_a['round'] > height_b['round']:
         return True
     if height_a['height'] > height_b['height']:
         return True
+    """if height_a['uniques'] > height_b['uniques']:
+        return True
+    """
     return False
 
 
@@ -192,6 +197,7 @@ def heights_match(height_a, height_b):
     """
     Checks if simulated height_b fits the predicate height_a
     only checks the current round info, not the whole chain.
+
     :param height_a: a height dict
     :param height_b: a height dict
     :return: boolean
@@ -205,6 +211,7 @@ def heights_match(height_a, height_b):
 def peer_to_fullpeer(peer):
     """
     converts a tuple (address, ip, port, active) to a string ip:0port
+
     :param peer:
     :return:
     """

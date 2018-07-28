@@ -39,10 +39,19 @@ WIP - A self contained client class for APIs or client line tools.
     :undoc-members:
     :show-inheritance:
 
-base58 - util module
+base58 - Util module
 =====================
 
 .. automodule:: base58
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+common - Util module
+=====================
+
+.. automodule:: common
     :members:
     :private-members:
     :undoc-members:

@@ -115,6 +115,7 @@ class HnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.hello, self.node.hello_string(), stream, peer_ip)
                 # Add the peer to inbound list
                 self.node.add_inbound(peer_ip, peer_port, {'hello': msg.string_value})
+
             elif msg.command == commands_pb2.Command.block:
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
@@ -716,12 +717,13 @@ class Poshn:
             if common.heights_match(promised_height, simulated_target):
                 if self.verbose:
                     app_log.info('Distant Round {} Data from {} fits expectations.'.format(a_round, peer))
-                # TODO: Merge into the sqlite
                 # Delete the round to replace
                 await self.poschain.delete_round(a_round)
+                await self.poschain.status()
                 # digest the blocks
-                app_log.info("TODO - MERGE NOT IMPLEMENTED YET")
-                await asyncio.sleep(10)  # temp debug
+                for block in the_blocks.block_value:
+                    await self.poschain.digest_block(block, from_miner=False)
+                await self.status(log=False)
                 # TODO: emit tx or add to buffer
             else:
                 app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))

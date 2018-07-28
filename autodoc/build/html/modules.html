@@ -814,8 +814,8 @@ Does not modify the chain, can be used on existing current round to check validi
 </dd></dl>
 
 <dl class="data">
-<dt id="poschain.SQL_ROLLBACK_BLOCKTX">
-<code class="descclassname">poschain.</code><code class="descname">SQL_ROLLBACK_BLOCKTX</code><em class="property"> = 'DELETE FROM pos_messages WHERE block_height &gt;= ?'</em><a class="headerlink" href="#poschain.SQL_ROLLBACK_BLOCKTX" title="Permalink to this definition">¶</a></dt>
+<dt id="poschain.SQL_DELETE_ROUND">
+<code class="descclassname">poschain.</code><code class="descname">SQL_DELETE_ROUND</code><em class="property"> = 'DELETE FROM pos_chain WHERE round = ?'</em><a class="headerlink" href="#poschain.SQL_DELETE_ROUND" title="Permalink to this definition">¶</a></dt>
 <dd><p>pos chain db structure</p>
 </dd></dl>
 
@@ -949,6 +949,23 @@ returns all blocks of the given round.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="poschain.SqlitePosChain.delete_round">
+<code class="descname">delete_round</code><span class="sig-paren">(</span><em>a_round</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.delete_round" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove round and transactions data for this round
+The caller is responsible for updating state if necessary</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poschain.SqlitePosChain.insert_block">
 <code class="descname">insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.insert_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves to block object in db</p>
@@ -986,8 +1003,15 @@ returns all blocks of the given round.</p>
 <dl class="method">
 <dt id="poschain.SqlitePosChain.tx_exists">
 <code class="descname">tx_exists</code><span class="sig-paren">(</span><em>txid</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.tx_exists" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tell is the given txid is in our chain
-:return:</p>
+<dd><p>Tell if the given txid is in our chain</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </dd></dl>
@@ -1029,7 +1053,7 @@ returns all blocks of the given round.</p>
 </div>
 </div>
 <div class="section" id="module-base58">
-<span id="base58-util-module"></span><h1>base58 - util module<a class="headerlink" href="#module-base58" title="Permalink to this headline">¶</a></h1>
+<span id="base58-util-module"></span><h1>base58 - Util module<a class="headerlink" href="#module-base58" title="Permalink to this headline">¶</a></h1>
 <p>Bismuth
 Base58 encoding, decoding, checksum of PoS addresses</p>
 <p>Adapted from various public domain sources</p>
@@ -1124,6 +1148,146 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-common">
+<span id="common-util-module"></span><h1>common - Util module<a class="headerlink" href="#module-common" title="Permalink to this headline">¶</a></h1>
+<p>Bismuth
+Common variables and helpers for PoS</p>
+<p>Also serves as config file for POC and tests</p>
+<dl class="data">
+<dt id="common.POC_LAST_BROADHASH">
+<code class="descclassname">common.</code><code class="descname">POC_LAST_BROADHASH</code><em class="property"> = b'123456789abcdef12345'</em><a class="headerlink" href="#common.POC_LAST_BROADHASH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here comes tuneable algorithm variables</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.download_file">
+<code class="descclassname">common.</code><code class="descname">download_file</code><span class="sig-paren">(</span><em>url</em>, <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#common.download_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch a file from an URL with progress indicator</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – </li>
+<li><strong>filename</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.first_height_is_better">
+<code class="descclassname">common.</code><code class="descname">first_height_is_better</code><span class="sig-paren">(</span><em>height_a</em>, <em>height_b</em><span class="sig-paren">)</span><a class="headerlink" href="#common.first_height_is_better" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compares properties of the heights to tell which one is to keep in case of forks.
+Uses ‘forgers’, ‘forgers_round’, ‘uniques’, ‘uniques_round’, ‘round’, ‘height’</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>height_a</strong> – </li>
+<li><strong>height_b</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Boolean, True if a is &gt; b</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.heights_match">
+<code class="descclassname">common.</code><code class="descname">heights_match</code><span class="sig-paren">(</span><em>height_a</em>, <em>height_b</em><span class="sig-paren">)</span><a class="headerlink" href="#common.heights_match" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if simulated height_b fits the predicate height_a
+only checks the current round info, not the whole chain.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>height_a</strong> – a height dict</li>
+<li><strong>height_b</strong> – a height dict</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.ipport_to_fullpeer">
+<code class="descclassname">common.</code><code class="descname">ipport_to_fullpeer</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#common.ipport_to_fullpeer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="common.peer_to_fullpeer">
+<code class="descclassname">common.</code><code class="descname">peer_to_fullpeer</code><span class="sig-paren">(</span><em>peer</em><span class="sig-paren">)</span><a class="headerlink" href="#common.peer_to_fullpeer" title="Permalink to this definition">¶</a></dt>
+<dd><p>converts a tuple (address, ip, port, active) to a string ip:0port</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.same_height">
+<code class="descclassname">common.</code><code class="descname">same_height</code><span class="sig-paren">(</span><em>peer_status</em>, <em>our_status</em><span class="sig-paren">)</span><a class="headerlink" href="#common.same_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compares not only the height but the whole properties, including Round, Slot In Round and block hash.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>peer_status</strong> – </li>
+<li><strong>our_status</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">Boolean</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="common.update_source">
+<code class="descclassname">common.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#common.update_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update source file from an url</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> – url of the tgz archive</li>
+<li><strong>app_log</strong> – optional log handler</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 
 
           </div>
@@ -1143,7 +1307,8 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <li class="toctree-l2"><a class="reference internal" href="#pos-client-class-for-bismuth-hypernodes">Pos client class for Bismuth HyperNodes</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="#module-base58">base58 - util module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-base58">base58 - Util module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#module-common">common - Util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="poc.html">&gt; Bismuth Hypernodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="poc.html#module-hn_instance">hn_instance: HyperNode instance</a></li>
 <li class="toctree-l1"><a class="reference internal" href="poc.html#module-hn_client">hn_client: HyperNode Client</a></li>
