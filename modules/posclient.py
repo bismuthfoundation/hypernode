@@ -16,7 +16,7 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.31'
+__version__ = '0.0.32'
 
 
 class Posclient:
@@ -80,10 +80,9 @@ class Posclient:
                 msg = await com_helpers.async_receive(stream, self.ip)
                 # print(msg)
                 if msg.command == commands_pb2.Command.getaddtxs:
-                    # FR: deal with that conversion in poschain
+                    # FR: deal with that conversion more efficiently in poschain
                     txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
                     print(json.dumps(txs))
-                    # print(block.to_json())
                     return
 
             if 'mempool' == action:

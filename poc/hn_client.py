@@ -69,7 +69,7 @@ Sample output:
 
 ``--action=address_txs --param=block_height``
 ---------------------------------------------
-Returns list of transactions for given address.
+Returns list of transactions both issued AND received by the given address.
 Param is the address, and an optional extra param after a comma
 `--param=address,extra`
 
@@ -77,7 +77,7 @@ extra can be
 
   - omitted: will send back 100 latest tx
   - a block height: will send back at most 100 tx from the given height
-  - a transaction signature: will send back at most 100 tx following the given signature
+  - a transaction signature: will send back at most 100 tx following the signature (to be detailed, do not use yet)
 
 .. code-block:: text
 
@@ -130,7 +130,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.41'
+__version__ = '0.0.5'
 
 
 if __name__ == "__main__":

@@ -26,11 +26,14 @@ SQL_INSERT_BLOCK = "INSERT INTO pos_chain VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
 
 SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-SQL_TX_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
+SQL_TXS_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
 
-SQL_TX_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? ORDER BY timestamp DESC LIMIT 100"
+SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? ORDER BY timestamp DESC LIMIT 100"
+SQL_TXS_FOR_ADDRESS_FROM_HEIGHT = "SELECT * FROM pos_messages WHERE (sender = ? or recipient = ?) " \
+                                  "AND block_height >= ? ORDER BY timestamp ASC LIMIT 100"
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
+SQL_TX_FOR_TXID = "SELECT * FROM pos_messages WHERE txid = ?"
 
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages " \
                           "WHERE block_height = ?"
@@ -608,7 +611,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
                 # Add the block txs
-                txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+                txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))
                 for tx in txs:
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
@@ -640,7 +643,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
                 # Add the block txs
-                txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+                txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))
                 for tx in txs:
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
@@ -670,7 +673,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             block = await self.async_fetchone(SQL_HEIGHT_BLOCK, (a_height,), as_dict=True)
             block = PosBlock().from_dict(dict(block))
             # Add the block txs
-            txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+            txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))
             for tx in txs:
                 tx = PosMessage().from_dict(dict(tx))
                 block.txs.append(tx)
@@ -696,29 +699,29 @@ class SqlitePosChain(PosChain, SqliteBase):
             protocmd = commands_pb2.Command()
             protocmd.Clear()
             protocmd.command = commands_pb2.Command.getaddtxs
-
-            print(">> params", params)
             if ',' not in params:
                 # address only
-                txs = await self.async_fetchall(SQL_TX_FOR_ADDRESS, (params,))
+                txs = await self.async_fetchall(SQL_TXS_FOR_ADDRESS, (params, params))
             else:
-                self.app_log.warning("getaddtxs: PARAM NOT SUPPORTED YET")
-                txs = []
-
+                address, option = params.split(',')
+                if len(option) < 10:
+                    # Say this is a block height
+                    option = int(option)
+                    txs = await self.async_fetchall(SQL_TXS_FOR_ADDRESS_FROM_HEIGHT, (address, address, option))
+                else:
+                    # consider as a tx signature
+                    # FR: not sure this param useful after all
+                    option = poscrypto.hex_to_raw(str(option))
+                    # Get the height of the given signature
+                    tx = await self.async_fetchone(SQL_TX_FOR_TXID, (sqlite3.Binary(option),), as_dict=True)
+                    # Then the following txs
+                    txs = await self.async_fetchall(SQL_TXS_FOR_ADDRESS_FROM_HEIGHT,
+                                                    (address, address, tx.get('block_height')))
+            # Fill the protobuf in
             for tx in txs:
                 tx = PosMessage().from_dict(dict(tx))
                 tx.add_to_proto(protocmd)
 
-            return protocmd
-
-            block = await self.async_fetchone(SQL_HEIGHT_BLOCK, (a_height,), as_dict=True)
-            block = PosBlock().from_dict(dict(block))
-            # Add the block txs
-            txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
-            for tx in txs:
-                tx = PosMessage().from_dict(dict(tx))
-                block.txs.append(tx)
-            block.add_to_proto(protocmd)
             return protocmd
 
         except Exception as e:

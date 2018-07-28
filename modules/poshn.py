@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.74'
+__version__ = '0.0.75'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -231,7 +231,6 @@ class HnServer(TCPServer):
 
             elif msg.command == commands_pb2.Command.getaddtxs:
                 txs = await self.node.poschain.async_getaddtxs(msg.string_value)
-                print(txs)
                 await async_send_block(txs, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.update:
@@ -909,7 +908,7 @@ class Poshn:
         """
         if temp:
             port = 0
-        else :
+        else:
             port = self.port
         return common.POSNET + str(port).zfill(5) + self.address
 
@@ -932,7 +931,8 @@ class Poshn:
             # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
             # connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(temp=temp), stream, full_peer)
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(temp=temp),
+                                                stream, full_peer)
             msg = await com_helpers.async_receive(stream, full_peer)
             if self.verbose:
                 access_log.info("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
@@ -1092,12 +1092,10 @@ class Poshn:
         except Exception as e:
             if self.verbose:
                 app_log.error("Connection lost to {} because {}. Retry in {} sec."
-                                .format(peer[1], e, common.PEER_RETRY_SECONDS))
-
+                              .format(peer[1], e, common.PEER_RETRY_SECONDS))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
-
             try:
                 stream.close()
             except:

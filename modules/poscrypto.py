@@ -16,14 +16,14 @@ from base64 import b64encode, b64decode
 # our modules
 import base58
 try:
-    # Failsafe so we can use without common.py module
+    # Fail safe so we can use without common.py module
     import common
 except:
     # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
     common.NETWORK_ID = b'\x19'
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 # Do not change, impact addresses format
 BLAKE_DIGEST_SIZE = 20
@@ -53,8 +53,10 @@ def hex_to_raw(hex_str):
     bytes_array = []
     hex_str = ''.join(hex_str.split(" "))
     for i in range(0, len(hex_str), 2):
-        bytes_array.append(chr(int(hex_str[i:i + 2], 16)))
-    return ''.join(bytes_array)
+        # bytes_array.append(chr(int(hex_str[i:i + 2], 16)))
+        bytes_array.append(int(hex_str[i:i + 2], 16))
+    # return ''.join(bytes_array)
+    return bytes(bytes_array)
 
 
 def blake(buffer):
