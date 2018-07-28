@@ -1,5 +1,5 @@
 """
-Test MN Update
+Test HyperNode Update
 Run from the command line, sends an "update" command to the clients listed in data/mns.txt
 """
 
@@ -11,7 +11,7 @@ import asyncio
 
 # custom modules
 sys.path.append('../modules')
-import common
+# import common
 import posclient
 import com_helpers
 
@@ -21,7 +21,7 @@ __version__ = '0.0.11'
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS updater client')
-    parser.add_argument("-u", "--url", type=str, default = 'http://eggpool.net/mnd_zip/', help='Update URL')
+    parser.add_argument("-u", "--url", type=str, default = 'http://eggpool.net/hnd_zip/', help='Update URL')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("-f", "--file", type=str, default = 'data/mns.txt', help='txt file of ip:port to connect to')
 

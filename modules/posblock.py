@@ -258,10 +258,14 @@ class PosBlock:
         # txs
         try:
             self.txs = [PosMessage().from_list(tx) for tx in block_dict['txs']]
-        except IndexError:
+        except KeyError:
+            # print(">> Empty block")
             self.txs = []
         except Exception as e:
             print("posblock from_dict exception ", e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             self.txs = []
         return self
 

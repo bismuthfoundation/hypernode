@@ -1,12 +1,14 @@
-Modules
-=======
+> Modules
+=========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
 
-poshn module
-======================
+poshn - core hypernode class
+============================
+
+The Core Hypernode server class
 
 .. automodule:: poshn
     :members:
@@ -14,8 +16,19 @@ poshn module
     :undoc-members:
     :show-inheritance:
 
-base58 module
-======================
+posclient - Client hypernode class
+==================================
+
+WIP - A self contained client class for APIs or client line tools.
+
+.. automodule:: posclient
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+base58 - util module
+=====================
 
 .. automodule:: base58
     :members:

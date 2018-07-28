@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.72'
+__version__ = '0.0.73'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -102,10 +102,10 @@ class HnServer(TCPServer):
             if self.verbose:
                 access_log.info("SRV: Got msg >{}< from {}".format(com_helpers.cmd_to_text(msg.command), peer_ip))
             if msg.command == commands_pb2.Command.hello:
-                access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, peer_ip))
                 reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
                 peer_port = msg.string_value[10:15]
                 full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
+                access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, full_peer))
                 if not ok:
                     # FR: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -180,7 +180,11 @@ class HnServer(TCPServer):
             # if msg.command == commands_pb2.Command.ping:
             #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
             # TODO: rights management
-            if msg.command == commands_pb2.Command.tx:
+            if msg.command == commands_pb2.Command.status:
+                status = json.dumps(self.node.my_status)
+                await async_send_string(commands_pb2.Command.status, status, stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.tx:
                 # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
                 # external txs from a "controller / wallet or such
                 try:
@@ -189,6 +193,7 @@ class HnServer(TCPServer):
                 except Exception as e:
                     app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
                     await async_send_void(commands_pb2.Command.ko, stream, full_peer)
+
             elif msg.command == commands_pb2.Command.mempool:
                 # peer mempool extract
                 try:
@@ -202,16 +207,20 @@ class HnServer(TCPServer):
                     app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
                 # This is a list of PosMessage objects
                 await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
+
             elif msg.command == commands_pb2.Command.height:
                 await self.node.digest_height(msg.height_value, full_peer, server=True)
                 height = await self.node.poschain.async_height()
                 await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
+
             elif msg.command == commands_pb2.Command.blockinfo:
                 height = await self.node.poschain.async_blockinfo(msg.int32_value)
                 await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
+
             elif msg.command == commands_pb2.Command.blocksync:
                 blocks = await self.node.poschain.async_blocksync(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
+
             elif msg.command == commands_pb2.Command.roundblocks:
                 blocks = await self.node.poschain.async_roundblocks(msg.int32_value)
                 await async_send_block(blocks, stream, full_peer)
@@ -224,6 +233,10 @@ class HnServer(TCPServer):
                 # if self.verbose:
                 #    app_log.warning("SRV unknown message {}, closing.".format(com_helpers.cmd_to_text(msg.command)))
                 raise ValueError("Unknown message {}".format(com_helpers.cmd_to_text(msg.command)))
+
+        except ValueError as e:
+            app_log.warning("SRV: Error {} for peer {}.".format(e, full_peer))
+            # FR: can we just ignore, or should we raise to close the connection?
 
         except Exception as e:
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
@@ -319,6 +332,7 @@ class Poshn:
         self.connect_to = []
         # Does the node try to connect to others?
         self.connecting = False
+        self.my_status = None
         try:
             self.init_log()
             poscrypto.load_keys(wallet)
@@ -560,7 +574,6 @@ class Poshn:
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
-
     async def change_state_to(self, new_state):
         """
         Sets new status and logs change.
@@ -731,7 +744,7 @@ class Poshn:
             if self.verbose:
                 app_log.info('get_round_blocks({}, {})'.format(peer, a_round))
             ip, port = peer.split(':')
-            stream = await self._get_peer_stream(ip, int(port))
+            stream = await self._get_peer_stream(ip, int(port), temp=True)
             # request the info
             if stream:
                 await com_helpers.async_send_int32(commands_pb2.Command.roundblocks, a_round, stream, peer)
@@ -791,12 +804,17 @@ class Poshn:
         :param server: comes from the server (inbound) or client (outbound) side?
         :return:
         """
-        height = posblock.PosHeight().from_proto(height_proto)
-        if server:
-            self.inbound[full_peer]['height_status'] = height.to_dict(as_hex=True)
-        else:
-            # Client
-            self.clients[full_peer]['height_status'] = height.to_dict(as_hex=True)
+        try:
+            height = posblock.PosHeight().from_proto(height_proto)
+            if server:
+                self.inbound[full_peer]['height_status'] = height.to_dict(as_hex=True)
+            else:
+                # Client
+                self.clients[full_peer]['height_status'] = height.to_dict(as_hex=True)
+        except KeyError as e:
+            app_log.error("Key Error {} digest_height".format(e))
+        except Exception as e:
+            app_log.error("Error {} digest_height".format(e))
 
     async def post_block(self, proto_block, peer_ip, peer_port):
         """
@@ -873,21 +891,27 @@ class Poshn:
             app_log.error("Error forging: {}".format(e))
             return False
 
-    def hello_string(self):
+    def hello_string(self, temp=False):
         """
         Builds up the hello string
 
+        :param temp: True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.
         :return:
         """
-        return common.POSNET + str(self.port).zfill(5) + self.address
+        if temp:
+            port = 0
+        else :
+            port = self.port
+        return common.POSNET + str(port).zfill(5) + self.address
 
-    async def _get_peer_stream(self, ip, port):
+    async def _get_peer_stream(self, ip, port, temp=True):
         """
         Returns a stream with communication already established.
         stream has to be closed after use.
 
         :param ip: 127.0.0.1
         :param port: 6969
+        :param temp: True - For temps commands, uses a fake 00000 port as self id.
         :return: IOStream
         """
         global LTIMEOUT
@@ -899,7 +923,7 @@ class Poshn:
             # ip_port = "{}:{}".format(peer[1], peer[2])
             stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
             # connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(temp=temp), stream, full_peer)
             msg = await com_helpers.async_receive(stream, full_peer)
             if self.verbose:
                 access_log.info("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
@@ -1259,6 +1283,7 @@ class Poshn:
 
     async def status(self, log=True):
         """
+        Assemble and store the node status as a dict.
 
         :return: HN Status info
         """
@@ -1281,4 +1306,5 @@ class Poshn:
         # 'peers': self.peers
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
-        return status
+        self.my_status = status
+        return self.status

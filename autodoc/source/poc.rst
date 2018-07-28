@@ -1,14 +1,23 @@
-poc - Hypernodes
-================
+> Bismuth Hypernodes
+====================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
 
-hn_instance module
-======================
+hn_instance: HyperNode instance
+===============================
 
 .. automodule:: hn_instance
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+hn_client: HyperNode Client
+===========================
+
+.. automodule:: hn_client
     :members:
     :private-members:
     :undoc-members:

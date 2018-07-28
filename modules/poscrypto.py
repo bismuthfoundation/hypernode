@@ -116,7 +116,7 @@ def validate_address(address, network=None):
     return result[1:]
 
 
-def load_keys(pos_filename='poswallet.json'):
+def load_keys(pos_filename='poswallet.json', verbose=False):
     global PUB_KEY
     global PRIV_KEY
     global ADDRESS
@@ -132,7 +132,7 @@ def load_keys(pos_filename='poswallet.json'):
     # We recreate address rather than relying on address.txt
     ADDRESS = pub_key_to_addr(PUB_KEY.to_string())
     assert ADDRESS == wallet['address']
-    if common.VERBOSE:
+    if verbose:
         print("Loaded address ", ADDRESS)
         print("Loaded pubkey ", raw_to_hex(PUB_KEY.to_string()))
     return True

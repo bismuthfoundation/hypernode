@@ -1,6 +1,16 @@
 """
-Test Hypernode Instance
-Run from the command line with the instance index from common .py
+#####################
+HyperNode Instance
+#####################
+
+Run from the command line with the instance index from common.py
+
+Example:
+
+.. code-block:: text
+
+  python3 hn_instance.py -i 0 -v
+
 """
 
 import sys

@@ -1,5 +1,6 @@
 """
-Demo Pos client class for Bismuth
+Pos client class for Bismuth HyperNodes
+=======================================
 Tornado based
 """
 
@@ -14,7 +15,7 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class Posclient:
@@ -23,36 +24,54 @@ class Posclient:
         self.ip = ip
         self.port = port
         self.verbose = verbose
-        poscrypto.load_keys(wallet)
+        poscrypto.load_keys(wallet, verbose=self.verbose)
 
     async def action(self, action='hello', param=''):
         """
-        test action
+        Action Handler
+
         :param action:
         :param param:
-        :return:
+        :return: The command result
         """
         try:
-            if action not in ('hello', 'ping', 'status', 'tx', 'mempool', 'update'):
+            if action not in ('hello', 'ping', 'status', 'tx', 'mempool', 'update', 'txtest', 'block'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             stream = await tcp_client.connect(self.ip, self.port)
-            await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + poscrypto.ADDRESS,
+            # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
+            await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + '00101' + poscrypto.ADDRESS,
                                                 stream, self.ip)
             msg = await com_helpers.async_receive(stream, self.ip)
             if self.verbose:
                 print("Client got {}".format(msg.__str__().strip()))
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                print("Client got Hello {} from {}".format(msg.string_value, self.ip))
+                if self.verbose:
+                    print("Client got Hello {} from {}".format(msg.string_value, self.ip))
             if msg.command == commands_pb2.Command.ko:
                 print("Client got Ko {}".format(msg.string_value))
                 return
             if 'ping' == action:
+                # TODO - useful for client?
                 return
             if 'hello' == action:
+                # TODO - return version infos: posnet000106969BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV
+                return
+            if 'status' == action:
+                await com_helpers.async_send_void(commands_pb2.Command.status, stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.status:
+                    print(msg.string_value)
+                    return
+
+            if 'block' == action:
+                # TODO
                 return
             if 'tx' == action:
+                # TODO
+                return
+            if 'txtest' == action:
                 tx = posblock.PosMessage().from_values(recipient='BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', value='1')
                 try:
                     tx.sign()
@@ -76,6 +95,10 @@ class Posclient:
 
             msg = await com_helpers.async_receive(stream, self.ip)
             print("Client got {}".format(msg.__str__().strip()))
+
+        except ValueError as e:
+            print("Client:", e)
+
         except Exception as e:
             print("Client:", e)
             exc_type, exc_obj, exc_tb = sys.exc_info()
