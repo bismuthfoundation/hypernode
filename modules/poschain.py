@@ -693,6 +693,8 @@ class SqlitePosChain(PosChain, SqliteBase):
             protocmd.command = commands_pb2.Command.getblock
 
             block = await self.async_fetchone(SQL_HEIGHT_BLOCK, (a_height,), as_dict=True)
+            if not block:
+                return protocmd
             block = PosBlock().from_dict(dict(block))
             # Add the block txs
             txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))

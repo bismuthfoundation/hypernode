@@ -113,8 +113,11 @@ class Posclient:
                 await com_helpers.async_send_int32(commands_pb2.Command.getblock, int(param), stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.getblock:
-                    block = posblock.PosBlock().from_proto(msg.block_value[0])
-                    print(block.to_json())
+                    if msg.block_value:
+                        block = posblock.PosBlock().from_proto(msg.block_value[0])
+                        print(block.to_json())
+                    else:
+                        print('false')
                     return
 
             msg = await com_helpers.async_receive(stream, self.ip)
