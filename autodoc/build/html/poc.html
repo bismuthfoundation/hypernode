@@ -66,19 +66,19 @@
 <div class="section" id="basic-command-line-arguments">
 <h3>Basic Command line arguments<a class="headerlink" href="#basic-command-line-arguments" title="Permalink to this headline">¶</a></h3>
 <div class="section" id="i-index-optional-default-0">
-<h4>-i , –index (optional, default=0)<a class="headerlink" href="#i-index-optional-default-0" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">-i</span></code> , <code class="docutils literal notranslate"><span class="pre">--index</span></code> (optional, default=0)<a class="headerlink" href="#i-index-optional-default-0" title="Permalink to this headline">¶</a></h4>
 <p>Instance index to connect to.</p>
 </div>
 <div class="section" id="i-ip-optional-default-127-0-0-1">
-<h4>-I , –ip (optional, default=127.0.0.1)<a class="headerlink" href="#i-ip-optional-default-127-0-0-1" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">-I</span></code> , <code class="docutils literal notranslate"><span class="pre">--ip</span></code> (optional, default=127.0.0.1)<a class="headerlink" href="#i-ip-optional-default-127-0-0-1" title="Permalink to this headline">¶</a></h4>
 <p>Hypernode Host to connect to.</p>
 </div>
 <div class="section" id="p-port-optional-default-6969">
-<h4>-p , –port (optional, default=6969)<a class="headerlink" href="#p-port-optional-default-6969" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">-p</span></code> , <code class="docutils literal notranslate"><span class="pre">--port</span></code> (optional, default=6969)<a class="headerlink" href="#p-port-optional-default-6969" title="Permalink to this headline">¶</a></h4>
 <p>Hypernode port to connect to.</p>
 </div>
 <div class="section" id="v-verbose-optional-default-false">
-<h4>-v , –verbose (optional, default=False)<a class="headerlink" href="#v-verbose-optional-default-false" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">-v</span></code> , <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> (optional, default=False)<a class="headerlink" href="#v-verbose-optional-default-false" title="Permalink to this headline">¶</a></h4>
 <p>Be verbose.</p>
 </div>
 </div>
@@ -87,19 +87,18 @@
 <p>Commands are issued via <code class="docutils literal notranslate"><span class="pre">--action</span></code> and <code class="docutils literal notranslate"><span class="pre">--param</span></code> command line switches.</p>
 <p><code class="docutils literal notranslate"><span class="pre">--param</span></code> is an optional input parameter to the action command</p>
 <div class="section" id="action-hello">
-<h4>–action=hello<a class="headerlink" href="#action-hello" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=hello</span></code><a class="headerlink" href="#action-hello" title="Permalink to this headline">¶</a></h4>
 </div>
 <div class="section" id="action-ping">
-<h4>–action=ping<a class="headerlink" href="#action-ping" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=ping</span></code><a class="headerlink" href="#action-ping" title="Permalink to this headline">¶</a></h4>
 </div>
 <div class="section" id="action-status">
-<h4>–action=status<a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=status</span></code><a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
 <p>Returns full Hypernode status as a Json string</p>
 </div>
 <div class="section" id="action-block-param-block-height">
-<h4>–action=block –param=block_height<a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
-<p>WIP -
-Returns block info and list of transactions for given height</p>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=block</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
+<p>Returns block info and list of transactions for given height</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=block --param=53
 </pre></div>
 </div>
@@ -113,16 +112,41 @@ Returns block info and list of transactions for given height</p>
 <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;received_by&quot;:</span> <span class="pre">&quot;&quot;,</span>
 <span class="pre">&quot;forger&quot;:</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;}</span></code></p>
 </div>
+<div class="section" id="action-address-txs-param-block-height">
+<h4><code class="docutils literal notranslate"><span class="pre">--action=address_txs</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-address-txs-param-block-height" title="Permalink to this headline">¶</a></h4>
+<p>Returns list of transactions for given address.
+Param is the address, and an optional extra param after a comma
+<cite>–param=address,extra</cite>
+extra can be</p>
+<blockquote>
+<div><ul class="simple">
+<li>omitted: will send back 100 latest tx</li>
+<li>a block height: will send back at most 100 tx from the given height</li>
+<li>a transaction signature: will send back at most 100 tx following the given signature</li>
+</ul>
+</div></blockquote>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
+</pre></div>
+</div>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
+</pre></div>
+</div>
+<p>Sample output:</p>
+<p><code class="docutils literal notranslate"><span class="pre">todo</span></code></p>
+</div>
 <div class="section" id="action-tx-param-tx-signature">
-<h4>–action=tx –param=tx_signature<a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=tx</span> <span class="pre">param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
 <p>WIP - Returns detail of the given transaction</p>
 </div>
 <div class="section" id="action-mempool">
-<h4>–action=mempool<a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=mempool</span></code><a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>
 <p>Returns current mempool content as json.</p>
 </div>
 <div class="section" id="action-txtest">
-<h4>–action=txtest<a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal notranslate"><span class="pre">--action=txtest</span></code><a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>
 <p>Emits a test transaction</p>
 </div>
 </div>

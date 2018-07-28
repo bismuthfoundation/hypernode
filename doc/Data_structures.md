@@ -1,5 +1,9 @@
 # Data structures
 
+*Important!*: With Bismuth regular nodes, hash is stored as hex string in the DB.  
+With the Hypernodes, all hash and signatures are stored as blob - binary - data, to spare space.    
+Some output - debug, client output - can show hex encoded strings, but that is *not* the native format.
+
 ## Block Hashes
 
 Hash and block_hashes are blake2b 20 byte long hashes.
@@ -109,4 +113,7 @@ CREATE TABLE addresses (
     alias   VARCHAR (32),
     extra   STRING
 );
+
+Note: goal of this table is to cache the pubkeys so the sender don't has to send them with every message, sparing net bandwith.
+He would just have to send them enough so that even pruning nodes have one.
 

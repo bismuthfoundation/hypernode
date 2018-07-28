@@ -14,20 +14,20 @@ Example:
 Basic Command line arguments
 ============================
 
--i , --index (optional, default=0)
-----------------------------------
+``-i`` , ``--index`` (optional, default=0)
+------------------------------------------
 Instance index to connect to.
 
--I , --ip (optional, default=127.0.0.1)
----------------------------------------
+``-I`` , ``--ip`` (optional, default=127.0.0.1)
+-----------------------------------------------
 Hypernode Host to connect to.
 
--p , --port (optional, default=6969)
-------------------------------------
+``-p`` , ``--port`` (optional, default=6969)
+--------------------------------------------
 Hypernode port to connect to.
 
--v , --verbose (optional, default=False)
-----------------------------------------
+``-v`` , ``--verbose`` (optional, default=False)
+------------------------------------------------
 Be verbose.
 
 Commands
@@ -37,19 +37,18 @@ Commands are issued via ``--action`` and ``--param`` command line switches.
 
 ``--param`` is an optional input parameter to the action command
 
---action=hello
----------------
+``--action=hello``
+------------------
 
---action=ping
---------------
+``--action=ping``
+-----------------
 
---action=status
-----------------
+``--action=status``
+-------------------
 Returns full Hypernode status as a Json string
 
---action=block --param=block_height
-------------------------------------
-WIP -
+``--action=block --param=block_height``
+---------------------------------------
 Returns block info and list of transactions for given height
 
 .. code-block:: text
@@ -67,18 +66,46 @@ Sample output:
 "block_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3", "received_by": "",
 "forger": "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV"}``
 
---action=tx --param=tx_signature
----------------------------------
+
+``--action=address_txs --param=block_height``
+---------------------------------------------
+Returns list of transactions for given address.
+Param is the address, and an optional extra param after a comma
+`--param=address,extra`
+extra can be
+
+  - omitted: will send back 100 latest tx
+  - a block height: will send back at most 100 tx from the given height
+  - a transaction signature: will send back at most 100 tx following the given signature
+
+.. code-block:: text
+
+  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+
+.. code-block:: text
+
+  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
+
+.. code-block:: text
+
+  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
+
+Sample output:
+
+``todo``
+
+``--action=tx param=tx_signature``
+----------------------------------
 WIP - Returns detail of the given transaction
 
 
---action=mempool
------------------
+``--action=mempool``
+--------------------
 Returns current mempool content as json.
 
 
---action=txtest
----------------
+``--action=txtest``
+-------------------
 Emits a test transaction
 
 
@@ -107,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
 
     parser.add_argument("--action", type=str, default=None,
-                        help='Specific action. hello, ping, status, block, tx, mempool, txtest.')
+                        help='Specific action. hello, ping, status, block, tx, address_txs, mempool, txtest.')
     parser.add_argument("--param", type=str, default=None, help='Input param from block and tx command.')
     args = parser.parse_args()
     if len(sys.argv) == 1:

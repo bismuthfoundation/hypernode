@@ -35,7 +35,7 @@ class Posclient:
         :return: The command result
         """
         try:
-            if action not in ('hello', 'ping', 'status', 'tx', 'mempool', 'update', 'txtest', 'block'):
+            if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             stream = await tcp_client.connect(self.ip, self.port)
