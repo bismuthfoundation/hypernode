@@ -72,6 +72,7 @@ Sample output:
 Returns list of transactions for given address.
 Param is the address, and an optional extra param after a comma
 `--param=address,extra`
+
 extra can be
 
   - omitted: will send back 100 latest tx
@@ -80,19 +81,25 @@ extra can be
 
 .. code-block:: text
 
-  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+  python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
 
 .. code-block:: text
 
-  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
+  python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
 
 .. code-block:: text
 
-  python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
+  python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
 
 Sample output:
 
 ``todo``
+
+
+``--action=address``
+--------------------
+TODO - Info and stats about a PoS address
+
 
 ``--action=tx param=tx_signature``
 ----------------------------------

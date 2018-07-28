@@ -623,6 +623,376 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="poschain-pos-chain-abstraction-class">
+<h1>poschain - PoS chain abstraction class<a class="headerlink" href="#poschain-pos-chain-abstraction-class" title="Permalink to this headline">¶</a></h1>
+<p>An abstraction class used by poshn</p>
+<span class="target" id="module-poschain"></span><p>A Safe thread/process object interfacing the PoS chain</p>
+<dl class="class">
+<dt id="poschain.MemoryPosChain">
+<em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">MemoryPosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.MemoryPosChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a></p>
+<p>Memory Storage, POC only</p>
+<dl class="method">
+<dt id="poschain.MemoryPosChain.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.MemoryPosChain.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="poschain.PosChain">
+<em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">PosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em>, <em>mempool=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generic Class</p>
+<dl class="method">
+<dt id="poschain.PosChain._height_status">
+<code class="descname">_height_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain._height_status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain._invalidate">
+<code class="descname">_invalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain._invalidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Something changed in our chain, invalidate the status.
+It will then be recalc when needed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain._last_block">
+<code class="descname">_last_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain._last_block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.async_blockinfo">
+<code class="descname">async_blockinfo</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.async_blockinfo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.async_height">
+<code class="descname">async_height</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.async_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a BlockHeight object with our current state</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.check_round">
+<code class="descname">check_round</code><span class="sig-paren">(</span><em>a_round</em>, <em>blocks</em>, <em>fast_check=True</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.check_round" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a round number and all blocks for this round, checks that these blocks are valid candidates.
+Does not modify the chain, can be used on existing current round to check validity alternate chains.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>a_round</strong> – </li>
+<li><strong>blocks</strong> – a PosBlock object</li>
+<li><strong>fast_check</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a height dict, containing the simulated final state of the chain, or False if blocks are not valid.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">{'height':</span> <span class="pre">3631,</span> <span class="pre">'round':</span> <span class="pre">6420,</span> <span class="pre">'sir':</span> <span class="pre">1,</span> <span class="pre">'block_hash':</span> <span class="pre">'a03ffeea35a48f0773bc993289213c3c72165ee0',</span>
+<span class="pre">'uniques':</span> <span class="pre">4,</span> <span class="pre">'uniques_round':</span> <span class="pre">0,</span> <span class="pre">'forgers':</span> <span class="pre">4,</span> <span class="pre">'forgers_round':</span> <span class="pre">1,</span> <span class="pre">'count':</span> <span class="pre">0,</span> <span class="pre">'peers':</span> <span class="pre">[]'</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.digest_block">
+<code class="descname">digest_block</code><span class="sig-paren">(</span><em>proto_block</em>, <em>from_miner=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.digest_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the block is valid and saves it</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>proto_block</strong> – a protobuf ‘block’ object</li>
+<li><strong>from_miner</strong> – True if came from a live miner (current slot)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.genesis_block">
+<code class="descname">genesis_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.genesis_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build up genesis block info</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.insert_block">
+<code class="descname">insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.insert_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves to block object in db</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.last_block">
+<code class="descname">last_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.last_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns last know block as a dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><em>block_count=1</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>revert latest block_count blocks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poschain.PosChain.tx_exists">
+<code class="descname">tx_exists</code><span class="sig-paren">(</span><em>txid</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.tx_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tell is the given txid is in our mempool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="poschain.SQL_ROLLBACK_BLOCKTX">
+<code class="descclassname">poschain.</code><code class="descname">SQL_ROLLBACK_BLOCKTX</code><em class="property"> = 'DELETE FROM pos_messages WHERE block_height &gt;= ?'</em><a class="headerlink" href="#poschain.SQL_ROLLBACK_BLOCKTX" title="Permalink to this definition">¶</a></dt>
+<dd><p>pos chain db structure</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="poschain.SqlitePosChain">
+<em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">SqlitePosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='data/'</em>, <em>app_log=None</em>, <em>mempool=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></p>
+<dl class="method">
+<dt id="poschain.SqlitePosChain._height_status">
+<code class="descname">_height_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain._height_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a BlockHeight object with our current state</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain._last_block">
+<code class="descname">_last_block</code><span class="sig-paren">(</span><em>with_tx=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain._last_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns last know block as a dict</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.async_blockinfo">
+<code class="descname">async_blockinfo</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_blockinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns partial height info of a given block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.async_blocksync">
+<code class="descname">async_blocksync</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_blocksync" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns N blocks starting with the given height.</p>
+<p>FR: Harmonize. this one needs a proto as output (proto command with list of blocks)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.async_getaddtxs">
+<code class="descname">async_getaddtxs</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_getaddtxs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command id 15
+returns a list of txs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> – str: an address or address,extra</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the txs list or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.async_getblock">
+<code class="descname">async_getblock</code><span class="sig-paren">(</span><em>a_height</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_getblock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command id 14
+returns the block of the given height.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_height</strong> – int</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the block if exists or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.async_roundblocks">
+<code class="descname">async_roundblocks</code><span class="sig-paren">(</span><em>a_round</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_roundblocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command id 13
+returns all blocks of the given round.</p>
+<p>FR: Harmonize. this one needs a proto as output (proto command with list of blocks)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with all blocks</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks and creates db. This is not async yet, so we close afterward.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.insert_block">
+<code class="descname">insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.insert_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves to block object in db</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.rollback">
+<code class="descname">rollback</code><span class="sig-paren">(</span><em>block_count=1</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.rollback" title="Permalink to this definition">¶</a></dt>
+<dd><p>revert latest block_count blocks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain.tx_exists">
+<code class="descname">tx_exists</code><span class="sig-paren">(</span><em>txid</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.tx_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tell is the given txid is in our chain
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="posclient-client-hypernode-class">
 <h1>posclient - Client hypernode class<a class="headerlink" href="#posclient-client-hypernode-class" title="Permalink to this headline">¶</a></h1>
 <p>WIP - A self contained client class for APIs or client line tools.</p>
@@ -768,6 +1138,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#poshn-core-hypernode-class">poshn - core hypernode class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#poschain-pos-chain-abstraction-class">poschain - PoS chain abstraction class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#posclient-client-hypernode-class">posclient - Client hypernode class</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pos-client-class-for-bismuth-hypernodes">Pos client class for Bismuth HyperNodes</a></li>
 </ul>

@@ -90,8 +90,9 @@ message Command {
         // Client specific messages
         getblock = 14; // ask for full block content of a given height. Question comes with an int32, answer with block_value
         getaddtxs = 15; // Get txs issued from a specific address only, and from a given block height or a given transaction id.
-        // Question comes with an int32 or a string (txid , hex encoded), answer with tx_value.
-        // Will only give at most 100 txs in a batch at most. If int32 is omitted, then sends the latest 100 tx back
+        // Question comes with a string, answer with tx_value.
+        // Will only give at most 100 txs in a batch at most.
+        // Optionnal starting block height or starting signature is added in the string after a comma : address,50
     }
     required Type command = 1;
 

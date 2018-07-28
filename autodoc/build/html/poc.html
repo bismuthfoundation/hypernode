@@ -116,8 +116,8 @@
 <h4><code class="docutils literal notranslate"><span class="pre">--action=address_txs</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-address-txs-param-block-height" title="Permalink to this headline">¶</a></h4>
 <p>Returns list of transactions for given address.
 Param is the address, and an optional extra param after a comma
-<cite>–param=address,extra</cite>
-extra can be</p>
+<cite>–param=address,extra</cite></p>
+<p>extra can be</p>
 <blockquote>
 <div><ul class="simple">
 <li>omitted: will send back 100 latest tx</li>
@@ -125,17 +125,21 @@ extra can be</p>
 <li>a transaction signature: will send back at most 100 tx following the given signature</li>
 </ul>
 </div></blockquote>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
 </pre></div>
 </div>
 <p>Sample output:</p>
 <p><code class="docutils literal notranslate"><span class="pre">todo</span></code></p>
+</div>
+<div class="section" id="action-address">
+<h4><code class="docutils literal notranslate"><span class="pre">--action=address</span></code><a class="headerlink" href="#action-address" title="Permalink to this headline">¶</a></h4>
+<p>TODO - Info and stats about a PoS address</p>
 </div>
 <div class="section" id="action-tx-param-tx-signature">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=tx</span> <span class="pre">param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
@@ -164,6 +168,7 @@ extra can be</p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="modules.html">&gt; Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#poshn-core-hypernode-class">poshn - core hypernode class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#poschain-pos-chain-abstraction-class">poschain - PoS chain abstraction class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#posclient-client-hypernode-class">posclient - Client hypernode class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-base58">base58 - util module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">&gt; Bismuth Hypernodes</a><ul class="simple">

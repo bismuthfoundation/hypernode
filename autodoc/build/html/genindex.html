@@ -45,8 +45,10 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
+ | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
@@ -66,14 +68,28 @@
 </li>
       <li><a href="modules.html#poshn.Poshn._exchange_mempool">_exchange_mempool() (poshn.Poshn method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn._get_peer_stream">_get_peer_stream() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn._get_round_blocks">_get_round_blocks() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.HnServer._handle_msg">_handle_msg() (poshn.HnServer method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain._height_status">_height_status() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain._height_status">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
+      <li><a href="modules.html#poschain.PosChain._invalidate">_invalidate() (poschain.PosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.PosChain._last_block">_last_block() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain._last_block">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
       <li><a href="modules.html#poshn.Poshn._round_sync">_round_sync() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn._update_network">_update_network() (poshn.Poshn method)</a>
@@ -86,9 +102,25 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#posclient.Posclient.action">action() (posclient.Posclient method)</a>
 </li>
+      <li><a href="modules.html#poshn.Poshn.add_inbound">add_inbound() (poshn.Poshn method)</a>
+</li>
+      <li><a href="modules.html#poschain.PosChain.async_blockinfo">async_blockinfo() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain.async_blockinfo">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poshn.Poshn.add_inbound">add_inbound() (poshn.Poshn method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_blocksync">async_blocksync() (poschain.SqlitePosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_getaddtxs">async_getaddtxs() (poschain.SqlitePosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_getblock">async_getblock() (poschain.SqlitePosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.PosChain.async_height">async_height() (poschain.PosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_roundblocks">async_roundblocks() (poschain.SqlitePosChain method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -124,11 +156,15 @@
 </li>
       <li><a href="modules.html#poshn.HNState.CATCHING_UP_PRESYNC">CATCHING_UP_PRESYNC (poshn.HNState attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.HNState.CATCHING_UP_SYNC">CATCHING_UP_SYNC (poshn.HNState attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn.change_state_to">change_state_to() (poshn.Poshn method)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain.check">check() (poschain.SqlitePosChain method)</a>
+</li>
+      <li><a href="modules.html#poschain.PosChain.check_round">check_round() (poschain.PosChain method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn.client_worker">client_worker() (poshn.Poshn method)</a>
 </li>
@@ -142,10 +178,12 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poshn.Poshn.digest_height">digest_height() (poshn.Poshn method)</a>
+      <li><a href="modules.html#poschain.PosChain.digest_block">digest_block() (poschain.PosChain method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poshn.Poshn.digest_height">digest_height() (poshn.Poshn method)</a>
+</li>
       <li><a href="modules.html#poshn.Poshn.digest_txs">digest_txs() (poshn.Poshn method)</a>
 </li>
   </ul></td>
@@ -159,6 +197,14 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.HNState.FORGING">FORGING (poshn.HNState attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="G">G</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain.genesis_block">genesis_block() (poschain.PosChain method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -190,11 +236,25 @@
 </li>
       <li><a href="modules.html#poshn.Poshn.init_check">init_check() (poshn.Poshn method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn.init_log">init_log() (poshn.Poshn method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain.insert_block">insert_block() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain.insert_block">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
       <li><a href="modules.html#base58.iseq">iseq() (in module base58)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain.last_block">last_block() (poschain.PosChain method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -203,6 +263,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn.manager">manager() (poshn.Poshn method)</a>
+</li>
+      <li><a href="modules.html#poschain.MemoryPosChain">MemoryPosChain (class in poschain)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -216,12 +278,16 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#posclient.Posclient">Posclient (class in posclient)</a>
+      <li><a href="modules.html#poschain.PosChain">PosChain (class in poschain)</a>
 </li>
-      <li><a href="modules.html#module-posclient">posclient (module)</a>
+      <li><a href="modules.html#module-poschain">poschain (module)</a>
+</li>
+      <li><a href="modules.html#posclient.Posclient">Posclient (class in posclient)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#module-posclient">posclient (module)</a>
+</li>
       <li><a href="modules.html#poshn.Poshn">Poshn (class in poshn)</a>
 </li>
       <li><a href="modules.html#module-poshn">poshn (module)</a>
@@ -236,10 +302,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn.refresh_last_block">refresh_last_block() (poshn.Poshn method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.Poshn.remove_inbound">remove_inbound() (poshn.Poshn method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain.rollback">rollback() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain.rollback">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
       <li><a href="modules.html#poshn.HNState.ROUND_SYNC">ROUND_SYNC (poshn.HNState attribute)</a>
 </li>
   </ul></td>
@@ -254,12 +326,24 @@
 </li>
       <li><a href="modules.html#poshn.Poshn.serve">serve() (poshn.Poshn method)</a>
 </li>
+      <li><a href="modules.html#poschain.SQL_ROLLBACK_BLOCKTX">SQL_ROLLBACK_BLOCKTX (in module poschain)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain">SqlitePosChain (class in poschain)</a>
+</li>
       <li><a href="modules.html#poshn.HNState.START">START (poshn.HNState attribute)</a>
 </li>
+      <li><a href="modules.html#poschain.MemoryPosChain.status">status() (poschain.MemoryPosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.PosChain.status">(poschain.PosChain method)</a>
+</li>
+        <li><a href="modules.html#poschain.SqlitePosChain.status">(poschain.SqlitePosChain method)</a>
+</li>
+        <li><a href="modules.html#poshn.Poshn.status">(poshn.Poshn method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poshn.Poshn.status">status() (poshn.Poshn method)</a>
-</li>
       <li><a href="modules.html#poshn.Poshn.stop">stop() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn.stop_event">stop_event (poshn.Poshn attribute)</a>
@@ -276,6 +360,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.HNState.TESTING">TESTING (poshn.HNState attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.PosChain.tx_exists">tx_exists() (poschain.PosChain method)</a>
+
+      <ul>
+        <li><a href="modules.html#poschain.SqlitePosChain.tx_exists">(poschain.SqlitePosChain method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -303,6 +395,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">&gt; Modules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#poshn-core-hypernode-class">poshn - core hypernode class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#poschain-pos-chain-abstraction-class">poschain - PoS chain abstraction class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#posclient-client-hypernode-class">posclient - Client hypernode class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-base58">base58 - util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="poc.html">&gt; Bismuth Hypernodes</a></li>

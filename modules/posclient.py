@@ -8,6 +8,7 @@ import os
 import sys
 from tornado.tcpclient import TCPClient
 # import asyncio
+import json
 
 import common
 import com_helpers
@@ -45,19 +46,24 @@ class Posclient:
             msg = await com_helpers.async_receive(stream, self.ip)
             if self.verbose:
                 print("Client got {}".format(msg.__str__().strip()))
+
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
                 if self.verbose:
                     print("Client got Hello {} from {}".format(msg.string_value, self.ip))
+
             if msg.command == commands_pb2.Command.ko:
                 print("Client got Ko {}".format(msg.string_value))
                 return
+
             if 'ping' == action:
                 # TODO - useful for client?
                 return
+
             if 'hello' == action:
                 # TODO - return version infos: posnet000106969BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV
                 return
+
             if 'status' == action:
                 await com_helpers.async_send_void(commands_pb2.Command.status, stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
@@ -65,16 +71,35 @@ class Posclient:
                     print(msg.string_value)
                     return
 
-            if 'block' == action:
-                await com_helpers.async_send_int32(commands_pb2.Command.getblock, int(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
-                if msg.command == commands_pb2.Command.getblock:
-                    block = posblock.PosBlock().from_proto(msg.block_value[0])
-                    print(block.to_json())
-                    return
             if 'tx' == action:
                 # TODO
                 return
+
+            if 'address_txs' == action:
+                await com_helpers.async_send_string(commands_pb2.Command.getaddtxs, str(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                # print(msg)
+                if msg.command == commands_pb2.Command.getaddtxs:
+                    # FR: deal with that conversion in poschain
+                    txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                    print(json.dumps(txs))
+                    # print(block.to_json())
+                    return
+
+            if 'mempool' == action:
+                try:
+                    # mempool with an "1" int value means send full mempool, unfiltered
+                    await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
+                except Exception as e:
+                    print(e)
+
+            if 'update' == action:
+                try:
+                    print("Sending update ", param)
+                    await com_helpers.async_send_string(commands_pb2.Command.update, param, stream, self.ip)
+                except Exception as e:
+                    print("update", e)
+
             if 'txtest' == action:
                 tx = posblock.PosMessage().from_values(recipient='BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', value='1')
                 try:
@@ -84,18 +109,14 @@ class Posclient:
                     await com_helpers.async_send_txs(commands_pb2.Command.tx, [tx], stream, self.ip)
                 except Exception as e:
                     print(e)
-            if 'mempool' == action:
-                try:
-                    # mempool with an "1" int value means send full mempool, unfiltered
-                    await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
-                except Exception as e:
-                    print(e)
-            if 'update' == action:
-                try:
-                    print("Sending update ",param)
-                    await com_helpers.async_send_string(commands_pb2.Command.update, param, stream, self.ip)
-                except Exception as e:
-                    print("update", e)
+
+            if 'block' == action:
+                await com_helpers.async_send_int32(commands_pb2.Command.getblock, int(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.getblock:
+                    block = posblock.PosBlock().from_proto(msg.block_value[0])
+                    print(block.to_json())
+                    return
 
             msg = await com_helpers.async_receive(stream, self.ip)
             print("Client got {}".format(msg.__str__().strip()))

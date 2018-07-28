@@ -227,9 +227,12 @@ class HnServer(TCPServer):
 
             elif msg.command == commands_pb2.Command.getblock:
                 block = await self.node.poschain.async_getblock(msg.int32_value)
-                print(block)
                 await async_send_block(block, stream, full_peer)
 
+            elif msg.command == commands_pb2.Command.getaddtxs:
+                txs = await self.node.poschain.async_getaddtxs(msg.string_value)
+                print(txs)
+                await async_send_block(txs, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.update:
                 # TODO: rights/auth and config management

@@ -16,6 +16,18 @@ The Core Hypernode server class
     :undoc-members:
     :show-inheritance:
 
+
+poschain - PoS chain abstraction class
+======================================
+
+An abstraction class used by poshn
+
+.. automodule:: poschain
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
 posclient - Client hypernode class
 ==================================
 

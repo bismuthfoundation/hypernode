@@ -28,6 +28,8 @@ SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 SQL_TX_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
 
+SQL_TX_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? ORDER BY timestamp DESC LIMIT 100"
+
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages " \
@@ -142,6 +144,7 @@ class PosChain:
     def genesis_block(self):
         """
         Build up genesis block info
+
         :return:
         """
         # No tx for genesis
@@ -162,6 +165,7 @@ class PosChain:
     async def insert_block(self, block):
         """
         Saves to block object in db
+
         :param block: a native PosBlock object
         :return:
         """
@@ -170,6 +174,7 @@ class PosChain:
     async def rollback(self, block_count=1):
         """
         revert latest block_count blocks
+
         :return:
         """
         print("PosChain Virtual Method rollback")
@@ -177,6 +182,7 @@ class PosChain:
     async def last_block(self):
         """
         Returns last know block as a dict
+
         :return:
         """
         if not self.block:
@@ -189,6 +195,7 @@ class PosChain:
     async def tx_exists(self, txid):
         """
         Tell is the given txid is in our mempool
+
         :return:
         """
         print("Virtual Method tx_exists")
@@ -197,6 +204,7 @@ class PosChain:
         """
         Something changed in our chain, invalidate the status.
         It will then be recalc when needed.
+
         :return:
         """
         self.height_status = None
@@ -205,6 +213,7 @@ class PosChain:
     async def async_height(self):
         """
         returns a BlockHeight object with our current state
+
         :return:
         """
         if not self.height_status:
@@ -220,6 +229,7 @@ class PosChain:
     async def digest_block(self, proto_block, from_miner=False):
         """
         Checks if the block is valid and saves it
+
         :param proto_block: a protobuf 'block' object
         :param from_miner: True if came from a live miner (current slot)
         :return:
@@ -259,12 +269,14 @@ class PosChain:
         """
         Given a round number and all blocks for this round, checks that these blocks are valid candidates.
         Does not modify the chain, can be used on existing current round to check validity alternate chains.
+
         :param a_round:
         :param blocks: a PosBlock object
         :param fast_check:
         :return: a height dict, containing the simulated final state of the chain, or False if blocks are not valid.
-        {'height': 3631, 'round': 6420, 'sir': 1, 'block_hash': 'a03ffeea35a48f0773bc993289213c3c72165ee0',
-        'uniques': 4, 'uniques_round': 0, 'forgers': 4, 'forgers_round': 1, 'count': 0, 'peers': []'
+
+        ``{'height': 3631, 'round': 6420, 'sir': 1, 'block_hash': 'a03ffeea35a48f0773bc993289213c3c72165ee0',
+        'uniques': 4, 'uniques_round': 0, 'forgers': 4, 'forgers_round': 1, 'count': 0, 'peers': []'``
         """
         try:
             start_time = time.time()
@@ -347,6 +359,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     def check(self):
         """
         Checks and creates db. This is not async yet, so we close afterward.
+
         :return:
         """
         # Create path
@@ -443,6 +456,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def _last_block(self, with_tx=False):
         """
         Returns last know block as a dict
+
         :return:
         """
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
@@ -461,6 +475,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def insert_block(self, block):
         """
         Saves to block object in db
+
         :param block: a native PosBlock object
         :return:
         """
@@ -491,6 +506,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def rollback(self, block_count=1):
         """
         revert latest block_count blocks
+
         :return:
         """
         global SQL_ROLLBACK_BLOCK
@@ -521,6 +537,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def _height_status(self):
         """
         returns a BlockHeight object with our current state
+
         :return:
         """
         # global SQL_STATE_1
@@ -552,6 +569,7 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def async_blockinfo(self, height):
         """
         Returns partial height info of a given block
+
         :return:
         """
         # global SQL_INFO_1
@@ -575,7 +593,9 @@ class SqlitePosChain(PosChain, SqliteBase):
     async def async_blocksync(self, height):
         """
         returns N blocks starting with the given height.
+
         FR: Harmonize. this one needs a proto as output (proto command with list of blocks)
+
         :param height:
         :return:
         """
@@ -605,7 +625,9 @@ class SqlitePosChain(PosChain, SqliteBase):
         """
         Command id 13
         returns all blocks of the given round.
+
         FR: Harmonize. this one needs a proto as output (proto command with list of blocks)
+
         :param a_round:
         :return: protocmd with all blocks
         """
@@ -636,7 +658,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         """
         Command id 14
         returns the block of the given height.
-        FR: Harmonize. this one needs a proto as output (proto command with list of blocks)
+
         :param a_height: int
         :return: protocmd with the block if exists or None
         """
@@ -662,7 +684,49 @@ class SqlitePosChain(PosChain, SqliteBase):
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
+    async def async_getaddtxs(self, params):
+        """
+        Command id 15
+        returns a list of txs.
 
+        :param params: str: an address or address,extra
+        :return: protocmd with the txs list or None
+        """
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.getaddtxs
+
+            print(">> params", params)
+            if ',' not in params:
+                # address only
+                txs = await self.async_fetchall(SQL_TX_FOR_ADDRESS, (params,))
+            else:
+                self.app_log.warning("getaddtxs: PARAM NOT SUPPORTED YET")
+                txs = []
+
+            for tx in txs:
+                tx = PosMessage().from_dict(dict(tx))
+                tx.add_to_proto(protocmd)
+
+            return protocmd
+
+            block = await self.async_fetchone(SQL_HEIGHT_BLOCK, (a_height,), as_dict=True)
+            block = PosBlock().from_dict(dict(block))
+            # Add the block txs
+            txs = await self.async_fetchall(SQL_TX_FOR_HEIGHT, (block.height, ))
+            for tx in txs:
+                tx = PosMessage().from_dict(dict(tx))
+                block.txs.append(tx)
+            block.add_to_proto(protocmd)
+            return protocmd
+
+        except Exception as e:
+            self.app_log.error("SRV: async_getaddtxs: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            raise
 
 
 if __name__ == "__main__":
