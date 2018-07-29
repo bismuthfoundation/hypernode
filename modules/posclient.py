@@ -17,7 +17,7 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.34'
+__version__ = '0.0.35'
 
 
 class Posclient:
@@ -103,6 +103,12 @@ class Posclient:
                 try:
                     # mempool with an "1" int value means send full mempool, unfiltered
                     await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
+                    msg = await com_helpers.async_receive(stream, self.ip)
+                    if msg.command == commands_pb2.Command.mempool:
+                        # FR: deal with that conversion more efficiently in poschain
+                        txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                        print(json.dumps(txs))
+                        return
                 except Exception as e:
                     print(e)
 

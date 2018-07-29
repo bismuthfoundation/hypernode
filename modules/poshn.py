@@ -205,11 +205,11 @@ class HnServer(TCPServer):
                     await self.node.digest_txs(msg.tx_values, full_peer)
                 except Exception as e:
                     app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
-                # TODO: use clients stats to get real since
+                # TODO: use clients stats to get real since - beware of one shot clients, send full (int_value=1)
                 txs = await self.mempool.async_since(0)
                 # TODO: filter out the tx we got from the peer also.
                 if self.verbose:
-                    app_log.info("SRV Sending back txs {}".format([tx.to_json() for tx in txs]))
+                    app_log.info("SRV Sending back txs {} to {}".format([tx.to_json() for tx in txs], full_peer))
                 # This is a list of PosMessage objects
                 await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
 
