@@ -139,19 +139,16 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="method">
 <dt id="poshn.HnServer._handle_msg">
 <code class="descname">_handle_msg</code><span class="sig-paren">(</span><em>msg</em>, <em>stream</em>, <em>peer_ip</em>, <em>peer_port</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.HnServer._handle_msg" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles a single command received by the server.</p>
+<dd><p>Async. Handles a single command received by the server.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>msg</strong> – </li>
 <li><strong>stream</strong> – </li>
 <li><strong>peer_ip</strong> – </li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
 </td>
 </tr>
 </tbody>
@@ -161,7 +158,7 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="method">
 <dt id="poshn.HnServer.handle_stream">
 <code class="descname">handle_stream</code><span class="sig-paren">(</span><em>stream</em>, <em>address</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.HnServer.handle_stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handles the lifespan of a client, from connection to end of stream</p>
+<dd><p>Async. Handles the lifespan of a client, from connection to end of stream</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -182,14 +179,29 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="method">
 <dt id="poshn.HnServer.update">
 <code class="descname">update</code><span class="sig-paren">(</span><em>url</em>, <em>stream</em>, <em>peer_ip</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.HnServer.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update process when an ‘update’ message
+from an authorized source is received.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>url</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>peer_ip</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="data">
 <dt id="poshn.MINIMUM_CONNECTIVITY">
 <code class="descclassname">poshn.</code><code class="descname">MINIMUM_CONNECTIVITY</code><em class="property"> = 2</em><a class="headerlink" href="#poshn.MINIMUM_CONNECTIVITY" title="Permalink to this definition">¶</a></dt>
-<dd><p>TCP Server Classe</p>
+<dd><p>TCP Server Class</p>
 </dd></dl>
 
 <dl class="class">
@@ -200,23 +212,15 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="method">
 <dt id="poshn.Poshn._check_round">
 <code class="descname">_check_round</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._check_round" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust round/slots depending properties.
+<dd><p>Async. Adjust round/slots depending properties.
 Always called from the manager co-routine only.
 Should not be called too often (1-10sec should be plenty)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn._consensus">
 <code class="descname">_consensus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._consensus" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the % of jurors we agree with</p>
+<dd><p>Async. Returns the % of jurors we agree with</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -230,18 +234,44 @@ Should not be called too often (1-10sec should be plenty)</p>
 <dl class="method">
 <dt id="poshn.Poshn._exchange_height">
 <code class="descname">_exchange_height</code><span class="sig-paren">(</span><em>stream</em>, <em>full_peer</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._exchange_height" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Async. Send our height info to a peer, and process his in return.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stream</strong> – </li>
+<li><strong>full_peer</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn._exchange_mempool">
 <code class="descname">_exchange_mempool</code><span class="sig-paren">(</span><em>stream</em>, <em>full_peer</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._exchange_mempool" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Async. Send our mempool to a peer, and process his in return.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>stream</strong> – </li>
+<li><strong>full_peer</strong> – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn._get_peer_stream">
 <code class="descname">_get_peer_stream</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em>, <em>temp=True</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._get_peer_stream" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a stream with communication already established.
-stream has to be closed after use.</p>
+<dd><p>Async. Return a stream with communication already established.
+Stream has to be closed after use.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -263,7 +293,7 @@ stream has to be closed after use.</p>
 <dl class="method">
 <dt id="poshn.Poshn._get_round_blocks">
 <code class="descname">_get_round_blocks</code><span class="sig-paren">(</span><em>peer</em>, <em>a_round</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._get_round_blocks" title="Permalink to this definition">¶</a></dt>
-<dd><p>Request full blocks from a full (or partial) round from a given peer</p>
+<dd><p>Async. Request full blocks from a full (or partial) round from a given peer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -284,7 +314,7 @@ stream has to be closed after use.</p>
 <dl class="method">
 <dt id="poshn.Poshn._round_sync">
 <code class="descname">_round_sync</code><span class="sig-paren">(</span><em>a_round</em>, <em>promised_height</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._round_sync" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tries to sync from a peer advertising a better chain than ours.
+<dd><p>Async. Tries to sync from a peer advertising a better chain than ours.
 BEWARE: this is only ok if the peer is a juror for the current round.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -306,16 +336,8 @@ BEWARE: this is only ok if the peer is a juror for the current round.</p>
 <dl class="method">
 <dt id="poshn.Poshn._update_network">
 <code class="descname">_update_network</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._update_network" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust peers and network properties.
+<dd><p>Async. Adjust peers and network properties, calc _consensus()
 Always called from the manager co-routine only.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
@@ -327,14 +349,11 @@ This is called only after initial exchange and approval.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ip</strong> – </li>
 <li><strong>port</strong> – </li>
 <li><strong>properties</strong> – </li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
 </td>
 </tr>
 </tbody>
@@ -344,14 +363,12 @@ This is called only after initial exchange and approval.</p>
 <dl class="method">
 <dt id="poshn.Poshn.change_state_to">
 <code class="descname">change_state_to</code><span class="sig-paren">(</span><em>new_state</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.change_state_to" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets new status and logs change.</p>
+<dd><p>Async. Sets new status and logs change.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_state</strong> – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -360,15 +377,13 @@ This is called only after initial exchange and approval.</p>
 <dl class="method">
 <dt id="poshn.Poshn.client_worker">
 <code class="descname">client_worker</code><span class="sig-paren">(</span><em>peer</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.client_worker" title="Permalink to this definition">¶</a></dt>
-<dd><p>Client worker, running in a coroutine.
+<dd><p>Async. Client worker, running in a co-routine.
 Tries to connect to the given peer, terminates on error and deletes itself on close.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> – (‘aa012345678901aa’, ‘127.0.0.1’, 6969, 1)</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -382,12 +397,12 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <dl class="method">
 <dt id="poshn.Poshn.connect">
 <code class="descname">connect</code><span class="sig-paren">(</span><em>connect=True</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initiate outgoing connections</p>
+<dd><p>Set the “Shall I try to connect?” flag</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connect</strong> – </td>
 </tr>
 </tbody>
 </table>
@@ -396,14 +411,33 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <dl class="method">
 <dt id="poshn.Poshn.digest_height">
 <code class="descname">digest_height</code><span class="sig-paren">(</span><em>height_proto</em>, <em>full_peer</em>, <em>server=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.digest_height" title="Permalink to this definition">¶</a></dt>
-<dd><table class="docutils field-list" frame="void" rules="none">
+<dd><p>Async. Update inner properties with distant peer height info.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>height_proto</strong> – protobuff structure</li>
+<li><strong>full_peer</strong> – </li>
+<li><strong>server</strong> – comes from the server (inbound) or client (outbound) side?</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poshn.Poshn.digest_txs">
+<code class="descname">digest_txs</code><span class="sig-paren">(</span><em>txs</em>, <em>peer_ip</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.digest_txs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Checks tx and digest if they are new.</p>
+<table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>height_proto</strong> – protobuff structure</li>
-<li><strong>full_peer</strong> – </li>
-<li><strong>server</strong> – comes from the server (inbound) or client (outbound) side?</li>
+<li><strong>txs</strong> – </li>
+<li><strong>peer_ip</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -415,39 +449,23 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 </dd></dl>
 
 <dl class="method">
-<dt id="poshn.Poshn.digest_txs">
-<code class="descname">digest_txs</code><span class="sig-paren">(</span><em>txs</em>, <em>peer_ip</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.digest_txs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks tx and digest if they are new
-:param txs:
-:param peer_ip:
-:return:</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="poshn.Poshn.forge">
 <code class="descname">forge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.forge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Consensus has been reached, we are forger, forge and send block</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dd><p>Async. Consensus has been reached, we are forger, forge and send block.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.hello_string">
 <code class="descname">hello_string</code><span class="sig-paren">(</span><em>temp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.hello_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>Builds up the hello string</p>
+<dd><p>Builds up the hello string.
+common.POSNET + str(port).zfill(5) + self.address</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> – True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">string</td>
 </tr>
 </tbody>
 </table>
@@ -461,54 +479,36 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <dl class="method">
 <dt id="poshn.Poshn.init_check">
 <code class="descname">init_check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.init_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initial coherence check
+<dd><p>Initial coherence check. Raise on non coherent info.
 #&nbsp;FR: more checks</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.init_log">
 <code class="descname">init_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.init_log" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Initialize the log related objects.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.manager">
 <code class="descname">manager</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.manager" title="Permalink to this definition">¶</a></dt>
-<dd><p>Manager thread. Responsible for managing inner state of the node.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dd><p>Async Manager thread. Responsible for managing inner state of the node.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.post_block">
 <code class="descname">post_block</code><span class="sig-paren">(</span><em>proto_block</em>, <em>peer_ip</em>, <em>peer_port</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.post_block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Co routine to send the block we forged to a given peer
+<dd><p>Async. Send the block we forged to a given peer
 Should we use threads instead and a simpler tcp client? Perfs to be tested.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>proto_block</strong> – a protobuf block</li>
 <li><strong>peer_ip</strong> – the peer ip</li>
 <li><strong>peer_port</strong> – the peer port</li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
 </td>
 </tr>
 </tbody>
@@ -518,32 +518,22 @@ Should we use threads instead and a simpler tcp client? Perfs to be tested.</p>
 <dl class="method">
 <dt id="poshn.Poshn.refresh_last_block">
 <code class="descname">refresh_last_block</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.refresh_last_block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fetch fresh info from the PoS chain</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dd><p>Async. Fetch fresh info from the PoS chain.
+Update the inner properties.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.remove_inbound">
 <code class="descname">remove_inbound</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.remove_inbound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Safely remove a distant peer from server co-routine</p>
+<dd><p>Safely remove a distant peer from server co-routine.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ip</strong> – </li>
 <li><strong>port</strong> – </li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
 </td>
 </tr>
 </tbody>
@@ -553,22 +543,14 @@ Should we use threads instead and a simpler tcp client? Perfs to be tested.</p>
 <dl class="method">
 <dt id="poshn.Poshn.serve">
 <code class="descname">serve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.serve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the socket server.
+<dd><p>Run the Tornado socket server.
 Once we called that, the calling thread is stopped until the server closes.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn.status">
 <code class="descname">status</code><span class="sig-paren">(</span><em>log=True</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.status" title="Permalink to this definition">¶</a></dt>
-<dd><p>Assemble and store the node status as a dict.</p>
+<dd><p>Async. Assemble and store the node status as a dict.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -582,15 +564,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dl class="method">
 <dt id="poshn.Poshn.stop">
 <code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Signal to stop cleanly</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+<dd><p>Signal to stop cleanly.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -601,19 +575,16 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dl class="method">
 <dt id="poshn.Poshn.update_inbound">
 <code class="descname">update_inbound</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em>, <em>properties</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.update_inbound" title="Permalink to this definition">¶</a></dt>
-<dd><p>Safely update info for a connected peer</p>
+<dd><p>Safely update info for a connected peer.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>ip</strong> – </li>
 <li><strong>port</strong> – </li>
 <li><strong>properties</strong> – </li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
 </td>
 </tr>
 </tbody>

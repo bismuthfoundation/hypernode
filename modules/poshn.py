@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.76'
+__version__ = '0.0.77'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -68,7 +68,7 @@ MINIMUM_CONNECTIVITY = 2
 
 
 """
-TCP Server Classe
+TCP Server Class
 """
 
 
@@ -83,7 +83,7 @@ class HnServer(TCPServer):
 
     async def handle_stream(self, stream, address):
         """
-        Handles the lifespan of a client, from connection to end of stream
+        Async. Handles the lifespan of a client, from connection to end of stream
 
         :param stream:
         :param address:
@@ -167,12 +167,11 @@ class HnServer(TCPServer):
 
     async def _handle_msg(self, msg, stream, peer_ip, peer_port):
         """
-        Handles a single command received by the server.
+        Async. Handles a single command received by the server.
 
         :param msg:
         :param stream:
         :param peer_ip:
-        :return:
         """
         global access_log
         if self.verbose:
@@ -264,34 +263,42 @@ class HnServer(TCPServer):
             raise
 
     async def update(self, url, stream, peer_ip):
-            app_log.info('Checking version from {}'.format(url))
-            version_url = url + 'version.txt'
-            try:
-                version = requests.get(version_url).text.strip()
-                # compare to our version
-                if LooseVersion(__version__) < LooseVersion(version):
-                    app_log.info("Newer {} version, updating.".format(version))
-                    # fetch archive and extract
-                    common.update_source(url + "hnd.tgz", app_log)
-                    # FR: bootstrap db on condition or other message ?
-                    await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
-                    # restart
-                    args = sys.argv[:]
-                    app_log.warning('Re-spawning {}'.format(' '.join(args)))
-                    args.insert(0, sys.executable)
-                    if sys.platform == 'win32':
-                        args = ['"%s"' % arg for arg in args]
-                    os.execv(sys.executable, args)
-                    self.node.stop()
-                else:
-                    msg = "Keeping our {} version vs distant {}".format(__version__, version)
-                    app_log.info(msg)
-                    await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
-            except Exception as e:
-                app_log.error("Error {} updating from {}".format(e, url))
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+        """
+        Update process when an 'update' message
+        from an authorized source is received.
+
+        :param url:
+        :param stream:
+        :param peer_ip:
+        """
+        app_log.info('Checking version from {}'.format(url))
+        version_url = url + 'version.txt'
+        try:
+            version = requests.get(version_url).text.strip()
+            # compare to our version
+            if LooseVersion(__version__) < LooseVersion(version):
+                app_log.info("Newer {} version, updating.".format(version))
+                # fetch archive and extract
+                common.update_source(url + "hnd.tgz", app_log)
+                # FR: bootstrap db on condition or other message ?
+                await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
+                # restart
+                args = sys.argv[:]
+                app_log.warning('Re-spawning {}'.format(' '.join(args)))
+                args.insert(0, sys.executable)
+                if sys.platform == 'win32':
+                    args = ['"%s"' % arg for arg in args]
+                os.execv(sys.executable, args)
+                self.node.stop()
+            else:
+                msg = "Keeping our {} version vs distant {}".format(__version__, version)
+                app_log.info(msg)
+                await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
+        except Exception as e:
+            app_log.error("Error {} updating from {}".format(e, url))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
 
 """
@@ -331,6 +338,19 @@ class Poshn:
 
     def __init__(self, ip, port, address='', peers=None, verbose=False,
                  wallet="poswallet.json", datadir="data", suffix='', version=''):
+        """
+        TODO
+
+        :param ip:
+        :param port:
+        :param address:
+        :param peers:
+        :param verbose:
+        :param wallet:
+        :param datadir:
+        :param suffix:
+        :param version:
+        """
         global app_log
         global access_log
         self.ip = ip
@@ -388,6 +408,9 @@ class Poshn:
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
     def init_log(self):
+        """
+        Initialize the log related objects.
+        """
         global app_log
         global access_log
         if common.DEBUG:
@@ -421,7 +444,6 @@ class Poshn:
         :param ip:
         :param port:
         :param properties:
-        :return:
         """
         ip = '{}:{}'.format(ip, port)
         with self.inbound_lock:
@@ -429,11 +451,10 @@ class Poshn:
 
     def remove_inbound(self, ip, port):
         """
-        Safely remove a distant peer from server co-routine
+        Safely remove a distant peer from server co-routine.
 
         :param ip:
         :param port:
-        :return:
         """
         try:
             with self.inbound_lock:
@@ -446,16 +467,14 @@ class Poshn:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
-            pass
 
     def update_inbound(self, ip, port, properties):
         """
-        Safely update info for a connected peer
+        Safely update info for a connected peer.
 
         :param ip:
         :param port:
         :param properties:
-        :return:
         """
         ip = '{}:{}'.format(ip, port)
         with self.inbound_lock:
@@ -463,9 +482,7 @@ class Poshn:
 
     def stop(self):
         """
-        Signal to stop cleanly
-
-        :return:
+        Signal to stop cleanly.
         """
         global app_log
         app_log.info("Trying to close nicely...")
@@ -481,9 +498,7 @@ class Poshn:
 
     async def manager(self):
         """
-        Manager thread. Responsible for managing inner state of the node.
-
-        :return:
+        Async Manager thread. Responsible for managing inner state of the node.
         """
         global app_log
         global MINIMUM_CONNECTIVITY
@@ -596,10 +611,9 @@ class Poshn:
 
     async def change_state_to(self, new_state):
         """
-        Sets new status and logs change.
+        Async. Sets new status and logs change.
 
         :param new_state:
-        :return:
         """
         self.state = new_state
         if self.verbose:
@@ -607,7 +621,7 @@ class Poshn:
 
     async def _consensus(self):
         """
-        Returns the % of jurors we agree with
+        Async. Returns the % of jurors we agree with
 
         :return: double
         """
@@ -702,7 +716,7 @@ class Poshn:
 
     async def _round_sync(self, a_round, promised_height):
         """
-        Tries to sync from a peer advertising a better chain than ours.
+        Async. Tries to sync from a peer advertising a better chain than ours.
         BEWARE: this is only ok if the peer is a juror for the current round.
 
         :param a_round: Round # to fetch
@@ -753,7 +767,7 @@ class Poshn:
 
     async def _get_round_blocks(self, peer, a_round):
         """
-        Request full blocks from a full (or partial) round from a given peer
+        Async. Request full blocks from a full (or partial) round from a given peer.
 
         :param peer:
         :param a_round:
@@ -790,9 +804,8 @@ class Poshn:
 
     async def refresh_last_block(self):
         """
-        Fetch fresh info from the PoS chain
-
-        :return:
+        Async. Fetch fresh info from the PoS chain.
+        Update the inner properties.
         """
         last_block = await self.poschain.last_block()
         self.last_height, self.previous_hash = last_block['height'], last_block['block_hash']
@@ -800,7 +813,8 @@ class Poshn:
 
     async def digest_txs(self, txs, peer_ip):
         """
-        Checks tx and digest if they are new
+        Async. Checks tx and digest if they are new.
+
         :param txs:
         :param peer_ip:
         :return:
@@ -819,11 +833,11 @@ class Poshn:
 
     async def digest_height(self, height_proto, full_peer, server=False):
         """
+        Async. Update inner properties with distant peer height info.
 
         :param height_proto: protobuff structure
         :param full_peer:
         :param server: comes from the server (inbound) or client (outbound) side?
-        :return:
         """
         try:
             height = posblock.PosHeight().from_proto(height_proto)
@@ -839,15 +853,13 @@ class Poshn:
 
     async def post_block(self, proto_block, peer_ip, peer_port):
         """
-        Co routine to send the block we forged to a given peer
+        Async. Send the block we forged to a given peer
         Should we use threads instead and a simpler tcp client? Perfs to be tested.
 
         :param proto_block: a protobuf block
         :param peer_ip: the peer ip
         :param peer_port: the peer port
-        :return: None
         """
-        global app_log
         if self.verbose:
             app_log.info("Sending block to {}:{}".format(peer_ip, peer_port))
         try:
@@ -860,11 +872,8 @@ class Poshn:
 
     async def forge(self):
         """
-        Consensus has been reached, we are forger, forge and send block
-
-        :return:
+        Async. Consensus has been reached, we are forger, forge and send block.
         """
-        global app_log
         try:
             await self.refresh_last_block()
             # check last round and SIR, make sure they are >
@@ -914,10 +923,11 @@ class Poshn:
 
     def hello_string(self, temp=False):
         """
-        Builds up the hello string
+        Builds up the hello string.
+        common.POSNET + str(port).zfill(5) + self.address
 
         :param temp: True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.
-        :return:
+        :return: string
         """
         if temp:
             port = 0
@@ -927,8 +937,8 @@ class Poshn:
 
     async def _get_peer_stream(self, ip, port, temp=True):
         """
-        Returns a stream with communication already established.
-        stream has to be closed after use.
+        Async. Return a stream with communication already established.
+        Stream has to be closed after use.
 
         :param ip: 127.0.0.1
         :param port: 6969
@@ -969,15 +979,11 @@ class Poshn:
 
     async def client_worker(self, peer):
         """
-        Client worker, running in a coroutine.
+        Async. Client worker, running in a co-routine.
         Tries to connect to the given peer, terminates on error and deletes itself on close.
 
         :param peer: ('aa012345678901aa', '127.0.0.1', 6969, 1)
-        :return:
         """
-        global app_log
-        global LTIMEOUT
-        # ip = peer[1]
         full_peer = common.peer_to_fullpeer(peer)
         stream = None
         try:
@@ -1124,7 +1130,12 @@ class Poshn:
                 pass
 
     async def _exchange_height(self, stream, full_peer):
-        global app_log
+        """
+        Async. Send our height info to a peer, and process his in return.
+
+        :param stream:
+        :param full_peer:
+        """
         # FR: do not send if our height did not change since the last time. Will spare net resources.
         if self.verbose:
             app_log.info("Sending height to {}".format(full_peer))
@@ -1142,7 +1153,12 @@ class Poshn:
             app_log.warning("Error {} digesting height from {}".format(e, full_peer))
 
     async def _exchange_mempool(self, stream, full_peer):
-        global app_log
+        """
+        Async. Send our mempool to a peer, and process his in return.
+
+        :param stream:
+        :param full_peer:
+        """
         if self.verbose:
             app_log.info("Sending mempool to {}".format(full_peer))
         txs = await self.mempool.async_since(self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL])
@@ -1161,10 +1177,8 @@ class Poshn:
 
     async def _update_network(self):
         """
-        Adjust peers and network properties.
+        Async. Adjust peers and network properties, calc _consensus()
         Always called from the manager co-routine only.
-
-        :return:
         """
         inbound_count = len(self.inbound)
         clients_count = 0
@@ -1181,13 +1195,10 @@ class Poshn:
 
     async def _check_round(self):
         """
-        Adjust round/slots depending properties.
+        Async. Adjust round/slots depending properties.
         Always called from the manager co-routine only.
         Should not be called too often (1-10sec should be plenty)
-
-        :return:
         """
-        global app_log
         self.round, self.sir = determine.timestamp_to_round_slot(time.time())
 
         if (self.sir != self.previous_sir) or (self.round != self.previous_round):
@@ -1226,12 +1237,9 @@ class Poshn:
 
     def serve(self):
         """
-        Run the socket server.
+        Run the Tornado socket server.
         Once we called that, the calling thread is stopped until the server closes.
-
-        :return:
         """
-        global app_log
         loop = asyncio.get_event_loop()
         if common.DEBUG:
             loop.set_debug(True)
@@ -1268,19 +1276,18 @@ class Poshn:
 
     def connect(self, connect=True):
         """
-        Initiate outgoing connections
+        Set the "Shall I try to connect?" flag
 
-        :return:
+        :param connect:
         """
         self.connecting = connect
         # Will be handled by the manager.
 
     async def init_check(self):
         """
-        Initial coherence check
+        Initial coherence check. Raise on non coherent info.
         # FR: more checks
 
-        :return:
         """
         app_log.info("Initial coherence check")
         try:
@@ -1303,7 +1310,7 @@ class Poshn:
 
     async def status(self, log=True):
         """
-        Assemble and store the node status as a dict.
+        Async. Assemble and store the node status as a dict.
 
         :return: HN Status info
         """
