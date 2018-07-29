@@ -9,6 +9,7 @@ import sys
 from tornado.tcpclient import TCPClient
 # import asyncio
 import json
+import time
 
 import common
 import com_helpers
@@ -16,15 +17,16 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.32'
+__version__ = '0.0.33'
 
 
 class Posclient:
 
-    def __init__(self, ip, port, verbose=False, wallet="poswallet.json"):
+    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version=''):
         self.ip = ip
         self.port = port
         self.verbose = verbose
+        self.client_version = version
         poscrypto.load_keys(wallet, verbose=self.verbose)
 
     async def action(self, action='hello', param=''):
@@ -68,7 +70,10 @@ class Posclient:
                 await com_helpers.async_send_void(commands_pb2.Command.status, stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.status:
-                    print(msg.string_value)
+                    status = json.loads(msg.string_value)
+                    status['client'] = {"version": self.client_version, "lib_version": __version__, "localtime":time.time()}
+                    # print(msg.string_value)
+                    print(json.dumps(status))
                     return
 
             if 'tx' == action:

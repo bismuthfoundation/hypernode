@@ -27,7 +27,7 @@ from poschain import SqlitePosChain
 import poscrypto
 import com_helpers
 
-__version__ = '0.0.5'
+__version__ = '0.0.51'
 
 
 if __name__ == "__main__":
@@ -67,7 +67,7 @@ if __name__ == "__main__":
                 address = "BAnNdHZSWBJxEya5o33Qbqrzg1m13GZmxy"  # TODO: take from wallet
                 suffix=''
             com_helpers.MY_NODE = Poshn(ip, port, address=address, peers=peers, verbose = args.verbose,
-                                        wallet=wallet_name, datadir=datadir, suffix=suffix)
+                                        wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:

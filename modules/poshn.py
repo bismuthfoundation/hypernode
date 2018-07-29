@@ -182,7 +182,9 @@ class HnServer(TCPServer):
             #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
             # TODO: rights management
             if msg.command == commands_pb2.Command.status:
+                self.node.my_status['instance']['localtime'] = time.time()
                 status = json.dumps(self.node.my_status)
+                del self.node.my_status['instance']['localtime']
                 await async_send_string(commands_pb2.Command.status, status, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.tx:
@@ -321,7 +323,7 @@ class Poshn:
     stop_event = aioprocessing.AioEvent()  # FR: Move these to instance prop?
 
     def __init__(self, ip, port, address='', peers=None, verbose=False,
-                 wallet="poswallet.json", datadir="data", suffix=''):
+                 wallet="poswallet.json", datadir="data", suffix='', version=''):
         global app_log
         global access_log
         self.ip = ip
@@ -333,6 +335,8 @@ class Poshn:
         self.server = None
         self.state = HNState.START
         self.datadir = datadir
+        # The version of the instance runner, hn_instance
+        self.client_version = version
         # Helps id the instance for multi-instances dev and unique log files.
         self.suffix = suffix
         # Used when round syncing, to save previous state and our expectations about the end result.
@@ -1300,6 +1304,7 @@ class Poshn:
         poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
+                  'instance': {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
                   'chain': poschain_status,
                   'mempool': mempool_status,
                   'peers': {

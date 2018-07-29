@@ -14,6 +14,13 @@ Example:
 Basic Command line arguments
 ============================
 
+Prefer long params to short ones to avoid lower/upper case mismatch.
+
+``-V`` , ``--version`` (optional, default=False)
+------------------------------------------------
+Report client version, does not connect.
+
+
 ``-i`` , ``--index`` (optional, default=0)
 ------------------------------------------
 Instance index to connect to.
@@ -130,15 +137,19 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.51'
+
+DESC = 'Bismuth Hypernode client'
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS client')
+    parser = argparse.ArgumentParser(description=DESC)
     parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4]')
     parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='HN Host to connect to (127.0.0.1)')
     parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
+
+    parser.add_argument("-V", "--version", action="count", default=False, help='Show version')
 
     parser.add_argument("--action", type=str, default=None,
                         help='Specific action. hello, ping, status, block, tx, address_txs, mempool, txtest.')
@@ -147,9 +158,14 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit()
+    if args.version:
+        print(DESC)
+        print("Client version {}".format(__version__))
+        print("Client Lib version {}".format(posclient.__version__))
+        sys.exit()
     try:
         com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="mn_temp/mn{}.json".format(args.index),
-                                                  verbose=args.verbose)
+                                                  verbose=args.verbose, version=__version__)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))
 
