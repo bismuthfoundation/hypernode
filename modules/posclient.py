@@ -17,7 +17,7 @@ import poscrypto
 import posblock
 import commands_pb2
 
-__version__ = '0.0.33'
+__version__ = '0.0.34'
 
 
 class Posclient:
@@ -41,6 +41,7 @@ class Posclient:
             if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
+            # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
             stream = await tcp_client.connect(self.ip, self.port)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
             await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + '00101' + poscrypto.ADDRESS,
@@ -72,13 +73,21 @@ class Posclient:
                 if msg.command == commands_pb2.Command.status:
                     status = json.loads(msg.string_value)
                     status['client'] = {"version": self.client_version, "lib_version": __version__, "localtime":time.time()}
-                    # print(msg.string_value)
+                    # FR: could add times to connect, hello and end to end in  here too.
                     print(json.dumps(status))
                     return
 
             if 'tx' == action:
-                # TODO
-                return
+                await com_helpers.async_send_string(commands_pb2.Command.gettx, str(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.gettx:
+                    if msg.tx_values:
+                        txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                        print(json.dumps(txs))
+                        return
+                    else:
+                        print('false')
+                    return
 
             if 'address_txs' == action:
                 await com_helpers.async_send_string(commands_pb2.Command.getaddtxs, str(param), stream, self.ip)

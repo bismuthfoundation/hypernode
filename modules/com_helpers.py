@@ -1,3 +1,7 @@
+"""
+Communication helper utils for Bismuth Hypernodes
+=================================================
+"""
 import struct
 import time
 

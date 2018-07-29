@@ -99,7 +99,17 @@
 </div>
 <div class="section" id="action-status">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=status</span></code><a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
-<p>Returns full Hypernode status as a Json string</p>
+<p>Returns full Hypernode status as a Json string,
+as well as client version in a dedicated “client” section.</p>
+<p>Sample output:</p>
+<p><code class="docutils literal notranslate"><span class="pre">{&quot;config&quot;:</span> <span class="pre">{&quot;address&quot;:</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;ip&quot;:</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">&quot;port&quot;:</span> <span class="pre">6969,</span> <span class="pre">&quot;verbose&quot;:</span> <span class="pre">1},</span>
+<span class="pre">&quot;instance&quot;:</span> <span class="pre">{&quot;version&quot;:</span> <span class="pre">&quot;0.0.51&quot;,</span> <span class="pre">&quot;hn_version&quot;:</span> <span class="pre">&quot;0.0.75&quot;,</span> <span class="pre">&quot;statustime&quot;:</span> <span class="pre">1532851042,</span> <span class="pre">&quot;localtime&quot;:</span> <span class="pre">1532851046.703249},</span>
+<span class="pre">&quot;chain&quot;:</span> <span class="pre">{&quot;block_height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;Genesis&quot;:</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">6420,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;a7a4b32406584b54bd30bacbe0457583a2d84492&quot;,</span> <span class="pre">&quot;uniques&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;uniques_round&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;forgers&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;forgers_round&quot;:</span> <span class="pre">2},</span>
+<span class="pre">&quot;mempool&quot;:</span> <span class="pre">{&quot;NB&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;SENDERS&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;RECIPIENTS&quot;:</span> <span class="pre">0},</span>
+<span class="pre">&quot;peers&quot;:</span> <span class="pre">{&quot;connected_count&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;outbound&quot;:</span> <span class="pre">[&quot;127.0.0.1:06971&quot;],</span> <span class="pre">&quot;inbound&quot;:</span> <span class="pre">[&quot;127.0.0.1:06971&quot;],</span>
+<span class="pre">&quot;net_height&quot;:</span> <span class="pre">{&quot;height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">6420,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;a7a4b32406584b54bd30bacbe0457583a2d84492&quot;,</span> <span class="pre">&quot;uniques&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;uniques_round&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;forgers&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;forgers_round&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;count&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;peers&quot;:</span> <span class="pre">[&quot;127.0.0.1:06971&quot;]}},</span>
+<span class="pre">&quot;state&quot;:</span> <span class="pre">{&quot;state&quot;:</span> <span class="pre">&quot;START&quot;,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">8693,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;forger&quot;:</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;},</span>
+<span class="pre">&quot;client&quot;:</span> <span class="pre">{&quot;version&quot;:</span> <span class="pre">&quot;0.0.51&quot;,</span> <span class="pre">&quot;lib_version&quot;:</span> <span class="pre">&quot;0.0.33&quot;,</span> <span class="pre">&quot;localtime&quot;:</span> <span class="pre">1532851046.7035139}}</span></code></p>
 </div>
 <div class="section" id="action-block-param-block-height">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=block</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
@@ -140,15 +150,27 @@ Param is the address, and an optional extra param after a comma
 </pre></div>
 </div>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">todo</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">[[&quot;8bdc804328d9e8ac097fb2b2f...053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
+<span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...dc72e7da47b2967&quot;,</span> <span class="pre">1532850901],</span>
+<span class="pre">[&quot;34371d12bb6c249e899e97...ca74987b1589c0522&quot;,</span> <span class="pre">54,</span> <span class="pre">1528382155,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
+<span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...dc72e7da47b2967&quot;,</span> <span class="pre">1532850901]]</span></code></p>
+</div>
+<div class="section" id="action-tx-param-tx-signature">
+<h4><code class="docutils literal notranslate"><span class="pre">--action=tx</span> <span class="pre">--param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
+<p>Returns full detail of transaction matching the signature.
+(the signature is the transaction id)
+Returns <cite>false</cite> if the signature was not found.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=tx --param=8bdc804328d9e8ac097fb2b2f53ca5902e28f21423f1db87f4ab39a970176c6d4bb33e24b75200438a49f8308e4f6addf471b6e6591c091da5053a53f0dffe1f
+</pre></div>
+</div>
+<p>Sample output:</p>
+<p><code class="docutils literal notranslate"><span class="pre">[[&quot;8bdc804328d9...da5053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde597279cde...7da47b2967&quot;,</span> <span class="pre">1532854630]]</span></code></p>
+<p><em>FR:</em> add ,dict to get as a dict() and not a list() , or convert to dict client side
+<em>FR:</em> also returns details of the block it’s in</p>
 </div>
 <div class="section" id="action-address">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=address</span></code><a class="headerlink" href="#action-address" title="Permalink to this headline">¶</a></h4>
 <p>TODO - Info and stats about a PoS address</p>
-</div>
-<div class="section" id="action-tx-param-tx-signature">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=tx</span> <span class="pre">param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
-<p>WIP - Returns detail of the given transaction</p>
 </div>
 <div class="section" id="action-mempool">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=mempool</span></code><a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>

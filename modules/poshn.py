@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.75'
+__version__ = '0.0.76'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -94,6 +94,7 @@ class HnServer(TCPServer):
         peer_ip, fileno = address
         peer_port = '00000'
         access_log.info("SRV: Incoming connection from {}".format(peer_ip))
+        remove = False  # So we do not remove inbound info for temp "block" command.
         # TODO: here, use tiered system to reserve safe slots for jurors,
         # some slots for non juror hns, and some others for other clients (non hn clients)
         try:
@@ -115,6 +116,7 @@ class HnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.hello, self.node.hello_string(), stream, peer_ip)
                 # Add the peer to inbound list
                 self.node.add_inbound(peer_ip, peer_port, {'hello': msg.string_value})
+                remove = True
 
             elif msg.command == commands_pb2.Command.block:
                 # block sending does not require hello
@@ -160,7 +162,8 @@ class HnServer(TCPServer):
             return
 
         finally:
-            self.node.remove_inbound(peer_ip, peer_port)
+            if remove:
+                self.node.remove_inbound(peer_ip, peer_port)
 
     async def _handle_msg(self, msg, stream, peer_ip, peer_port):
         """
@@ -235,6 +238,10 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.getaddtxs:
                 txs = await self.node.poschain.async_getaddtxs(msg.string_value)
                 await async_send_block(txs, stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.gettx:
+                tx = await self.node.poschain.async_gettx(msg.string_value)
+                await async_send_block(tx, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.update:
                 # TODO: rights/auth and config management

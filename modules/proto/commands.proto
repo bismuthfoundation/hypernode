@@ -93,6 +93,7 @@ message Command {
         // Question comes with a string, answer with tx_value.
         // Will only give at most 100 txs in a batch at most.
         // Optionnal starting block height or starting signature is added in the string after a comma : address,50
+        gettx = 16; // ask the full details of a specific tx by its signature (sent as hex encode in string_value). Returns tx in tx_values
     }
     required Type command = 1;
 

@@ -917,6 +917,23 @@ returns the block of the given height.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="poschain.SqlitePosChain.async_gettx">
+<code class="descname">async_gettx</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_gettx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command id 16
+returns the tx or empty protocmd.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> – str: a transaction signature</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the tx or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poschain.SqlitePosChain.async_roundblocks">
 <code class="descname">async_roundblocks</code><span class="sig-paren">(</span><em>a_round</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_roundblocks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Command id 13

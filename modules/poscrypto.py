@@ -51,6 +51,7 @@ def hex_to_raw(hex_str):
     :return:
     """
     bytes_array = []
+    # remove extra formatting zeroes that may be there
     hex_str = ''.join(hex_str.split(" "))
     for i in range(0, len(hex_str), 2):
         # bytes_array.append(chr(int(hex_str[i:i + 2], 16)))

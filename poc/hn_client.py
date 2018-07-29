@@ -52,7 +52,19 @@ Commands are issued via ``--action`` and ``--param`` command line switches.
 
 ``--action=status``
 -------------------
-Returns full Hypernode status as a Json string
+Returns full Hypernode status as a Json string,
+as well as client version in a dedicated "client" section.
+
+Sample output:
+
+``{"config": {"address": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "ip": "127.0.0.1", "port": 6969, "verbose": 1},
+"instance": {"version": "0.0.51", "hn_version": "0.0.75", "statustime": 1532851042, "localtime": 1532851046.703249},
+"chain": {"block_height": 3631, "Genesis": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "height": 3631, "round": 6420, "sir": 1, "block_hash": "a7a4b32406584b54bd30bacbe0457583a2d84492", "uniques": 4, "uniques_round": 0, "forgers": 4, "forgers_round": 2},
+"mempool": {"NB": 0, "SENDERS": 0, "RECIPIENTS": 0},
+"peers": {"connected_count": 1, "outbound": ["127.0.0.1:06971"], "inbound": ["127.0.0.1:06971"],
+"net_height": {"height": 3631, "round": 6420, "sir": 1, "block_hash": "a7a4b32406584b54bd30bacbe0457583a2d84492", "uniques": 0, "uniques_round": 0, "forgers": 4, "forgers_round": 2, "count": 1, "peers": ["127.0.0.1:06971"]}},
+"state": {"state": "START", "round": 8693, "sir": 1, "forger": "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH"},
+"client": {"version": "0.0.51", "lib_version": "0.0.33", "localtime": 1532851046.7035139}}``
 
 ``--action=block --param=block_height``
 ---------------------------------------
@@ -100,17 +112,31 @@ extra can be
 
 Sample output:
 
-``todo``
+``[["8bdc804328d9e8ac097fb2b2f...053a53f0dffe1f", 53, 1528381933, "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH",
+0, "", 1, "2275e088ef7dde5972...dc72e7da47b2967", 1532850901],
+["34371d12bb6c249e899e97...ca74987b1589c0522", 54, 1528382155, "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH",
+0, "", 1, "2275e088ef7dde5972...dc72e7da47b2967", 1532850901]]``
 
+``--action=tx --param=tx_signature``
+---------------------------------------
+Returns full detail of transaction matching the signature.
+(the signature is the transaction id)
+Returns `false` if the signature was not found.
+
+.. code-block:: text
+
+  python3 hn_client.py --action=tx --param=8bdc804328d9e8ac097fb2b2f53ca5902e28f21423f1db87f4ab39a970176c6d4bb33e24b75200438a49f8308e4f6addf471b6e6591c091da5053a53f0dffe1f
+
+Sample output:
+
+``[["8bdc804328d9...da5053a53f0dffe1f", 53, 1528381933, "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 0, "", 1, "2275e088ef7dde597279cde...7da47b2967", 1532854630]]``
+
+*FR:* add ,dict to get as a dict() and not a list() , or convert to dict client side
+*FR:* also returns details of the block it's in
 
 ``--action=address``
 --------------------
 TODO - Info and stats about a PoS address
-
-
-``--action=tx param=tx_signature``
-----------------------------------
-WIP - Returns detail of the given transaction
 
 
 ``--action=mempool``
@@ -137,7 +163,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.51'
+__version__ = '0.0.5'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -163,6 +189,9 @@ if __name__ == "__main__":
         print("Client version {}".format(__version__))
         print("Client Lib version {}".format(posclient.__version__))
         sys.exit()
+    if args.verbose:
+        print("Client version {}".format(__version__))
+        print("Client Lib version {}".format(posclient.__version__))
     try:
         com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="mn_temp/mn{}.json".format(args.index),
                                                   verbose=args.verbose, version=__version__)

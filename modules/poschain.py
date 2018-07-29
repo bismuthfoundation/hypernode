@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.61'
+__version__ = '0.0.62'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -750,6 +750,32 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         except Exception as e:
             self.app_log.error("SRV: async_getaddtxs: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            raise
+
+    async def async_gettx(self, params):
+        """
+        Command id 16
+        returns the tx or empty protocmd.
+
+        :param params: str: a transaction signature
+        :return: protocmd with the tx or None
+        """
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.gettx
+            txid = poscrypto.hex_to_raw(str(params))
+            tx = await self.async_fetchone(SQL_TX_FOR_TXID, (sqlite3.Binary(txid),), as_dict=True)
+            if tx:
+                tx = PosMessage().from_dict(dict(tx))
+                tx.add_to_proto(protocmd)
+            return protocmd
+
+        except Exception as e:
+            self.app_log.error("SRV: async_gettx: Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
