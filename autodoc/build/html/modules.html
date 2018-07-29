@@ -49,7 +49,7 @@
 </div>
 <div class="section" id="poshn-core-hypernode-class">
 <h1>poshn - core hypernode class<a class="headerlink" href="#poshn-core-hypernode-class" title="Permalink to this headline">¶</a></h1>
-<p>The Core Hypernode server class</p>
+<p>The Core Hypernode server class.</p>
 <span class="target" id="module-poshn"></span><p>Pos Hypernode class for Bismuth Cryptocurrency
 Tornado based</p>
 <dl class="docutils">
@@ -625,7 +625,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 </div>
 <div class="section" id="poschain-pos-chain-abstraction-class">
 <h1>poschain - PoS chain abstraction class<a class="headerlink" href="#poschain-pos-chain-abstraction-class" title="Permalink to this headline">¶</a></h1>
-<p>An abstraction class used by poshn</p>
+<p>An abstraction class used by poshn.</p>
 <span class="target" id="module-poschain"></span><p>A Safe thread/process object interfacing the PoS chain</p>
 <dl class="class">
 <dt id="poschain.MemoryPosChain">
@@ -822,7 +822,7 @@ Does not modify the chain, can be used on existing current round to check validi
 <dl class="class">
 <dt id="poschain.SqlitePosChain">
 <em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">SqlitePosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='data/'</em>, <em>app_log=None</em>, <em>mempool=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></p>
+<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
 <dl class="method">
 <dt id="poschain.SqlitePosChain._height_status">
 <code class="descname">_height_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain._height_status" title="Permalink to this definition">¶</a></dt>
@@ -1034,6 +1034,1088 @@ The caller is responsible for updating state if necessary</p>
 </dd></dl>
 
 </div>
+<div class="section" id="posblock-pos-block-abstraction-class">
+<h1>posblock - PoS block abstraction class<a class="headerlink" href="#posblock-pos-block-abstraction-class" title="Permalink to this headline">¶</a></h1>
+<p>An abstraction class used by poschain.</p>
+<span class="target" id="module-posblock"></span><p>An object representing a PoS block and its transaction
+Allow for different formats: json, dict, raw, protobuf
+and conversion between them all.</p>
+<dl class="class">
+<dt id="posblock.PosBlock">
+<em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosBlock</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="posblock.PosBlock.add_to_proto">
+<code class="descname">add_to_proto</code><span class="sig-paren">(</span><em>protocmd</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.add_to_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the block to an existing protobuf command object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.from_dict">
+<code class="descname">from_dict</code><span class="sig-paren">(</span><em>block_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dict representing a block to the native object format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_dict</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.from_proto">
+<code class="descname">from_proto</code><span class="sig-paren">(</span><em>block_proto</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.from_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inits the instance properties with the provided protobuff data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_proto</strong> – a protobuff object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosBlock.hex_encodable">
+<code class="descname">hex_encodable</code><em class="property"> = ('previous_hash', 'block_hash', 'signature')</em><a class="headerlink" href="#posblock.PosBlock.hex_encodable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.old_digest_block">
+<code class="descname">old_digest_block</code><span class="sig-paren">(</span><em>block</em>, <em>timestamp=0</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.old_digest_block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosBlock.props">
+<code class="descname">props</code><em class="property"> = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count', 'unique_sources', 'signature', 'block_hash', 'received_by', 'forger')</em><a class="headerlink" href="#posblock.PosBlock.props" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.sign">
+<code class="descname">sign</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.sign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sign the raw block and calc it’s hash</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">signature, bytearray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.to_db">
+<code class="descname">to_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tuple representation of the block object for db insert, without tx. In the db order, with binary types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the native object format to a dict representing a block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a json representation of the current block object
+with <em>binary content as hex encoded string</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.to_proto">
+<code class="descname">to_proto</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a protobuf object from current native format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a protobuf object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosBlock.to_raw">
+<code class="descname">to_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gives a raw binary buffer image of the signed block elements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">bytearray</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="posblock.PosHeight">
+<em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosHeight</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>PoS Height is the status of the chain state.
+This object represents the current height and content of a given node.</p>
+<dl class="method">
+<dt id="posblock.PosHeight.from_dict">
+<code class="descname">from_dict</code><span class="sig-paren">(</span><em>height_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dict to the native object format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height_dict</strong> – dict()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosHeight.from_proto">
+<code class="descname">from_proto</code><span class="sig-paren">(</span><em>height_proto</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight.from_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates from a protobuf Height object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">self</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosHeight.hex_encodable">
+<code class="descname">hex_encodable</code><em class="property"> = ('block_hash',)</em><a class="headerlink" href="#posblock.PosHeight.hex_encodable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosHeight.props">
+<code class="descname">props</code><em class="property"> = ('height', 'round', 'sir', 'block_hash', 'uniques', 'uniques_round', 'forgers', 'forgers_round')</em><a class="headerlink" href="#posblock.PosHeight.props" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosHeight.to_dict">
+<code class="descname">to_dict</code><span class="sig-paren">(</span><em>as_hex=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the native object format to a dict representing a height status</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> – convert raw buffers to hex string encoding so we can json_encode later.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosHeight.to_proto">
+<code class="descname">to_proto</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight.to_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fills in the protobuf object “Height” section</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="posblock.PosMessage">
+<em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosMessage</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>PoS Messages are the Transactions
+This object represents a single tx/message</p>
+<dl class="method">
+<dt id="posblock.PosMessage.add_to_proto">
+<code class="descname">add_to_proto</code><span class="sig-paren">(</span><em>protocmd</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.add_to_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the tx into the given protobuf command (not in a block).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protocmd</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.add_to_proto_block">
+<code class="descname">add_to_proto_block</code><span class="sig-paren">(</span><em>protoblock</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.add_to_proto_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the tx into the given block.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protoblock</strong> – a block value of a proto command</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validity check when a node receives a tx.
+Raise on error</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.from_dict">
+<code class="descname">from_dict</code><span class="sig-paren">(</span><em>tx_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a dict representing a message to the native object format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_dict</strong> – a python dict()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.from_list">
+<code class="descname">from_list</code><span class="sig-paren">(</span><em>tx_list</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.from_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from list to object format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_list</strong> – list()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.from_proto">
+<code class="descname">from_proto</code><span class="sig-paren">(</span><em>proto_tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.from_proto" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert from protobuf to object format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proto_tx</strong> – a protobuf object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.from_values">
+<code class="descname">from_values</code><span class="sig-paren">(</span><em>timestamp=0</em>, <em>sender=''</em>, <em>recipient=''</em>, <em>what=0</em>, <em>params=''</em>, <em>value=0</em>, <em>pubkey=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.from_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manually creates the transaction object from user values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>timestamp</strong> – </li>
+<li><strong>sender</strong> – </li>
+<li><strong>recipient</strong> – </li>
+<li><strong>what</strong> – </li>
+<li><strong>params</strong> – </li>
+<li><strong>value</strong> – </li>
+<li><strong>pubkey</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the PosMessage instance</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosMessage.hex_encodable">
+<code class="descname">hex_encodable</code><em class="property"> = ('txid', 'pubkey')</em><a class="headerlink" href="#posblock.PosMessage.hex_encodable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="posblock.PosMessage.props">
+<code class="descname">props</code><em class="property"> = ('txid', 'block_height', 'timestamp', 'sender', 'recipient', 'what', 'params', 'value', 'pubkey', 'received')</em><a class="headerlink" href="#posblock.PosMessage.props" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.sign">
+<code class="descname">sign</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.sign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sign the raw tx. Uses keys from poscrypto module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Signature as bytearray.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.to_db">
+<code class="descname">to_db</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tuple representation of the PosMessage instance for db insert. In the db order, with  received as last extra field.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.to_json">
+<code class="descname">to_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Json readable version of the PosMessage instance content,
+with <em>binary content as hex encoded string</em>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.to_list">
+<code class="descname">to_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>List representation of the PosMessage instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posblock.PosMessage.to_raw">
+<code class="descname">to_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw representation of the PosMessage instance, signed parts only.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Bytes, a raw buffer</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="posmempool-pos-mempool-abstraction-class">
+<h1>posmempool - PoS mempool abstraction class<a class="headerlink" href="#posmempool-pos-mempool-abstraction-class" title="Permalink to this headline">¶</a></h1>
+<p>An abstraction class used by poshn.</p>
+<span class="target" id="module-posmempool"></span><p>A Safe thread object interfacing the PoS mempool.</p>
+<dl class="class">
+<dt id="posmempool.MemoryMempool">
+<em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">MemoryMempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal notranslate"><span class="pre">posmempool.Mempool</span></code></a></p>
+<p>Memory Storage, POC only - Deprecated</p>
+<dl class="method">
+<dt id="posmempool.MemoryMempool._delete_tx">
+<code class="descname">_delete_tx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool._delete_tx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.MemoryMempool._insert_tx">
+<code class="descname">_insert_tx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool._insert_tx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.MemoryMempool.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="posmempool.Mempool">
+<em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">Mempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generic Parent Class</p>
+<dl class="method">
+<dt id="posmempool.Mempool._delete_tx">
+<code class="descname">_delete_tx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool._delete_tx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool._insert_tx">
+<code class="descname">_insert_tx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool._insert_tx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool.async_all">
+<code class="descname">async_all</code><span class="sig-paren">(</span><em>block_height=0</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool.async_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all tx to embed in current block</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool.digest_tx">
+<code class="descname">digest_tx</code><span class="sig-paren">(</span><em>tx</em>, <em>poschain=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool.digest_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Check validity of the transaction and insert if mempool if ok.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>tx</strong> – </li>
+<li><strong>poschain</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool.status" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool.tx_count">
+<code class="descname">tx_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool.tx_count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="posmempool.Mempool.tx_exists">
+<code class="descname">tx_exists</code><span class="sig-paren">(</span><em>txid</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool.tx_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tell is the given txid is in our mempool already.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="posmempool.SqliteMempool">
+<em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">SqliteMempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='./data/'</em>, <em>app_log=None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal notranslate"><span class="pre">posmempool.Mempool</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
+<p>Sqlite storage backend.</p>
+<dl class="method">
+<dt id="posmempool.SqliteMempool._insert_tx">
+<code class="descname">_insert_tx</code><span class="sig-paren">(</span><em>tx</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool._insert_tx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Save to tx (=PosMessage) object in db</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx</strong> – a notive PosMessage object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_all">
+<code class="descname">async_all</code><span class="sig-paren">(</span><em>block_height=0</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all transactions in current mempool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list() of PosMessages instances</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_alltxids">
+<code class="descname">async_alltxids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_alltxids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all txids from mempool.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_del_txids">
+<code class="descname">async_del_txids</code><span class="sig-paren">(</span><em>txids</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_del_txids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deletes a list of the txs from mempool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>txids</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_purge">
+<code class="descname">async_purge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_purge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Purge old txs</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_since">
+<code class="descname">async_since</code><span class="sig-paren">(</span><em>date=0</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_since" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Return the list of transactions we got since the given date</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of posblock.PosMessage objects</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks and creates mempool. This is not async yet, so we close afterward.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Empty mempool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.status">
+<code class="descname">status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Return mempool status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">status as dict()</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.tx_count">
+<code class="descname">tx_count</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.tx_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Mempool current transactions count.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.tx_exists">
+<code class="descname">tx_exists</code><span class="sig-paren">(</span><em>txid</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.tx_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tell is the given txid is in our mempool.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Boolean</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sqlitebase-sqlite3-backend-abstraction-class">
+<h1>sqlitebase - Sqlite3 backend abstraction class<a class="headerlink" href="#sqlitebase-sqlite3-backend-abstraction-class" title="Permalink to this headline">¶</a></h1>
+<p>An abstraction class used by posmempool and poschain.</p>
+<span class="target" id="module-sqlitebase"></span><p>A common ancestor for sqlite related storage objects.</p>
+<p>Used by mempool and poschain</p>
+<dl class="class">
+<dt id="sqlitebase.SqliteBase">
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='./data/'</em>, <em>db_name='posmempool.db'</em>, <em>app_log=None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generic Sqlite storage backend.</p>
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_close">
+<code class="descname">async_close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Closes the db handle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_commit">
+<code class="descname">async_commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Safe commit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_execute">
+<code class="descname">async_execute</code><span class="sig-paren">(</span><em>sql</em>, <em>param=None</em>, <em>commit=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Safely execute the request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+<li><strong>commit</strong> – If True, will commit after the request.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a cursor async proxy, or None if commit. If not commit, cursor() has to be closed.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_fetchall">
+<code class="descname">async_fetchall</code><span class="sig-paren">(</span><em>sql</em>, <em>param=None</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_fetchall" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Fetch all and Returns data</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_fetchone">
+<code class="descname">async_fetchone</code><span class="sig-paren">(</span><em>sql</em>, <em>param=None</em>, <em>as_dict=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_fetchone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Fetch one and Returns data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">tuple()</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.async_vacuum">
+<code class="descname">async_vacuum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.async_vacuum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Maintenance (Vacuum)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.check">
+<code class="descname">check</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.check" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks and creates db. This is not async yet, so we close afterward.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>Closes the db handle.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.commit">
+<code class="descname">commit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.commit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safe commit</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="sqlitebase.SqliteBase.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>sql</em>, <em>param=None</em>, <em>cursor=None</em>, <em>commit=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Safely execute the request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+<li><strong>cursor</strong> – optional. will use the locked shared cursor if None</li>
+<li><strong>commit</strong> – optional. will commit after sql</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">cursor</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="poscrypto-pos-crypto-primitives-helpers">
+<h1>poscrypto - PoS crypto primitives helpers<a class="headerlink" href="#poscrypto-pos-crypto-primitives-helpers" title="Permalink to this headline">¶</a></h1>
+<p>Low level crypto utils.</p>
+<span class="target" id="module-poscrypto"></span><div class="section" id="pos-related-crypto-helpers">
+<h2>PoS related crypto helpers<a class="headerlink" href="#pos-related-crypto-helpers" title="Permalink to this headline">¶</a></h2>
+<p>Low level cryptographic functions for Bismuth Hypernodes.</p>
+<dl class="function">
+<dt id="poscrypto.blake">
+<code class="descclassname">poscrypto.</code><code class="descname">blake</code><span class="sig-paren">(</span><em>buffer</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.blake" title="Permalink to this definition">¶</a></dt>
+<dd><p>Blake hash of a raw buffer or string/</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buffer</strong> – str or bytes</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">binary hash</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.check_sig">
+<code class="descclassname">poscrypto.</code><code class="descname">check_sig</code><span class="sig-paren">(</span><em>signature</em>, <em>pubkey_string</em>, <em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.check_sig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise ValueError if the signature of message does not match pubkey</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>signature</strong> – </li>
+<li><strong>pubkey_string</strong> – the pubkey, string version.</li>
+<li><strong>message</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.gen_keys">
+<code class="descclassname">poscrypto.</code><code class="descname">gen_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.gen_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new set of keys.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">tuple (priv, pub, address), all as string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.gen_keys_file">
+<code class="descclassname">poscrypto.</code><code class="descname">gen_keys_file</code><span class="sig-paren">(</span><em>pos_filename='poswallet.json'</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.gen_keys_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates a new set of keys and saves to json wallet</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos_filename</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the generated wallet as a dict</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.hash_to_addr">
+<code class="descclassname">poscrypto.</code><code class="descname">hash_to_addr</code><span class="sig-paren">(</span><em>hash20</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.hash_to_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a hash of len 20 bytes to a checksum’d + network id address, to compare to an address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>hash20</strong> – bytes</li>
+<li><strong>network</strong> – byte</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.hex_to_raw">
+<code class="descclassname">poscrypto.</code><code class="descname">hex_to_raw</code><span class="sig-paren">(</span><em>hex_str</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.hex_to_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an hex string into a byte string. The Hex Byte values may
+or may not be space separated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hex_str</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">bytes</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.load_keys">
+<code class="descclassname">poscrypto.</code><code class="descname">load_keys</code><span class="sig-paren">(</span><em>pos_filename='poswallet.json'</em>, <em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.load_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the keys from wallet json file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pos_filename</strong> – </li>
+<li><strong>verbose</strong> – boolean, print out address and pubkey</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">True or raise.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.pub_key_to_addr">
+<code class="descclassname">poscrypto.</code><code class="descname">pub_key_to_addr</code><span class="sig-paren">(</span><em>pub_key</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.pub_key_to_addr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a public key to a checksum’d + network id address</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pub_key</strong> – </li>
+<li><strong>network</strong> – byte</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.raw_to_hex">
+<code class="descclassname">poscrypto.</code><code class="descname">raw_to_hex</code><span class="sig-paren">(</span><em>digest</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.raw_to_hex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <strong>printable</strong> hex digest of a byte buffer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The hash digest, Hexadecimal encoded.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.sign">
+<code class="descclassname">poscrypto.</code><code class="descname">sign</code><span class="sig-paren">(</span><em>message</em>, <em>verify=True</em>, <em>priv_key=None</em>, <em>pub_key=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.sign" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sign a message with the default keys and return its signature.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>message</strong> – A string or byte object</li>
+<li><strong>verify</strong> – Shall we verify the signature? default to True</li>
+<li><strong>priv_key</strong> – opt</li>
+<li><strong>pub_key</strong> – opt</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">bytes (signature)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="poscrypto.validate_address">
+<code class="descclassname">poscrypto.</code><code class="descname">validate_address</code><span class="sig-paren">(</span><em>address</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.validate_address" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode and verify the checksum of a Base58 encoded string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>address</strong> – the address string to validate</li>
+<li><strong>network</strong> – The network id to validate against</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">The 20 bytes hash of the pubkey if address matches format and network, or throw an exception</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
 <div class="section" id="posclient-client-hypernode-class">
 <h1>posclient - Client hypernode class<a class="headerlink" href="#posclient-client-hypernode-class" title="Permalink to this headline">¶</a></h1>
 <p>WIP - A self contained client class for APIs or client line tools.</p>
@@ -1065,6 +2147,207 @@ The caller is responsible for updating state if necessary</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-com_helpers">
+<span id="com-helpers-util-module"></span><h1>com_helpers - Util module<a class="headerlink" href="#module-com_helpers" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="communication-helper-utils-for-bismuth-hypernodes">
+<h2>Communication helper utils for Bismuth Hypernodes<a class="headerlink" href="#communication-helper-utils-for-bismuth-hypernodes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="com_helpers.async_receive">
+<code class="descclassname">com_helpers.</code><code class="descname">async_receive</code><span class="sig-paren">(</span><em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_receive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a command block from the stream, async version</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a protobuf object</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send</code><span class="sig-paren">(</span><em>cmd</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a protobuf command with data to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – a protobuf object</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_block">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_block</code><span class="sig-paren">(</span><em>proto_block</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a block to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>proto_block</strong> – a full protobuf command with a block</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_height">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_height</code><span class="sig-paren">(</span><em>cmd</em>, <em>height</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a height status to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>height</strong> – a PosHeight object</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_int32">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_int32</code><span class="sig-paren">(</span><em>cmd</em>, <em>value</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_int32" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a command with int32 param to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>value</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_string">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_string</code><span class="sig-paren">(</span><em>cmd</em>, <em>value</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a command with string param to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>value</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_txs">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_txs</code><span class="sig-paren">(</span><em>cmd</em>, <em>txs</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_txs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a list of tx to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>txs</strong> – a list of tx</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.async_send_void">
+<code class="descclassname">com_helpers.</code><code class="descname">async_send_void</code><span class="sig-paren">(</span><em>cmd</em>, <em>stream</em>, <em>ip</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.async_send_void" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a command to the stream, async.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">none</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="com_helpers.cmd_to_text">
+<code class="descclassname">com_helpers.</code><code class="descname">cmd_to_text</code><span class="sig-paren">(</span><em>command</em><span class="sig-paren">)</span><a class="headerlink" href="#com_helpers.cmd_to_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a protobuf Command id to a text</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>command</strong> – </td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -1320,8 +2603,19 @@ only checks the current round info, not the whole chain.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#poshn-core-hypernode-class">poshn - core hypernode class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#poschain-pos-chain-abstraction-class">poschain - PoS chain abstraction class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#posblock-pos-block-abstraction-class">posblock - PoS block abstraction class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#posmempool-pos-mempool-abstraction-class">posmempool - PoS mempool abstraction class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#sqlitebase-sqlite3-backend-abstraction-class">sqlitebase - Sqlite3 backend abstraction class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#poscrypto-pos-crypto-primitives-helpers">poscrypto - PoS crypto primitives helpers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pos-related-crypto-helpers">PoS related crypto helpers</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="#posclient-client-hypernode-class">posclient - Client hypernode class</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pos-client-class-for-bismuth-hypernodes">Pos client class for Bismuth HyperNodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#module-com_helpers">com_helpers - Util module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#communication-helper-utils-for-bismuth-hypernodes">Communication helper utils for Bismuth Hypernodes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-base58">base58 - Util module</a></li>

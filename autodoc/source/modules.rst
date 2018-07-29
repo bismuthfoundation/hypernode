@@ -8,7 +8,7 @@
 poshn - core hypernode class
 ============================
 
-The Core Hypernode server class
+The Core Hypernode server class.
 
 .. automodule:: poshn
     :members:
@@ -20,9 +20,54 @@ The Core Hypernode server class
 poschain - PoS chain abstraction class
 ======================================
 
-An abstraction class used by poshn
+An abstraction class used by poshn.
 
 .. automodule:: poschain
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+posblock - PoS block abstraction class
+======================================
+
+An abstraction class used by poschain.
+
+.. automodule:: posblock
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+posmempool - PoS mempool abstraction class
+===========================================
+
+An abstraction class used by poshn.
+
+.. automodule:: posmempool
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+sqlitebase - Sqlite3 backend abstraction class
+==============================================
+
+An abstraction class used by posmempool and poschain.
+
+.. automodule:: sqlitebase
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+
+poscrypto - PoS crypto primitives helpers
+=========================================
+
+Low level crypto utils.
+
+.. automodule:: poscrypto
     :members:
     :private-members:
     :undoc-members:
@@ -34,6 +79,15 @@ posclient - Client hypernode class
 WIP - A self contained client class for APIs or client line tools.
 
 .. automodule:: posclient
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
+com_helpers - Util module
+=========================
+
+.. automodule:: com_helpers
     :members:
     :private-members:
     :undoc-members:

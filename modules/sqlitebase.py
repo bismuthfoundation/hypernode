@@ -10,7 +10,7 @@ import time
 import asyncio
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.21'
 
 
 class SqliteBase():
@@ -32,6 +32,7 @@ class SqliteBase():
     def check(self):
         """
         Checks and creates db. This is not async yet, so we close afterward.
+
         :return:
         """
         self.app_log.info("Virtual Method {} Check".format(self.db_name))
@@ -40,11 +41,12 @@ class SqliteBase():
     def execute(self, sql, param=None, cursor=None, commit=False):
         """
         Safely execute the request
+
         :param sql:
         :param param:
         :param cursor: optional. will use the locked shared cursor if None
         :param commit: optional. will commit after sql
-        :return:
+        :return: cursor
         """
         if not self.db:
             raise ValueError("Closed {} DB".format(self.db_name))
@@ -75,11 +77,12 @@ class SqliteBase():
 
     async def async_execute(self, sql, param=None, commit=False):
         """
-        Safely execute the request
+        Async. Safely execute the request
+
         :param sql:
         :param param:
         :param commit: If True, will commit after the request.
-        :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be close.
+        :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be closed.
         """
         if not self.async_db:
             # TODO: RAM Mode
@@ -117,7 +120,6 @@ class SqliteBase():
     def commit(self):
         """
         Safe commit
-        :return:
         """
         if not self.db:
             raise ValueError("Closed {} DB".format(self.db_name))
@@ -131,8 +133,7 @@ class SqliteBase():
 
     async def async_commit(self):
         """
-        Safe commit
-        :return:
+        Async. Safe commit
         """
         while True:
             try:
@@ -144,10 +145,11 @@ class SqliteBase():
 
     async def async_fetchone(self, sql, param=None, as_dict=False):
         """
-        Fetch one and Returns data
+        Async. Fetch one and Returns data.
+
         :param sql:
         :param param:
-        :return:
+        :return: tuple()
         """
         cursor = await self.async_execute(sql, param)
         data = await cursor.fetchone()
@@ -160,7 +162,8 @@ class SqliteBase():
 
     async def async_fetchall(self, sql, param=None):
         """
-        Fetch all and Returns data
+        Async. Fetch all and Returns data
+
         :param sql:
         :param param:
         :return:
@@ -172,19 +175,23 @@ class SqliteBase():
 
     async def async_vacuum(self):
         """
-        Maintenance
-        :return:
+        Async. Maintenance (Vacuum)
         """
         await self.async_execute("VACUUM", commit=True)
 
     def close(self):
+        """
+        Closes the db handle.
+        """
         if self.db:
             self.db.close()
 
     async def async_close(self):
+        """
+        Async. Closes the db handle.
+        """
         # TODO: make sure we call when closing.
         if self.async_db:
             await self.async_db.close()
         if self.verbose:
             self.app_log.info("Closed async {} db".format(self.db_name))
-

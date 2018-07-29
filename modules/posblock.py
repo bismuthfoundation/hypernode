@@ -1,7 +1,7 @@
 """
-An object representing a PoS block and it transaction
+An object representing a PoS block and its transaction
 Allow for different formats: json, dict, raw, protobuf
-and conversion between them all
+and conversion between them all.
 """
 
 import json
@@ -21,7 +21,7 @@ __version__ = '0.0.8'
 
 class PosMessage:
     """
-    PoS Messages are the Tx
+    PoS Messages are the Transactions
     This object represents a single tx/message
     """
 
@@ -48,7 +48,8 @@ class PosMessage:
 
     def from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey=None):
         """
-        Manually creates from user values
+        Manually creates the transaction object from user values
+
         :param timestamp:
         :param sender:
         :param recipient:
@@ -56,7 +57,7 @@ class PosMessage:
         :param params:
         :param value:
         :param pubkey:
-        :return:
+        :return: the PosMessage instance
         """
         self.txid = 0
         self.block_height = 0
@@ -71,9 +72,10 @@ class PosMessage:
 
     def from_proto(self, proto_tx):
         """
-        Convert from protobuf to object format
-        :param proto_tx:
-        :return:
+        Convert from protobuf to object format.
+
+        :param proto_tx: a protobuf object
+        :return: a PosMessage instance
         """
         # Since all fields are the same and same order, should be an easier way to do this.
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, \
@@ -85,9 +87,10 @@ class PosMessage:
 
     def from_list(self, tx_list):
         """
-        Convert from list to object format
-        :param tx_list:
-        :return:
+        Convert from list to object format.
+
+        :param tx_list: list()
+        :return: a PosMessage instance
         """
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, \
             self.pubkey, self.received = tx_list
@@ -95,9 +98,10 @@ class PosMessage:
 
     def from_dict(self, tx_dict):
         """
-        Converts a dict representing a message to the native object format
-        :param tx_dict:
-        :return:
+        Converts a dict representing a message to the native object format.
+
+        :param tx_dict: a python dict()
+        :return: a PosMessage instance
         """
         # Main block values
         for prop in self.props:
@@ -109,8 +113,9 @@ class PosMessage:
 
     def to_raw(self):
         """
-        Raw representation of the tx object, signed parts
-        :return:
+        Raw representation of the PosMessage instance, signed parts only.
+
+        :return: Bytes, a raw buffer
         """
         raw = b''
         raw += self.timestamp.to_bytes(4, byteorder='big')
@@ -123,8 +128,9 @@ class PosMessage:
 
     def to_list(self):
         """
-        List representation of the tx object
-        :return:
+        List representation of the PosMessage instance.
+
+        :return: list()
         """
         return [self.txid, self.block_height, self.timestamp, self.sender,
                 self.recipient, self.what, self.params, self.value, self.pubkey,
@@ -132,8 +138,9 @@ class PosMessage:
 
     def to_db(self):
         """
-        List representation of the tx object for db insert. in the db order, with  received as last extra field
-        :return:
+        Tuple representation of the PosMessage instance for db insert. In the db order, with  received as last extra field.
+
+        :return: tuple()
         """
         # sqlite3.Binary encodes bin data for sqlite.
         return tuple([sqlite3.Binary(self.txid), self.block_height, self.timestamp, self.sender,
@@ -142,8 +149,10 @@ class PosMessage:
 
     def to_json(self):
         """
-        Json readable version of the tx object
-        :return:
+        Json readable version of the PosMessage instance content,
+        with *binary content as hex encoded string*.
+
+        :return: string
         """
         tx = self.to_list()
         if tx[0]:
@@ -156,9 +165,10 @@ class PosMessage:
 
     def add_to_proto(self, protocmd):
         """
-        Adds the tx into the given protobuf command (not in a block)
+        Adds the tx into the given protobuf command (not in a block).
+
         :param protocmd:
-        :return:
+        :return: None
         """
         proto_tx = protocmd.tx_values.add()
         proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, \
@@ -169,9 +179,10 @@ class PosMessage:
 
     def add_to_proto_block(self, protoblock):
         """
-        Adds the tx into the given block
+        Adds the tx into the given block.
+
         :param protoblock: a block value of a proto command
-        :return:
+        :return: None
         """
         proto_tx = protoblock.txs.add()
         proto_tx.txid, proto_tx.block_height, proto_tx.timestamp, proto_tx.sender, \
@@ -184,8 +195,9 @@ class PosMessage:
 
     def sign(self):
         """
-        sign the raw tx
-        :return: signature, bytearray
+        Sign the raw tx. Uses keys from poscrypto module.
+
+        :return: Signature as bytearray.
         """
         # exception if we are not the forger
         raw = self.to_raw()
@@ -198,7 +210,8 @@ class PosMessage:
         """
         Validity check when a node receives a tx.
         Raise on error
-        :return:
+
+        :return: None
         """
         # Check 1. timestamp not in the future
         if self.timestamp > time.time() + common.FUTURE_ALLOWED:
@@ -246,8 +259,9 @@ class PosBlock:
     def from_dict(self, block_dict):
         """
         Converts a dict representing a block to the native object format
+
         :param block_dict:
-        :return:
+        :return: self
         """
         # Main block values
         for prop in self.props:
@@ -271,8 +285,9 @@ class PosBlock:
 
     def to_dict(self):
         """
-        Converts the native object format to a dict representing a block
-        :return:
+        Converts the native object format to a dict representing a block.
+
+        :return: dict()
         """
         # txs
         block_dict = {'txs': [tx.to_list() for tx in self.txs]}
@@ -284,7 +299,9 @@ class PosBlock:
     def to_json(self):
         """
         Returns a json representation of the current block object
-        :return:
+        with *binary content as hex encoded string*.
+
+        :return: string
         """
         # Get a raw image of the datas
         block = self.to_dict()
@@ -297,8 +314,9 @@ class PosBlock:
 
     def to_db(self):
         """
-        List representation of the block object for db insert, without tx. In the db order
-        :return:
+        Tuple representation of the block object for db insert, without tx. In the db order, with binary types.
+
+        :return: tuple()
         """
         # sqlite3.Binary encodes bin data for sqlite.
         return tuple([self.height, self.round, self.sir, self.timestamp, sqlite3.Binary(self.previous_hash),
@@ -307,7 +325,8 @@ class PosBlock:
 
     def to_raw(self):
         """
-        Gives a raw binary buffer image of the signed block elements
+        Gives a raw binary buffer image of the signed block elements.
+
         :return: bytearray
         """
         raw = b''
@@ -325,6 +344,12 @@ class PosBlock:
         return raw
 
     def from_proto(self, block_proto):
+        """
+        Inits the instance properties with the provided protobuff data.
+
+        :param block_proto: a protobuff object
+        :return: self
+        """
         self.height, self.round, self.sir = block_proto.height, block_proto.round, block_proto.sir
         self.timestamp, self.previous_hash = block_proto.ts, block_proto.previous_hash
         self.txs = list()
@@ -339,8 +364,9 @@ class PosBlock:
 
     def to_proto(self):
         """
-        create a protobuf object
-        :return:
+        Create a protobuf object from current native format.
+
+        :return: a protobuf object.
         """
         protocmd = commands_pb2.Command()
         protocmd.Clear()
@@ -359,8 +385,9 @@ class PosBlock:
 
     def add_to_proto(self, protocmd):
         """
-        Adds the block to an existing protobuf command object
-        :return:
+        Adds the block to an existing protobuf command object.
+
+        :return: None
         """
         try:
             block = protocmd.block_value.add()
@@ -385,7 +412,8 @@ class PosBlock:
 
     def sign(self):
         """
-        sign the raw block and calc it's hash
+        Sign the raw block and calc it's hash
+
         :return: signature, bytearray
         """
         # exception if we are not the forger
@@ -409,7 +437,7 @@ class PosBlock:
 
 class PosHeight:
     """
-    PoS Height is the status of the chain state
+    PoS Height is the status of the chain state.
     This object represents the current height and content of a given node.
     """
 
@@ -432,7 +460,8 @@ class PosHeight:
     def to_proto(self, height):
         """
         Fills in the protobuf object "Height" section
-        :return:
+
+        :return: None
         """
         height.height, height.round, height.sir = self.height, self.round, self.sir
         height.block_hash = self.block_hash
@@ -441,8 +470,9 @@ class PosHeight:
 
     def from_proto(self, height_proto):
         """
-        creates from a protobuf Height object
-        :return:
+        Creates from a protobuf Height object.
+
+        :return: self
         """
         self.height, self.round, self.sir = height_proto.height, height_proto.round, height_proto.sir
         self.block_hash = height_proto.block_hash
@@ -453,8 +483,9 @@ class PosHeight:
     def from_dict(self, height_dict):
         """
         Converts a dict to the native object format
-        :param height_dict:
-        :return:
+
+        :param height_dict: dict()
+        :return: self
         """
         for prop in self.props:
             if prop in height_dict:
@@ -466,8 +497,9 @@ class PosHeight:
     def to_dict(self, as_hex=False):
         """
         Converts the native object format to a dict representing a height status
-        :param as_hex: convert raw buffers to ghex string so we can json_encode later.
-        :return:
+
+        :param as_hex: convert raw buffers to hex string encoding so we can json_encode later.
+        :return: dict()
         """
         # txs
         height_dict = dict()

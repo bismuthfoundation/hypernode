@@ -1,6 +1,8 @@
 """
-Bismuth
 PoS related crypto helpers
+==========================
+
+Low level cryptographic functions for Bismuth Hypernodes.
 """
 
 # Third party modules
@@ -23,7 +25,7 @@ except:
     common.NETWORK_ID = b'\x19'
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.41'
 
 # Do not change, impact addresses format
 BLAKE_DIGEST_SIZE = 20
@@ -37,6 +39,7 @@ ADDRESS = None
 
 def raw_to_hex(digest):
     """Return the **printable** hex digest of a byte buffer.
+
     :return: The hash digest, Hexadecimal encoded.
     :rtype: string
     """
@@ -47,8 +50,9 @@ def hex_to_raw(hex_str):
     """
     Convert an hex string into a byte string. The Hex Byte values may
     or may not be space separated.
+
     :param hex_str:
-    :return:
+    :return: bytes
     """
     bytes_array = []
     # remove extra formatting zeroes that may be there
@@ -62,8 +66,9 @@ def hex_to_raw(hex_str):
 
 def blake(buffer):
     """
-    Blake hash of a raw buffer or string
-    :param buffer:
+    Blake hash of a raw buffer or string/
+
+    :param buffer: str or bytes
     :return: binary hash
     """
     global BLAKE_DIGEST_SIZE
@@ -75,9 +80,10 @@ def blake(buffer):
 def hash_to_addr(hash20, network=None):
     """
     Converts a hash of len 20 bytes to a checksum'd + network id address, to compare to an address
-    :param hash20:
-    :param network:
-    :return:
+
+    :param hash20: bytes
+    :param network: byte
+    :return: string
     """
     if not network:
         network = common.NETWORK_ID
@@ -89,9 +95,10 @@ def hash_to_addr(hash20, network=None):
 def pub_key_to_addr(pub_key, network=None):
     """
     Converts a public key to a checksum'd + network id address
+
     :param pub_key:
-    :param network:
-    :return:
+    :param network: byte
+    :return: string
     """
     hash20 = blake2b(pub_key, digest_size=BLAKE_DIGEST_SIZE).digest()
     return hash_to_addr(hash20, network)
@@ -99,7 +106,8 @@ def pub_key_to_addr(pub_key, network=None):
 
 def validate_address(address, network=None):
     """
-    Decode and verify the checksum of a Base58 encoded string
+    Decode and verify the checksum of a Base58 encoded string.
+
     :param address: the address string to validate
     :param network: The network id to validate against
     :return: The 20 bytes hash of the pubkey if address matches format and network, or throw an exception
@@ -120,6 +128,13 @@ def validate_address(address, network=None):
 
 
 def load_keys(pos_filename='poswallet.json', verbose=False):
+    """
+    Load the keys from wallet json file.
+
+    :param pos_filename:
+    :param verbose: boolean, print out address and pubkey
+    :return: True or raise.
+    """
     global PUB_KEY
     global PRIV_KEY
     global ADDRESS
@@ -143,12 +158,13 @@ def load_keys(pos_filename='poswallet.json', verbose=False):
 
 def sign(message, verify=True, priv_key=None, pub_key=None):
     """
-    Sign a message with the default keys and return its signature
+    Sign a message with the default keys and return its signature.
+
     :param message: A string or byte object
     :param verify: Shall we verify the signature? default to True
-    :param priv_key:
-    :param pub_key:
-    :return:
+    :param priv_key: opt
+    :param pub_key: opt
+    :return: bytes (signature)
     """
     global PUB_KEY
     global PRIV_KEY
@@ -167,11 +183,12 @@ def sign(message, verify=True, priv_key=None, pub_key=None):
 
 def check_sig(signature, pubkey_string, message):
     """
-    Raise if the signature does not match
+    Raise ValueError if the signature of message does not match pubkey
+
     :param signature:
-    :param pubkey_string:
+    :param pubkey_string: the pubkey, string version.
     :param message:
-    :return:
+    :return: None
     """
     pub_key = VerifyingKey.from_string(pubkey_string, curve=SECP256k1)
     # Will raise
@@ -183,7 +200,8 @@ def check_sig(signature, pubkey_string, message):
 
 def gen_keys():
     """
-    Generates a new set of keys
+    Generates a new set of keys.
+
     :return: tuple (priv, pub, address), all as string
     """
     privkey = SigningKey.generate(curve=SECP256k1)
@@ -195,6 +213,7 @@ def gen_keys():
 def gen_keys_file(pos_filename='poswallet.json'):
     """
     Generates a new set of keys and saves to json wallet
+
     :param pos_filename:
     :return: the generated wallet as a dict
     """

@@ -1,5 +1,5 @@
 """
-A Safe thread object interfacing the PoS mempool
+A Safe thread object interfacing the PoS mempool.
 """
 import threading
 import json
@@ -19,7 +19,7 @@ import posblock
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.41'
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -46,7 +46,8 @@ SQL_SINCE = "SELECT * FROM pos_messages WHERE timestamp >= ? ORDER BY timestamp 
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
-SQL_STATUS = "SELECT COUNT(*) AS NB, COUNT(distinct sender) as SENDERS, count(distinct recipient) as RECIPIENTS FROM pos_messages"
+SQL_STATUS = "SELECT COUNT(*) AS NB, COUNT(distinct sender) as SENDERS, count(distinct recipient) as RECIPIENTS " \
+             "FROM pos_messages"
 
 SQL_COUNT = "SELECT COUNT(*) AS NB FROM pos_messages"
 
@@ -59,7 +60,7 @@ NOT_OLDER_THAN_SECONDS = 60*30 * 1000
 
 class Mempool:
     """
-    Generic Class
+    Generic Parent Class
     """
 
     def __init__(self, verbose=False, app_log=None):
@@ -69,7 +70,7 @@ class Mempool:
     async def status(self):
         print("Mempool Virtual Method Status")
 
-    async def tx_count(self, tx):
+    async def tx_count(self):
         print("Virtual Method tx_count")
 
     async def _insert_tx(self, tx):
@@ -79,6 +80,13 @@ class Mempool:
         print("Virtual Method _delete_tx")
 
     async def digest_tx(self, tx, poschain=None):
+        """
+        Async. Check validity of the transaction and insert if mempool if ok.
+
+        :param tx:
+        :param poschain:
+        :return:
+        """
         if 'TX' == tx.__class__.__name__:
             # Protobuf, convert to object
             tx = posblock.PosMessage().from_proto(tx)
@@ -104,10 +112,10 @@ class Mempool:
             print(exc_type, fname, exc_tb.tb_lineno)
             raise
 
-
     async def tx_exists(self, txid):
         """
-        Tell is the given txid is in our mempool
+        Tell is the given txid is in our mempool already.
+
         :return:
         """
         print("Virtual Method tx_exists")
@@ -115,6 +123,7 @@ class Mempool:
     async def async_all(self, block_height=0):
         """
         Returns all tx to embed in current block
+
         :return:
         """
         print("Virtual Method all_tx")
@@ -152,20 +161,13 @@ class SqliteMempool(Mempool, SqliteBase):
     def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
         Mempool.__init__(self, verbose=verbose, app_log=app_log)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='posmempool.db', app_log=app_log, ram=ram)
-        """
-        # Moved to ancestor
-        self.db_path = db_path + 'posmempool.db'
-        self.db = None
-        self.cursor = None
-        self.check()
-        self.async_db = None
-        """
 
     # ========================= Generic DB Handling Methods ====================
 
     def check(self):
         """
         Checks and creates mempool. This is not async yet, so we close afterward.
+
         :return:
         """
         self.app_log.info("Mempool Check")
@@ -204,17 +206,30 @@ class SqliteMempool(Mempool, SqliteBase):
     # ========================= Real useful Methods ====================
 
     async def status(self):
-        status = {}
+        """
+        Async. Return mempool status.
+
+        :return: status as dict()
+        """
         res = await self.async_fetchall(SQL_STATUS)
-        return dict(res[0])
+        if res:
+            return dict(res[0])
+        else:
+            return {}
 
     async def tx_count(self):
+        """
+        Async. Mempool current transactions count.
+
+        :return: int
+        """
         res = await self.async_fetchone(SQL_COUNT)
         return res
 
     async def async_purge(self):
         """
-        Purge old txs
+        Async. Purge old txs
+
         :return:
         """
         # TODO: To be called somehow (start of a round?)
@@ -222,7 +237,8 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def clear(self):
         """
-        Empty mempool
+        Async. Empty mempool
+
         :return:
         """
         await self.async_execute(SQL_CLEAR, commit=True)
@@ -231,7 +247,8 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def async_since(self, date=0):
         """
-        returns the list of transactions we got since the given date
+        Async. Return the list of transactions we got since the given date
+
         :param date:
         :return: a list of posblock.PosMessage objects
         """
@@ -241,18 +258,20 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def _insert_tx(self, tx):
         """
-        Saves to tx (=PosMessage) object in db
-        :param tx:
-        :return:
+        Async. Save to tx (=PosMessage) object in db
+
+        :param tx: a notive PosMessage object
+        :return: None
         """
-        res = await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=True)
+        await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=True)
 
     async def async_all(self, block_height=0):
         """
-        Returns all tx from mempool
-        :return:
+        Returns all transactions in current mempool
+
+        :return: list() of PosMessages instances
         """
-        res = await self.async_fetchall(SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS, ))
+        res = await self.async_fetchall(SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS,))
         res = [posblock.PosMessage().from_list(tx) for tx in res]
         if block_height:
             # Set blockheight to be embedded in.
@@ -262,10 +281,11 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def tx_exists(self, txid):
         """
-        Tell is the given txid is in our mempool
-        :return:
+        Tell is the given txid is in our mempool.
+
+        :return: Boolean
         """
-        exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid, ) )
+        exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))
         if exists:
             self.app_log.info("{} already in our mempool".format(txid))
             return True
@@ -273,8 +293,9 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def async_alltxids(self):
         """
-        Returns all txids from mempool
-        :return:
+        Returns all txids from mempool.
+
+        :return: list()
         """
         try:
             res = await self.async_fetchall(SQL_LIST_TXIDS, )
@@ -290,15 +311,15 @@ class SqliteMempool(Mempool, SqliteBase):
     async def async_del_txids(self, txids):
         """
         Deletes a list of the txs from mempool
+
         :param txids:
-        :return:
+        :return: True
         """
         # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
         # TODO: Could not work, see binary and conversion.
         self.app_log.warning("TODO:check async_del_txids")
         for tx in txids:
-            res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
+            await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
         tx = 0
-        res = await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
+        await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
         return True
-
