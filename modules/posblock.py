@@ -16,7 +16,7 @@ import poscrypto
 import commands_pb2
 
 
-__version__ = '0.0.81'
+__version__ = '0.0.82'
 
 
 class PosMessage:
@@ -299,8 +299,7 @@ class PosBlock:
         block_dict = {'txs': [tx.to_list(as_hex=as_hex) for tx in self.txs]}
         # Main block values
         for prop in self.props:
-            if as_hex:
-                if prop in self.hex_encodable:
+            if as_hex and prop in self.hex_encodable:
                     block_dict[prop] = poscrypto.raw_to_hex(self.__dict__[prop])
             else:
                 block_dict[prop] = self.__dict__[prop]
