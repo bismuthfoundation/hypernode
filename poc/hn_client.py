@@ -144,9 +144,31 @@ TODO - Info and stats about a PoS address
 Returns current mempool content as json.
 
 
+``--action=headers``
+--------------------
+Returns the latest `common.BLOCK_SYNC_COUNT` block headers (block info, without tx info).
+'tx' key will be there but always an empty list.
+`--param` is an optional string and can be:
+
+- start,count : count headers from start, ex `--param=50,2` will send headers 50 and 51
+- ,count : return the latest "count" headers ex: `--param=,10` will send latest 10 headers
+
+Sample output:
+
+``[{"txs": [], "previous_hash": "7b12101dcb088170285b5d5cad68e7e79e4cb6b4", "signature": "d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87", "block_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3"},
+{"txs": [], "previous_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3", "signature": "a9254987127c1cc8313218a97ff700193ccd16af6b535d1f143f0ecc78dc1148c7c23a8ad549c93ebfdbfbb2f8c579619ee3d65961b98cf00afce4891afe9f57", "block_hash": "28b828f717e4d04cad8c1b48f5d4b61a85203415"}]``
+
+
 ``--action=txtest``
 -------------------
-Emits a test transaction
+Emits a test transaction.
+
+
+``--action=blocksync --param=block_height``
+-------------------------------------------
+Returns the latest `common.BLOCK_SYNC_COUNT` full blocks starting from block_height as a json list of dict.
+
+
 
 
 """
@@ -163,7 +185,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.52'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -178,7 +200,8 @@ if __name__ == "__main__":
     parser.add_argument("-V", "--version", action="count", default=False, help='Show version')
 
     parser.add_argument("--action", type=str, default=None,
-                        help='Specific action. hello, ping, status, block, tx, address_txs, mempool, txtest.')
+                        help='Specific action. hello, ping, status, block, tx, address_txs, mempool, blocksync, '
+                             'headers, txtest.')
     parser.add_argument("--param", type=str, default=None, help='Input param from block and tx command.')
     args = parser.parse_args()
     if len(sys.argv) == 1:

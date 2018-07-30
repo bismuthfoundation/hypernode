@@ -16,7 +16,7 @@ import poscrypto
 import commands_pb2
 
 
-__version__ = '0.0.8'
+__version__ = '0.0.81'
 
 
 class PosMessage:
@@ -126,15 +126,20 @@ class PosMessage:
         raw += self.value.to_bytes(4, byteorder='big')
         return raw
 
-    def to_list(self):
+    def to_list(self, as_hex=False):
         """
         List representation of the PosMessage instance.
 
         :return: list()
         """
-        return [self.txid, self.block_height, self.timestamp, self.sender,
-                self.recipient, self.what, self.params, self.value, self.pubkey,
-                self.received]
+        if as_hex:
+            return [poscrypto.raw_to_hex(self.txid), self.block_height, self.timestamp, self.sender,
+                    self.recipient, self.what, self.params, self.value, poscrypto.raw_to_hex(self.pubkey),
+                    self.received]
+        else:
+            return [self.txid, self.block_height, self.timestamp, self.sender,
+                    self.recipient, self.what, self.params, self.value, self.pubkey,
+                    self.received]
 
     def to_db(self):
         """
@@ -283,17 +288,22 @@ class PosBlock:
             self.txs = []
         return self
 
-    def to_dict(self):
+    def to_dict(self, as_hex=False):
         """
         Converts the native object format to a dict representing a block.
 
+        :param as_hex: if True, will convert binary fields to hex encoded string
         :return: dict()
         """
         # txs
-        block_dict = {'txs': [tx.to_list() for tx in self.txs]}
+        block_dict = {'txs': [tx.to_list(as_hex=as_hex) for tx in self.txs]}
         # Main block values
         for prop in self.props:
-            block_dict[prop] = self.__dict__[prop]
+            if as_hex:
+                if prop in self.hex_encodable:
+                    block_dict[prop] = poscrypto.raw_to_hex(self.__dict__[prop])
+            else:
+                block_dict[prop] = self.__dict__[prop]
         return block_dict
 
     def to_json(self):

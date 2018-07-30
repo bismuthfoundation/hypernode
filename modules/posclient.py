@@ -38,7 +38,8 @@ class Posclient:
         :return: The command result
         """
         try:
-            if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block'):
+            if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block',
+                              'blocksync', 'headers'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
@@ -82,7 +83,7 @@ class Posclient:
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.gettx:
                     if msg.tx_values:
-                        txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                        txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
                         print(json.dumps(txs))
                         return
                     else:
@@ -92,10 +93,8 @@ class Posclient:
             if 'address_txs' == action:
                 await com_helpers.async_send_string(commands_pb2.Command.getaddtxs, str(param), stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
-                # print(msg)
                 if msg.command == commands_pb2.Command.getaddtxs:
-                    # FR: deal with that conversion more efficiently in poschain
-                    txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                    txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
                     print(json.dumps(txs))
                     return
 
@@ -105,8 +104,7 @@ class Posclient:
                     await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
                     msg = await com_helpers.async_receive(stream, self.ip)
                     if msg.command == commands_pb2.Command.mempool:
-                        # FR: deal with that conversion more efficiently in poschain
-                        txs = [json.loads(posblock.PosMessage().from_proto(tx).to_json()) for tx in msg.tx_values]
+                        txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
                         print(json.dumps(txs))
                         return
                 except Exception as e:
@@ -136,6 +134,32 @@ class Posclient:
                     if msg.block_value:
                         block = posblock.PosBlock().from_proto(msg.block_value[0])
                         print(block.to_json())
+                    else:
+                        print('false')
+                    return
+
+            if 'blocksync' == action:
+                await com_helpers.async_send_int32(commands_pb2.Command.blocksync, int(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.blocksync:
+                    if msg.block_value:
+                        blocks = []
+                        for block in msg.block_value:
+                            blocks.append(posblock.PosBlock().from_proto(block).to_dict(as_hex=True))
+                        print(json.dumps(blocks))
+                    else:
+                        print('false')
+                    return
+
+            if 'headers' == action:
+                await com_helpers.async_send_string(commands_pb2.Command.getheaders, str(param), stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.getheaders:
+                    if msg.block_value:
+                        blocks = []
+                        for block in msg.block_value:
+                            blocks.append(posblock.PosBlock().from_proto(block).to_dict(as_hex=True))
+                        print(json.dumps(blocks))
                     else:
                         print('false')
                     return

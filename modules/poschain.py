@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.62'
+__version__ = '0.0.63'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -54,12 +54,13 @@ SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height 
 SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
 SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
-SQL_BLOCK_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
+SQL_BLOCKS_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
+SQL_BLOCKS_LAST = "SELECT * FROM pos_chain ORDER BY height DESC LIMIT ?"
 SQL_ROUND_BLOCKS = "SELECT * FROM pos_chain WHERE round = ? ORDER BY height ASC"
 SQL_HEIGHT_BLOCK = "SELECT * FROM pos_chain WHERE height = ? LIMIT 1"
 
-SQL_ROLLBACK_BLOCK = "DELETE FROM pos_chain WHERE height >= ?"
-SQL_ROLLBACK_BLOCK_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
+SQL_ROLLBACK_BLOCKS = "DELETE FROM pos_chain WHERE height >= ?"
+SQL_ROLLBACK_BLOCKS_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
 
 SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN " \
                        "(SELECT block_height FROM pos_chain WHERE round = ?)"
@@ -514,11 +515,11 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         :return:
         """
-        res = await self.async_execute(SQL_ROLLBACK_BLOCK, (self.height_status.height, ), commit=True)
+        res = await self.async_execute(SQL_ROLLBACK_BLOCKS, (self.height_status.height,), commit=True)
         if not res:
             self.app_log.error("Error rollback block {}".format(self.height_status.height))
         # TODO: this deletes the TX, but we want to move them back to mempool I suppose
-        res = await self.async_execute(SQL_ROLLBACK_BLOCK_TXS, (self.height_status.height,), commit=True)
+        res = await self.async_execute(SQL_ROLLBACK_BLOCKS_TXS, (self.height_status.height,), commit=True)
         if not res:
             self.app_log.error("Error rollback block {}".format(self.height_status.height))
         self._invalidate()
@@ -629,7 +630,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             protocmd.Clear()
             protocmd.command = commands_pb2.Command.blocksync
 
-            blocks = await self.async_fetchall(SQL_BLOCK_SYNC, (height, common.BLOCK_SYNC_COUNT))
+            blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (height, common.BLOCK_SYNC_COUNT))
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
                 # Add the block txs
@@ -776,6 +777,38 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         except Exception as e:
             self.app_log.error("SRV: async_gettx: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            raise
+
+    async def async_getheaders(self, param):
+        """
+        Async. Return 20 latest block headers.
+
+        :param param: (string) empty: last 20 blocks headers. start_height,count or ,count (last N headers)
+        :return:
+        """
+        try:
+            protocmd = commands_pb2.Command()
+            protocmd.Clear()
+            protocmd.command = commands_pb2.Command.getheaders
+            if param is None or param == 'None':
+                param = ''
+            if param == '':
+                blocks = await self.async_fetchall(SQL_BLOCKS_LAST, (common.BLOCK_SYNC_COUNT,))
+            else:
+                start, count = param.split(',')
+                if '' == start:
+                    blocks = await self.async_fetchall(SQL_BLOCKS_LAST, (count,))
+                else:
+                    blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (start, count))
+            for block in blocks:
+                block = PosBlock().from_dict(dict(block))
+                block.add_to_proto(protocmd)
+            return protocmd
+        except Exception as e:
+            self.app_log.error("SRV: async_getheaders: Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))

@@ -3,6 +3,8 @@ Bismuth
 Common variables and helpers for PoS
 
 Also serves as config file for POC and tests
+
+TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
 """
 
 import os
@@ -42,7 +44,7 @@ FUTURE_ALLOWED = 5
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 # TODO: Estimate block size depending on the HN count
-BLOCK_SYNC_COUNT = 10
+BLOCK_SYNC_COUNT = 20
 
 # Debug/Dev only - Never forge if True
 DO_NOT_FORGE = False

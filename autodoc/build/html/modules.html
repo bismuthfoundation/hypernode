@@ -888,6 +888,22 @@ returns the block of the given height.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="poschain.SqlitePosChain.async_getheaders">
+<code class="descname">async_getheaders</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_getheaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Return 20 latest block headers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param</strong> – (string) empty: last 20 blocks headers. start_height,count or ,count (last N headers)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poschain.SqlitePosChain.async_gettx">
 <code class="descname">async_gettx</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_gettx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Command id 16
@@ -1111,13 +1127,15 @@ and conversion between them all.</p>
 
 <dl class="method">
 <dt id="posblock.PosBlock.to_dict">
-<code class="descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_dict" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_dict</code><span class="sig-paren">(</span><em>as_hex=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.to_dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the native object format to a dict representing a block.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> – if True, will convert binary fields to hex encoded string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
 </tr>
 </tbody>
 </table>
@@ -1428,7 +1446,7 @@ with <em>binary content as hex encoded string</em>.</p>
 
 <dl class="method">
 <dt id="posblock.PosMessage.to_list">
-<code class="descname">to_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_list" title="Permalink to this definition">¶</a></dt>
+<code class="descname">to_list</code><span class="sig-paren">(</span><em>as_hex=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage.to_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>List representation of the PosMessage instance.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -2424,6 +2442,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <p>Bismuth
 Common variables and helpers for PoS</p>
 <p>Also serves as config file for POC and tests</p>
+<p>TODO: split this file into 2: one “utils” with the functions, and one “params” or “posconfig” with the chain parameters.</p>
 <dl class="data">
 <dt id="common.POC_LAST_BROADHASH">
 <code class="descclassname">common.</code><code class="descname">POC_LAST_BROADHASH</code><em class="property"> = b'123456789abcdef12345'</em><a class="headerlink" href="#common.POC_LAST_BROADHASH" title="Permalink to this definition">¶</a></dt>

@@ -176,9 +176,26 @@ Returns <cite>false</cite> if the signature was not found.</p>
 <h4><code class="docutils literal notranslate"><span class="pre">--action=mempool</span></code><a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>
 <p>Returns current mempool content as json.</p>
 </div>
+<div class="section" id="action-headers">
+<h4><code class="docutils literal notranslate"><span class="pre">--action=headers</span></code><a class="headerlink" href="#action-headers" title="Permalink to this headline">¶</a></h4>
+<p>Returns the latest <cite>common.BLOCK_SYNC_COUNT</cite> block headers (block info, without tx info).
+‘tx’ key will be there but always an empty list.
+<cite>–param</cite> is an optional string and can be:</p>
+<ul class="simple">
+<li>start,count : count headers from start, ex <cite>–param=50,2</cite> will send headers 50 and 51</li>
+<li>,count : return the latest “count” headers ex: <cite>–param=,10</cite> will send latest 10 headers</li>
+</ul>
+<p>Sample output:</p>
+<p><code class="docutils literal notranslate"><span class="pre">[{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;},</span>
+<span class="pre">{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;a9254987127c1cc8313218a97ff700193ccd16af6b535d1f143f0ecc78dc1148c7c23a8ad549c93ebfdbfbb2f8c579619ee3d65961b98cf00afce4891afe9f57&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;28b828f717e4d04cad8c1b48f5d4b61a85203415&quot;}]</span></code></p>
+</div>
 <div class="section" id="action-txtest">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=txtest</span></code><a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>
-<p>Emits a test transaction</p>
+<p>Emits a test transaction.</p>
+</div>
+<div class="section" id="action-blocksync-param-block-height">
+<h4><code class="docutils literal notranslate"><span class="pre">--action=blocksync</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-blocksync-param-block-height" title="Permalink to this headline">¶</a></h4>
+<p>Returns the latest <cite>common.BLOCK_SYNC_COUNT</cite> full blocks starting from block_height as a json list of dict.</p>
 </div>
 </div>
 </div>

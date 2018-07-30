@@ -4,7 +4,7 @@
 * using pytest for help with tests
 * pycharm as code editor/linter/debug
 
-* Sphinx for autodoc generation from docstrings.
+* Sphinx for auto documentation generation from docstrings within the code itself.
 
 # Logging
 
@@ -57,7 +57,10 @@ add a message for that.
 
 # TODO
 
-since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
+Since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
+If so, use the docstring to add "Async" prefix instead to all async functions.
+
+common.py: TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
 
 Reread docs and code, change occurences of MN to HN (code ok)
 

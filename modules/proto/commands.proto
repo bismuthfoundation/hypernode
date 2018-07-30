@@ -85,7 +85,7 @@ message Command {
         update = 9;
         height = 10;  // Share - exchange height
         blockinfo = 11; // ask info for a specific block height. Question comes with an int32, answer with a height in height_value
-        blocksync = 12; // ask info for a list of blocks starting with the given one. Question comes with an int32, answer with block(s) in block_value
+        blocksync = 12; // ask info for a list of blocks starting with the given one. Question comes with an int32, answer with full block(s) in block_value
         roundblocks = 13; // ask the full block data for a given round. Question comes with an int32, answer with block(s) in block_value
         // Client specific messages
         getblock = 14; // ask for full block content of a given height. Question comes with an int32, answer with block_value
@@ -94,6 +94,8 @@ message Command {
         // Will only give at most 100 txs in a batch at most.
         // Optionnal starting block height or starting signature is added in the string after a comma : address,50
         gettx = 16; // ask the full details of a specific tx by its signature (sent as hex encode in string_value). Returns tx in tx_values
+        getheaders = 17; // ask the block headers for latest 20 blocks. string_value can contain optional block start and number of block like
+        // 50,10 (= 50 to 60) or ,50 (latest 50)
     }
     required Type command = 1;
 
