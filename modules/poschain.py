@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.63'
+__version__ = '0.0.64'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -261,7 +261,10 @@ class PosChain:
                                      .format(block.height, block.previous_hash, self.block['block_hash']))
                 return False
             # TODO: more checks
+            # TODO: if from miner, make sure we refreshed the round first.
             # timestamp of blocks
+            # fits with current round?
+            # right juror?
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
             await self.insert_block(block)
             self.app_log.warning("Digested block {}".format(block.height))

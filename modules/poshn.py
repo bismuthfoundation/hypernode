@@ -45,7 +45,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.77'
+__version__ = '0.0.78'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -122,6 +122,7 @@ class HnServer(TCPServer):
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current forging round, or add to anomalies buffer
+                self.node.check_round()  # Make sure our round info is up to date
                 for block in msg.block_value:
                     await self.node.poschain.digest_block(block, from_miner=True)
                 return
@@ -402,6 +403,7 @@ class Poshn:
             self.consensus_pc = 0
             self.net_height = None
             self.sync_from = None
+            self.current_round_start = 0
             # Locks - Are they needed? - not if one process is enough
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
@@ -511,7 +513,7 @@ class Poshn:
             app_log.info("Started HN Manager")
         # Initialise round/sir data
         await self.refresh_last_block()
-        await self._check_round()
+        await self.check_round()
         while not self.stop_event.is_set():
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
@@ -576,12 +578,17 @@ class Poshn:
 
                 if self.state == HNState.STRONG_CONSENSUS:
                     if self.consensus_pc > 50 and not common.DO_NOT_FORGE:
-                        await self.change_state_to(HNState.FORGING)
-                        # Forge will send also
-                        await self.forge()
-                        # await asyncio.sleep(10)
-                        self.forged = True
-                        await self.change_state_to(HNState.SYNCING)
+                        # Make sure we are at least 15 sec after round start, to let other nodes be synced.
+                        if time.time() - self.current_round_start > 15:
+                            await self.change_state_to(HNState.FORGING)
+                            # Forge will send also
+                            await self.forge()
+                            # await asyncio.sleep(10)
+                            self.forged = True
+                            await self.change_state_to(HNState.SYNCING)
+                        else:
+                            if self.verbose:
+                                app_log.info("My slot, but too soon to forge now.")
                     else:
                         if self.verbose:
                             app_log.info("My slot, but too low a consensus to forge now.")
@@ -606,7 +613,7 @@ class Poshn:
                                 io_loop.spawn_callback(self.client_worker, peer)
                 # FR: variable sleep time depending on the elapsed loop time - or use timeout?
                 await asyncio.sleep(common.WAIT)
-                await self._check_round()
+                await self.check_round()
 
             except Exception as e:
                 app_log.error("Error in manager {}".format(e))
@@ -1198,7 +1205,7 @@ class Poshn:
         # update our view of the network state
         await self._consensus()
 
-    async def _check_round(self):
+    async def check_round(self):
         """
         Async. Adjust round/slots depending properties.
         Always called from the manager co-routine only.
@@ -1219,6 +1226,7 @@ class Poshn:
                     await self.refresh_last_block()
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
+                    self.current_round_start = int(time.time())
                     self.previous_round = self.round
                     # TODO : if we have connections, drop them.
                     # wait for new list, so we keep cnx if we already are. or drop anyway?
