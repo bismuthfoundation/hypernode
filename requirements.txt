@@ -5,4 +5,5 @@ tornado
 requests
 ecdsa
 protobuf
+psutil
 pytest

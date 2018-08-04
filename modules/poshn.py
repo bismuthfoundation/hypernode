@@ -9,21 +9,20 @@ Note:
     FR: will go into TODO: as TODO: is cleared.
 """
 
-import time
-import random
-from enum import Enum
-import os
-import sys
-import json
-from distutils.version import LooseVersion
-import requests
-import socket
-import asyncio
 import aioprocessing
-import logging
+import asyncio
 # pip install ConcurrentLogHandler
 from cloghandler import ConcurrentRotatingFileHandler
+from distutils.version import LooseVersion
+from enum import Enum
+import json
+import logging
 from operator import itemgetter
+import os
+import psutil
+import random
+import sys
+import time
 # Tornado
 from tornado.ioloop import IOLoop
 # from tornado.options import define, options
@@ -31,8 +30,9 @@ from tornado.ioloop import IOLoop
 from tornado.iostream import StreamClosedError
 from tornado.tcpclient import TCPClient
 from tornado.tcpserver import TCPServer
-
 import tornado.log
+import requests
+import socket
 
 # Our modules
 import commands_pb2
@@ -46,7 +46,7 @@ import com_helpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.78'
+__version__ = '0.0.79'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -67,7 +67,7 @@ LTIMEOUT = 45
 # FR: Could depend on the jurors count.
 MINIMUM_CONNECTIVITY = 2
 
-# Some systems do not support reuse_port=
+# Some systems do not support reuse_port
 REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
 
 
@@ -383,8 +383,10 @@ class Poshn:
         # Does the node try to connect to others?
         self.connecting = False
         self.my_status = None
+        self.process = None
         try:
             self.init_log()
+            self.check_os()
             poscrypto.load_keys(wallet)
             # Time sensitive props
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/')
@@ -446,6 +448,19 @@ class Poshn:
                      .format(__version__, self.address, self.datadir, self.suffix))
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
+
+    def check_os(self):
+        if os.name == "posix":
+            self.process = psutil.Process()
+            limit = self.process.rlimit(psutil.RLIMIT_NOFILE)
+            app_log.info("OS File limits {}, {}".format(limit[0], limit[1]))
+            if limit[0] < 1024:
+                app_log.error("Too small ulimit, please tune your system.")
+                sys.exit()
+            if limit[0] < 65000:
+                app_log.warning("ulimit shows non optimum value, consider tuning your system.")
+        else:
+            app_log.warning("Non Posix system, requirements are not satisfied. Use at your own risks")
 
     def add_inbound(self, ip, port, properties=None):
         """
@@ -1334,6 +1349,11 @@ class Poshn:
         global app_log
         poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
+        if self.process:
+            of = len(self.process.open_files())
+            fd = self.process.num_fds()
+            co = len(self.process.connections(kind="tcp4"))
+        app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}".format(of, co, fd, len(self.inbound), len(self.clients)))
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
                   'instance': {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
                   'chain': poschain_status,
