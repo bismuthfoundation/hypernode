@@ -59,19 +59,6 @@ def test_bad_checksum():
         poscrypto.validate_address(address, b'\x19')
 
 
-def test_bench_create(benchmark):
-    """
-
-    :param benchmark:
-    :return:
-    """
-    # see http: // pytest - benchmark.readthedocs.io / en / stable / usage.html
-    benchmark(test_make_addresses)
-
-def test_bench_verify(benchmark):
-    benchmark(test_good_address)
-
-
 if __name__ == "__main__":
     print("Run pytest -v for tests.\n")
     test_make_addresses()

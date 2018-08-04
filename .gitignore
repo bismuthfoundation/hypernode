@@ -17,3 +17,4 @@ poswallet.json
 .pytest_cache
 poskeys.json
 priv
+.benchmarks
