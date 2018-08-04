@@ -1,3 +1,3 @@
-# pos_poc
+# Bismuth Hypernodes
 
-test
+WIP
