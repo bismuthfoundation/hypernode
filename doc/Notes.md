@@ -74,6 +74,8 @@ Most diff. thing: the sync state loop to clearly decompose.
 
 Reread docs and code, change occurrences of MN to HN (code ok)
 
+Probly use static type hints?
+
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
 

@@ -169,6 +169,11 @@ class HnServer(TCPServer):
         finally:
             if remove:
                 self.node.remove_inbound(peer_ip, peer_port)
+            try:
+                # Is this done a level higher?
+                stream.close()
+            except:
+                pass
 
     async def _handle_msg(self, msg, stream, peer_ip, peer_port):
         """
@@ -384,6 +389,7 @@ class Poshn:
         self.connecting = False
         self.my_status = None
         self.process = None
+        self.forged_count = 0  # How many blocks forged since start of the HN
         try:
             self.init_log()
             self.check_os()
@@ -895,6 +901,7 @@ class Poshn:
             app_log.info("Sending block to {}:{}".format(peer_ip, peer_port))
         try:
             full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
+            # FR: Are context managers possible here? would lighten the finally step
             stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
         except Exception as e:
@@ -940,6 +947,7 @@ class Poshn:
             if self.verbose:
                 print("proto", block)
             app_log.info("Block Forged, I will send it")
+            self.forged_count += 1
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2])
                        for peer in common.POC_HYPER_NODES_LIST
@@ -1132,10 +1140,6 @@ class Poshn:
                             app_log.info("Sending ping to {}".format(full_peer))
                         # keeps connection active, or raise error if connection lost
                         await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
-            try:
-                stream.close()
-            except:
-                pass
             raise ValueError("Closing")
         except tornado.iostream.StreamClosedError as e:
             if self.verbose:
@@ -1155,6 +1159,11 @@ class Poshn:
             #  Wait here so we don't retry immediately
             await asyncio.sleep(common.PEER_RETRY_SECONDS)
         finally:
+            if stream:
+                try:
+                    stream.close()
+                except:
+                    pass
             try:
                 with self.clients_lock:
                     # We could keep it and set to inactive, but is it useful? could grow too much
@@ -1355,7 +1364,7 @@ class Poshn:
             of = len(self.process.open_files())
             fd = self.process.num_fds()
             co = len(self.process.connections(kind="tcp4"))
-        app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}".format(of, co, fd, len(self.inbound), len(self.clients)))
+        app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {} - Forged {} since start.".format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
                   'instance': {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
                   'chain': poschain_status,
@@ -1373,5 +1382,7 @@ class Poshn:
         # 'peers': self.peers
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
+        for con in self.process.connections(kind="tcp4"):
+            app_log.info("!C local {} rem {} state {}".format(con.laddr, con.raddr, con.status))
         self.my_status = status
         return self.status
