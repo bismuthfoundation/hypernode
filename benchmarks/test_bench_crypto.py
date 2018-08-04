@@ -5,10 +5,10 @@ Needs pytest, just run pytest  in the test directory.
 """
 
 import sys
-import pytest
 
 sys.path.append('../modules')
 import poscrypto
+import test_helpers
 
 
 def make_addresses():
@@ -26,6 +26,7 @@ def validate_address():
     address = 'B9oMPPW5hZEAAuq8oCpT6i6pavPJhgXViq'
     poscrypto.validate_address(address, b'\x19')
 
+
 def test_bench_create(benchmark):
     """
 
@@ -35,9 +36,50 @@ def test_bench_create(benchmark):
     # see http: // pytest - benchmark.readthedocs.io / en / stable / usage.html
     benchmark(make_addresses)
 
+
 def test_bench_verify(benchmark):
     benchmark(validate_address)
 
 
+def sign_txs(txs, verify=False):
+    for tx in txs:
+        tx.sign(verify=verify)
+
+
+def test_tx_unsigned10(benchmark):
+    poscrypto.load_keys('./bench_wallet.json')
+    if benchmark:
+        benchmark(test_helpers.create_txs, 10, False)
+    else:
+        test_helpers.create_txs(10, False)
+
+
+def test_tx_sign10check(benchmark):
+    poscrypto.load_keys('./bench_wallet.json')
+    txs = test_helpers.create_txs(10, False)
+    if benchmark:
+        benchmark(sign_txs, txs, True)
+    else:
+        sign_txs(txs)
+
+
+def test_tx_sign10nocheck(benchmark):
+    poscrypto.load_keys('./bench_wallet.json')
+    txs = test_helpers.create_txs(10, False)
+    if benchmark:
+        benchmark(sign_txs, txs, False)
+    else:
+        sign_txs(txs)
+
+
+def test_tx_signed10(benchmark):
+    poscrypto.load_keys('./bench_wallet.json')
+    if benchmark:
+        benchmark(test_helpers.create_txs, 10, True)
+    else:
+        test_helpers.create_txs(10, True)
+
+
 if __name__ == "__main__":
     print("Run pytest -v for tests.\n")
+    test_tx_signed10(None)

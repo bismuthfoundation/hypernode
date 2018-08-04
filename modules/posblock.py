@@ -4,16 +4,17 @@ Allow for different formats: json, dict, raw, protobuf
 and conversion between them all.
 """
 
+
 import json
-import sqlite3
 import os
+import sqlite3
 import sys
 
 # Our modules
 import common
-import time
-import poscrypto
 import commands_pb2
+import poscrypto
+import time
 
 
 __version__ = '0.0.82'
@@ -198,10 +199,11 @@ class PosMessage:
 
     # =========================== Really useful methods ===========================
 
-    def sign(self):
+    def sign(self, verify=True):
         """
         Sign the raw tx. Uses keys from poscrypto module.
 
+        :param verify: Should we verify the tx? Defaults to True
         :return: Signature as bytearray.
         """
         # exception if we are not the forger
@@ -209,7 +211,7 @@ class PosMessage:
         if self.verbose:
             print(raw)
         self.pubkey = poscrypto.PUB_KEY.to_string()
-        self.txid = poscrypto.sign(raw, verify=True)
+        self.txid = poscrypto.sign(raw, verify=verify)
 
     def check(self):
         """

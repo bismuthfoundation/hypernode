@@ -14,6 +14,7 @@ bak
 *.pem
 pos_address.txt
 poswallet.json
+bench_wallet.json
 .pytest_cache
 poskeys.json
 priv
