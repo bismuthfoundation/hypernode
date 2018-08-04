@@ -126,7 +126,7 @@ class HnServer(TCPServer):
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current forging round, or add to anomalies buffer
-                self.node.check_round()  # Make sure our round info is up to date
+                await self.node.check_round()  # Make sure our round info is up to date
                 for block in msg.block_value:
                     await self.node.poschain.digest_block(block, from_miner=True)
                 return
@@ -895,11 +895,13 @@ class Poshn:
             app_log.info("Sending block to {}:{}".format(peer_ip, peer_port))
         try:
             full_peer = common.ipport_to_fullpeer(peer_ip, peer_port)
-            tcp_client = TCPClient()
-            stream = await tcp_client.connect(peer_ip, peer_port, timeout=5)
+            stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
         except Exception as e:
             app_log.warning("Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port))
+        finally:
+            if stream:
+                stream.close()
 
     async def forge(self):
         """
