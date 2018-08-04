@@ -1360,11 +1360,14 @@ class Poshn:
         global app_log
         poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
+        extra = {"forged_count": self.forged_count}
         if self.process:
             of = len(self.process.open_files())
             fd = self.process.num_fds()
             co = len(self.process.connections(kind="tcp4"))
-        app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {} - Forged {} since start.".format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
+            extra['open_files'], extra['connections'], extra['num_fd'] = of, co, fd
+            app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {} - Forged {} since start.".format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
+
         status = {'config': {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
                   'instance': {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
                   'chain': poschain_status,
@@ -1378,7 +1381,8 @@ class Poshn:
                   'state': {'state': self.state.name,
                             'round': self.round,
                             'sir': self.sir,
-                            'forger': self.forger}}
+                            'forger': self.forger},
+                  'extra': extra}
         # 'peers': self.peers
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
