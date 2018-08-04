@@ -55,14 +55,24 @@ check on receive. if he lied, issue a tx and ignore him for a while.
 add a message for that. 
 
 
+Raspberry pi image of node + HN
+(not enough. orange pi2e : 2Gb, could do)
+
+
 # TODO
+
+Important: see wallet server, add filehandler counts and such for debug/status.
 
 Since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
 If so, use the docstring to add "Async" prefix instead to all async functions.
 
 common.py: TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
 
-Reread docs and code, change occurences of MN to HN (code ok)
+Write a simplified async node, with only node related commands, no client commands?
+Could serve as a base for a full async node later on, and will lighten the load on the hosting.
+Most diff. thing: the sync state loop to clearly decompose.
+
+Reread docs and code, change occurrences of MN to HN (code ok)
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
@@ -91,7 +101,7 @@ if ok, digest (deep check) or replace.
 btc messages use:
 - magic number to resync failed stream
 - checksum in header
-Both are easy to add with little overhead. reserve space for them in protobuff structure, even if not enforced at start.
+Both are easy to add with little overhead. reserve space for them in protobuf structure, even if not enforced at start.
 
 DONE. See network number + checksum and b58encoding in btc https://en.bitcoin.it/wiki/File:PubKeyToAddr.png
 Done  Do *not* send mempool if our mempool is empty? The other will send it to us anyway. And we will feed our also.

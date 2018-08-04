@@ -44,7 +44,8 @@ if __name__ == "__main__":
             # Displays genesis block info for db insert
             poscrypto.load_keys("mn_temp/mn0.json")
             pos_chain = SqlitePosChain(verbose=True)
-            genesis = pos_chain.genesis_dict()
+            # genesis = pos_chain.genesis_dict()
+            print("TODO")
         else:
             # If we are updating, let our previous instance close.
             time.sleep(1)

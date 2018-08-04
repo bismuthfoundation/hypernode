@@ -364,6 +364,8 @@ class MemoryPosChain(PosChain):
 class SqlitePosChain(PosChain, SqliteBase):
 
     def __init__(self, verbose=False, db_path='data/', app_log=None, mempool=None):
+        # if not app_log:
+        #     self.app_log =
         PosChain.__init__(self, verbose=verbose, app_log=app_log, mempool=mempool)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='poc_pos_chain.db', app_log=app_log)
 
@@ -376,8 +378,8 @@ class SqlitePosChain(PosChain, SqliteBase):
         # Create path
         # Create DB if needed
         # insert genesis block with fixed TS
-
-        self.app_log.info("pos chain Check")
+        if self.app_log:
+            self.app_log.info("pos chain Check")
         try:
             if not os.path.isfile(self.db_path):
                 res = -1
@@ -442,7 +444,8 @@ class SqlitePosChain(PosChain, SqliteBase):
                 self.execute(SQL_CREATE_POS_MESSAGES)
                 self.execute(SQL_CREATE_POS_ROUNDS)
                 self.commit()
-                self.app_log.info("Status: Recreated poschain database")
+                if self.app_log:
+                    self.app_log.info("Status: Recreated poschain database")
 
             # Now test data
             test = self.execute(SQL_LAST_BLOCK).fetchone()
@@ -455,10 +458,14 @@ class SqlitePosChain(PosChain, SqliteBase):
                     self.execute(SQL_INSERT_GENESIS)
                     self.commit()
         except Exception as e:
-            self.app_log.error("Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            if self.app_log:
+                self.app_log.error("Error {}".format(e))
+                self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            else:
+                print("Error {}".format(e))
+                print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
         self.db.close()
         self.db = None

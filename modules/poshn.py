@@ -17,6 +17,7 @@ import sys
 import json
 from distutils.version import LooseVersion
 import requests
+import socket
 import asyncio
 import aioprocessing
 import logging
@@ -65,6 +66,9 @@ LTIMEOUT = 45
 # Minimum required connectivity before we are able to operate
 # FR: Could depend on the jurors count.
 MINIMUM_CONNECTIVITY = 2
+
+# Some systems do not support reuse_port=
+REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
 
 
 """
@@ -1269,10 +1273,10 @@ class Poshn:
             server.mempool = self.mempool
             server.node = self
             # server.listen(port)
-            server.bind(self.port, backlog=128, reuse_port=True)
+            server.bind(self.port, backlog=128, reuse_port=REUSE_PORT)
             server.start(1)  # Forks multiple sub-processes
             if self.verbose:
-                app_log.info("Starting server on tcp://localhost:" + str(self.port))
+                app_log.info("Starting server on tcp://localhost:{} , reuse_port={}".format(self.port, REUSE_PORT))
             io_loop = IOLoop.instance()
             io_loop.spawn_callback(self.manager)
             self.connect()
