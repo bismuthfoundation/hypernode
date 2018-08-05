@@ -27,13 +27,13 @@ from poschain import SqlitePosChain
 import poscrypto
 import com_helpers
 
-__version__ = '0.0.51'
+__version__ = '0.0.52'
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS HyperNode')
     parser.add_argument("-i", "--index", type=int, default = -1, help='Demo address index [0-4]')
-    parser.add_argument("-I", "--ip", type=str, default = '', help='IP to listen all (empty for all)')
+    parser.add_argument("-I", "--ip", type=str, default = '', help="IP to listen on ('ALL' for all interfaces)")
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("--action", type=str, default=None, help='Specific action. ')
     args = parser.parse_args()
@@ -67,6 +67,8 @@ if __name__ == "__main__":
                 ip = args.ip if args.ip else None
                 port = config.DEFAULT_PORT
                 suffix=''
+            if args.ip == 'ALL':
+                ip = None
             com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose,
                                         wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__)
             com_helpers.MY_NODE.serve()

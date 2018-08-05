@@ -61,8 +61,6 @@ Raspberry pi image of node + HN
 
 # TODO
 
-Important: see wallet server, add filehandler counts and such for debug/status.
-
 Extra in status: add cpu% (app and system + ram / disk)
 
 UFW for Python.
@@ -74,15 +72,13 @@ hn_instance: opt config: what ip to listen on? (default all)
 Since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
 If so, use the docstring to add "Async" prefix instead to all async functions.
 
-common.py: TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
-
 Write a simplified async node, with only node related commands, no client commands?
 Could serve as a base for a full async node later on, and will lighten the load on the hosting.
 Most diff. thing: the sync state loop to clearly decompose.
 
 Reread docs and code, change occurrences of MN to HN (code ok)
 
-Probly use static type hints? - MyPy
+WIP - Probly use static type hints? - MyPy
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
@@ -119,3 +115,6 @@ DONE at launch, check our mempool does not have stuck tx (way too old or already
 DONE *Important:* replace (or add) uniques 10 and forgers10 by round_uniques and round_forgers (metrics to decide the best current round chain)
 done delete tx from mempool when catching up/digesting block
 done digested block from miner: does not show tx, whereas there were. check.
+done Important: see wallet server, add filehandler counts and such for debug/status.
+DONE common.py: TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
+
