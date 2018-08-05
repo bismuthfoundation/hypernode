@@ -18,11 +18,11 @@ from base64 import b64encode, b64decode
 # our modules
 import base58
 try:
-    # Fail safe so we can use without common.py module
-    import common
+    # Fail safe so we can use without config.py module
+    import config
 except:
     # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
-    common.NETWORK_ID = b'\x19'
+    config.NETWORK_ID = b'\x19'
 
 
 __version__ = '0.0.41'
@@ -86,7 +86,7 @@ def hash_to_addr(hash20, network=None):
     :return: string
     """
     if not network:
-        network = common.NETWORK_ID
+        network = config.NETWORK_ID
     v = network + hash20
     digest = blake2b(v, digest_size=4).digest()
     return base58.b58encode(v + digest).decode('ascii')
@@ -116,7 +116,7 @@ def validate_address(address, network=None):
         # B9oMPPW5hZEAAuq8oCpT6i6pavPJhgXViq
         raise ValueError("Invalid address format: {}".format(address))
     if not network:
-        network = common.NETWORK_ID
+        network = config.NETWORK_ID
     raw = base58.b58decode(address)
     result, check = raw[:-4], raw[-4:]
     digest = blake2b(result, digest_size=4).digest()
@@ -206,7 +206,7 @@ def gen_keys():
     """
     privkey = SigningKey.generate(curve=SECP256k1)
     pubkey = privkey.get_verifying_key().to_string()
-    address = pub_key_to_addr(pubkey, common.NETWORK_ID)
+    address = pub_key_to_addr(pubkey, config.NETWORK_ID)
     return privkey.to_string(), pubkey, address
 
 
@@ -220,8 +220,8 @@ def gen_keys_file(pos_filename='poswallet.json'):
     # we are supposed to have checked before, but make sure anyway.
     if not os.path.exists(pos_filename):
         privkey, pubkey, address = gen_keys()
-        if common.VERBOSE:
-            print("Generated address for network 0x{:02x} is {}".format(ord(common.NETWORK_ID), address))
+        if config.VERBOSE:
+            print("Generated address for network 0x{:02x} is {}".format(ord(config.NETWORK_ID), address))
         wallet = {"encrypted": False, "pubkey": b64encode(pubkey).decode('ascii'),
                   "privkey": b64encode(privkey).decode('ascii'),
                   "address": address, "label": "", "created": int(time.time())}

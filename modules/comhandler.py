@@ -81,7 +81,7 @@ class Connection:
     def _get(self, header=None):
         if not self.connected:
             raise ValueError("Not connected")
-        if header == None:
+        if not header:
             header=self.socket.recv(4)
         if len(header) < 4:
             raise RuntimeError("Socket EOF")

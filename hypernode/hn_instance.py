@@ -3,7 +3,7 @@
 HyperNode Instance
 #####################
 
-Run from the command line with the instance index from common.py
+Run from the command line with the instance index from config.py
 
 Example:
 
@@ -20,8 +20,8 @@ import time
 # custom modules
 sys.path.append('../modules')
 import os
-import common
-import poshn
+import config
+# import poshn
 from poshn import Poshn
 from poschain import SqlitePosChain
 import poscrypto
@@ -33,6 +33,7 @@ __version__ = '0.0.51'
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS HyperNode')
     parser.add_argument("-i", "--index", type=int, default = -1, help='Demo address index [0-4]')
+    parser.add_argument("-I", "--ip", type=str, default = '', help='IP to listen all (empty for all)')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("--action", type=str, default=None, help='Specific action. ')
     args = parser.parse_args()
@@ -49,9 +50,9 @@ if __name__ == "__main__":
         else:
             # If we are updating, let our previous instance close.
             time.sleep(1)
-            peers = common.POC_HYPER_NODES_LIST
+            peers = config.POC_HYPER_NODES_LIST
             if args.index >= 0:
-                my_info = common.POC_HYPER_NODES_LIST[args.index]
+                my_info = config.POC_HYPER_NODES_LIST[args.index]
                 ip = my_info[1]
                 port = my_info[2]
                 address = my_info[0]
@@ -62,12 +63,11 @@ if __name__ == "__main__":
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"
-                my_info = common.POC_HYPER_NODES_LIST[args.index]
-                ip = '127.0.0.1'  # TODO DEV only
-                port = 6960
-                address = "BAnNdHZSWBJxEya5o33Qbqrzg1m13GZmxy"  # TODO: take from wallet
+                my_info = config.POC_HYPER_NODES_LIST[args.index]
+                ip = args.ip if args.ip else None
+                port = config.DEFAULT_PORT
                 suffix=''
-            com_helpers.MY_NODE = Poshn(ip, port, address=address, peers=peers, verbose = args.verbose,
+            com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose,
                                         wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it

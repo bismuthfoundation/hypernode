@@ -8,10 +8,10 @@ import sys
 # import json
 import time
 import sqlite3
-import asyncio
+# import asyncio
 
 # Our modules
-import common
+import config
 import poscrypto
 import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
@@ -157,9 +157,9 @@ class PosChain:
         """
         # No tx for genesis
         txids = []
-        block_dict = {'height': 0, 'round': 0, 'sir': 0, 'timestamp': common.ORIGIN_OF_TIME,
-                      'previous_hash': poscrypto.blake(common.GENESIS_SEED.encode('utf-8')).digest(),
-                      'msg_count': 0, 'unique_sources': 0, 'txs': txids, 'forger': common.GENESIS_ADDRESS,
+        block_dict = {'height': 0, 'round': 0, 'sir': 0, 'timestamp': config.ORIGIN_OF_TIME,
+                      'previous_hash': poscrypto.blake(config.GENESIS_SEED.encode('utf-8')).digest(),
+                      'msg_count': 0, 'unique_sources': 0, 'txs': txids, 'forger': config.GENESIS_ADDRESS,
                       'block_hash': b'', 'signature': b''}
         # print(block_dict)
         block = PosBlock().from_dict(block_dict)
@@ -451,7 +451,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:
                 # empty db, try to bootstrap - only Genesis HN can do this
-                if poscrypto.ADDRESS == common.GENESIS_ADDRESS:
+                if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
                 else:
@@ -485,7 +485,7 @@ class SqlitePosChain(PosChain, SqliteBase):
 
     async def status(self):
         last_block = await self.last_block()
-        status = {"block_height": last_block['height'], "Genesis": common.GENESIS_ADDRESS}
+        status = {"block_height": last_block['height'], "Genesis": config.GENESIS_ADDRESS}
         height_status = await self.async_height()
         status.update(height_status.to_dict(as_hex=True))
         return status
@@ -512,7 +512,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         if len(tx_ids):
             await self.mempool.async_del_txids(tx_ids)
         # Then the block and commit
-        res = await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+        await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
         self._invalidate()
         self.block = block.to_dict()
         # force Recalc - could it be an incremental job ?
@@ -564,9 +564,9 @@ class SqlitePosChain(PosChain, SqliteBase):
         """
         # First delete the tx
         # TODO: this deletes the TX, but we want to move them back to mempool !important
-        res = await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=False)
+        await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=False)
         # Then the block data itself
-        res = await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
+        await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
         # reset status so future block digestions will be ok.
         self._invalidate()
 
@@ -640,7 +640,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             protocmd.Clear()
             protocmd.command = commands_pb2.Command.blocksync
 
-            blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (height, common.BLOCK_SYNC_COUNT))
+            blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (height, config.BLOCK_SYNC_COUNT))
             for block in blocks:
                 block = PosBlock().from_dict(dict(block))
                 # Add the block txs
@@ -806,7 +806,7 @@ class SqlitePosChain(PosChain, SqliteBase):
             if param is None or param == 'None':
                 param = ''
             if param == '':
-                blocks = await self.async_fetchall(SQL_BLOCKS_LAST, (common.BLOCK_SYNC_COUNT,))
+                blocks = await self.async_fetchall(SQL_BLOCKS_LAST, (config.BLOCK_SYNC_COUNT,))
             else:
                 start, count = param.split(',')
                 if '' == start:

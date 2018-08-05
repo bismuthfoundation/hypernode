@@ -4,20 +4,22 @@ A common ancestor for sqlite related storage objects.
 Used by mempool and poschain
 """
 
-import sqlite3
-import aiosqlite3
-import time
 import asyncio
+import logging
+import sqlite3
+import time
+
+import aiosqlite3
+
+__version__ = '0.0.22'
 
 
-__version__ = '0.0.21'
-
-
-class SqliteBase():
+class SqliteBase:
     """
     Generic Sqlite storage backend.
     """
-    def __init__(self, verbose=False, db_path='./data/', db_name='posmempool.db', app_log=None, ram=False):
+    def __init__(self, verbose=False, db_path: str='./data/', db_name: str='posmempool.db', app_log: logging.log=None,
+                 ram=False):
         self.db_path = db_path + db_name
         self.db_name = db_name
         self.db = None
@@ -36,9 +38,8 @@ class SqliteBase():
         :return:
         """
         self.app_log.info("Virtual Method {} Check".format(self.db_name))
-        # pass
 
-    def execute(self, sql, param=None, cursor=None, commit=False):
+    def execute(self, sql: str, param: tuple=None, cursor=None, commit: bool=False):
         """
         Safely execute the request
 
@@ -75,7 +76,7 @@ class SqliteBase():
             cursor = None
         return cursor
 
-    async def async_execute(self, sql, param=None, commit=False):
+    async def async_execute(self, sql: str, param: tuple=None, commit: bool=False):
         """
         Async. Safely execute the request
 
@@ -84,6 +85,7 @@ class SqliteBase():
         :param commit: If True, will commit after the request.
         :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be closed.
         """
+        cursor = None
         if not self.async_db:
             # TODO: RAM Mode
             try:
@@ -113,7 +115,10 @@ class SqliteBase():
             raise ValueError("Too many retries")
         if commit:
             await self.async_commit()
-            await cursor.close()
+            try:
+                await cursor.close()
+            except:
+                pass
             cursor = None
         return cursor
 
@@ -143,12 +148,13 @@ class SqliteBase():
                 self.app_log.warning("Database {} retry reason: {}".format(self.db_name, e))
                 asyncio.sleep(0.1)
 
-    async def async_fetchone(self, sql, param=None, as_dict=False):
+    async def async_fetchone(self, sql: str, param: tuple=None, as_dict: bool=False):
         """
         Async. Fetch one and Returns data.
 
         :param sql:
         :param param:
+        :param as_dict: returns result as a dict, default False.
         :return: tuple()
         """
         cursor = await self.async_execute(sql, param)
@@ -160,7 +166,7 @@ class SqliteBase():
             return dict(data)
         return tuple(data)
 
-    async def async_fetchall(self, sql, param=None):
+    async def async_fetchall(self, sql: str, param: tuple=None):
         """
         Async. Fetch all and Returns data
 

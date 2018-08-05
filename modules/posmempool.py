@@ -7,10 +7,10 @@ import time
 import os
 import sys
 import sqlite3
-import asyncio
+# import asyncio
 # https://github.com/zeromake/aiosqlite3 - Tested https://github.com/jreese/aiosqlite without success.
 # Maybe also see https://github.com/aio-libs/aioodbc
-import aiosqlite3
+# import aiosqlite3
 
 # Our modules
 # import common

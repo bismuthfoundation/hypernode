@@ -5,11 +5,11 @@ Needs pytest, just run pytest -v in the test directory.
 """
 
 import sys
-import pytest
+# import pytest
 # import pytest_benchmark
 
 sys.path.append('../modules')
-import determine
+# import determine
 
 
 def test_TODO():

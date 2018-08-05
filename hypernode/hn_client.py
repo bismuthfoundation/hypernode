@@ -175,7 +175,7 @@ Returns the latest `common.BLOCK_SYNC_COUNT` full blocks starting from block_hei
 
 import sys
 import argparse
-import time
+# import time
 import asyncio
 
 # custom modules

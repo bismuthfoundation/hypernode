@@ -2,15 +2,15 @@
 Deterministic helpers and/or classes for Bismuth PoS
 """
 
+import math
 # Third party modules
 import random
 import time
-import math
-# import asyncio
 
 # Custom modules
-import common
+import config
 import poscrypto
+
 
 __version__ = '0.0.21'
 
@@ -67,7 +67,7 @@ async def hn_list_to_tickets(hn_list):
     # Always parse the full list even if this means adding too many candidates
     # (this ensures everyone gets the same chance)
     tid = 0
-    while len(tickets) < common.MAX_ROUND_SLOTS:
+    while len(tickets) < config.MAX_ROUND_SLOTS:
         for hn in hn_list:
             # a more compact and faster version can be written, I prefer to aim at clarity
             for chances in range(hn[3]):  # index 3 is the weight
@@ -91,7 +91,7 @@ async def tickets_to_delegates(tickets_list, reference_hash):
     if VERBOSE:
         # print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
-    return tickets_list[:common.MAX_ROUND_SLOTS]
+    return tickets_list[:config.MAX_ROUND_SLOTS]
 
 
 def pick_two_not_in(address_list, avoid):
@@ -135,14 +135,14 @@ async def hn_list_to_test_slots(full_hn_list, forge_slots):
         # slot is a tuple (address, ticket#)
         tests = []
         avoid = [slot[0]]
-        while len(tests) < common.TESTS_PER_SLOT:
+        while len(tests) < config.TESTS_PER_SLOT:
             picks = pick_two_not_in(all_hns_addresses, avoid)
             if not picks:
                 # not enough hn left to do the required tests.
                 # TODO: this should be an alert since we will lack messages.
                 break
             # also pick a random test
-            test_type = random.choice(common.TESTS_TYPE)
+            test_type = random.choice(config.TESTS_TYPE)
             tests.append((picks[0], picks[1], test_type))
         test_slots.append(tests)
     return test_slots
@@ -159,9 +159,9 @@ def timestamp_to_round_slot(ts=0):
     """
     if ts == 0:
         ts = time.time()
-    the_round = math.floor((ts - common.ORIGIN_OF_TIME) / common.ROUND_TIME_SEC)
-    round_start = common.ORIGIN_OF_TIME + the_round * common.ROUND_TIME_SEC
-    the_slot = math.floor((ts - round_start) / common.POS_SLOT_TIME_SEC)
+    the_round = math.floor((ts - config.ORIGIN_OF_TIME) / config.ROUND_TIME_SEC)
+    round_start = config.ORIGIN_OF_TIME + the_round * config.ROUND_TIME_SEC
+    the_slot = math.floor((ts - round_start) / config.POS_SLOT_TIME_SEC)
     return the_round, the_slot
 
 
@@ -190,10 +190,6 @@ async def get_connect_to(peers, pos_round, address):
     random.shuffle(result)
     # POC: limit to 3 peers
     return result[:3]
-    # Temp test with 2 nodes only
-    if "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne" == address:
-        return [peers[1]]
-    return [peers[0]]
 
 
 async def connect_ok_from(msg, access_log):
@@ -209,8 +205,8 @@ async def connect_ok_from(msg, access_log):
     reason = None
     ok = True
     # Check 1. posnet version
-    if posnet not in common.POSNET_ALLOW:
-        access_log.warning("Bad posnet {} instead of {}".format(posnet, common.POSNET_ALLOW))
+    if posnet not in config.POSNET_ALLOW:
+        access_log.warning("Bad posnet {} instead of {}".format(posnet, config.POSNET_ALLOW))
         reason = "Bad Posnet {}".format(posnet)
         ok = False
     # TODO: 2.check peer ip/address matches

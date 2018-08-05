@@ -11,7 +11,7 @@ from tornado.tcpclient import TCPClient
 import json
 import time
 
-import common
+import config
 import com_helpers
 import poscrypto
 import posblock
@@ -45,7 +45,7 @@ class Posclient:
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
             stream = await tcp_client.connect(self.ip, self.port)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
-            await com_helpers.async_send_string(commands_pb2.Command.hello, common.POSNET + '00101' + poscrypto.ADDRESS,
+            await com_helpers.async_send_string(commands_pb2.Command.hello, config.POSNET + '00101' + poscrypto.ADDRESS,
                                                 stream, self.ip)
             msg = await com_helpers.async_receive(stream, self.ip)
             if self.verbose:

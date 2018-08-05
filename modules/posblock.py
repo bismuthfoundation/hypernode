@@ -11,7 +11,7 @@ import sqlite3
 import sys
 
 # Our modules
-import common
+import config
 import commands_pb2
 import poscrypto
 import time
@@ -221,7 +221,7 @@ class PosMessage:
         :return: None
         """
         # Check 1. timestamp not in the future
-        if self.timestamp > time.time() + common.FUTURE_ALLOWED:
+        if self.timestamp > time.time() + config.FUTURE_ALLOWED:
             raise ValueError("Transaction in the future, not allowed")
         # Check 2. sender is valid address
         poscrypto.validate_address(self.sender)

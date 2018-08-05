@@ -6,7 +6,7 @@ Run from the command line, sends an "update" command to the clients listed in da
 import sys
 import os
 import argparse
-import time
+# import time
 import asyncio
 
 # custom modules

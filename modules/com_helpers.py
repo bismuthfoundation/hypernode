@@ -89,6 +89,7 @@ async def async_send(cmd, stream, ip):
         except:
             pass
     except Exception as e:
+        # TODO: remove try block if it's just to raise.
         # app_log.error("_send ip {}: {}".format(ip, e))
         """
         exc_type, exc_obj, exc_tb = sys.exc_info()
