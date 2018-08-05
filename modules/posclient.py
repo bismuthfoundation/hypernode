@@ -4,20 +4,20 @@ Pos client class for Bismuth HyperNodes
 Tornado based
 """
 
+import json
 import os
 import sys
-from tornado.tcpclient import TCPClient
-# import asyncio
-import json
 import time
 
-import config
-import com_helpers
-import poscrypto
-import posblock
-import commands_pb2
+from tornado.tcpclient import TCPClient
 
-__version__ = '0.0.35'
+import com_helpers
+import commands_pb2
+import posblock
+import poscrypto
+import poshelpers
+
+__version__ = '0.0.38'
 
 
 class Posclient:
@@ -28,6 +28,7 @@ class Posclient:
         self.verbose = verbose
         self.client_version = version
         poscrypto.load_keys(wallet, verbose=self.verbose)
+        self.hello_string = poshelpers.hello_string(port=101)
 
     async def action(self, action='hello', param=''):
         """
@@ -39,14 +40,13 @@ class Posclient:
         """
         try:
             if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block',
-                              'blocksync', 'headers'):
+                              'round', 'hypernodes', 'blocksync', 'headers'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
             stream = await tcp_client.connect(self.ip, self.port)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
-            await com_helpers.async_send_string(commands_pb2.Command.hello, config.POSNET + '00101' + poscrypto.ADDRESS,
-                                                stream, self.ip)
+            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string, stream, self.ip)
             msg = await com_helpers.async_receive(stream, self.ip)
             if self.verbose:
                 print("Client got {}".format(msg.__str__().strip()))
@@ -69,12 +69,30 @@ class Posclient:
                 return
 
             if 'status' == action:
+                start_time = time.time()
                 await com_helpers.async_send_void(commands_pb2.Command.status, stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.status:
+                    end_time = time.time()
                     status = json.loads(msg.string_value)
-                    status['client'] = {"version": self.client_version, "lib_version": __version__, "localtime":time.time()}
-                    # FR: could add times to connect, hello and end to end in  here too.
+                    status['client'] = {"version": self.client_version, "lib_version": __version__,
+                                        "localtime":end_time, 'rtt': end_time - start_time}
+                    print(json.dumps(status))
+                    return
+
+            if 'round' == action:
+                await com_helpers.async_send_void(commands_pb2.Command.getround, stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.getround:
+                    status = json.loads(msg.string_value)
+                    print(json.dumps(status))
+                    return
+
+            if 'hypernodes' == action:
+                await com_helpers.async_send_void(commands_pb2.Command.gethypernodes, stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.gethypernodes:
+                    status = json.loads(msg.string_value)
                     print(json.dumps(status))
                     return
 

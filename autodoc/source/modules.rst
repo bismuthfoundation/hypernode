@@ -4,6 +4,15 @@
 .. toctree::
    :maxdepth: 2
 
+config - Constants and settings
+===============================
+
+.. automodule:: config
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
 
 poshn - core hypernode class
 ============================
@@ -102,10 +111,10 @@ base58 - Util module
     :undoc-members:
     :show-inheritance:
 
-common - Util module
-=====================
+poshelpers - Util module
+========================
 
-.. automodule:: common
+.. automodule:: poshelpers
     :members:
     :private-members:
     :undoc-members:

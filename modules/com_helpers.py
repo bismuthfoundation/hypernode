@@ -23,7 +23,7 @@ STATS_LASTMPL = 7
 STATS_LASTHGT = 8
 
 # Generic async stream com
-# TODO: move into a class?
+# FR: move into a class?
 
 MY_NODE = None
 
@@ -76,7 +76,7 @@ async def async_send(cmd, stream, ip):
     """
     # global app_log
     global MY_NODE
-    # TODO : stats and time, ping
+    # FR : surface stats and time, ping
     try:
         data = cmd.SerializeToString()
         data_len = len(data)
@@ -89,7 +89,7 @@ async def async_send(cmd, stream, ip):
         except:
             pass
     except Exception as e:
-        # TODO: remove try block if it's just to raise.
+        # TODO: remove try block if it's just to raise.
         # app_log.error("_send ip {}: {}".format(ip, e))
         """
         exc_type, exc_obj, exc_tb = sys.exc_info()

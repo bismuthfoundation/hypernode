@@ -10,6 +10,9 @@ import logging
 
 import requests
 
+import config
+import poscrypto
+
 __version__ = '0.0.1'
 
 
@@ -135,6 +138,25 @@ def peer_to_fullpeer(peer: tuple):
 
 def ipport_to_fullpeer(ip: str, port: int):
     return ip + ':' + str(port).zfill(5)
+
+
+# Various helpers ###########################################################################
+
+def hello_string(port: int=101, posnet: str=None, address: str=None):
+    """
+    Build hello string from params.
+
+    :param port: port number
+    :param posnet: posnet version
+    :param address: pos address
+    :return:
+    """
+    posnet = config.POSNET if not posnet else posnet
+    if len(posnet) != 10:
+        raise ValueError("posnet len is wrong: ''".format(posnet))
+    address = poscrypto.ADDRESS if not address else address
+    poscrypto.validate_address(address)  # Will raise if invalid
+    return posnet + str(port).zfill(5) + address
 
 
 if __name__ == "__main__":

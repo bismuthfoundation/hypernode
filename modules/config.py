@@ -23,6 +23,11 @@ DEBUG = False
 
 # FR: default log level? or just as a command line switch?
 
+# optional log details we may want. AVAILABLE_LOGS lists all possible extra details.
+# Copy the ones you want in LOG
+LOG = []
+AVAILABLE_LOGS = ['connections']
+
 """
 Here comes temp. PoC variables
 """

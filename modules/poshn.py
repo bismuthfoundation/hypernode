@@ -48,7 +48,7 @@ import poshelpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.80'
+__version__ = '0.0.81'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -200,6 +200,14 @@ class HnServer(TCPServer):
                 status = json.dumps(self.node.my_status)
                 del self.node.my_status['instance']['localtime']
                 await async_send_string(commands_pb2.Command.status, status, stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.getround:
+                round_status = json.dumps(await self.node.round_status())
+                await async_send_string(commands_pb2.Command.getround, round_status, stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.gethypernodes:
+                await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(config.POC_HYPER_NODES_LIST),
+                                        stream, full_peer)
 
             elif msg.command == commands_pb2.Command.tx:
                 # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
@@ -976,11 +984,13 @@ class Poshn:
         :param temp: True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.
         :return: string
         """
+        # FR: use lru cache decorator to cache both values of the string without re-validating the address each time.
         if temp:
             port = 0
         else:
             port = self.port
-        return config.POSNET + str(port).zfill(5) + self.address
+        return poshelpers.hello_string(port=port, address=self.address)
+        # return config.POSNET + str(port).zfill(5) + self.address
 
     async def _get_peer_stream(self, ip, port, temp=True):
         """
@@ -1357,13 +1367,22 @@ class Poshn:
             app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
+    async def round_status(self) -> dict:
+        """
+        Async. Assemble and store the current round status as a dict.
+
+        :return: Round Status info
+        """
+        status = {'start': self.current_round_start, 'previous': self.previous_round, 'connect_to': self.connect_to,
+                  'slots': self.slots, 'test_slots': self.test_slots}
+        return status
+
     async def status(self, log: bool=True) -> dict:
         """
         Async. Assemble and store the node status as a dict.
 
         :return: HN Status info
         """
-        global app_log
         poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
         extra = {"forged_count": self.forged_count}
@@ -1395,7 +1414,8 @@ class Poshn:
         # 'peers': self.peers
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
-        for con in self.process.connections(kind="tcp4"):
-            app_log.info("!C local {} rem {} state {}".format(con.laddr, con.raddr, con.status))
+        if 'connections' in config.LOG:
+            for con in self.process.connections(kind="tcp4"):
+                app_log.info("!C local {} rem {} state {}".format(con.laddr, con.raddr, con.status))
         self.my_status = status
         return self.my_status

@@ -37,7 +37,7 @@ STATS_BYTRECV = 4
 class Connection:
     """The connection layer and command hander"""
 
-    def __init__(self, socket = None, logstats= True):
+    def __init__(self, socket=None, logstats=True):
         """ Socket may be provided when in the context of a threaded TCP Server.
         """
         # cmd : from us to peer
@@ -62,7 +62,7 @@ class Connection:
 
     def status(self):
         """Returns a status as a dict"""
-        status={"connected":self.connected, "peer_ip":self.peer_ip, "stats":self.stats}
+        status = {"connected": self.connected, "peer_ip": self.peer_ip, "stats": self.stats}
         return status
 
     def connect(self, host='127.0.0.1', port=6568, timeout=LTIMEOUT):
@@ -82,13 +82,13 @@ class Connection:
         if not self.connected:
             raise ValueError("Not connected")
         if not header:
-            header=self.socket.recv(4)
+            header = self.socket.recv(4)
         if len(header) < 4:
             raise RuntimeError("Socket EOF")
-        size=struct.unpack('>i', header[:4])[0]
+        size = struct.unpack('>i', header[:4])[0]
         if self.logstats:
             self.stats[STATS_MSGRECV] += 1
-        data=self.socket.recv(size)
+        data = self.socket.recv(size)
         self.protomsg.ParseFromString(data)
         self.last_activity = time.time()
         if self.logstats:
@@ -99,7 +99,7 @@ class Connection:
            The socket has to be new, nothing processed yet"""
         if not self.connected:
             raise ValueError("Not connected")
-        self.first_bytes=self.socket.recv(4)
+        self.first_bytes = self.socket.recv(4)
         if len(self.first_bytes) < 4:
             raise RuntimeError("Socket EOF")
         self._get(self.first_bytes)

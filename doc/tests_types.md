@@ -48,7 +48,7 @@ TODO
 
 ## 3 - Bandwidth test
 
-* bandwidth test from real data or not
+* bandwidth test from real data or not. Ex: ask for a few metablocks and measure time.
 
 # Random Notes
 

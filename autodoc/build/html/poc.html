@@ -1,22 +1,34 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
+
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>&gt; Bismuth Hypernodes &#8212; Bismuth Hypernodes 0.1 documentation</title>
+    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="&gt; Modules" href="modules.html" /> 
-  </head><body>
+  </head>
+  <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -47,9 +59,9 @@
 <span id="hn-instance-hypernode-instance"></span><h1>hn_instance: HyperNode instance<a class="headerlink" href="#module-hn_instance" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="hypernode-instance">
 <h2>HyperNode Instance<a class="headerlink" href="#hypernode-instance" title="Permalink to this headline">¶</a></h2>
-<p>Run from the command line with the instance index from common.py</p>
+<p>Run from the command line with the instance index from config.py</p>
 <p>Example:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_instance.py -i 0 -v
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_instance.py -i 0 -v
 </pre></div>
 </div>
 </div>
@@ -60,49 +72,49 @@
 <h2>HyperNode Client<a class="headerlink" href="#hypernode-client" title="Permalink to this headline">¶</a></h2>
 <p>Run from the command line with the instance index from common .py</p>
 <p>Example:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py -i 0 --action status
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py -i 0 --action status
 </pre></div>
 </div>
 <div class="section" id="basic-command-line-arguments">
 <h3>Basic Command line arguments<a class="headerlink" href="#basic-command-line-arguments" title="Permalink to this headline">¶</a></h3>
 <p>Prefer long params to short ones to avoid lower/upper case mismatch.</p>
 <div class="section" id="v-version-optional-default-false">
-<h4><code class="docutils literal notranslate"><span class="pre">-V</span></code> , <code class="docutils literal notranslate"><span class="pre">--version</span></code> (optional, default=False)<a class="headerlink" href="#v-version-optional-default-false" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">-V</span></code> , <code class="docutils literal"><span class="pre">--version</span></code> (optional, default=False)<a class="headerlink" href="#v-version-optional-default-false" title="Permalink to this headline">¶</a></h4>
 <p>Report client version, does not connect.</p>
 </div>
 <div class="section" id="i-index-optional-default-0">
-<h4><code class="docutils literal notranslate"><span class="pre">-i</span></code> , <code class="docutils literal notranslate"><span class="pre">--index</span></code> (optional, default=0)<a class="headerlink" href="#i-index-optional-default-0" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">-i</span></code> , <code class="docutils literal"><span class="pre">--index</span></code> (optional, default=0)<a class="headerlink" href="#i-index-optional-default-0" title="Permalink to this headline">¶</a></h4>
 <p>Instance index to connect to.</p>
 </div>
 <div class="section" id="i-ip-optional-default-127-0-0-1">
-<h4><code class="docutils literal notranslate"><span class="pre">-I</span></code> , <code class="docutils literal notranslate"><span class="pre">--ip</span></code> (optional, default=127.0.0.1)<a class="headerlink" href="#i-ip-optional-default-127-0-0-1" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">-I</span></code> , <code class="docutils literal"><span class="pre">--ip</span></code> (optional, default=127.0.0.1)<a class="headerlink" href="#i-ip-optional-default-127-0-0-1" title="Permalink to this headline">¶</a></h4>
 <p>Hypernode Host to connect to.</p>
 </div>
 <div class="section" id="p-port-optional-default-6969">
-<h4><code class="docutils literal notranslate"><span class="pre">-p</span></code> , <code class="docutils literal notranslate"><span class="pre">--port</span></code> (optional, default=6969)<a class="headerlink" href="#p-port-optional-default-6969" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">-p</span></code> , <code class="docutils literal"><span class="pre">--port</span></code> (optional, default=6969)<a class="headerlink" href="#p-port-optional-default-6969" title="Permalink to this headline">¶</a></h4>
 <p>Hypernode port to connect to.</p>
 </div>
 <div class="section" id="v-verbose-optional-default-false">
-<h4><code class="docutils literal notranslate"><span class="pre">-v</span></code> , <code class="docutils literal notranslate"><span class="pre">--verbose</span></code> (optional, default=False)<a class="headerlink" href="#v-verbose-optional-default-false" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">-v</span></code> , <code class="docutils literal"><span class="pre">--verbose</span></code> (optional, default=False)<a class="headerlink" href="#v-verbose-optional-default-false" title="Permalink to this headline">¶</a></h4>
 <p>Be verbose.</p>
 </div>
 </div>
 <div class="section" id="commands">
 <h3>Commands<a class="headerlink" href="#commands" title="Permalink to this headline">¶</a></h3>
-<p>Commands are issued via <code class="docutils literal notranslate"><span class="pre">--action</span></code> and <code class="docutils literal notranslate"><span class="pre">--param</span></code> command line switches.</p>
-<p><code class="docutils literal notranslate"><span class="pre">--param</span></code> is an optional input parameter to the action command</p>
+<p>Commands are issued via <code class="docutils literal"><span class="pre">--action</span></code> and <code class="docutils literal"><span class="pre">--param</span></code> command line switches.</p>
+<p><code class="docutils literal"><span class="pre">--param</span></code> is an optional input parameter to the action command</p>
 <div class="section" id="action-hello">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=hello</span></code><a class="headerlink" href="#action-hello" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=hello</span></code><a class="headerlink" href="#action-hello" title="Permalink to this headline">¶</a></h4>
 </div>
 <div class="section" id="action-ping">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=ping</span></code><a class="headerlink" href="#action-ping" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=ping</span></code><a class="headerlink" href="#action-ping" title="Permalink to this headline">¶</a></h4>
 </div>
 <div class="section" id="action-status">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=status</span></code><a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=status</span></code><a class="headerlink" href="#action-status" title="Permalink to this headline">¶</a></h4>
 <p>Returns full Hypernode status as a Json string,
-as well as client version in a dedicated “client” section.</p>
+as well as client version in a dedicated &#8220;client&#8221; section.</p>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">{&quot;config&quot;:</span> <span class="pre">{&quot;address&quot;:</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;ip&quot;:</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">&quot;port&quot;:</span> <span class="pre">6969,</span> <span class="pre">&quot;verbose&quot;:</span> <span class="pre">1},</span>
+<p><code class="docutils literal"><span class="pre">{&quot;config&quot;:</span> <span class="pre">{&quot;address&quot;:</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;ip&quot;:</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">&quot;port&quot;:</span> <span class="pre">6969,</span> <span class="pre">&quot;verbose&quot;:</span> <span class="pre">1},</span>
 <span class="pre">&quot;instance&quot;:</span> <span class="pre">{&quot;version&quot;:</span> <span class="pre">&quot;0.0.51&quot;,</span> <span class="pre">&quot;hn_version&quot;:</span> <span class="pre">&quot;0.0.75&quot;,</span> <span class="pre">&quot;statustime&quot;:</span> <span class="pre">1532851042,</span> <span class="pre">&quot;localtime&quot;:</span> <span class="pre">1532851046.703249},</span>
 <span class="pre">&quot;chain&quot;:</span> <span class="pre">{&quot;block_height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;Genesis&quot;:</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">6420,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;a7a4b32406584b54bd30bacbe0457583a2d84492&quot;,</span> <span class="pre">&quot;uniques&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;uniques_round&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;forgers&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;forgers_round&quot;:</span> <span class="pre">2},</span>
 <span class="pre">&quot;mempool&quot;:</span> <span class="pre">{&quot;NB&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;SENDERS&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;RECIPIENTS&quot;:</span> <span class="pre">0},</span>
@@ -110,15 +122,72 @@ as well as client version in a dedicated “client” section.</p>
 <span class="pre">&quot;net_height&quot;:</span> <span class="pre">{&quot;height&quot;:</span> <span class="pre">3631,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">6420,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;a7a4b32406584b54bd30bacbe0457583a2d84492&quot;,</span> <span class="pre">&quot;uniques&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;uniques_round&quot;:</span> <span class="pre">0,</span> <span class="pre">&quot;forgers&quot;:</span> <span class="pre">4,</span> <span class="pre">&quot;forgers_round&quot;:</span> <span class="pre">2,</span> <span class="pre">&quot;count&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;peers&quot;:</span> <span class="pre">[&quot;127.0.0.1:06971&quot;]}},</span>
 <span class="pre">&quot;state&quot;:</span> <span class="pre">{&quot;state&quot;:</span> <span class="pre">&quot;START&quot;,</span> <span class="pre">&quot;round&quot;:</span> <span class="pre">8693,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;forger&quot;:</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;},</span>
 <span class="pre">&quot;client&quot;:</span> <span class="pre">{&quot;version&quot;:</span> <span class="pre">&quot;0.0.51&quot;,</span> <span class="pre">&quot;lib_version&quot;:</span> <span class="pre">&quot;0.0.33&quot;,</span> <span class="pre">&quot;localtime&quot;:</span> <span class="pre">1532851046.7035139}}</span></code></p>
+<p><em>note</em> &#8220;client&#8221; now also includes &#8220;rtt&#8221;: round trip time, time (in sec) for the whole command and answer exchange.</p>
+</div>
+<div class="section" id="action-round">
+<h4><code class="docutils literal"><span class="pre">--action=round</span></code><a class="headerlink" href="#action-round" title="Permalink to this headline">¶</a></h4>
+<p>Returns full Hypernode round info as a Json string.</p>
+<p>Sample output:</p>
+<p>``
+{&#8220;start&#8221;: 1533479595, &#8220;previous&#8221;: 9217,
+&#8220;connect_to&#8221;: [
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, &#8220;127.0.0.1&#8221;, 6972, 1],
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;127.0.0.1&#8221;, 6970, 2],
+[&#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, &#8220;127.0.0.1&#8221;, 6973, 1]
+],
+&#8220;slots&#8221;: [
+[&#8220;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&#8221;, 0],
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, 4],
+[&#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, 3]
+], &#8220;test_slots&#8221;: [
+[
+[&#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, &#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, 0],
+[&#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 1],
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, &#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, 4],
+[&#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 1],
+[&#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 0]
+],
+[
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, 0],
+[&#8220;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 2],
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, 0],
+[&#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, &#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, 4],
+[&#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 3]
+],
+[
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 0],
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, 2],
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, 0],
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 2],
+[&#8220;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&#8221;, &#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, 1]
+]
+]
+}
+``</p>
+</div>
+<div class="section" id="action-hypernodes">
+<h4><code class="docutils literal"><span class="pre">--action=hypernodes</span></code><a class="headerlink" href="#action-hypernodes" title="Permalink to this headline">¶</a></h4>
+<p>Returns full Hypernode list as a Json string.</p>
+<p>List of PoS address, ip, port, weight (weight is 1,2 or 3)</p>
+<p>Sample output:</p>
+<p>``
+[
+[&#8220;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&#8221;, &#8220;127.0.0.1&#8221;, 6969, 1],
+[&#8220;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&#8221;, &#8220;127.0.0.1&#8221;, 6970, 2],
+[&#8220;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&#8221;, &#8220;127.0.0.1&#8221;, 6971, 1],
+[&#8220;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&#8221;, &#8220;127.0.0.1&#8221;, 6972, 1],
+[&#8220;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&#8221;, &#8220;127.0.0.1&#8221;, 6973, 1]
+]
+``</p>
 </div>
 <div class="section" id="action-block-param-block-height">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=block</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=block</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
 <p>Returns block info and list of transactions for given height</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=block --param=53
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py --action=block --param=53
 </pre></div>
 </div>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">{&quot;txs&quot;:</span> <span class="pre">[[&quot;8bdc804328d9e8ac0...53a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span>
+<p><code class="docutils literal"><span class="pre">{&quot;txs&quot;:</span> <span class="pre">[[&quot;8bdc804328d9e8ac0...53a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span>
 <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
 <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...72e7da47b2967&quot;,</span> <span class="pre">1532772325]],</span> <span class="pre">&quot;height&quot;:</span> <span class="pre">53,</span>
 <span class="pre">&quot;round&quot;:</span> <span class="pre">4969,</span> <span class="pre">&quot;sir&quot;:</span> <span class="pre">1,</span> <span class="pre">&quot;timestamp&quot;:</span> <span class="pre">1528382103,</span>
@@ -128,10 +197,10 @@ as well as client version in a dedicated “client” section.</p>
 <span class="pre">&quot;forger&quot;:</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;}</span></code></p>
 </div>
 <div class="section" id="action-address-txs-param-block-height">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=address_txs</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-address-txs-param-block-height" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=address_txs</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-address-txs-param-block-height" title="Permalink to this headline">¶</a></h4>
 <p>Returns list of transactions both issued AND received by the given address.
 Param is the address, and an optional extra param after a comma
-<cite>–param=address,extra</cite></p>
+<cite>&#8211;param=address,extra</cite></p>
 <p>extra can be</p>
 <blockquote>
 <div><ul class="simple">
@@ -140,61 +209,61 @@ Param is the address, and an optional extra param after a comma
 <li>a transaction signature: will send back at most 100 tx following the signature (to be detailed, do not use yet)</li>
 </ul>
 </div></blockquote>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,2
 </pre></div>
 </div>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py --action=address_txs --param=BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne,34371d12bb699e97...67987b1589c0522
 </pre></div>
 </div>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">[[&quot;8bdc804328d9e8ac097fb2b2f...053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
+<p><code class="docutils literal"><span class="pre">[[&quot;8bdc804328d9e8ac097fb2b2f...053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
 <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...dc72e7da47b2967&quot;,</span> <span class="pre">1532850901],</span>
 <span class="pre">[&quot;34371d12bb6c249e899e97...ca74987b1589c0522&quot;,</span> <span class="pre">54,</span> <span class="pre">1528382155,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span>
 <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde5972...dc72e7da47b2967&quot;,</span> <span class="pre">1532850901]]</span></code></p>
 </div>
 <div class="section" id="action-tx-param-tx-signature">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=tx</span> <span class="pre">--param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=tx</span> <span class="pre">--param=tx_signature</span></code><a class="headerlink" href="#action-tx-param-tx-signature" title="Permalink to this headline">¶</a></h4>
 <p>Returns full detail of transaction matching the signature.
 (the signature is the transaction id)
 Returns <cite>false</cite> if the signature was not found.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>python3 hn_client.py --action=tx --param=8bdc804328d9e8ac097fb2b2f53ca5902e28f21423f1db87f4ab39a970176c6d4bb33e24b75200438a49f8308e4f6addf471b6e6591c091da5053a53f0dffe1f
+<div class="highlight-text"><div class="highlight"><pre><span></span>python3 hn_client.py --action=tx --param=8bdc804328d9e8ac097fb2b2f53ca5902e28f21423f1db87f4ab39a970176c6d4bb33e24b75200438a49f8308e4f6addf471b6e6591c091da5053a53f0dffe1f
 </pre></div>
 </div>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">[[&quot;8bdc804328d9...da5053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde597279cde...7da47b2967&quot;,</span> <span class="pre">1532854630]]</span></code></p>
+<p><code class="docutils literal"><span class="pre">[[&quot;8bdc804328d9...da5053a53f0dffe1f&quot;,</span> <span class="pre">53,</span> <span class="pre">1528381933,</span> <span class="pre">&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">0,</span> <span class="pre">&quot;&quot;,</span> <span class="pre">1,</span> <span class="pre">&quot;2275e088ef7dde597279cde...7da47b2967&quot;,</span> <span class="pre">1532854630]]</span></code></p>
 <p><em>FR:</em> add ,dict to get as a dict() and not a list() , or convert to dict client side
-<em>FR:</em> also returns details of the block it’s in</p>
+<em>FR:</em> also returns details of the block it&#8217;s in</p>
 </div>
 <div class="section" id="action-address">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=address</span></code><a class="headerlink" href="#action-address" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=address</span></code><a class="headerlink" href="#action-address" title="Permalink to this headline">¶</a></h4>
 <p>TODO - Info and stats about a PoS address</p>
 </div>
 <div class="section" id="action-mempool">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=mempool</span></code><a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=mempool</span></code><a class="headerlink" href="#action-mempool" title="Permalink to this headline">¶</a></h4>
 <p>Returns current mempool content as json.</p>
 </div>
 <div class="section" id="action-headers">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=headers</span></code><a class="headerlink" href="#action-headers" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=headers</span></code><a class="headerlink" href="#action-headers" title="Permalink to this headline">¶</a></h4>
 <p>Returns the latest <cite>common.BLOCK_SYNC_COUNT</cite> block headers (block info, without tx info).
-‘tx’ key will be there but always an empty list.
-<cite>–param</cite> is an optional string and can be:</p>
+&#8216;tx&#8217; key will be there but always an empty list.
+<cite>&#8211;param</cite> is an optional string and can be:</p>
 <ul class="simple">
-<li>start,count : count headers from start, ex <cite>–param=50,2</cite> will send headers 50 and 51</li>
-<li>,count : return the latest “count” headers ex: <cite>–param=,10</cite> will send latest 10 headers</li>
+<li>start,count : count headers from start, ex <cite>&#8211;param=50,2</cite> will send headers 50 and 51</li>
+<li>,count : return the latest &#8220;count&#8221; headers ex: <cite>&#8211;param=,10</cite> will send latest 10 headers</li>
 </ul>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">[{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;},</span>
+<p><code class="docutils literal"><span class="pre">[{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;},</span>
 <span class="pre">{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;a9254987127c1cc8313218a97ff700193ccd16af6b535d1f143f0ecc78dc1148c7c23a8ad549c93ebfdbfbb2f8c579619ee3d65961b98cf00afce4891afe9f57&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;28b828f717e4d04cad8c1b48f5d4b61a85203415&quot;}]</span></code></p>
 </div>
 <div class="section" id="action-txtest">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=txtest</span></code><a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=txtest</span></code><a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>
 <p>Emits a test transaction.</p>
 </div>
 <div class="section" id="action-blocksync-param-block-height">
-<h4><code class="docutils literal notranslate"><span class="pre">--action=blocksync</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-blocksync-param-block-height" title="Permalink to this headline">¶</a></h4>
+<h4><code class="docutils literal"><span class="pre">--action=blocksync</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-blocksync-param-block-height" title="Permalink to this headline">¶</a></h4>
 <p>Returns the latest <cite>common.BLOCK_SYNC_COUNT</cite> full blocks starting from block_height as a json list of dict.</p>
 </div>
 </div>
@@ -211,6 +280,7 @@ Returns <cite>false</cite> if the signature was not found.</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="modules.html">&gt; Modules</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#module-config">config - Constants and settings</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#poshn-core-hypernode-class">poshn - core hypernode class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#poschain-pos-chain-abstraction-class">poschain - PoS chain abstraction class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#posblock-pos-block-abstraction-class">posblock - PoS block abstraction class</a></li>
@@ -220,7 +290,7 @@ Returns <cite>false</cite> if the signature was not found.</p>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#posclient-client-hypernode-class">posclient - Client hypernode class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-com_helpers">com_helpers - Util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-base58">base58 - Util module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html#module-common">common - Util module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#module-poshelpers">poshelpers - Util module</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">&gt; Bismuth Hypernodes</a><ul class="simple">
 </ul>
 </li>
@@ -239,14 +309,12 @@ Returns <cite>false</cite> if the signature was not found.</p>
                         title="previous chapter">&gt; Modules</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
-    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -270,7 +338,7 @@ Returns <cite>false</cite> if the signature was not found.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2018, Bismuth Foundation.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
     </div>
   </body>
 </html>

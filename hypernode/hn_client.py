@@ -66,6 +66,71 @@ Sample output:
 "state": {"state": "START", "round": 8693, "sir": 1, "forger": "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH"},
 "client": {"version": "0.0.51", "lib_version": "0.0.33", "localtime": 1532851046.7035139}}``
 
+*note* "client" now also includes "rtt": round trip time, time (in sec) for the whole command and answer exchange.
+
+
+``--action=round``
+------------------
+Returns full Hypernode round info as a Json string.
+
+Sample output:
+
+``
+{"start": 1533479595, "previous": 9217,
+"connect_to": [
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "127.0.0.1", 6972, 1],
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "127.0.0.1", 6970, 2],
+["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "127.0.0.1", 6973, 1]
+],
+"slots": [
+["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", 0],
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", 4],
+["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", 3]
+], "test_slots": [
+[
+["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", 0],
+["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 1],
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", 4],
+["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 1],
+["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 0]
+],
+[
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", 0],
+["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 2],
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", 0],
+["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", "BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", 4],
+["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 3]
+],
+[
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 0],
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", 2],
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", 0],
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 2],
+["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 1]
+]
+]
+}
+``
+
+``--action=hypernodes``
+-----------------------
+Returns full Hypernode list as a Json string.
+
+List of PoS address, ip, port, weight (weight is 1,2 or 3)
+
+Sample output:
+
+``
+[
+["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "127.0.0.1", 6969, 1],
+["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "127.0.0.1", 6970, 2],
+["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", "127.0.0.1", 6971, 1],
+["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "127.0.0.1", 6972, 1],
+["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "127.0.0.1", 6973, 1]
+]
+``
+
+
 ``--action=block --param=block_height``
 ---------------------------------------
 Returns block info and list of transactions for given height
@@ -173,19 +238,17 @@ Returns the latest `common.BLOCK_SYNC_COUNT` full blocks starting from block_hei
 
 """
 
-import sys
 import argparse
-# import time
 import asyncio
+import sys
 
 # custom modules
 sys.path.append('../modules')
-# import common
 import posclient
 import com_helpers
 
 
-__version__ = '0.0.52'
+__version__ = '0.0.54'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -200,8 +263,8 @@ if __name__ == "__main__":
     parser.add_argument("-V", "--version", action="count", default=False, help='Show version')
 
     parser.add_argument("--action", type=str, default=None,
-                        help='Specific action. hello, ping, status, block, tx, address_txs, mempool, blocksync, '
-                             'headers, txtest.')
+                        help='Specific action. hello, ping, status, round, block, tx, address_txs, mempool, blocksync, '
+                             'hypernodes, headers, txtest.')
     parser.add_argument("--param", type=str, default=None, help='Input param from block and tx command.')
     args = parser.parse_args()
     if len(sys.argv) == 1:
