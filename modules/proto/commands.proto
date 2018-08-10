@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package bismuth;
 
-// version 0.0.5
+// version 0.0.6
 
 // A single tx
 message TX {
@@ -96,9 +96,10 @@ message Command {
         gettx = 16; // ask the full details of a specific tx by its signature (sent as hex encode in string_value). Returns tx in tx_values
         getheaders = 17; // ask the block headers for latest 20 blocks. string_value can contain optional block start and number of block like
         // 50,10 (= 50 to 60) or ,50 (latest 50)
-        // TODO: getround for current round stats, including upcoming jurors, or include as status? could be better. or flag : extended status.
+        // getround for current round stats, including upcoming jurors, or include as status? could be better. or flag : extended status.
         getround = 18;
-        // TODO: gethypernodes - list of valid hypernodes
+        // gethypernodes - list of valid hypernodes. accept a string param for extra related info
+        // this optional param is "full,start_round,end_round" where full is "0" or "1"
         gethypernodes = 19;
     }
     required Type command = 1;

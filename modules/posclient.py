@@ -17,7 +17,7 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.38'
+__version__ = '0.0.39'
 
 
 class Posclient:
@@ -89,7 +89,10 @@ class Posclient:
                     return
 
             if 'hypernodes' == action:
-                await com_helpers.async_send_void(commands_pb2.Command.gethypernodes, stream, self.ip)
+                if param:
+                    await com_helpers.async_send_string(commands_pb2.Command.gethypernodes, str(param), stream, self.ip)
+                else:
+                    await com_helpers.async_send_void(commands_pb2.Command.gethypernodes, stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.gethypernodes:
                     status = json.loads(msg.string_value)

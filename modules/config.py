@@ -24,7 +24,7 @@ DEBUG = False
 # FR: default log level? or just as a command line switch?
 
 # optional log details we may want. AVAILABLE_LOGS lists all possible extra details.
-# Copy the ones you want in LOG
+# Copy the ones you want in LOG
 LOG = []
 AVAILABLE_LOGS = ['connections']
 
@@ -33,13 +33,14 @@ Here comes temp. PoC variables
 """
 
 # The reference list of active Hypernodes for the round
-# address, ip, port, weight
+# address, ip, port, weight, bis_registrar, bis_recipient
 POC_HYPER_NODES_LIST = [
-    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1),  # hn 0
-    ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2),
-    ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1),
-    ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1),
-    ('BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD', '127.0.0.1', 6973, 1)
+    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0"),  # hn 0
+    ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2, "bis_addr_1", "bis_addr_1"),
+    ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1, "bis_addr_2", "bis_addr_2"),
+    ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1, "bis_addr_3", "bis_addr_3"),
+    ('BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD', '127.0.0.1', 6973, 1, "bis_addr_4", "bis_addr_3")
+    # on purpose, 3 and 4 have same recipient address
     ]
 
 # The broadhash of the previous round determines the shuffle.

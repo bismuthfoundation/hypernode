@@ -116,42 +116,40 @@ as well as client version in a dedicated “client” section.</p>
 <h4><code class="docutils literal notranslate"><span class="pre">--action=round</span></code><a class="headerlink" href="#action-round" title="Permalink to this headline">¶</a></h4>
 <p>Returns full Hypernode round info as a Json string.</p>
 <p>Sample output:</p>
-<p>``
-{“start”: 1533479595, “previous”: 9217,
-“connect_to”: [
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, “127.0.0.1”, 6972, 1],
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “127.0.0.1”, 6970, 2],
-[“BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, “127.0.0.1”, 6973, 1]
-],
-“slots”: [
-[“BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne”, 0],
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, 4],
-[“B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, 3]
-], “test_slots”: [
-[
-[“BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, “BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, 0],
-[“B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 1],
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, “BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, 4],
-[“BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 1],
-[“BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 0]
-],
-[
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, 0],
-[“BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 2],
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, 0],
-[“B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, “BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, 4],
-[“B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 3]
-],
-[
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 0],
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, 2],
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, 0],
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 2],
-[“BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne”, “BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, 1]
-]
-]
-}
-``</p>
+<p><code class="docutils literal notranslate"><span class="pre">{&quot;start&quot;:</span> <span class="pre">1533479595,</span> <span class="pre">&quot;previous&quot;:</span> <span class="pre">9217,</span>
+<span class="pre">&quot;connect_to&quot;:</span> <span class="pre">[</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6972,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6970,</span> <span class="pre">2],</span>
+<span class="pre">[&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6973,</span> <span class="pre">1]</span>
+<span class="pre">],</span>
+<span class="pre">&quot;slots&quot;:</span> <span class="pre">[</span>
+<span class="pre">[&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">4],</span>
+<span class="pre">[&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">3]</span>
+<span class="pre">],</span> <span class="pre">&quot;test_slots&quot;:</span> <span class="pre">[</span>
+<span class="pre">[</span>
+<span class="pre">[&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">4],</span>
+<span class="pre">[&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">0]</span>
+<span class="pre">],</span>
+<span class="pre">[</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">2],</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">4],</span>
+<span class="pre">[&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">3]</span>
+<span class="pre">],</span>
+<span class="pre">[</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">2],</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">0],</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">2],</span>
+<span class="pre">[&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">1]</span>
+<span class="pre">]</span>
+<span class="pre">]</span>
+<span class="pre">}</span></code></p>
 </div>
 <div class="section" id="action-hypernodes-param-block-height">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=hypernodes</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-hypernodes-param-block-height" title="Permalink to this headline">¶</a></h4>
@@ -162,19 +160,15 @@ start_round and end_round are the start and end round (inclusive) to consider.
 Round can be derived from a timestamp.</p>
 <p>If full is set to “1”, a dict is return instead of a list, with full metrics of each Hypernode for the given period.</p>
 <p>Sample output (no param):</p>
-<p>``
-[
-[“BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne”, “127.0.0.1”, 6969, 1],
-[“BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH”, “127.0.0.1”, 6970, 2],
-[“B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC”, “127.0.0.1”, 6971, 1],
-[“BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV”, “127.0.0.1”, 6972, 1],
-[“BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD”, “127.0.0.1”, 6973, 1]
-]
-``</p>
+<p><code class="docutils literal notranslate"><span class="pre">[</span>
+<span class="pre">[&quot;BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6969,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6970,</span> <span class="pre">2],</span>
+<span class="pre">[&quot;B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6971,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6972,</span> <span class="pre">1],</span>
+<span class="pre">[&quot;BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD&quot;,</span> <span class="pre">&quot;127.0.0.1&quot;,</span> <span class="pre">6973,</span> <span class="pre">1]</span>
+<span class="pre">]</span></code></p>
 <p>Sample output (full=1):
-``
-WIP
-``</p>
+<code class="docutils literal notranslate"><span class="pre">WIP</span></code></p>
 </div>
 <div class="section" id="action-block-param-block-height">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=block</span> <span class="pre">--param=block_height</span></code><a class="headerlink" href="#action-block-param-block-height" title="Permalink to this headline">¶</a></h4>
@@ -251,8 +245,8 @@ Returns <cite>false</cite> if the signature was not found.</p>
 <li>,count : return the latest “count” headers ex: <cite>–param=,10</cite> will send latest 10 headers</li>
 </ul>
 <p>Sample output:</p>
-<p><code class="docutils literal notranslate"><span class="pre">[{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;},</span>
-<span class="pre">{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;a9254987127c1cc8313218a97ff700193ccd16af6b535d1f143f0ecc78dc1148c7c23a8ad549c93ebfdbfbb2f8c579619ee3d65961b98cf00afce4891afe9f57&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;28b828f717e4d04cad8c1b48f5d4b61a85203415&quot;}]</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">[{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;7b12101dcb088170285b5d5cad68e7e79e4cb6b4&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;d0feb58827e614f768e97fe9e9981e4b1...27d17e8868074f84282c39f87&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;},</span>
+<span class="pre">{&quot;txs&quot;:</span> <span class="pre">[],</span> <span class="pre">&quot;previous_hash&quot;:</span> <span class="pre">&quot;ae27f98d0fc513778ce78c22287214bbbe702db3&quot;,</span> <span class="pre">&quot;signature&quot;:</span> <span class="pre">&quot;a9254987127c1cc8313218a97ff700193cc...8cf00afce4891afe9f57&quot;,</span> <span class="pre">&quot;block_hash&quot;:</span> <span class="pre">&quot;28b828f717e4d04cad8c1b48f5d4b61a85203415&quot;}]</span></code></p>
 </div>
 <div class="section" id="action-txtest">
 <h4><code class="docutils literal notranslate"><span class="pre">--action=txtest</span></code><a class="headerlink" href="#action-txtest" title="Permalink to this headline">¶</a></h4>

@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.64'
+__version__ = '0.0.65'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -39,8 +39,11 @@ SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS 
                           "WHERE block_height = ?"
 
 SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
+# TODO: duplicate round in pos_messages table to avoid these extra requests
 SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max FROM pos_chain WHERE round >= ? and round <= ?"
+
 
 # FR: some of these may be costly. check perfs.
 SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
@@ -65,6 +68,9 @@ SQL_ROLLBACK_BLOCKS_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
 SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN " \
                        "(SELECT block_height FROM pos_chain WHERE round = ?)"
 SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
+
+SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
+SQL_ROUNDS_SOURCES = "SELECT DISTINCT(sender) FROM pos_messages WHERE block_height >= ? AND block_height <= ?"
 
 """ pos chain db structure """
 
@@ -264,6 +270,7 @@ class PosChain:
             # TODO: if from miner, make sure we refreshed the round first.
             # timestamp of blocks
             # fits with current round?
+            # TODO : only tx from valid HNs (registered for that round?)
             # right juror?
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
             await self.insert_block(block)
@@ -823,6 +830,23 @@ class SqlitePosChain(PosChain, SqliteBase):
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
+
+    async def async_active_hns(self, start_round, end_round):
+        """
+        Returns a list of active HN for the round range.
+        :param start_round:
+        :param end_round:
+        :return: list of PoS addresses
+        """
+        forgers = await self.async_fetchall(SQL_ROUNDS_FORGERS, (start_round, end_round))
+        forgers = [list(forger)[0] for forger in forgers]
+        h_min, h_max = await self.async_fetchone(SQL_MINMAXHEIGHT_OF_ROUNDS, (start_round, end_round))
+        sources = await self.async_fetchall(SQL_ROUNDS_SOURCES, (h_min, h_max))
+        if sources:
+            sources = [list(source)[0] for source in sources]
+            forgers.extend(list(sources))
+        # Uniques only
+        return list(set(forgers))
 
 
 if __name__ == "__main__":

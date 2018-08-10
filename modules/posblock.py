@@ -227,6 +227,9 @@ class PosMessage:
         poscrypto.validate_address(self.sender)
         # Check 3. recipient is valid address
         poscrypto.validate_address(self.recipient)
+
+        # TODO: check both address are valid (pow registered) HN for that round, or reject the TX.
+
         # Check 4. pubkey matches sender for current network
         check_address = poscrypto.pub_key_to_addr(self.pubkey)
         if self.sender != check_address:

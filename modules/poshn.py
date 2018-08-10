@@ -48,7 +48,7 @@ import poshelpers
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.81'
+__version__ = '0.0.82'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -206,7 +206,8 @@ class HnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.getround, round_status, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.gethypernodes:
-                await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(config.POC_HYPER_NODES_LIST),
+                hypernodes = await self.node.get_hypernodes(msg.string_value)
+                await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(hypernodes),
                                         stream, full_peer)
 
             elif msg.command == commands_pb2.Command.tx:
@@ -764,6 +765,48 @@ class Poshn:
             app_log.error('Consensus error {}'.format(e))
             self.net_height = None
         return pc
+
+    async def get_hypernodes(self, param):
+        """
+        Returns list of registered and active Hypernodes with metrics.
+
+        param is an optional string param "full,start_round,end_round" where full is "0" or "1".
+
+        If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+        :param param:
+        :return:
+        """
+        if not param:
+            return config.POC_HYPER_NODES_LIST
+        if param == '1':
+            full = '1'
+            start_round = self.round
+            end_round = self.round
+        else:
+            full, start_round, end_round = map(str.strip, param.split(','))
+        app_log.info("Registered Hypernodes, round {} to {}".format(start_round, end_round))
+        # Get all HN who were valid for at least a round
+        # TODO: from local DB
+        hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
+                                "recipient": item[5], "kpis":{}}
+                      for item in config.POC_HYPER_NODES_LIST}
+        if full == '1':
+            app_log.info("Computing HN KPIs for Round {} to {}".format(start_round, end_round))
+            # Find all the HN who sent a tx (or forged a block) for those rounds, and update their props
+            actives = await self.poschain.async_active_hns(start_round, end_round)
+            # Avoiding dict comprehension here since more will come later on.
+            for hypernode in hypernodes:
+                # TODO: success: ok tests. errors: ko tests. warnings: strange behavior logued
+                # (needs confirmation by several peers)
+                # rounds : # of rounds with activity, sources : # of tx for the period
+                hypernodes[hypernode]['kpis'] = {"success": 0, "errors": 0, "failed_pings": 0, "ok_pings": 0,
+                                                 "warnings": 0, "rounds": 0, "sources": 0}
+                if hypernode in actives:
+                    hypernodes[hypernode]['kpis']["active"] = True
+                else:
+                    hypernodes[hypernode]['kpis']["active"] = False
+
+        return hypernodes
 
     async def _round_sync(self, a_round, promised_height):
         """

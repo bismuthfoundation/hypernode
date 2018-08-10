@@ -75,8 +75,7 @@ Returns full Hypernode round info as a Json string.
 
 Sample output:
 
-``
-{"start": 1533479595, "previous": 9217,
+``{"start": 1533479595, "previous": 9217,
 "connect_to": [
 ["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "127.0.0.1", 6972, 1],
 ["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "127.0.0.1", 6970, 2],
@@ -109,26 +108,32 @@ Sample output:
 ["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", 1]
 ]
 ]
-}
-``
+}``
 
-``--action=hypernodes``
------------------------
+``--action=hypernodes --param=block_height``
+--------------------------------------------
 Returns full Hypernode list as a Json string.
 
 List of PoS address, ip, port, weight (weight is 1,2 or 3)
 
-Sample output:
+param is an optional string param "full,start_round,end_round" where full is "0" or "1"
+start_round and end_round are the start and end round (inclusive) to consider.
+Round can be derived from a timestamp.
 
-``
-[
+If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+
+Sample output (no param):
+
+``[
 ["BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne", "127.0.0.1", 6969, 1],
 ["BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH", "127.0.0.1", 6970, 2],
 ["B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC", "127.0.0.1", 6971, 1],
 ["BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV", "127.0.0.1", 6972, 1],
 ["BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD", "127.0.0.1", 6973, 1]
-]
-``
+]``
+
+Sample output (full=1):
+``WIP``
 
 
 ``--action=block --param=block_height``
@@ -183,7 +188,7 @@ Sample output:
 0, "", 1, "2275e088ef7dde5972...dc72e7da47b2967", 1532850901]]``
 
 ``--action=tx --param=tx_signature``
----------------------------------------
+------------------------------------
 Returns full detail of transaction matching the signature.
 (the signature is the transaction id)
 Returns `false` if the signature was not found.
@@ -220,8 +225,8 @@ Returns the latest `common.BLOCK_SYNC_COUNT` block headers (block info, without 
 
 Sample output:
 
-``[{"txs": [], "previous_hash": "7b12101dcb088170285b5d5cad68e7e79e4cb6b4", "signature": "d0feb58827e614f768e97fe9e9981e4bdf91be9251066a6a0938aa8e26fd66c5aad410da2304b022a5b8e0f2672da2a28b6856727d17e8868074f84282c39f87", "block_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3"},
-{"txs": [], "previous_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3", "signature": "a9254987127c1cc8313218a97ff700193ccd16af6b535d1f143f0ecc78dc1148c7c23a8ad549c93ebfdbfbb2f8c579619ee3d65961b98cf00afce4891afe9f57", "block_hash": "28b828f717e4d04cad8c1b48f5d4b61a85203415"}]``
+``[{"txs": [], "previous_hash": "7b12101dcb088170285b5d5cad68e7e79e4cb6b4", "signature": "d0feb58827e614f768e97fe9e9981e4b1...27d17e8868074f84282c39f87", "block_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3"},
+{"txs": [], "previous_hash": "ae27f98d0fc513778ce78c22287214bbbe702db3", "signature": "a9254987127c1cc8313218a97ff700193cc...8cf00afce4891afe9f57", "block_hash": "28b828f717e4d04cad8c1b48f5d4b61a85203415"}]``
 
 
 ``--action=txtest``
@@ -248,7 +253,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.54'
+__version__ = '0.0.55'
 
 DESC = 'Bismuth Hypernode client'
 

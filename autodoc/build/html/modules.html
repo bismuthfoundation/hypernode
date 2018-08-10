@@ -1,35 +1,23 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>&gt; Modules &#8212; Bismuth Hypernodes 0.1 documentation</title>
-    
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="&gt; Bismuth Hypernodes" href="poc.html" />
+    <link rel="next" title="&gt; Bismuth Hypernodes" href="hypernode.html" />
     <link rel="prev" title="Welcome to Bismuth Hypernodes’s documentation!" href="index.html" /> 
-  </head>
-  <body role="document">
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,7 +28,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="poc.html" title="&gt; Bismuth Hypernodes"
+          <a href="hypernode.html" title="&gt; Bismuth Hypernodes"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to Bismuth Hypernodes’s documentation!"
@@ -92,7 +80,7 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="class">
 <dt id="poshn.HNState">
 <em class="property">class </em><code class="descclassname">poshn.</code><code class="descname">HNState</code><a class="headerlink" href="#poshn.HNState" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">enum.Enum</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Current State of the HN</p>
 <dl class="attribute">
 <dt id="poshn.HNState.CATCHING_UP_CONNECT1">
@@ -159,38 +147,12 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <code class="descname">TESTING</code><em class="property"> = 2</em><a class="headerlink" href="#poshn.HNState.TESTING" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="method">
-<dt id="poshn.HNState._generate_next_value_">
-<code class="descname">_generate_next_value_</code><span class="sig-paren">(</span><em>name</em>, <em>start</em>, <em>count</em>, <em>last_values</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.HNState._generate_next_value_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="poshn.HNState._member_map_">
-<code class="descname">_member_map_</code><em class="property"> = OrderedDict([('START', &lt;HNState.START: 0&gt;), ('SYNCING', &lt;HNState.SYNCING: 1&gt;), ('TESTING', &lt;HNState.TESTING: 2&gt;), ('STRONG_CONSENSUS', &lt;HNState.STRONG_CONSENSUS: 3&gt;), ('MINIMAL_CONSENSUS', &lt;HNState.MINIMAL_CONSENSUS: 4&gt;), ('FORGING', &lt;HNState.FORGING: 5&gt;), ('SENDING', &lt;HNState.SENDING: 6&gt;), ('CATCHING_UP_CONNECT1', &lt;HNState.CATCHING_UP_CONNECT1: 7&gt;), ('CATCHING_UP_CONNECT2', &lt;HNState.CATCHING_UP_CONNECT2: 8&gt;), ('CATCHING_UP_ELECT', &lt;HNState.CATCHING_UP_ELECT: 9&gt;), ('CATCHING_UP_PRESYNC', &lt;HNState.CATCHING_UP_PRESYNC: 10&gt;), ('CATCHING_UP_SYNC', &lt;HNState.CATCHING_UP_SYNC: 11&gt;), ('ROUND_SYNC', &lt;HNState.ROUND_SYNC: 12&gt;)])</em><a class="headerlink" href="#poshn.HNState._member_map_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="poshn.HNState._member_names_">
-<code class="descname">_member_names_</code><em class="property"> = ['START', 'SYNCING', 'TESTING', 'STRONG_CONSENSUS', 'MINIMAL_CONSENSUS', 'FORGING', 'SENDING', 'CATCHING_UP_CONNECT1', 'CATCHING_UP_CONNECT2', 'CATCHING_UP_ELECT', 'CATCHING_UP_PRESYNC', 'CATCHING_UP_SYNC', 'ROUND_SYNC']</em><a class="headerlink" href="#poshn.HNState._member_names_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="poshn.HNState._member_type_">
-<code class="descname">_member_type_</code><a class="headerlink" href="#poshn.HNState._member_type_" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="poshn.HNState._value2member_map_">
-<code class="descname">_value2member_map_</code><em class="property"> = {0: &lt;HNState.START: 0&gt;, 1: &lt;HNState.SYNCING: 1&gt;, 2: &lt;HNState.TESTING: 2&gt;, 3: &lt;HNState.STRONG_CONSENSUS: 3&gt;, 4: &lt;HNState.MINIMAL_CONSENSUS: 4&gt;, 5: &lt;HNState.FORGING: 5&gt;, 6: &lt;HNState.SENDING: 6&gt;, 7: &lt;HNState.CATCHING_UP_CONNECT1: 7&gt;, 8: &lt;HNState.CATCHING_UP_CONNECT2: 8&gt;, 9: &lt;HNState.CATCHING_UP_ELECT: 9&gt;, 10: &lt;HNState.CATCHING_UP_PRESYNC: 10&gt;, 11: &lt;HNState.CATCHING_UP_SYNC: 11&gt;, 12: &lt;HNState.ROUND_SYNC: 12&gt;}</em><a class="headerlink" href="#poshn.HNState._value2member_map_" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="class">
 <dt id="poshn.HnServer">
 <em class="property">class </em><code class="descclassname">poshn.</code><code class="descname">HnServer</code><a class="headerlink" href="#poshn.HnServer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">tornado.tcpserver.TCPServer</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tornado.tcpserver.TCPServer</span></code></p>
 <p>Tornado asynchronous TCP server.</p>
 <dl class="method">
 <dt id="poshn.HnServer._handle_msg">
@@ -201,9 +163,9 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>msg</strong> &#8211; </li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>peer_ip</strong> &#8211; </li>
+<li><strong>msg</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>peer_ip</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -220,8 +182,8 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>address</strong> &#8211; </li>
+<li><strong>stream</strong> – </li>
+<li><strong>address</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -235,16 +197,16 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="method">
 <dt id="poshn.HnServer.update">
 <code class="descname">update</code><span class="sig-paren">(</span><em>url</em>, <em>stream</em>, <em>peer_ip</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.HnServer.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update process when an &#8216;update&#8217; message
+<dd><p>Update process when an ‘update’ message
 from an authorized source is received.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>url</strong> &#8211; </li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>peer_ip</strong> &#8211; </li>
+<li><strong>url</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>peer_ip</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -257,7 +219,7 @@ from an authorized source is received.</p>
 <dl class="class">
 <dt id="poshn.Poshn">
 <em class="property">class </em><code class="descclassname">poshn.</code><code class="descname">Poshn</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em>, <em>address=''</em>, <em>peers=None</em>, <em>verbose=False</em>, <em>wallet='poswallet.json'</em>, <em>datadir='data'</em>, <em>suffix=''</em>, <em>version=''</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The PoS Hypernode object</p>
 <dl class="method">
 <dt id="poshn.Poshn._consensus">
@@ -282,8 +244,8 @@ from an authorized source is received.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>full_peer</strong> &#8211; </li>
+<li><strong>stream</strong> – </li>
+<li><strong>full_peer</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -300,8 +262,8 @@ from an authorized source is received.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>full_peer</strong> &#8211; </li>
+<li><strong>stream</strong> – </li>
+<li><strong>full_peer</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -319,9 +281,9 @@ Stream has to be closed after use.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>ip</strong> &#8211; 127.0.0.1</li>
-<li><strong>port</strong> &#8211; 6969</li>
-<li><strong>temp</strong> &#8211; True - For temps commands, uses a fake 00000 port as self id.</li>
+<li><strong>ip</strong> – 127.0.0.1</li>
+<li><strong>port</strong> – 6969</li>
+<li><strong>temp</strong> – True - For temps commands, uses a fake 00000 port as self id.</li>
 </ul>
 </td>
 </tr>
@@ -341,8 +303,8 @@ Stream has to be closed after use.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>peer</strong> &#8211; </li>
-<li><strong>a_round</strong> &#8211; </li>
+<li><strong>peer</strong> – </li>
+<li><strong>a_round</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -363,8 +325,8 @@ BEWARE: this is only ok if the peer is a juror for the current round.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>a_round</strong> &#8211; Round # to fetch</li>
-<li><strong>promised_height</strong> &#8211; dict of the supposedly best available height</li>
+<li><strong>a_round</strong> – Round # to fetch</li>
+<li><strong>promised_height</strong> – dict of the supposedly best available height</li>
 </ul>
 </td>
 </tr>
@@ -392,9 +354,9 @@ This is called only after initial exchange and approval.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ip</strong> &#8211; </li>
-<li><strong>port</strong> &#8211; </li>
-<li><strong>properties</strong> &#8211; </li>
+<li><strong>ip</strong> – </li>
+<li><strong>port</strong> – </li>
+<li><strong>properties</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -410,7 +372,7 @@ This is called only after initial exchange and approval.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_state</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>new_state</strong> – </td>
 </tr>
 </tbody>
 </table>
@@ -438,7 +400,7 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> &#8211; (&#8216;aa012345678901aa&#8217;, &#8216;127.0.0.1&#8217;, 6969, 1)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> – (‘aa012345678901aa’, ‘127.0.0.1’, 6969, 1)</td>
 </tr>
 </tbody>
 </table>
@@ -452,12 +414,12 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <dl class="method">
 <dt id="poshn.Poshn.connect">
 <code class="descname">connect</code><span class="sig-paren">(</span><em>connect=True</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the &#8220;Shall I try to connect?&#8221; flag</p>
+<dd><p>Set the “Shall I try to connect?” flag</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connect</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>connect</strong> – </td>
 </tr>
 </tbody>
 </table>
@@ -472,9 +434,9 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>height_proto</strong> &#8211; protobuff structure</li>
-<li><strong>full_peer</strong> &#8211; </li>
-<li><strong>server</strong> &#8211; comes from the server (inbound) or client (outbound) side?</li>
+<li><strong>height_proto</strong> – protobuff structure</li>
+<li><strong>full_peer</strong> – </li>
+<li><strong>server</strong> – comes from the server (inbound) or client (outbound) side?</li>
 </ul>
 </td>
 </tr>
@@ -491,8 +453,8 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>txs</strong> &#8211; </li>
-<li><strong>peer_ip</strong> &#8211; </li>
+<li><strong>txs</strong> – </li>
+<li><strong>peer_ip</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -510,6 +472,16 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 </dd></dl>
 
 <dl class="method">
+<dt id="poshn.Poshn.get_hypernodes">
+<code class="descname">get_hypernodes</code><span class="sig-paren">(</span><em>param</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.get_hypernodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of registered and active Hypernodes with metrics.</p>
+<p>param is an optional string param “full,start_round,end_round” where full is “0” or “1”.</p>
+<p>If full is set to “1”, a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+:param param:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="poshn.Poshn.hello_string">
 <code class="descname">hello_string</code><span class="sig-paren">(</span><em>temp=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.hello_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Builds up the hello string.
@@ -518,7 +490,7 @@ common.POSNET + str(port).zfill(5) + self.address</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> &#8211; True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>temp</strong> – True - For one shot commands, from an already connected ip, uses a fake 00000 port as self id.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">string</td>
 </tr>
@@ -560,9 +532,9 @@ Should we use threads instead and a simpler tcp client? Perfs to be tested.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>proto_block</strong> &#8211; a protobuf block</li>
-<li><strong>peer_ip</strong> &#8211; the peer ip</li>
-<li><strong>peer_port</strong> &#8211; the peer port</li>
+<li><strong>proto_block</strong> – a protobuf block</li>
+<li><strong>peer_ip</strong> – the peer ip</li>
+<li><strong>peer_port</strong> – the peer port</li>
 </ul>
 </td>
 </tr>
@@ -586,8 +558,8 @@ Update the inner properties.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ip</strong> &#8211; </li>
-<li><strong>port</strong> &#8211; </li>
+<li><strong>ip</strong> – </li>
+<li><strong>port</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -650,9 +622,9 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>ip</strong> &#8211; </li>
-<li><strong>port</strong> &#8211; </li>
-<li><strong>properties</strong> &#8211; </li>
+<li><strong>ip</strong> – </li>
+<li><strong>port</strong> – </li>
+<li><strong>properties</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -664,7 +636,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 
 <dl class="data">
 <dt id="poshn.REUSE_PORT">
-<code class="descclassname">poshn.</code><code class="descname">REUSE_PORT</code><em class="property"> = False</em><a class="headerlink" href="#poshn.REUSE_PORT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshn.</code><code class="descname">REUSE_PORT</code><em class="property"> = True</em><a class="headerlink" href="#poshn.REUSE_PORT" title="Permalink to this definition">¶</a></dt>
 <dd><p>TCP Server Class</p>
 </dd></dl>
 
@@ -676,7 +648,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dl class="class">
 <dt id="poschain.MemoryPosChain">
 <em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">MemoryPosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.MemoryPosChain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal"><span class="pre">poschain.PosChain</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a></p>
 <p>Memory Storage, POC only</p>
 <dl class="method">
 <dt id="poschain.MemoryPosChain.status">
@@ -688,7 +660,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dl class="class">
 <dt id="poschain.PosChain">
 <em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">PosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em>, <em>mempool=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Class</p>
 <dl class="method">
 <dt id="poschain.PosChain._height_status">
@@ -744,9 +716,9 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>a_round</strong> &#8211; </li>
-<li><strong>blocks</strong> &#8211; a PosBlock object</li>
-<li><strong>fast_check</strong> &#8211; </li>
+<li><strong>a_round</strong> – </li>
+<li><strong>blocks</strong> – a PosBlock object</li>
+<li><strong>fast_check</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -755,7 +727,7 @@ Does not modify the chain, can be used on existing current round to check validi
 </tr>
 </tbody>
 </table>
-<p><code class="docutils literal"><span class="pre">{'height':</span> <span class="pre">3631,</span> <span class="pre">'round':</span> <span class="pre">6420,</span> <span class="pre">'sir':</span> <span class="pre">1,</span> <span class="pre">'block_hash':</span> <span class="pre">'a03ffeea35a48f0773bc993289213c3c72165ee0',</span>
+<p><code class="docutils literal notranslate"><span class="pre">{'height':</span> <span class="pre">3631,</span> <span class="pre">'round':</span> <span class="pre">6420,</span> <span class="pre">'sir':</span> <span class="pre">1,</span> <span class="pre">'block_hash':</span> <span class="pre">'a03ffeea35a48f0773bc993289213c3c72165ee0',</span>
 <span class="pre">'uniques':</span> <span class="pre">4,</span> <span class="pre">'uniques_round':</span> <span class="pre">0,</span> <span class="pre">'forgers':</span> <span class="pre">4,</span> <span class="pre">'forgers_round':</span> <span class="pre">1,</span> <span class="pre">'count':</span> <span class="pre">0,</span> <span class="pre">'peers':</span> <span class="pre">[]'</span></code></p>
 </dd></dl>
 
@@ -768,8 +740,8 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>proto_block</strong> &#8211; a protobuf &#8216;block&#8217; object</li>
-<li><strong>from_miner</strong> &#8211; True if came from a live miner (current slot)</li>
+<li><strong>proto_block</strong> – a protobuf ‘block’ object</li>
+<li><strong>from_miner</strong> – True if came from a live miner (current slot)</li>
 </ul>
 </td>
 </tr>
@@ -802,7 +774,7 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> &#8211; a native PosBlock object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -860,15 +832,15 @@ Does not modify the chain, can be used on existing current round to check validi
 </dd></dl>
 
 <dl class="data">
-<dt id="poschain.SQL_DELETE_ROUND">
-<code class="descclassname">poschain.</code><code class="descname">SQL_DELETE_ROUND</code><em class="property"> = 'DELETE FROM pos_chain WHERE round = ?'</em><a class="headerlink" href="#poschain.SQL_DELETE_ROUND" title="Permalink to this definition">¶</a></dt>
+<dt id="poschain.SQL_ROUNDS_SOURCES">
+<code class="descclassname">poschain.</code><code class="descname">SQL_ROUNDS_SOURCES</code><em class="property"> = 'SELECT DISTINCT(sender) FROM pos_messages WHERE block_height &gt;= ? AND block_height &lt;= ?'</em><a class="headerlink" href="#poschain.SQL_ROUNDS_SOURCES" title="Permalink to this definition">¶</a></dt>
 <dd><p>pos chain db structure</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="poschain.SqlitePosChain">
 <em class="property">class </em><code class="descclassname">poschain.</code><code class="descname">SqlitePosChain</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='data/'</em>, <em>app_log=None</em>, <em>mempool=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal"><span class="pre">poschain.PosChain</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#poschain.PosChain" title="poschain.PosChain"><code class="xref py py-class docutils literal notranslate"><span class="pre">poschain.PosChain</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
 <dl class="method">
 <dt id="poschain.SqlitePosChain._height_status">
 <code class="descname">_height_status</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain._height_status" title="Permalink to this definition">¶</a></dt>
@@ -898,6 +870,15 @@ Does not modify the chain, can be used on existing current round to check validi
 </dd></dl>
 
 <dl class="method">
+<dt id="poschain.SqlitePosChain.async_active_hns">
+<code class="descname">async_active_hns</code><span class="sig-paren">(</span><em>start_round</em>, <em>end_round</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_active_hns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of active HN for the round range.
+:param start_round:
+:param end_round:
+:return: list of PoS addresses</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="poschain.SqlitePosChain.async_blockinfo">
 <code class="descname">async_blockinfo</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.async_blockinfo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns partial height info of a given block</p>
@@ -920,7 +901,7 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -937,7 +918,7 @@ returns a list of txs.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> &#8211; str: an address or address,extra</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> – str: an address or address,extra</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the txs list or None</td>
 </tr>
@@ -954,7 +935,7 @@ returns the block of the given height.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_height</strong> &#8211; int</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_height</strong> – int</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the block if exists or None</td>
 </tr>
@@ -970,7 +951,7 @@ returns the block of the given height.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param</strong> &#8211; (string) empty: last 20 blocks headers. start_height,count or ,count (last N headers)</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>param</strong> – (string) empty: last 20 blocks headers. start_height,count or ,count (last N headers)</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -987,7 +968,7 @@ returns the tx or empty protocmd.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> &#8211; str: a transaction signature</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>params</strong> – str: a transaction signature</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with the tx or None</td>
 </tr>
@@ -1005,7 +986,7 @@ returns all blocks of the given round.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">protocmd with all blocks</td>
 </tr>
@@ -1036,7 +1017,7 @@ The caller is responsible for updating state if necessary</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
 </tr>
@@ -1052,7 +1033,7 @@ The caller is responsible for updating state if necessary</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> &#8211; a native PosBlock object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -1105,7 +1086,7 @@ and conversion between them all.</p>
 <dl class="class">
 <dt id="posblock.PosBlock">
 <em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosBlock</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="posblock.PosBlock.add_to_proto">
 <code class="descname">add_to_proto</code><span class="sig-paren">(</span><em>protocmd</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.add_to_proto" title="Permalink to this definition">¶</a></dt>
@@ -1128,7 +1109,7 @@ and conversion between them all.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_dict</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_dict</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
 </tr>
@@ -1144,7 +1125,7 @@ and conversion between them all.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_proto</strong> &#8211; a protobuff object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block_proto</strong> – a protobuff object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
 </tr>
@@ -1170,7 +1151,7 @@ and conversion between them all.</p>
 <dl class="method">
 <dt id="posblock.PosBlock.sign">
 <code class="descname">sign</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosBlock.sign" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sign the raw block and calc it&#8217;s hash</p>
+<dd><p>Sign the raw block and calc it’s hash</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1208,7 +1189,7 @@ and conversion between them all.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> &#8211; if True, will convert binary fields to hex encoded string</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> – if True, will convert binary fields to hex encoded string</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
 </tr>
@@ -1264,7 +1245,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <dl class="class">
 <dt id="posblock.PosHeight">
 <em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosHeight</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>PoS Height is the status of the chain state.
 This object represents the current height and content of a given node.</p>
 <dl class="method">
@@ -1275,7 +1256,7 @@ This object represents the current height and content of a given node.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height_dict</strong> &#8211; dict()</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>height_dict</strong> – dict()</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">self</td>
 </tr>
@@ -1315,7 +1296,7 @@ This object represents the current height and content of a given node.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> &#8211; convert raw buffers to hex string encoding so we can json_encode later.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>as_hex</strong> – convert raw buffers to hex string encoding so we can json_encode later.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">dict()</td>
 </tr>
@@ -1326,7 +1307,7 @@ This object represents the current height and content of a given node.</p>
 <dl class="method">
 <dt id="posblock.PosHeight.to_proto">
 <code class="descname">to_proto</code><span class="sig-paren">(</span><em>height</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosHeight.to_proto" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fills in the protobuf object &#8220;Height&#8221; section</p>
+<dd><p>Fills in the protobuf object “Height” section</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -1342,7 +1323,7 @@ This object represents the current height and content of a given node.</p>
 <dl class="class">
 <dt id="posblock.PosMessage">
 <em class="property">class </em><code class="descclassname">posblock.</code><code class="descname">PosMessage</code><span class="sig-paren">(</span><em>verbose=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posblock.PosMessage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>PoS Messages are the Transactions
 This object represents a single tx/message</p>
 <dl class="method">
@@ -1353,7 +1334,7 @@ This object represents a single tx/message</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protocmd</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protocmd</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
 </tr>
@@ -1369,7 +1350,7 @@ This object represents a single tx/message</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protoblock</strong> &#8211; a block value of a proto command</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>protoblock</strong> – a block value of a proto command</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
 </tr>
@@ -1400,7 +1381,7 @@ Raise on error</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_dict</strong> &#8211; a python dict()</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_dict</strong> – a python dict()</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
 </tr>
@@ -1416,7 +1397,7 @@ Raise on error</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_list</strong> &#8211; list()</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx_list</strong> – list()</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
 </tr>
@@ -1432,7 +1413,7 @@ Raise on error</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proto_tx</strong> &#8211; a protobuf object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>proto_tx</strong> – a protobuf object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a PosMessage instance</td>
 </tr>
@@ -1449,13 +1430,13 @@ Raise on error</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>timestamp</strong> &#8211; </li>
-<li><strong>sender</strong> &#8211; </li>
-<li><strong>recipient</strong> &#8211; </li>
-<li><strong>what</strong> &#8211; </li>
-<li><strong>params</strong> &#8211; </li>
-<li><strong>value</strong> &#8211; </li>
-<li><strong>pubkey</strong> &#8211; </li>
+<li><strong>timestamp</strong> – </li>
+<li><strong>sender</strong> – </li>
+<li><strong>recipient</strong> – </li>
+<li><strong>what</strong> – </li>
+<li><strong>params</strong> – </li>
+<li><strong>value</strong> – </li>
+<li><strong>pubkey</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -1484,7 +1465,7 @@ Raise on error</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verify</strong> &#8211; Should we verify the tx? Defaults to True</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>verify</strong> – Should we verify the tx? Defaults to True</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Signature as bytearray.</td>
 </tr>
@@ -1559,7 +1540,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <dl class="class">
 <dt id="posmempool.MemoryMempool">
 <em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">MemoryMempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal"><span class="pre">posmempool.Mempool</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal notranslate"><span class="pre">posmempool.Mempool</span></code></a></p>
 <p>Memory Storage, POC only - Deprecated</p>
 <dl class="method">
 <dt id="posmempool.MemoryMempool._delete_tx">
@@ -1581,7 +1562,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <dl class="class">
 <dt id="posmempool.Mempool">
 <em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">Mempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.Mempool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Parent Class</p>
 <dl class="method">
 <dt id="posmempool.Mempool._delete_tx">
@@ -1616,8 +1597,8 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>tx</strong> &#8211; </li>
-<li><strong>poschain</strong> &#8211; </li>
+<li><strong>tx</strong> – </li>
+<li><strong>poschain</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -1657,7 +1638,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <dl class="class">
 <dt id="posmempool.SqliteMempool">
 <em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">SqliteMempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path='./data/'</em>, <em>app_log=None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal"><span class="pre">posmempool.Mempool</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#posmempool.Mempool" title="posmempool.Mempool"><code class="xref py py-class docutils literal notranslate"><span class="pre">posmempool.Mempool</span></code></a>, <a class="reference internal" href="#sqlitebase.SqliteBase" title="sqlitebase.SqliteBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">sqlitebase.SqliteBase</span></code></a></p>
 <p>Sqlite storage backend.</p>
 <dl class="method">
 <dt id="posmempool.SqliteMempool._insert_tx">
@@ -1667,7 +1648,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx</strong> &#8211; a notive PosMessage object</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tx</strong> – a notive PosMessage object</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
 </tr>
@@ -1711,7 +1692,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>txids</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>txids</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True</td>
 </tr>
@@ -1741,7 +1722,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>date</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a list of posblock.PosMessage objects</td>
 </tr>
@@ -1829,8 +1810,8 @@ with <em>binary content as hex encoded string</em>.</p>
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f255cf5d598&gt; = None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f8a929deea0&gt; = None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
 <dt id="sqlitebase.SqliteBase.async_close">
@@ -1853,9 +1834,9 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sql</strong> &#8211; </li>
-<li><strong>param</strong> &#8211; </li>
-<li><strong>commit</strong> &#8211; If True, will commit after the request.</li>
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+<li><strong>commit</strong> – If True, will commit after the request.</li>
 </ul>
 </td>
 </tr>
@@ -1875,8 +1856,8 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sql</strong> &#8211; </li>
-<li><strong>param</strong> &#8211; </li>
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -1896,9 +1877,9 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sql</strong> &#8211; </li>
-<li><strong>param</strong> &#8211; </li>
-<li><strong>as_dict</strong> &#8211; returns result as a dict, default False.</li>
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+<li><strong>as_dict</strong> – returns result as a dict, default False.</li>
 </ul>
 </td>
 </tr>
@@ -1950,10 +1931,10 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sql</strong> &#8211; </li>
-<li><strong>param</strong> &#8211; </li>
-<li><strong>cursor</strong> &#8211; optional. will use the locked shared cursor if None</li>
-<li><strong>commit</strong> &#8211; optional. will commit after sql</li>
+<li><strong>sql</strong> – </li>
+<li><strong>param</strong> – </li>
+<li><strong>cursor</strong> – optional. will use the locked shared cursor if None</li>
+<li><strong>commit</strong> – optional. will commit after sql</li>
 </ul>
 </td>
 </tr>
@@ -1981,7 +1962,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buffer</strong> &#8211; str or bytes</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>buffer</strong> – str or bytes</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">binary hash</td>
 </tr>
@@ -1998,9 +1979,9 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>signature</strong> &#8211; </li>
-<li><strong>pubkey_string</strong> &#8211; the pubkey, string version.</li>
-<li><strong>message</strong> &#8211; </li>
+<li><strong>signature</strong> – </li>
+<li><strong>pubkey_string</strong> – the pubkey, string version.</li>
+<li><strong>message</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -2033,7 +2014,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos_filename</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pos_filename</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the generated wallet as a dict</td>
 </tr>
@@ -2044,14 +2025,14 @@ with <em>binary content as hex encoded string</em>.</p>
 <dl class="function">
 <dt id="poscrypto.hash_to_addr">
 <code class="descclassname">poscrypto.</code><code class="descname">hash_to_addr</code><span class="sig-paren">(</span><em>hash20</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.hash_to_addr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a hash of len 20 bytes to a checksum&#8217;d + network id address, to compare to an address</p>
+<dd><p>Converts a hash of len 20 bytes to a checksum’d + network id address, to compare to an address</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>hash20</strong> &#8211; bytes</li>
-<li><strong>network</strong> &#8211; byte</li>
+<li><strong>hash20</strong> – bytes</li>
+<li><strong>network</strong> – byte</li>
 </ul>
 </td>
 </tr>
@@ -2071,7 +2052,7 @@ or may not be space separated.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hex_str</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>hex_str</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">bytes</td>
 </tr>
@@ -2088,8 +2069,8 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pos_filename</strong> &#8211; </li>
-<li><strong>verbose</strong> &#8211; boolean, print out address and pubkey</li>
+<li><strong>pos_filename</strong> – </li>
+<li><strong>verbose</strong> – boolean, print out address and pubkey</li>
 </ul>
 </td>
 </tr>
@@ -2103,14 +2084,14 @@ or may not be space separated.</p>
 <dl class="function">
 <dt id="poscrypto.pub_key_to_addr">
 <code class="descclassname">poscrypto.</code><code class="descname">pub_key_to_addr</code><span class="sig-paren">(</span><em>pub_key</em>, <em>network=None</em><span class="sig-paren">)</span><a class="headerlink" href="#poscrypto.pub_key_to_addr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts a public key to a checksum&#8217;d + network id address</p>
+<dd><p>Converts a public key to a checksum’d + network id address</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pub_key</strong> &#8211; </li>
-<li><strong>network</strong> &#8211; byte</li>
+<li><strong>pub_key</strong> – </li>
+<li><strong>network</strong> – byte</li>
 </ul>
 </td>
 </tr>
@@ -2146,10 +2127,10 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>message</strong> &#8211; A string or byte object</li>
-<li><strong>verify</strong> &#8211; Shall we verify the signature? default to True</li>
-<li><strong>priv_key</strong> &#8211; opt</li>
-<li><strong>pub_key</strong> &#8211; opt</li>
+<li><strong>message</strong> – A string or byte object</li>
+<li><strong>verify</strong> – Shall we verify the signature? default to True</li>
+<li><strong>priv_key</strong> – opt</li>
+<li><strong>pub_key</strong> – opt</li>
 </ul>
 </td>
 </tr>
@@ -2169,8 +2150,8 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>address</strong> &#8211; the address string to validate</li>
-<li><strong>network</strong> &#8211; The network id to validate against</li>
+<li><strong>address</strong> – the address string to validate</li>
+<li><strong>network</strong> – The network id to validate against</li>
 </ul>
 </td>
 </tr>
@@ -2192,7 +2173,7 @@ or may not be space separated.</p>
 <dl class="class">
 <dt id="posclient.Posclient">
 <em class="property">class </em><code class="descclassname">posclient.</code><code class="descname">Posclient</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em>, <em>verbose=False</em>, <em>wallet='poswallet.json'</em>, <em>version=''</em><span class="sig-paren">)</span><a class="headerlink" href="#posclient.Posclient" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="method">
 <dt id="posclient.Posclient.action">
 <code class="descname">action</code><span class="sig-paren">(</span><em>action='hello'</em>, <em>param=''</em><span class="sig-paren">)</span><a class="headerlink" href="#posclient.Posclient.action" title="Permalink to this definition">¶</a></dt>
@@ -2202,8 +2183,8 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>action</strong> &#8211; </li>
-<li><strong>param</strong> &#8211; </li>
+<li><strong>action</strong> – </li>
+<li><strong>param</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -2231,8 +2212,8 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2252,9 +2233,9 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; a protobuf object</li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – a protobuf object</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2274,9 +2255,9 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>proto_block</strong> &#8211; a full protobuf command with a block</li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>proto_block</strong> – a full protobuf command with a block</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2296,10 +2277,10 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; the protobuff command</li>
-<li><strong>height</strong> &#8211; a PosHeight object</li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>height</strong> – a PosHeight object</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2319,10 +2300,10 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; the protobuff command</li>
-<li><strong>value</strong> &#8211; </li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>value</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2342,10 +2323,10 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; the protobuff command</li>
-<li><strong>value</strong> &#8211; </li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>value</strong> – </li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2365,10 +2346,10 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; the protobuff command</li>
-<li><strong>txs</strong> &#8211; a list of tx</li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>txs</strong> – a list of tx</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2388,9 +2369,9 @@ or may not be space separated.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>cmd</strong> &#8211; the protobuff command</li>
-<li><strong>stream</strong> &#8211; </li>
-<li><strong>ip</strong> &#8211; the related ip, for stats purposes</li>
+<li><strong>cmd</strong> – the protobuff command</li>
+<li><strong>stream</strong> – </li>
+<li><strong>ip</strong> – the related ip, for stats purposes</li>
 </ul>
 </td>
 </tr>
@@ -2409,7 +2390,7 @@ or may not be space separated.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>command</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>command</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2432,7 +2413,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2448,7 +2429,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2464,7 +2445,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2480,7 +2461,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>i</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>i</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2506,7 +2487,7 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>v</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2528,8 +2509,8 @@ Common helpers for PoS</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>url</strong> &#8211; </li>
-<li><strong>filename</strong> &#8211; </li>
+<li><strong>url</strong> – </li>
+<li><strong>filename</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -2544,14 +2525,14 @@ Common helpers for PoS</p>
 <dt id="poshelpers.first_height_is_better">
 <code class="descclassname">poshelpers.</code><code class="descname">first_height_is_better</code><span class="sig-paren">(</span><em>height_a: dict</em>, <em>height_b: dict</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.first_height_is_better" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compares properties of the heights to tell which one is to keep in case of forks.
-Uses &#8216;forgers&#8217;, &#8216;forgers_round&#8217;, &#8216;uniques&#8217;, &#8216;uniques_round&#8217;, &#8216;round&#8217;, &#8216;height&#8217;</p>
+Uses ‘forgers’, ‘forgers_round’, ‘uniques’, ‘uniques_round’, ‘round’, ‘height’</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>height_a</strong> &#8211; </li>
-<li><strong>height_b</strong> &#8211; </li>
+<li><strong>height_a</strong> – </li>
+<li><strong>height_b</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -2572,8 +2553,8 @@ only checks the current round info, not the whole chain.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>height_a</strong> &#8211; a height dict</li>
-<li><strong>height_b</strong> &#8211; a height dict</li>
+<li><strong>height_a</strong> – a height dict</li>
+<li><strong>height_b</strong> – a height dict</li>
 </ul>
 </td>
 </tr>
@@ -2593,9 +2574,9 @@ only checks the current round info, not the whole chain.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>port</strong> &#8211; port number</li>
-<li><strong>posnet</strong> &#8211; posnet version</li>
-<li><strong>address</strong> &#8211; pos address</li>
+<li><strong>port</strong> – port number</li>
+<li><strong>posnet</strong> – posnet version</li>
+<li><strong>address</strong> – pos address</li>
 </ul>
 </td>
 </tr>
@@ -2619,7 +2600,7 @@ only checks the current round info, not the whole chain.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> &#8211; </td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peer</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
@@ -2636,8 +2617,8 @@ only checks the current round info, not the whole chain.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>peer_status</strong> &#8211; </li>
-<li><strong>our_status</strong> &#8211; </li>
+<li><strong>peer_status</strong> – </li>
+<li><strong>our_status</strong> – </li>
 </ul>
 </td>
 </tr>
@@ -2650,15 +2631,15 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f255cf5d598&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f8a929deea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>url</strong> &#8211; url of the tgz archive</li>
-<li><strong>app_log</strong> &#8211; optional log handler</li>
+<li><strong>url</strong> – url of the tgz archive</li>
+<li><strong>app_log</strong> – optional log handler</li>
 </ul>
 </td>
 </tr>
@@ -2703,25 +2684,27 @@ only checks the current round info, not the whole chain.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="#module-base58">base58 - Util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="#module-poshelpers">poshelpers - Util module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="poc.html">&gt; Bismuth Hypernodes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="poc.html#module-hn_instance">hn_instance: HyperNode instance</a></li>
-<li class="toctree-l1"><a class="reference internal" href="poc.html#module-hn_client">hn_client: HyperNode Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hypernode.html">&gt; Bismuth Hypernodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hypernode.html#module-hn_instance">hn_instance: HyperNode instance</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hypernode.html#module-hn_client">hn_client: HyperNode Client</a></li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Welcome to Bismuth Hypernodes&#8217;s documentation!</a></p>
+                        title="previous chapter">Welcome to Bismuth Hypernodes’s documentation!</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="poc.html"
+  <p class="topless"><a href="hypernode.html"
                         title="next chapter">&gt; Bismuth Hypernodes</a></p>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -2738,7 +2721,7 @@ only checks the current round info, not the whole chain.</p>
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="poc.html" title="&gt; Bismuth Hypernodes"
+          <a href="hypernode.html" title="&gt; Bismuth Hypernodes"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="Welcome to Bismuth Hypernodes’s documentation!"
@@ -2748,7 +2731,7 @@ only checks the current round info, not the whole chain.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2018, Bismuth Foundation.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.6.
     </div>
   </body>
 </html>
