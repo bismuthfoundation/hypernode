@@ -67,7 +67,10 @@ LTIMEOUT = 45
 
 # Minimum required connectivity before we are able to operate
 # FR: Could depend on the jurors count.
-MINIMUM_CONNECTIVITY = 2
+MINIMUM_CONNECTIVITY = 1  # let 1 for growth phase.
+
+# 30% for growth phase? should be 50% or more later on depending on uptime of registered HN.
+MIN_FORGE_CONSENSUS = 30
 
 # Some systems do not support reuse_port
 REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
@@ -464,8 +467,8 @@ class Poshn:
         formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
-        app_log.info("PoS HN {} Starting on ip address '{}', data dir '{}' suffix {}."
-                     .format(__version__, self.address, self.datadir, self.suffix))
+        app_log.info("PoS HN {} Starting on ip address '{}:{}', data dir '{}' suffix {}."
+                     .format(__version__, self.ip, self.port, self.datadir, self.suffix))
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
 
@@ -617,7 +620,7 @@ class Poshn:
                     # FR: The given worker will be responsible for changing state on ok or failed status
 
                 if self.state == HNState.STRONG_CONSENSUS:
-                    if self.consensus_pc > 50 and not config.DO_NOT_FORGE:
+                    if self.consensus_pc > MIN_FORGE_CONSENSUS and not config.DO_NOT_FORGE:
                         # Make sure we are at least 15 sec after round start, to let other nodes be synced.
                         if time.time() - self.current_round_start > 15:
                             await self.change_state_to(HNState.FORGING)
@@ -703,11 +706,13 @@ class Poshn:
                     peers_status[peer['height_status']['block_hash']]['count'] = 1
                     peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                 if poshelpers.same_height(peer['height_status'], our_status):
-                    app_log.info('Peer {} agrees'.format(ip))
+                    if self.verbose:
+                        app_log.info('Peer {} agrees'.format(ip))
                     # TODO: only count if in our common.POC_HYPER_NODES_LIST list?
                     nb += 1
                 else:
-                    app_log.warning('Peer {} disagrees'.format(ip))
+                    if self.verbose:
+                        app_log.warning('Peer {} disagrees'.format(ip))
             except:
                 pass
         for ip, peer in self.inbound.items():
@@ -921,7 +926,8 @@ class Poshn:
                 if await self.mempool.digest_tx(tx, poschain=self.poschain):
                     nb += 1
                 total += 1
-            app_log.info("Digested {}/{} tx(s) from {}".format(nb, total, peer_ip))
+            if total > 0:
+                app_log.info("Digested {}/{} tx(s) from {}".format(nb, total, peer_ip))
         except Exception as e:
             app_log.warning("Error {} digesting tx".format(e))
 
@@ -1070,7 +1076,7 @@ class Poshn:
             return stream
         except tornado.iostream.StreamClosedError as e:
             if self.verbose:
-                app_log.warning("Connection lost to {} because {}. No retry.".format(full_peer, e))
+                app_log.info("Connection lost to {} because {}. No retry.".format(full_peer, e))
         except Exception as e:
             app_log.error("Connection lost to {} because {}. No Retry.".format(full_peer, e))
             exc_type, exc_obj, exc_tb = sys.exc_info()

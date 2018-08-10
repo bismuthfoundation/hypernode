@@ -61,6 +61,19 @@ Raspberry pi image of node + HN
 
 # TODO
 
+config: short or full status into the logs.
+
+add a config.json to override the config.py param
+
+> Simulate connect_to , max , depending on hn list size and failure rates to estimate 
+add this to config.json so we can adjust depending on the net state.
+
+Message on the pos chain to announce recommended params and alert divergences?
+
+Important: if DB empty, force to bootstrap.
+Create a bootstrap at each round end with round - 2 for instance.
+Incremental update in a cold database after a common ancestor check? 
+
 Extra in status: add cpu% (app and system + ram / disk)
 
 UFW for Python.

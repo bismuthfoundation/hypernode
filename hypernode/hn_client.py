@@ -284,7 +284,7 @@ if __name__ == "__main__":
         print("Client version {}".format(__version__))
         print("Client Lib version {}".format(posclient.__version__))
     try:
-        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="mn_temp/mn{}.json".format(args.index),
+        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="hn_temp/mn{}.json".format(args.index),
                                                   verbose=args.verbose, version=__version__)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))

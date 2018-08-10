@@ -3,17 +3,20 @@ Bismuth
 Common helpers for PoS
 """
 
-import os
-import shutil
-import tarfile
+import json
 import logging
+import os
+import random
+import shutil
+import sys
+import tarfile
 
 import requests
 
 import config
 import poscrypto
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 # GENERIC HELPERS ##############################################################
@@ -157,6 +160,34 @@ def hello_string(port: int=101, posnet: str=None, address: str=None):
     address = poscrypto.ADDRESS if not address else address
     poscrypto.validate_address(address)  # Will raise if invalid
     return posnet + str(port).zfill(5) + address
+
+
+def load_hn_temp():
+    """
+    fill list of HNs from our local repo, for dev at scale.
+
+    :return: None
+    """
+    config.POC_HYPER_NODES_LIST = []
+    try:
+        i = 0
+        random.seed('my_fixed_seed')
+        weight_profile = [1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3]
+        while os.path.isfile("hn_temp/mn{}.json".format(i)):
+            with open("hn_temp/mn{}.json".format(i)) as f:
+                hn = json.load(f)
+                #  ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1, "bis_addr_2", "bis_addr_2"),
+                # Weight distribution
+                weight = random.choice(weight_profile)
+                hn_tuple = (hn['address'], '127.0.0.1', 6970 + i, weight, "bis_addr_{}".format(i), "bis_addr_{}".format(i))
+                config.POC_HYPER_NODES_LIST.append(hn_tuple)
+            i += 1
+        # print(config.POC_HYPER_NODES_LIST)
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+        sys.exit()
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ Here comes temp. PoC variables
 
 # The reference list of active Hypernodes for the round
 # address, ip, port, weight, bis_registrar, bis_recipient
-POC_HYPER_NODES_LIST = [
+POC_HYPER_NODES_LIST_0 = [
     ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0"),  # hn 0
     ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2, "bis_addr_1", "bis_addr_1"),
     ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1, "bis_addr_2", "bis_addr_2"),
@@ -43,13 +43,16 @@ POC_HYPER_NODES_LIST = [
     # on purpose, 3 and 4 have same recipient address
     ]
 
+# If empty, hn_instance will load from hn_temp dir.
+POC_HYPER_NODES_LIST = []
+
 # The broadhash of the previous round determines the shuffle.
 # block hashes and broad hashes are 20 bytes
 POC_LAST_BROADHASH = b"123456789abcdef12345"
 
 
 """
-Here comes tuneable algorithm variables - Do not change those or you will fork
+Here comes tuneable algorithm variables - Do not change those or you will fork or be unable to sync
 """
 
 # POC - Will be taken from config - Always 10 chars
@@ -63,6 +66,9 @@ NETWORK_ID = b'\x19'
 
 # Default Hypernodes port
 DEFAULT_PORT = 6960
+
+# How many peers at most to try to connect to?
+MAX_CONNECT_TO = 25
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 # TODO: Estimate block size depending on the HN count

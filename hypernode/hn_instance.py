@@ -13,21 +13,21 @@ Example:
 
 """
 
-import sys
 import argparse
+import os
+import sys
 import time
 
 # custom modules
 sys.path.append('../modules')
-import os
+import com_helpers
 import config
-# import poshn
 from poshn import Poshn
 from poschain import SqlitePosChain
 import poscrypto
-import com_helpers
+import poshelpers
 
-__version__ = '0.0.52'
+__version__ = '0.0.53'
 
 
 if __name__ == "__main__":
@@ -43,32 +43,38 @@ if __name__ == "__main__":
     try:
         if args.action == 'genesis':
             # Displays genesis block info for db insert
-            poscrypto.load_keys("mn_temp/mn0.json")
+            poscrypto.load_keys("hn_temp/mn0.json")
             pos_chain = SqlitePosChain(verbose=True)
             # genesis = pos_chain.genesis_dict()
             print("TODO")
         else:
             # If we are updating, let our previous instance close.
             time.sleep(1)
-            peers = config.POC_HYPER_NODES_LIST
             if args.index >= 0:
+                if len(config.POC_HYPER_NODES_LIST) <= 0:
+                    poshelpers.load_hn_temp()
                 my_info = config.POC_HYPER_NODES_LIST[args.index]
                 ip = my_info[1]
                 port = my_info[2]
                 address = my_info[0]
-                wallet_name = "mn_temp/mn{}.json".format(args.index)
+                wallet_name = "hn_temp/mn{}.json".format(args.index)
                 # allows to run several HN on the same machine - debug/dev only
                 datadir = "./data{}".format(args.index)
+                if not os.path.exists(datadir):
+                    os.makedirs(datadir)
                 suffix = str(args.index)
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"
+                if len(config.POC_HYPER_NODES_LIST) <= 0:
+                    config.POC_HYPER_NODES_LIST = config.POC_HYPER_NODES_LIST_0
                 my_info = config.POC_HYPER_NODES_LIST[args.index]
                 ip = args.ip if args.ip else None
                 port = config.DEFAULT_PORT
                 suffix=''
             if args.ip == 'ALL':
                 ip = None
+            peers = config.POC_HYPER_NODES_LIST
             com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose,
                                         wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__)
             com_helpers.MY_NODE.serve()
