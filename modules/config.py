@@ -90,11 +90,13 @@ PING_DELAY = 30
 FUTURE_ALLOWED = 5
 
 # Duration of a PoS slot in minute - each slot can be filled by a block (or stay empty)
-POS_SLOT_TIME_MIN = 5
+POS_SLOT_TIME_MIN = 5  # POC test
+POS_SLOT_TIME_MIN = 3  # Real world setting?
 POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 
 # How many slots in a round? Better keep them an odd number.
-MAX_ROUND_SLOTS = 3
+MAX_ROUND_SLOTS = 3  # POC test
+MAX_ROUND_SLOTS = 19  # Real world. 19+1 = 20 , 3x20 = 60 (round time)
 
 # How many block times to wait at the end of a round to reach consensus?
 END_ROUND_SLOTS = 1
@@ -113,7 +115,8 @@ REQUIRED_MESSAGES_PER_BLOCK = 4
 REQUIRED_SOURCES_PER_BLOCK = 3
 
 # This is a constant. Time for block 0, slot 0 of the PoS chain. Can't change once launched.
-ORIGIN_OF_TIME = 1522419000
+ORIGIN_OF_TIME = 1522419000  # Legacy tests
+ORIGIN_OF_TIME = 1533980000  # Firsts tests with 1 hour round time, 3 min slot time.
 
 
 # Round time in seconds

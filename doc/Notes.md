@@ -70,6 +70,20 @@ add this to config.json so we can adjust depending on the net state.
 
 Message on the pos chain to announce recommended params and alert divergences?
 
+"getconfig" message to void too far away HN
+
+void a HN: message on the pow chain, from the HN private contract?
+Or from a dedicated HN?
+After each round: list of active, inactive, voided (sum = registered)
+HN de facto have active and inactive. voided is done by private contract only. (can also serve as kill switch)
+or pow chain, but only announce void/unvoid? 
+>> or a list of voided only (both pow and pos), take last one into account.
+
+Status: add total bytes sent/received since start within 'extra', as well as uptime (or start_timestamp, better)
+Store those stats in a "stats" table or db, one stored status per round? could be helpful. 
+Maybe also store the sorted peers status in that one. and in status or extended status.
+So we can have a feeling on how many chain versions there are on the net.
+
 Important: if DB empty, force to bootstrap.
 Create a bootstrap at each round end with round - 2 for instance.
 Incremental update in a cold database after a common ancestor check? 

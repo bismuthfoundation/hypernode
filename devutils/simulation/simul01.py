@@ -17,7 +17,7 @@ HN_COUNT = 100
 # not used in practice
 JURORS_COUNT = 51
 
-MAX_ROUND_SLOTS = 11
+MAX_ROUND_SLOTS = 19
 END_ROUND_SLOTS = 1
 
 HN_TO_JUROR = 1
@@ -47,7 +47,7 @@ TX_AVG_SIZE_BYTES = 256
 
 MESSAGE_AVG_SIZE_BYTES = 64
 
-# test with 2h round and 10 min slot time
+# test with 2h round and 10 min slot time
 ROUND_TIME_SEC = 3600
 
 SLOT_TIME_SEC = ROUND_TIME_SEC / (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
@@ -208,8 +208,11 @@ def get_stats():
     stats['time_to_sync_pc_human'] = str(math.ceil(stats['time_to_sync'] / SLOT_TIME_SEC * 100)) + '%'
     stats['disconnected'] = running - giant
     stats['avg_degree'] = mean([node['in'] + node['out'] for node in NODES])
-    stats['avg_degree_juror'] = mean([node['in'] + node['out'] for node in NODES if node['juror']])
     stats['avg_degree_non_juror'] = mean([node['in'] + node['out'] for node in NODES if not node['juror']])
+    # These one are important, that's what determine the forging state possibility
+    stats['avg_degree_juror'] = mean([node['in'] + node['out'] for node in NODES if node['juror']])
+    stats['min_degree_juror'] = min([node['in'] + node['out'] for node in NODES if node['juror']])
+    stats['max_degree_juror'] = max([node['in'] + node['out'] for node in NODES if node['juror']])
     return stats
 
 

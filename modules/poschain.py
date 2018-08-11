@@ -121,6 +121,8 @@ SQL_CREATE_POS_ROUNDS = "CREATE TABLE pos_rounds (\
     test_slots STRING\
     );"
 
+# POC GENESIS
+"""
 SQL_INSERT_GENESIS = "INSERT INTO pos_chain (forger, received_by, block_hash,\
                           signature, uniques_sources, msg_count, previous_hash,\
                           timestamp, sir, round, height) VALUES (\
@@ -137,6 +139,36 @@ SQL_INSERT_GENESIS = "INSERT INTO pos_chain (forger, received_by, block_hash,\
                           0\
                       );\
                     "
+"""
+
+# Real settings genesis
+SQL_INSERT_GENESIS = """INSERT INTO pos_chain (
+                          forger,
+                          received_by,
+                          block_hash,
+                          signature,
+                          uniques_sources,
+                          msg_count,
+                          previous_hash,
+                          timestamp,
+                          sir,
+                          round,
+                          height
+                      )
+                      VALUES (
+                          'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne',
+                          '',
+                          X'598C8B39746AF46AC31497A0F1F7306E98E10099',
+                          X'4F96C2CFBB15D40D877A06D7E08947DA0198FF16304AB069558EBD90A5B6591C2B689C7D3275B9B9D217696EB8642F180133E183730C499330CBCBA43238F77D',
+                          0,
+                          0,
+                          X'C0CB310E2877D73E2F29A949AABB8FEF0EA00EDF',
+                          1533980000,
+                          0,
+                          0,
+                          0
+                      );
+                    """
 
 
 class PosChain:
@@ -461,6 +493,7 @@ class SqlitePosChain(PosChain, SqliteBase):
                 if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
+                    sys.exit()
                 else:
                     self.execute(SQL_INSERT_GENESIS)
                     self.commit()
