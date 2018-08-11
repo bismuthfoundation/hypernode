@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 #
-HN_COUNT = 100
+HN_COUNT = 200
 HN_UPTIME = 0.9
 WAIT = 10
 TESTS_PER_SLOT = 5

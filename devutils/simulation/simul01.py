@@ -13,7 +13,7 @@ from utils import bytes2human
 # Distribution of the HN weights
 WEIGHT_PROFILE = [1,1,1,1,1,1,2,2,2,3,3]
 
-HN_COUNT = 100
+HN_COUNT = 200
 # not used in practice
 JURORS_COUNT = 51
 

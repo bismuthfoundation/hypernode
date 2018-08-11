@@ -179,7 +179,7 @@ def load_hn_temp():
                 #  ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1, "bis_addr_2", "bis_addr_2"),
                 # Weight distribution
                 weight = random.choice(weight_profile)
-                hn_tuple = (hn['address'], '127.0.0.1', 6970 + i, weight, "bis_addr_{}".format(i), "bis_addr_{}".format(i))
+                hn_tuple = (hn['address'], '127.0.0.1', 6969 + i, weight, "bis_addr_{}".format(i), "bis_addr_{}".format(i))
                 config.POC_HYPER_NODES_LIST.append(hn_tuple)
             i += 1
         # print(config.POC_HYPER_NODES_LIST)
