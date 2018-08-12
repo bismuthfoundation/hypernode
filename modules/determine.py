@@ -5,6 +5,7 @@ Deterministic helpers and/or classes for Bismuth PoS
 import math
 # Third party modules
 import random
+import sys
 import time
 
 # Custom modules
@@ -12,12 +13,14 @@ import config
 import poscrypto
 
 
-__version__ = '0.0.22'
+__version__ = '0.0.23'
 
 # local verbose switch
 VERBOSE = True
 
 REF_ADDRESS = ''
+
+REF_HASH = b''
 
 # NOTE: I used distance between hashes to order the HNs, but it may be simpler
 # to use random, seeded with previous hash, then random.shuffle()
@@ -35,7 +38,8 @@ the largest that can fit within the period of the Mersenne Twister random number
 
 def my_distance(address):
     """
-    Return the Hamming distance between an address and the ref hash, that was converted to be address like
+    DEPRECATED - Return the Hamming distance between an address and the ref hash, that was converted to be address like
+
     :param address:
     :return:
     """
@@ -53,13 +57,37 @@ def my_distance(address):
     return distance
 
 
+def my_hash_distance(peer):
+    """
+    Return the Hamming distance between a hash and the ref hash
+
+    :param peer: tuple(addr, ticket id, hash)
+    :return:
+    """
+    global REF_HASH
+    # distance = sum(bin(i ^ j).count("1") for i, j in zip(address[0].encode('ascii'), REF_HASH.encode('ascii')))
+    # Start with a distance of zero, and count up
+    # print(peer, len(peer[2]))
+    # print(REF_HASH, len(REF_HASH))
+    distance = 0
+    # Loop over the bytes of the hash
+    for i in range(20):
+        # print(i, peer[2][i], REF_HASH[i])
+        #distance += abs(ord(peer[2][i]) - ord(REF_HASH[i]))
+        distance += abs(peer[2][i] - REF_HASH[i])
+        # Better results (spread) than pure bin hamming
+    # if VERBOSE:
+    #     print("my_distance", peer, distance)
+    return distance
+
+
 # List and tickets management  ###############################################
 
 
 async def hn_list_to_tickets(hn_list):
     """
     :param hn_list: list of hn with properties
-    :return: list of tickets for delegates determination
+    :return: list of tickets for jurors determination
     """
     # hn_list is supposed to be ordered the same for everyone
     tickets = []
@@ -71,32 +99,42 @@ async def hn_list_to_tickets(hn_list):
         for hn in hn_list:
             # a more compact and faster version can be written, I prefer to aim at clarity
             for chances in range(hn[3]):  # index 3 is the weight
-                tickets.append((hn[0], tid))
+                tickets.append((hn[0], tid, poscrypto.blake(hn[0]+str(tid), ).digest()))
                 tid += 1
     return tickets
 
 
-async def tickets_to_delegates(tickets_list, reference_hash):
+async def tickets_to_jurors(tickets_list, reference_hash):
     """
     Order and extract only the required number of candidates from the tickets
+
     :param tickets_list:
     :param reference_hash:
     :return:
     """
     # Set the reference Hash
-    global REF_ADDRESS
-    REF_ADDRESS = poscrypto.hash_to_addr(reference_hash)
+    global REF_HASH
+    REF_HASH = reference_hash
     # sort the tickets according to their hash distance.
-    tickets_list.sort(key=my_distance)
+    tickets_list.sort(key=my_hash_distance)
     if VERBOSE:
         # print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
-    return tickets_list[:config.MAX_ROUND_SLOTS]
+    final_list = [ticket[:2] for i, ticket in enumerate(tickets_list) if i < config.MAX_ROUND_SLOTS]
+    # return tickets_list[:config.MAX_ROUND_SLOTS]
+    """
+    print("Sorted Tickets:")
+    for ticket in final_list:
+        print(ticket[0], ticket[1])
+    sys.exit()
+    """
+    return final_list
 
 
 def pick_two_not_in(address_list, avoid):
     """
     Pick a random couple of hn not in avoid
+
     :param address_list:
     :param avoid:
     :return:
@@ -111,6 +149,7 @@ def pick_two_not_in(address_list, avoid):
 async def hn_list_to_test_slots(full_hn_list, forge_slots):
     """
     Predict tests to be run during each slot, but avoid testing forging HN
+
     :param full_hn_list:
     :param forge_slots:
     :return: list with list of tests for each slot.
@@ -154,6 +193,7 @@ async def hn_list_to_test_slots(full_hn_list, forge_slots):
 def timestamp_to_round_slot(ts=0):
     """
     Given a timestamp, returns the specific round and slot# that fits.
+
     :param ts: timestamp to use. If 0, will use current time
     :return: tuple (round, slot in round)
     """
@@ -173,6 +213,7 @@ def timestamp_to_round_slot(ts=0):
 async def get_connect_to(peers, pos_round, address):
     """
     Sends back the list of peers to connect to
+
     :param peers:
     :param pos_round:
     :param address:
@@ -194,7 +235,8 @@ async def get_connect_to(peers, pos_round, address):
 
 async def connect_ok_from(msg, access_log):
     """
-    Checks if the peer can connect to us
+    TODO - Checks if the peer can connect to us
+
     :param msg:
     :param access_log:
     :return: reason (string), ok (boolean)

@@ -22,7 +22,7 @@ async def round_start():
     print("{} candidates, {} slots".format(len(config.POC_HYPER_NODES_LIST), config.MAX_ROUND_SLOTS))
     tickets = await determine.hn_list_to_tickets(config.POC_HYPER_NODES_LIST)
     print("Tickets\n", tickets)
-    slots = await determine.tickets_to_delegates(tickets, config.POC_LAST_BROADHASH)
+    slots = await determine.tickets_to_jurors(tickets, config.POC_LAST_BROADHASH)
     print("Slots\n", slots)
     test_slots = await determine.hn_list_to_test_slots(config.POC_HYPER_NODES_LIST, slots)
     print("Tests Slots\n", test_slots)

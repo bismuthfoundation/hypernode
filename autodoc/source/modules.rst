@@ -93,6 +93,17 @@ WIP - A self contained client class for APIs or client line tools.
     :undoc-members:
     :show-inheritance:
 
+determine - Pseudo determinist helpers
+======================================
+
+Helpers to sort tickers, peers, determine slots and such.
+
+.. automodule:: determine
+    :members:
+    :private-members:
+    :undoc-members:
+    :show-inheritance:
+
 com_helpers - Util module
 =========================
 

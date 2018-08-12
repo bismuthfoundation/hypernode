@@ -851,7 +851,9 @@ class Poshn:
                 # TODO: emit tx or add to buffer
             else:
                 app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
-                # TODO: emit tx or add to buffer
+                # TODO: get PoS address from peer (it's a ip:0port string)
+                await self._new_tx()
+                # TODO: emit tx or add to buffer (avoid tx spam)
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
@@ -863,6 +865,17 @@ class Poshn:
             # Set previous state again
             await self.change_state_to(self.saved_state)
             return res
+
+    async def _new_tx(self, recipient='', what=0, params='', value=0):
+        tx = posblock.PosMessage().from_values(recipient='BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', value='1')
+        # from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey=None):
+        try:
+            tx.sign()
+            # tx.value = 5  # uncomment to trigger invalid signature
+            print(tx.to_json())
+            await com_helpers.async_send_txs(commands_pb2.Command.tx, [tx], stream, self.ip)
+        except Exception as e:
+            print(e)
 
     async def _get_round_blocks(self, peer, a_round):
         """
@@ -1330,7 +1343,7 @@ class Poshn:
                     self.connect_to = await determine.get_connect_to(self.peers, self.round, self.address)
                     tickets = await determine.hn_list_to_tickets(self.peers)
                     # TODO: real hash
-                    self.slots = await determine.tickets_to_delegates(tickets, self.previous_hash)
+                    self.slots = await determine.tickets_to_jurors(tickets, self.previous_hash)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
                     self.test_slots = await determine.hn_list_to_test_slots(self.peers, self.slots)
