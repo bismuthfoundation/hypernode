@@ -408,6 +408,9 @@ class Poshn:
         self.forged_count = 0  # How many blocks forged since start of the HN
         self.slots = None
         self.test_slots = None
+        self.tests_to_run = []
+        self.tests_to_answer = []
+        self.no_test_this_round = False
         try:
             self.init_log()
             self.check_os()
@@ -445,6 +448,7 @@ class Poshn:
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
+
         except Exception as e:
             app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -564,6 +568,7 @@ class Poshn:
         # Initialise round/sir data
         await self.refresh_last_block()
         await self.check_round()
+        await self._new_tx(recipient=self.address, what=202, params='START', value=self.round)
         while not self.stop_event.is_set():
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
@@ -800,7 +805,7 @@ class Poshn:
             full, start_round, end_round = map(str.strip, param.split(','))
         app_log.info("Registered Hypernodes, round {} to {}".format(start_round, end_round))
         # Get all HN who were valid for at least a round
-        # TODO: from local DB
+        # TODO: from local DB and powchain.regs: show also inactive
         hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
                                 "recipient": item[5], "kpis":{}}
                       for item in config.POC_HYPER_NODES_LIST}
@@ -857,12 +862,15 @@ class Poshn:
                 for block in the_blocks.block_value:
                     await self.poschain.digest_block(block, from_miner=False)
                 await self.status(log=False)
-                # TODO: emit tx or add to buffer
+                # TODO: get PoS address from peer (it's a ip:0port string)
+                recipient = 'TEMP_TODO {}'.format(peer)
+                await self._new_tx(recipient, what=200, params='R.SYNC:{}'.format(peer), value=a_round)
             else:
                 app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
                 # TODO: get PoS address from peer (it's a ip:0port string)
-                await self._new_tx()
-                # TODO: emit tx or add to buffer (avoid tx spam)
+                recipient = 'TEMP_TODO {}'.format(peer)
+                await self._new_tx(recipient, what=101, params='P.FAIL:{}'.format(peer), value=a_round)
+                # FR: Add to buffer instead of sendng right away (avoid tx spam)
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
@@ -876,15 +884,26 @@ class Poshn:
             return res
 
     async def _new_tx(self, recipient='', what=0, params='', value=0):
-        tx = posblock.PosMessage().from_values(recipient='BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', value='1')
+        """
+        Insert a new TX (message) in the local mempool
+
+        :param recipient:
+        :param what:
+        :param params:
+        :param value:
+        :return:
+        """
+        tx = posblock.PosMessage().from_values(recipient=recipient, what=what, params=params, value=value)
         # from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey=None):
         try:
             tx.sign()
-            # tx.value = 5  # uncomment to trigger invalid signature
-            print(tx.to_json())
-            await com_helpers.async_send_txs(commands_pb2.Command.tx, [tx], stream, self.ip)
+            # print(tx.to_json())
+            await self.mempool.digest_tx(tx, self.poschain)
         except Exception as e:
-            print(e)
+            app_log.error('_new_tx error "{}"'.format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
     async def _get_round_blocks(self, peer, a_round):
         """
@@ -1200,6 +1219,7 @@ class Poshn:
 
                         app_log.info(">> Net Synced via {}".format(full_peer))
                         # Trigger re-eval of peers and such (do that as blocks come?)
+                        self.previous_round = 0  # Force re calc
                         await self.check_round()
                         await self.change_state_to(HNState.SYNCING)
                 else:
@@ -1341,17 +1361,21 @@ class Poshn:
                 # Update all sir related info
                 if self.verbose:
                     app_log.info(">> New Slot {} in Round {}".format(self.sir, self.round))
-                self.previous_sir = self.sir
+                self.tests_to_run = []
+                self.tests_to_answer = []
                 if self.round != self.previous_round:
                     # Update all round related info, we get here only once at the beginning of a new round
                     await self.refresh_last_block()
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
+                    # Empty test list so we don't go over round boundaries if there were pending tests.
+                    self.test_slots = []
+                    self.no_test_this_round = False
                     # Update the HN list - First query the inactive HN for just finished round.
                     all_hns = set([peer[0] for peer in self.all_peers])
                     active_hns = set(await self.poschain.async_active_hns(self.round - 1))
                     inactive_hns = all_hns - active_hns
-                    # Failsafe to avoid disabling everyone on edge cases or attack scenarios
+                    # Fail safe to avoid disabling everyone on edge cases or attack scenarios
                     if len(active_hns) < config.MIN_ACTIVE_HNS:
                         # Also covers for recovering if previous round had no block because of low consensus.
                         inactive_hns = []
@@ -1363,7 +1387,6 @@ class Poshn:
                                      .format(len(self.powchain.regs), len(self.active_regs)))
                     # FR: Should be some refactoring to do in all these mess of various structures.
                     # Recreate self.peers.
-                    old_peers = list(self.all_peers)  # deep copy
                     # list of ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0")
                     # for address, items in self.powchain.regs.items():
                     self.active_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
@@ -1380,16 +1403,47 @@ class Poshn:
                     self.slots = await determine.tickets_to_jurors(tickets, self.previous_hash)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
-                    # We also test everyone, or it would be biased against good nodes.
+                    # We also test inactive peers, or it would be biased against good nodes.
                     self.test_slots = await determine.hn_list_to_test_slots(self.all_peers, self.slots)
+                    # Are we to play this round?
+                    self.no_test_this_round = True
+                    for a_slot_info in self.test_slots:
+                        for a_test in a_slot_info:
+                            if self.address in a_test:
+                                # we have at least one test
+                                self.no_test_this_round = False
+                                break
+                    if self.verbose:
+                        app_log.info("Tests Slots {} - No test this round={}"
+                                     .format(json.dumps(self.test_slots), self.no_test_this_round))
                     # TODO: save this round info to db
                     # TODO: clean up old info from round db
+
+                # We changed SIR, change tests for slots
+                self.previous_sir = self.sir
+                self.tests_to_run = [test for test in self.test_slots[self.sir] if test[0] == self.address]
+                self.tests_to_answer = [[test for test in self.test_slots[self.sir] if test[1] == self.address]]
+
+                if self.verbose:
+                    app_log.info("Tests to run slot {}: {}".format(self.sir, json.dumps(self.tests_to_run)))
+                    app_log.info("Tests to answer slot {}: {}".format(self.sir, json.dumps(self.tests_to_answer)))
+
                 if self.sir < len(self.slots):
                     self.forger = self.slots[self.sir][0]
                     if self.verbose:
                         app_log.info("Forger is {}".format(self.forger))
                 else:
                     self.forger = None
+
+                # purge old tx
+                await self.mempool.async_purge()
+
+                if (self.sir == 0) or (self.sir == config.MAX_ROUND_SLOTS + config.END_ROUND_SLOTS - 1):
+                    await asyncio.sleep(10)
+                    # FR: param is optional, all could go into 'what' to spare bandwith
+                    await self._new_tx(recipient=self.address, what=201, params='NO_TEST', value=self.round)
+                    # self.run_test(self.address, self.address, 0 )
+
 
     def serve(self):
         """
@@ -1449,6 +1503,7 @@ class Poshn:
         try:
             # Now test coherence and mempool
             await self.mempool.async_purge()
+            await self.mempool.async_purge_start(self.address)
             mem_txs = await self.mempool.async_alltxids()
             txs = []
             for tx in mem_txs:

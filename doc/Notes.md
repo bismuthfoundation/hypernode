@@ -111,6 +111,14 @@ WIP - Probly use static type hints? - MyPy
 
 HN need a full ledger - Enforce. Include historical pow data in tests?
 
+Protocol: should we exchange current forger as part as current height to be safe?
+> Not hard to do, not much overhead, would id splitting HNs before they even split.
+
+HN Should send at least 1 or 2 message per round to say it's active, even if it has no test to be part of.
+(then he sends "No test for this round" to himself at begin and end of the round)
+
+Send a message at launch also (signal it's alive, and is a QoS metric... restarts too often = issue)
+
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
 

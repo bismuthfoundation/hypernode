@@ -37,7 +37,16 @@ SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
 SQL_INSERT_TX = "INSERT OR IGNORE INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 # Purge old txs that may be stuck
-SQL_PURGE = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour')"
+SQL_PURGE = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
+
+# Purge old start txs from our address
+SQL_PURGE_START1 = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour') AND sender=? AND recipient=? AND what=202"
+# Count our messages to alleviate if necessary
+SQL_COUNT_START_MESSAGES = "SELECT COUNT(txid) from pos_messages WHERE sender=? AND recipient=? AND what=202"
+# Delete a random subset of our start messages not to spam and preserve some info still.
+SQL_PURGE_START2 = "DELETE FROM pos_messages WHERE txid in " \
+                   "(SELECT txid FROM pos_messages WHERE sender=? AND recipient=? AND what=202 " \
+                   "ORDER BY RANDOM() LIMIT ?)"
 
 # Delete all transactions
 SQL_CLEAR = "DELETE FROM pos_messages"
@@ -229,11 +238,26 @@ class SqliteMempool(Mempool, SqliteBase):
     async def async_purge(self):
         """
         Async. Purge old txs
-
-        :return:
         """
-        # TODO: To be called somehow (start of a round?)
         await self.async_execute(SQL_PURGE, commit=True)
+
+    async def async_purge_start(self, address):
+        """
+        Async. Purge our old start messages if they are too numerous or too old
+        """
+        try:
+            await self.async_execute(SQL_PURGE_START1, (address, address), commit=True)
+            how_many = await self.async_fetchone(SQL_COUNT_START_MESSAGES, (address, address))
+            how_many = how_many[0]
+            print("how many", how_many)
+            await self.async_execute(SQL_PURGE_START2, (address, address, how_many - 5), commit=True)
+            await self.async_execute("VACUUM", commit=True)
+        except Exception as e:
+            self.app_log.error("async_purge_start: {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     async def clear(self):
         """

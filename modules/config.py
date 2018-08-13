@@ -114,7 +114,8 @@ END_ROUND_SLOTS = 1
 
 # How many tests should the whole Net perform per slot?
 # each test will issue 2 messages, one from the tester, the other from the testee
-TESTS_PER_SLOT = 5
+# 19 slots per round. 10 tests per slots, check
+TESTS_PER_SLOT = 10
 
 # We can run several type of tests. They are indexed by a byte. This can evolve with time.
 TESTS_TYPE = [0, 1, 2, 3, 4]

@@ -585,7 +585,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         :return:
         """
         # TODO: WARNING, see binary blob sqlite3 and conversion.
-        self.app_log.warning("tx_exists")
+        self.app_log.warning("tx_exists?")
         print(txid)  # debug
         # What is fed to this function? Bytes or hex string?
         exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))

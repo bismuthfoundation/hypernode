@@ -18,7 +18,7 @@ __version__ = '0.0.23'
 # local verbose switch
 VERBOSE = True
 
-REF_ADDRESS = ''
+# REF_ADDRESS = ''  # Deprecated
 
 REF_HASH = b''
 
@@ -154,7 +154,7 @@ async def hn_list_to_test_slots(full_hn_list, forge_slots):
     :param forge_slots:
     :return: list with list of tests for each slot.
     """
-    global REF_ADDRESS
+    global REF_HASH
     # TODO: are we 100% sure random works the same on all python/os? prefer custom impl?
     """
     https://docs.python.org/3/library/random.html
@@ -166,7 +166,7 @@ async def hn_list_to_test_slots(full_hn_list, forge_slots):
     """
     # TODO: test and have a custom impl to be sure?
     # This is what ensures everyone shuffles the same way.
-    random.seed(REF_ADDRESS)
+    random.seed(REF_HASH)
     # Just keep the pubkeys/addresses, no dup here whatever the weight.
     all_hns_addresses = [hn[0] for hn in full_hn_list]
     test_slots = []
