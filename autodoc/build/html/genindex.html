@@ -105,6 +105,8 @@
         <li><a href="modules.html#poschain.SqlitePosChain._last_block">(poschain.SqlitePosChain method)</a>
 </li>
       </ul></li>
+      <li><a href="modules.html#poshn.Poshn._new_tx">_new_tx() (poshn.Poshn method)</a>
+</li>
       <li><a href="modules.html#poshn.Poshn._round_sync">_round_sync() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn._update_network">_update_network() (poshn.Poshn method)</a>
@@ -155,10 +157,10 @@
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchall">async_fetchall() (sqlitebase.SqliteBase method)</a>
 </li>
-      <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchone">async_fetchone() (sqlitebase.SqliteBase method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchone">async_fetchone() (sqlitebase.SqliteBase method)</a>
+</li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_getaddtxs">async_getaddtxs() (poschain.SqlitePosChain method)</a>
 </li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_getblock">async_getblock() (poschain.SqlitePosChain method)</a>
@@ -192,8 +194,6 @@
       <li><a href="modules.html#posmempool.SqliteMempool.async_since">async_since() (posmempool.SqliteMempool method)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_vacuum">async_vacuum() (sqlitebase.SqliteBase method)</a>
-</li>
-      <li><a href="modules.html#config.AVAILABLE_LOGS">AVAILABLE_LOGS (in module config)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -247,14 +247,14 @@
       </ul></li>
       <li><a href="modules.html#poshn.Poshn.check_os">check_os() (poshn.Poshn method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poschain.PosChain.check_round">check_round() (poschain.PosChain method)</a>
 
       <ul>
         <li><a href="modules.html#poshn.Poshn.check_round">(poshn.Poshn method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poscrypto.check_sig">check_sig() (in module poscrypto)</a>
 </li>
       <li><a href="modules.html#posmempool.SqliteMempool.clear">clear() (posmempool.SqliteMempool method)</a>
@@ -275,6 +275,8 @@
 </li>
       <li><a href="modules.html#poshn.Poshn.connect">connect() (poshn.Poshn method)</a>
 </li>
+      <li><a href="modules.html#determine.connect_ok_from">connect_ok_from() (in module determine)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -283,12 +285,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poschain.SqlitePosChain.delete_round">delete_round() (poschain.SqlitePosChain method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.digest_block">digest_block() (poschain.PosChain method)</a>
+      <li><a href="modules.html#module-determine">determine (module)</a>
 </li>
-      <li><a href="modules.html#poshn.Poshn.digest_height">digest_height() (poshn.Poshn method)</a>
+      <li><a href="modules.html#poschain.PosChain.digest_block">digest_block() (poschain.PosChain method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poshn.Poshn.digest_height">digest_height() (poshn.Poshn method)</a>
+</li>
       <li><a href="modules.html#posmempool.Mempool.digest_tx">digest_tx() (posmempool.Mempool method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn.digest_txs">digest_txs() (poshn.Poshn method)</a>
@@ -309,6 +313,10 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poshelpers.fake_hn_dict">fake_hn_dict() (in module poshelpers)</a>
+</li>
+      <li><a href="modules.html#sqlitebase.SqliteBase.fetch_one">fetch_one() (sqlitebase.SqliteBase method)</a>
+</li>
       <li><a href="modules.html#poshelpers.first_height_is_better">first_height_is_better() (in module poshelpers)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn.forge">forge() (poshn.Poshn method)</a>
@@ -351,6 +359,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poschain.PosChain.genesis_block">genesis_block() (poschain.PosChain method)</a>
 </li>
+      <li><a href="modules.html#determine.get_connect_to">get_connect_to() (in module determine)</a>
+</li>
       <li><a href="modules.html#poshn.Poshn.get_hypernodes">get_hypernodes() (poshn.Poshn method)</a>
 </li>
   </ul></td>
@@ -386,6 +396,10 @@
       <li><a href="hypernode.html#module-hn_client">hn_client (module)</a>
 </li>
       <li><a href="hypernode.html#module-hn_instance">hn_instance (module)</a>
+</li>
+      <li><a href="modules.html#determine.hn_list_to_test_slots">hn_list_to_test_slots() (in module determine)</a>
+</li>
+      <li><a href="modules.html#determine.hn_list_to_tickets">hn_list_to_tickets() (in module determine)</a>
 </li>
       <li><a href="modules.html#poshn.HnServer">HnServer (class in poshn)</a>
 </li>
@@ -425,6 +439,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poshelpers.load_hn_temp">load_hn_temp() (in module poshelpers)</a>
+</li>
       <li><a href="modules.html#poscrypto.load_keys">load_keys() (in module poscrypto)</a>
 </li>
   </ul></td>
@@ -437,13 +453,17 @@
 </li>
       <li><a href="modules.html#posmempool.MemoryMempool">MemoryMempool (class in posmempool)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poschain.MemoryPosChain">MemoryPosChain (class in poschain)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#posmempool.Mempool">Mempool (class in posmempool)</a>
 </li>
       <li><a href="modules.html#poshn.HNState.MINIMAL_CONSENSUS">MINIMAL_CONSENSUS (poshn.HNState attribute)</a>
+</li>
+      <li><a href="modules.html#determine.my_distance">my_distance() (in module determine)</a>
+</li>
+      <li><a href="modules.html#determine.my_hash_distance">my_hash_distance() (in module determine)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -460,6 +480,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshelpers.peer_to_fullpeer">peer_to_fullpeer() (in module poshelpers)</a>
+</li>
+      <li><a href="modules.html#determine.pick_two_not_in">pick_two_not_in() (in module determine)</a>
 </li>
       <li><a href="modules.html#config.POC_LAST_BROADHASH">POC_LAST_BROADHASH (in module config)</a>
 </li>
@@ -493,6 +515,8 @@
 </li>
       <li><a href="modules.html#poshn.Poshn.post_block">post_block() (poshn.Poshn method)</a>
 </li>
+      <li><a href="modules.html#config.POW_LEDGER_DB">POW_LEDGER_DB (in module config)</a>
+</li>
       <li><a href="modules.html#posblock.PosBlock.props">props (posblock.PosBlock attribute)</a>
 
       <ul>
@@ -511,14 +535,16 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poscrypto.raw_to_hex">raw_to_hex() (in module poscrypto)</a>
 </li>
+      <li><a href="modules.html#determine.REF_HASH">REF_HASH (in module determine)</a>
+</li>
       <li><a href="modules.html#poshn.Poshn.refresh_last_block">refresh_last_block() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn.remove_inbound">remove_inbound() (poshn.Poshn method)</a>
 </li>
-      <li><a href="modules.html#poshn.REUSE_PORT">REUSE_PORT (in module poshn)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poshn.REUSE_PORT">REUSE_PORT (in module poshn)</a>
+</li>
       <li><a href="modules.html#poschain.PosChain.rollback">rollback() (poschain.PosChain method)</a>
 
       <ul>
@@ -551,6 +577,8 @@
         <li><a href="modules.html#posblock.PosMessage.sign">(posblock.PosMessage method)</a>
 </li>
       </ul></li>
+      <li><a href="modules.html#poschain.SQL_CREATE_POS_ROUNDS">SQL_CREATE_POS_ROUNDS (in module poschain)</a>
+</li>
       <li><a href="modules.html#poschain.SQL_ROUNDS_SOURCES">SQL_ROUNDS_SOURCES (in module poschain)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase">SqliteBase (class in sqlitebase)</a>
@@ -599,6 +627,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.HNState.TESTING">TESTING (poshn.HNState attribute)</a>
 </li>
+      <li><a href="modules.html#determine.tickets_to_jurors">tickets_to_jurors() (in module determine)</a>
+</li>
+      <li><a href="modules.html#determine.timestamp_to_round_slot">timestamp_to_round_slot() (in module determine)</a>
+</li>
       <li><a href="modules.html#posblock.PosBlock.to_db">to_db() (posblock.PosBlock method)</a>
 
       <ul>
@@ -619,14 +651,14 @@
       </ul></li>
       <li><a href="modules.html#posblock.PosMessage.to_list">to_list() (posblock.PosMessage method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#posblock.PosBlock.to_proto">to_proto() (posblock.PosBlock method)</a>
 
       <ul>
         <li><a href="modules.html#posblock.PosHeight.to_proto">(posblock.PosHeight method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#posblock.PosBlock.to_raw">to_raw() (posblock.PosBlock method)</a>
 
       <ul>
@@ -693,6 +725,7 @@
 <li class="toctree-l1"><a class="reference internal" href="modules.html#sqlitebase-sqlite3-backend-abstraction-class">sqlitebase - Sqlite3 backend abstraction class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#poscrypto-pos-crypto-primitives-helpers">poscrypto - PoS crypto primitives helpers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#posclient-client-hypernode-class">posclient - Client hypernode class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html#determine-pseudo-determinist-helpers">determine - Pseudo determinist helpers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-com_helpers">com_helpers - Util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-base58">base58 - Util module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html#module-poshelpers">poshelpers - Util module</a></li>

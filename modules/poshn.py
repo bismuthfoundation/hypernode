@@ -44,6 +44,7 @@ import posmempool
 import posblock
 import poscrypto
 import poshelpers
+from pow_interface import PowInterface
 
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
@@ -385,7 +386,8 @@ class Poshn:
         self.ip = ip
         self.port = port
         self.address = address
-        self.peers = peers
+        self.all_peers = peers
+        self.active_peers = list(peers)
         self.verbose = verbose
         self.server_thread = None
         self.server = None
@@ -415,6 +417,12 @@ class Poshn:
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/')
             self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,
                                                     db_path=datadir+'/', mempool=self.mempool)
+            self.powchain = PowInterface(app_log=app_log)
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
+            # print(self.powchain.regs)
+            self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
+            app_log.info('Status: At launch, {} registered HN, among which {} are active'.format(len(self.powchain.regs), len(self.active_regs)))
             self.is_delegate = False
             self.round = -1
             self.sir = -1
@@ -547,7 +555,7 @@ class Poshn:
 
     async def manager(self):
         """
-        Async Manager thread. Responsible for managing inner state of the node.
+        Async Manager co-routine. Responsible for managing inner state of the node.
         """
         global app_log
         global MINIMUM_CONNECTIVITY
@@ -736,12 +744,13 @@ class Poshn:
                     pass
         total = len(config.POC_HYPER_NODES_LIST)
         pc = round(nb * 100 / total)
-        app_log.info('{} Peers do agree with us, {}%'.format(nb, pc))
+        app_log.info('Status: {} Peers do agree with us, {}%'.format(nb, pc))
         peers_status = peers_status.values()
         peers_status = sorted(peers_status,
                               key=itemgetter('forgers', 'forgers_round', 'uniques', 'uniques_round', 'round', 'height'),
                               reverse=True)
         # TEMP
+        app_log.info('Status: {} observable chain(s)'.format(len(peers_status)))
         if self.verbose:
             print('> sorted peers status')
             for h in peers_status:
@@ -1128,6 +1137,8 @@ class Poshn:
                 self.clients[full_peer]['stats'][com_helpers.STATS_ACTIVEP] = True
                 self.clients[full_peer]['stats'][com_helpers.STATS_COSINCE] = connect_time
             while not self.stop_event.is_set():
+                if peer not in self.connect_to and self.state in [HNState.SYNCING]:
+                    raise ValueError("Closing for this round")
                 if self.state in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC) \
                         and self.sync_from == full_peer:
                     # Faster sync
@@ -1188,6 +1199,8 @@ class Poshn:
                                 app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
 
                         app_log.info(">> Net Synced via {}".format(full_peer))
+                        # Trigger re-eval of peers and such (do that as blocks come?)
+                        await self.check_round()
                         await self.change_state_to(HNState.SYNCING)
                 else:
                     await asyncio.sleep(config.WAIT)
@@ -1334,21 +1347,43 @@ class Poshn:
                     await self.refresh_last_block()
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
+                    # Update the HN list - First query the inactive HN for just finished round.
+                    all_hns = set([peer[0] for peer in self.all_peers])
+                    active_hns = set(await self.poschain.async_active_hns(self.round - 1))
+                    inactive_hns = all_hns - active_hns
+                    # Failsafe to avoid disabling everyone on edge cases or attack scenarios
+                    if len(active_hns) < config.MIN_ACTIVE_HNS:
+                        # Also covers for recovering if previous round had no block because of low consensus.
+                        inactive_hns = []
+                        app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
+                    await self.powchain.load_hn_pow(datadir=self.datadir, inactive_last_round=list(inactive_hns))
+                    self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
+                    if self.verbose:
+                        app_log.info('Status: {} registered HN, among which {} are active'
+                                     .format(len(self.powchain.regs), len(self.active_regs)))
+                    # FR: Should be some refactoring to do in all these mess of various structures.
+                    # Recreate self.peers.
+                    old_peers = list(self.all_peers)  # deep copy
+                    # list of ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0")
+                    # for address, items in self.powchain.regs.items():
+                    self.active_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
+                                  for address, items in self.powchain.regs.items()
+                                  if items['active']]
+                    self.all_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
+                                      for address, items in self.powchain.regs.items()]
                     self.current_round_start = int(time.time())
                     self.previous_round = self.round
-                    # TODO : if we have connections, drop them.
-                    # wait for new list, so we keep cnx if we already are. or drop anyway?
-                    # no, would add general network load at each round start.
-                    # use async here for every lenghty op - won't that lead to partial sync info?
-                    self.connect_to = await determine.get_connect_to(self.peers, self.round, self.address)
-                    tickets = await determine.hn_list_to_tickets(self.peers)
-                    # TODO: real hash
+                    # We try to connect to inactive peers anyway, or they have less chances of coming back.
+                    self.connect_to = await determine.get_connect_to(self.all_peers, self.round, self.address)
+                    # but tickets are only for previously active
+                    tickets = await determine.hn_list_to_tickets(self.active_peers)
                     self.slots = await determine.tickets_to_jurors(tickets, self.previous_hash)
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
-                    self.test_slots = await determine.hn_list_to_test_slots(self.peers, self.slots)
-                    # TODO: disconnect from non partners peers
+                    # We also test everyone, or it would be biased against good nodes.
+                    self.test_slots = await determine.hn_list_to_test_slots(self.all_peers, self.slots)
                     # TODO: save this round info to db
+                    # TODO: clean up old info from round db
                 if self.sir < len(self.slots):
                     self.forger = self.slots[self.sir][0]
                     if self.verbose:

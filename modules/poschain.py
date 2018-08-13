@@ -864,13 +864,15 @@ class SqlitePosChain(PosChain, SqliteBase):
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
-    async def async_active_hns(self, start_round, end_round):
+    async def async_active_hns(self, start_round, end_round=0):
         """
         Returns a list of active HN for the round range.
         :param start_round:
-        :param end_round:
+        :param end_round: optional, will use start_round if = 0
         :return: list of PoS addresses
         """
+        if not end_round:
+            end_round = start_round
         forgers = await self.async_fetchall(SQL_ROUNDS_FORGERS, (start_round, end_round))
         forgers = [list(forger)[0] for forger in forgers]
         h_min, h_max = await self.async_fetchone(SQL_MINMAXHEIGHT_OF_ROUNDS, (start_round, end_round))

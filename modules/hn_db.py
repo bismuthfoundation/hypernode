@@ -13,11 +13,31 @@ import sqlite3
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
-SQL_CREATE_HYPERNODES = ''
+SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
+    round       BIGINT,
+    address     VARCHAR (34),
+    ip          VARCHAR (16),
+    port        INTEGER      DEFAULT (6969),
+    weight      INTEGER      DEFAULT (1),
+    registrar   VARCHAR (56),
+    reward      VARCHAR (56),
+    ts_register INTEGER,
+    ts_edit     INTEGER,
+    active      BOOLEAN      DEFAULT false,
+    CONSTRAINT idx_hn UNIQUE (
+        round,
+        address,
+        ip,
+        port
+    )
+    ON CONFLICT FAIL
+    );"""
 
-SQL_CLEAR = ''
+SQL_CLEAR = 'DELETE FROM hypernodes'
+
+SQL_DEL_OLDER_THAN_ROUND = "DELETE FROM hypernodes WHERE round < ?"
 
 
 class HNDB:
@@ -82,14 +102,23 @@ class SqliteHNDB(HNDB, SqliteBase):
 
     # ========================= Real useful Methods ====================
 
-
     async def clear(self):
         """
-        Async. Empty mempool
+        Async. Empty hypernodes local index
 
-        :return:
+        :return: None
         """
         await self.async_execute(SQL_CLEAR, commit=True)
         # Good time to cleanup
         await self.async_execute("VACUUM", commit=True)
 
+    async def clear_rounds_before(self, a_round):
+        """
+        Async. Empty history from rounds older than a_round
+
+        :param: a_round: oldest round to keep.
+        :return: None
+        """
+        await self.async_execute(SQL_DEL_OLDER_THAN_ROUND, (a_round,), commit=True)
+        # Good time to cleanup
+        await self.async_execute("VACUUM", commit=True)

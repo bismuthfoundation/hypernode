@@ -28,6 +28,11 @@ DEBUG = False
 LOG = []
 AVAILABLE_LOGS = ['connections']
 
+# Path to the Bismuth chain
+# TODO: override by config.json, see notes.md
+POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
+
+
 """
 Here comes temp. PoC variables
 """
@@ -43,8 +48,11 @@ POC_HYPER_NODES_LIST_0 = [
     # on purpose, 3 and 4 have same recipient address
     ]
 
-# If empty, hn_instance will load from hn_temp dir.
 POC_HYPER_NODES_LIST = []
+
+# Leave True for Real world use.
+# if False - DEV ONLY - hn_instance will load from hn_temp dir.
+LOAD_HN_FROM_POW = False
 
 # The broadhash of the previous round determines the shuffle.
 # block hashes and broad hashes are 20 bytes
@@ -69,6 +77,9 @@ DEFAULT_PORT = 6960
 
 # How many peers at most to try to connect to?
 MAX_CONNECT_TO = 25
+
+# If too few HNs are marked as active, ignore inactive ones.
+MIN_ACTIVE_HNS = 10
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 # TODO: Estimate block size depending on the HN count
@@ -118,6 +129,8 @@ REQUIRED_SOURCES_PER_BLOCK = 3
 ORIGIN_OF_TIME = 1522419000  # Legacy tests
 ORIGIN_OF_TIME = 1533980000  # Firsts tests with 1 hour round time, 3 min slot time.
 
+# Do not change this.
+POS_CONTROL_ADDRESS = '3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16'
 
 # Round time in seconds
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)

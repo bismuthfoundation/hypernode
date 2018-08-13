@@ -88,6 +88,8 @@ Important: if DB empty, force to bootstrap.
 Create a bootstrap at each round end with round - 2 for instance.
 Incremental update in a cold database after a common ancestor check? 
 
+> Store active_hns, slots and test_slots in pos_rounds 
+
 Extra in status: add cpu% (app and system + ram / disk)
 
 UFW for Python.
@@ -106,6 +108,8 @@ Most diff. thing: the sync state loop to clearly decompose.
 Reread docs and code, change occurrences of MN to HN (code ok)
 
 WIP - Probly use static type hints? - MyPy
+
+HN need a full ledger - Enforce. Include historical pow data in tests?
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.

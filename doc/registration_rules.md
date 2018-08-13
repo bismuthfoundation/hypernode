@@ -10,7 +10,7 @@ hypernode:register
 data
 ip:port:pos_address
 
-Sent from the dedicated collateral address (controller wallet)
+Sent from the dedicated collateral address (controller wallet) to itself
 
 ### Options
 

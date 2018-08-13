@@ -11,7 +11,9 @@ import time
 
 import aiosqlite3
 
-__version__ = '0.0.22'
+from fakelog import FakeLog
+
+__version__ = '0.0.24'
 
 
 class SqliteBase:
@@ -24,6 +26,8 @@ class SqliteBase:
         self.db_name = db_name
         self.db = None
         self.verbose = verbose
+        if not app_log:
+            app_log = FakeLog()
         self.app_log = app_log
         self.cursor = None
         self.check()
@@ -75,6 +79,23 @@ class SqliteBase:
             cursor.close()
             cursor = None
         return cursor
+
+    def fetch_one(self, sql: str, param: tuple=None, as_dict: bool=False):
+        """
+        Fetch one and Returns data.
+
+        :param sql:
+        :param param:
+        :param as_dict: returns result as a dict, default False.
+        :return: tuple()
+        """
+        cursor = self.execute(sql, param)
+        data = cursor.fetchone()
+        if not data:
+            return None
+        if as_dict:
+            return dict(data)
+        return tuple(data)
 
     async def async_execute(self, sql: str, param: tuple=None, commit: bool=False):
         """

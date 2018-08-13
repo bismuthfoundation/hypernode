@@ -26,8 +26,9 @@ from poshn import Poshn
 from poschain import SqlitePosChain
 import poscrypto
 import poshelpers
+import pow_interface
 
-__version__ = '0.0.53'
+__version__ = '0.0.54'
 
 
 if __name__ == "__main__":
@@ -51,7 +52,13 @@ if __name__ == "__main__":
             # If we are updating, let our previous instance close.
             time.sleep(1)
             if args.index >= 0:
+                datadir = "./data{}".format(args.index)
+                if not os.path.exists(datadir):
+                    os.makedirs(datadir)
+                suffix = str(args.index)
                 if len(config.POC_HYPER_NODES_LIST) <= 0:
+                    """Here, we fill the whole static list from disk to get our index setup.
+                    This is only used for dev. In regular cases, we use no -i and take from our poswallet.json only."""
                     poshelpers.load_hn_temp()
                 my_info = config.POC_HYPER_NODES_LIST[args.index]
                 ip = my_info[1]
@@ -59,10 +66,6 @@ if __name__ == "__main__":
                 address = my_info[0]
                 wallet_name = "hn_temp/mn{}.json".format(args.index)
                 # allows to run several HN on the same machine - debug/dev only
-                datadir = "./data{}".format(args.index)
-                if not os.path.exists(datadir):
-                    os.makedirs(datadir)
-                suffix = str(args.index)
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"

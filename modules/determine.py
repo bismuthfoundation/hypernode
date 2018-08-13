@@ -229,7 +229,6 @@ async def get_connect_to(peers, pos_round, address):
     # TODO: test for this shuffle, make sure it always behaves the same.
     # TODO: see paper notes for a simpler/safer, verifiable method
     random.shuffle(result)
-    # POC: limit to 3 peers
     return result[:config.MAX_CONNECT_TO]
 
 

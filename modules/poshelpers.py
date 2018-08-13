@@ -166,6 +166,8 @@ def load_hn_temp():
     """
     fill list of HNs from our local repo, for dev at scale.
 
+    Do NOT use in prod ever.
+
     :return: None
     """
     config.POC_HYPER_NODES_LIST = []
@@ -183,6 +185,40 @@ def load_hn_temp():
                 config.POC_HYPER_NODES_LIST.append(hn_tuple)
             i += 1
         # print(config.POC_HYPER_NODES_LIST)
+    except Exception as e:
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+        sys.exit()
+
+
+def fake_hn_dict(inactive_last_round, app_log):
+    """
+    Simulates getting HN info from the Pow, but takes from the hn_temp instead. DEV/Debug only
+
+    Do NOT use in prod ever.
+
+    Indexed by bis_addr, sub dict keys: ['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active']
+
+    :return: dict of dict.
+    """
+    try:
+        i = 0
+        regs = {}
+        random.seed('my_fixed_seed')
+        weight_profile = [1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3]
+        while os.path.isfile("hn_temp/mn{}.json".format(i)):
+            with open("hn_temp/mn{}.json".format(i)) as f:
+                hn = json.load(f)
+                # Weight distribution
+                weight = random.choice(weight_profile)
+                regs["bis{}".format(i)] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
+                                              ['127.0.0.1', 6969 + i, hn['address'], "bis{}".format(i), weight, 0, True]))
+            i += 1
+        for address, items in regs.items():
+            if items['pos'] in inactive_last_round:
+                regs[address]['active'] = False
+        return regs
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
