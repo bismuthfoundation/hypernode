@@ -81,20 +81,14 @@
 </li>
       <li><a href="modules.html#poshn.HnServer._handle_msg">_handle_msg() (poshn.HnServer method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain._height_status">_height_status() (poschain.PosChain method)</a>
-
-      <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain._height_status">(poschain.SqlitePosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain._height_status">_height_status() (poschain.SqlitePosChain method)</a>
 </li>
-      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poschain.PosChain._insert_block">_insert_block() (poschain.PosChain method)</a>
-
-      <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain._insert_block">(poschain.SqlitePosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain._insert_block">_insert_block() (poschain.SqlitePosChain method)</a>
 </li>
-      </ul></li>
+      <li><a href="modules.html#poschain.SqlitePosChain._insert_block_old">_insert_block_old() (poschain.SqlitePosChain method)</a>
+</li>
       <li><a href="modules.html#posmempool.MemoryMempool._insert_tx">_insert_tx() (posmempool.MemoryMempool method)</a>
 
       <ul>
@@ -103,14 +97,10 @@
         <li><a href="modules.html#posmempool.SqliteMempool._insert_tx">(posmempool.SqliteMempool method)</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#poschain.PosChain._invalidate">_invalidate() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain._invalidate">_invalidate() (poschain.SqlitePosChain method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain._last_block">_last_block() (poschain.PosChain method)</a>
-
-      <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain._last_block">(poschain.SqlitePosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain._last_block">_last_block() (poschain.SqlitePosChain method)</a>
 </li>
-      </ul></li>
       <li><a href="modules.html#poshn.Poshn._new_tx">_new_tx() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.Poshn._round_sync">_round_sync() (poshn.Poshn method)</a>
@@ -145,28 +135,28 @@
       </ul></li>
       <li><a href="modules.html#posmempool.SqliteMempool.async_alltxids">async_alltxids() (posmempool.SqliteMempool method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.async_blockinfo">async_blockinfo() (poschain.PosChain method)</a>
-
-      <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain.async_blockinfo">(poschain.SqlitePosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_blockinfo">async_blockinfo() (poschain.SqlitePosChain method)</a>
 </li>
-      </ul></li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_blocksync">async_blocksync() (poschain.SqlitePosChain method)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_close">async_close() (sqlitebase.SqliteBase method)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_commit">async_commit() (sqlitebase.SqliteBase method)</a>
 </li>
+      <li><a href="modules.html#posmempool.SqliteMempool.async_del_hex_txids">async_del_hex_txids() (posmempool.SqliteMempool method)</a>
+</li>
       <li><a href="modules.html#posmempool.SqliteMempool.async_del_txids">async_del_txids() (posmempool.SqliteMempool method)</a>
+</li>
+      <li><a href="modules.html#posmempool.SqliteMempool.async_del_txids_old">async_del_txids_old() (posmempool.SqliteMempool method)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_execute">async_execute() (sqlitebase.SqliteBase method)</a>
 </li>
       <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchall">async_fetchall() (sqlitebase.SqliteBase method)</a>
 </li>
-      <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchone">async_fetchone() (sqlitebase.SqliteBase method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#sqlitebase.SqliteBase.async_fetchone">async_fetchone() (sqlitebase.SqliteBase method)</a>
+</li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_getaddtxs">async_getaddtxs() (poschain.SqlitePosChain method)</a>
 </li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_getblock">async_getblock() (poschain.SqlitePosChain method)</a>
@@ -175,7 +165,7 @@
 </li>
       <li><a href="modules.html#poschain.SqlitePosChain.async_gettx">async_gettx() (poschain.SqlitePosChain method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.async_height">async_height() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.async_height">async_height() (poschain.SqlitePosChain method)</a>
 </li>
       <li><a href="modules.html#posmempool.SqliteMempool.async_purge">async_purge() (posmempool.SqliteMempool method)</a>
 </li>
@@ -255,7 +245,7 @@
       </ul></li>
       <li><a href="modules.html#poshn.Poshn.check_os">check_os() (poshn.Poshn method)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.check_round">check_round() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.check_round">check_round() (poschain.SqlitePosChain method)</a>
 
       <ul>
         <li><a href="modules.html#poshn.Poshn.check_round">(poshn.Poshn method)</a>
@@ -295,7 +285,7 @@
 </li>
       <li><a href="modules.html#module-determine">determine (module)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.digest_block">digest_block() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.digest_block">digest_block() (poschain.SqlitePosChain method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -323,7 +313,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshelpers.fake_hn_dict">fake_hn_dict() (in module poshelpers)</a>
 </li>
-      <li><a href="modules.html#sqlitebase.SqliteBase.fetch_one">fetch_one() (sqlitebase.SqliteBase method)</a>
+      <li><a href="modules.html#sqlitebase.SqliteBase.fetchone">fetchone() (sqlitebase.SqliteBase method)</a>
 </li>
       <li><a href="modules.html#poshelpers.first_height_is_better">first_height_is_better() (in module poshelpers)</a>
 </li>
@@ -365,7 +355,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poschain.PosChain.genesis_block">genesis_block() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.genesis_block">genesis_block() (poschain.SqlitePosChain method)</a>
 </li>
       <li><a href="modules.html#determine.get_connect_to">get_connect_to() (in module determine)</a>
 </li>
@@ -380,6 +370,8 @@
       <li><a href="modules.html#poshn.HnServer.handle_stream">handle_stream() (poshn.HnServer method)</a>
 </li>
       <li><a href="modules.html#poscrypto.hash_to_addr">hash_to_addr() (in module poscrypto)</a>
+</li>
+      <li><a href="modules.html#poschain.SqlitePosChain.height">height (poschain.SqlitePosChain attribute)</a>
 </li>
       <li><a href="modules.html#poshelpers.heights_match">heights_match() (in module poshelpers)</a>
 </li>
@@ -437,7 +429,7 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#poschain.PosChain.last_block">last_block() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.last_block">last_block() (poschain.SqlitePosChain method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -455,12 +447,10 @@
 </li>
       <li><a href="modules.html#posmempool.MemoryMempool">MemoryMempool (class in posmempool)</a>
 </li>
-      <li><a href="modules.html#poschain.MemoryPosChain">MemoryPosChain (class in poschain)</a>
+      <li><a href="modules.html#posmempool.Mempool">Mempool (class in posmempool)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#posmempool.Mempool">Mempool (class in posmempool)</a>
-</li>
       <li><a href="modules.html#poshn.HNState.MINIMAL_CONSENSUS">MINIMAL_CONSENSUS (poshn.HNState attribute)</a>
 </li>
       <li><a href="modules.html#determine.my_distance">my_distance() (in module determine)</a>
@@ -490,8 +480,6 @@
       <li><a href="modules.html#posblock.PosBlock">PosBlock (class in posblock)</a>
 </li>
       <li><a href="modules.html#module-posblock">posblock (module)</a>
-</li>
-      <li><a href="modules.html#poschain.PosChain">PosChain (class in poschain)</a>
 </li>
       <li><a href="modules.html#module-poschain">poschain (module)</a>
 </li>
@@ -547,12 +535,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#poshn.REUSE_PORT">REUSE_PORT (in module poshn)</a>
 </li>
-      <li><a href="modules.html#poschain.PosChain.rollback">rollback() (poschain.PosChain method)</a>
-
-      <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain.rollback">(poschain.SqlitePosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.rollback">rollback() (poschain.SqlitePosChain method)</a>
 </li>
-      </ul></li>
       <li><a href="modules.html#poshn.Poshn.round_status">round_status() (poshn.Poshn method)</a>
 </li>
       <li><a href="modules.html#poshn.HNState.ROUND_SYNC">ROUND_SYNC (poshn.HNState attribute)</a>
@@ -589,19 +573,15 @@
 </li>
       <li><a href="modules.html#posmempool.SqliteMempool">SqliteMempool (class in posmempool)</a>
 </li>
-      <li><a href="modules.html#poschain.SqlitePosChain">SqlitePosChain (class in poschain)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#poschain.SqlitePosChain">SqlitePosChain (class in poschain)</a>
+</li>
       <li><a href="modules.html#poshn.HNState.START">START (poshn.HNState attribute)</a>
 </li>
       <li><a href="modules.html#posblock.PosBlock.status">status() (posblock.PosBlock method)</a>
 
       <ul>
-        <li><a href="modules.html#poschain.MemoryPosChain.status">(poschain.MemoryPosChain method)</a>
-</li>
-        <li><a href="modules.html#poschain.PosChain.status">(poschain.PosChain method)</a>
-</li>
         <li><a href="modules.html#poschain.SqlitePosChain.status">(poschain.SqlitePosChain method)</a>
 </li>
         <li><a href="modules.html#poshn.Poshn.status">(poshn.Poshn method)</a>
@@ -667,17 +647,17 @@
         <li><a href="modules.html#posblock.PosMessage.to_raw">(posblock.PosMessage method)</a>
 </li>
       </ul></li>
+      <li><a href="modules.html#posblock.PosMessage.to_str_list">to_str_list() (posblock.PosMessage method)</a>
+</li>
       <li><a href="modules.html#posmempool.Mempool.tx_count">tx_count() (posmempool.Mempool method)</a>
 
       <ul>
         <li><a href="modules.html#posmempool.SqliteMempool.tx_count">(posmempool.SqliteMempool method)</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#poschain.PosChain.tx_exists">tx_exists() (poschain.PosChain method)</a>
+      <li><a href="modules.html#poschain.SqlitePosChain.tx_exists">tx_exists() (poschain.SqlitePosChain method)</a>
 
       <ul>
-        <li><a href="modules.html#poschain.SqlitePosChain.tx_exists">(poschain.SqlitePosChain method)</a>
-</li>
         <li><a href="modules.html#posmempool.Mempool.tx_exists">(posmempool.Mempool method)</a>
 </li>
         <li><a href="modules.html#posmempool.SqliteMempool.tx_exists">(posmempool.SqliteMempool method)</a>

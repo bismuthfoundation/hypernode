@@ -1,5 +1,5 @@
 """
-Benchmark suite for SQLite operations
+Benchmark suite for Mempool SQLite operations
 
 Needs pytest, just run pytest in the test directory.
 """
@@ -17,7 +17,6 @@ import posmempool
 import poscrypto
 import test_helpers
 
-# FR: refactor, move purely crypto related tests (tx, sign) to bench_crypto, only keep sql benchmarks here.
 
 SQL = """
  INSERT INTO pos_messages (
@@ -1276,7 +1275,6 @@ async def single_sql(sql):
     cursor = await ASYNC_DB.execute("select count(*) from pos_messages")
     res = await cursor.fetchone()
     print(res[0])
-
 
 
 def test_single_sql(benchmark):

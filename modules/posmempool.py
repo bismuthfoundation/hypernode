@@ -373,7 +373,7 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         Delete a list of the txs from mempool. Optimized, more than 100x executemany()
 
-        :param txids:
+        :param txids: binary txid (bytes)
         :return: True
         """
         #
@@ -381,5 +381,18 @@ class SqliteMempool(Mempool, SqliteBase):
         params = ["X'" + poscrypto.raw_to_hex(txid) + "'" for txid in txids]
         sql = SQL_REMOVE_TXID_IN + '(' + ', '.join(params) + ')'
         # print(params)
+        await self.async_execute(sql, commit=True)
+        return True
+
+    async def async_del_hex_txids(self, hex_txids):
+        """
+        Delete a list of the txs from mempool. Optimized, more than 100x executemany()
+
+        :param hex_txids: list of "X'hex_encoded_string'" strings for sqlite.
+        :return: True
+        """
+        #
+        # FR: Slice to cut in reasonable batches (like 100 to 500)
+        sql = SQL_REMOVE_TXID_IN + '(' + ', '.join(hex_txids) + ')'
         await self.async_execute(sql, commit=True)
         return True

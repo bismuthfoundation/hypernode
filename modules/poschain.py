@@ -24,6 +24,10 @@ SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
 
 SQL_INSERT_BLOCK = "INSERT INTO pos_chain VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+# Partial sql for batch insert.
+SQL_INSERT_INTO_VALUES = "INSERT INTO pos_messages (txid, block_height, timestamp, sender, recipient, what, " \
+                         "params, value, pubkey, received) VALUES "
+
 SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 SQL_TXS_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
@@ -208,22 +212,22 @@ class SqlitePosChain(SqliteBase):
                 # check if db needs recreating
                 self.cursor.execute("PRAGMA table_info('addresses')")
                 res1 = self.cursor.fetchall()
-                print(len(res1), res1)
+                ## print(len(res1), res1)
                 if res1 != 5:
                     res = 0
                 self.cursor.execute("PRAGMA table_info('pos_chain')")
                 res2 = self.cursor.fetchall()
-                print(len(res2), res2)
+                # print(len(res2), res2)
                 if res2 != 11:
                     res = 0
                 self.cursor.execute("PRAGMA table_info('pos_messages')")
                 res3 = self.cursor.fetchall()
-                print(len(res3), res3)
+                # print(len(res3), res3)
                 if res3 != 10:
                     res = 0
                 self.cursor.execute("PRAGMA table_info('pos_rounds')")
                 res4 = self.cursor.fetchall()
-                print(len(res4), res4)
+                # print(len(res4), res4)
                 if res4 != 4:
                     res = 0
 
@@ -498,7 +502,62 @@ class SqlitePosChain(SqliteBase):
 
     async def _insert_block(self, block):
         """
-        Saves to block object in db
+        Saves block object to file db
+
+        :param block: a native PosBlock object
+        :return:
+        """
+        # Save the txs
+        # TODO: if error inserting block, delete the txs... transaction?
+        tx_ids = []
+        start_time = time.time()
+        str_txs = []
+        for tx in block.txs:
+            if tx.block_height != block.height:
+                self.app_log.warning("TX had bad height {} instead of {}, fixed. - TODO: do not digest?"
+                                     .format(tx.block_height, block.height))
+                tx.block_height = block.height
+            temp = tx.to_str_list()
+            tx_ids.append(temp[0])
+            str_txs.append(" (" + ", ".join(temp) + ") ")
+            # optimize push in a batch and do a single sql with all tx in a row
+            # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        values = SQL_INSERT_INTO_VALUES + ",".join(str_txs)
+
+        if len(tx_ids):
+            if block.unique_sources < 2:
+                self.app_log.error("block unique sources seems incorrect")
+        # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
+        if block.msg_count != len(tx_ids):
+            self.app_log.error("block msg_count seems incorrect")
+
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
+
+        await self.async_execute(values, commit=True)
+
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
+        # batch delete from mempool
+        if len(tx_ids) and self.mempool:
+            await self.mempool.async_del_txids(tx_ids)
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after mempool del: {} sec'.format(time.time() - start_time))
+        # Then the block and commit
+        await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after block: {} sec'.format(time.time() - start_time))
+        self._invalidate()
+        self.block = block.to_dict()
+        # force Recalc - could it be an incremental job ?
+        await self._height_status()
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after recalc status: {} sec'.format(time.time() - start_time))
+        return True
+
+    async def _insert_block_old(self, block):
+        """
+        Saves block object to file db
 
         :param block: a native PosBlock object
         :return:
@@ -526,24 +585,13 @@ class SqlitePosChain(SqliteBase):
             self.app_log.error("block msg_count seems incorrect")
 
         if 'timing' in config.LOG:
-            self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids, time.time() - start_time)))
+            self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
 
         await self.async_execute(SQL_INSERT_TX, tuple(params), commit=True, many=True)
-        """
-        if config.DUMP_INSERTS:
-            params2 = []
-            for tx in params:
-                tx = list(tx)
-                tx[0] = bytes(tx[0])
-                tx[8] = bytes(tx[8])
-                params2.append(tx)
-            with open(self.custom_data_dir + '/insert_tx_{}.json'.format(block.height), 'w') as f:
-                json.dump(f, params2)
-        """
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
         # batch delete from mempool
-        if len(tx_ids):
+        if len(tx_ids) and self.mempool:
             await self.mempool.async_del_txids(tx_ids)
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert after mempool del: {} sec'.format(time.time() - start_time))

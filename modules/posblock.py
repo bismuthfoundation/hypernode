@@ -169,6 +169,17 @@ class PosMessage:
             tx[8] = poscrypto.raw_to_hex(tx[8])
         return json.dumps(tx)
 
+    def to_str_list(self):
+        """
+        list of str so we can concat for batch db insert
+
+        :return: list of string
+        """
+        return ["X'"+poscrypto.raw_to_hex(self.txid)+"'", str(self.block_height), str(self.timestamp), "'"+self.sender+"'",
+                "'"+self.recipient+"'", str(self.what), "'"+self.params+"'", str(self.value), "X'"+poscrypto.raw_to_hex(self.pubkey)+"'",
+                str(self.received)]
+
+
     def add_to_proto(self, protocmd):
         """
         Adds the tx into the given protobuf command (not in a block).
