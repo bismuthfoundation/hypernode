@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.65'
+__version__ = '0.0.6'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -183,6 +183,8 @@ class PosChain:
         self.app_log = app_log
         self.height_status = None
         self.mempool = mempool
+        # Avoid re-entrance
+        self.inserting_block = False
 
     async def status(self):
         print("PosChain Virtual Method Status")
@@ -208,14 +210,14 @@ class PosChain:
             print(block.to_json())
         return block
 
-    async def insert_block(self, block):
+    async def _insert_block(self, block):
         """
         Saves to block object in db
 
         :param block: a native PosBlock object
         :return:
         """
-        print("PosChain Virtual Method insert_block")
+        print("PosChain Virtual Method _insert_block")
 
     async def rollback(self, block_count=1):
         """
@@ -272,22 +274,33 @@ class PosChain:
     async def async_blockinfo(self, height):
         print("Virtual Method async_blockinfo")
 
-    async def digest_block(self, proto_block, from_miner=False):
+    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False):
         """
         Checks if the block is valid and saves it
 
         :param proto_block: a protobuf 'block' object
         :param from_miner: True if came from a live miner (current slot)
+        :param relaxed_checks: True if we want light checks (like our own block)
+
         :return:
         """
         try:
-            # print(">> protoblock", proto_block)
-            block = PosBlock().from_proto(proto_block)
-            # print(">> dictblock", block.to_dict())
             block_from = 'from Peer'
             if from_miner:
                 block_from = 'from Miner'
-            self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
+            if relaxed_checks:
+                block_from += ' (Relaxed checks)'
+            # Avoid re-entrance
+            if self.inserting_block:
+                self.app_log.warning("Digestion of block {} aborted".format(block_from))
+                return
+            # print(">> protoblock", proto_block)
+            block = PosBlock().from_proto(proto_block)
+            # print(">> dictblock", block.to_dict())
+            if 'txdigest' in config.LOG:
+                self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
+            else:
+                self.app_log.warning("Digesting block {} {} : {} txs, {} uniques sources.".format(block.height, block_from, len(block.txs), block.unique_sources))
             # Good height? - FR: harmonize, use objects everywhere?
             if block.height != self.block['height'] + 1:
                 self.app_log.warning("Digesting block {} : bad height, our current height is {}"
@@ -303,9 +316,12 @@ class PosChain:
             # timestamp of blocks
             # fits with current round?
             # TODO : only tx from valid HNs (registered for that round?)
+            # recount uniques_sources?
+            # msg_count = tx# ?
             # right juror?
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
-            await self.insert_block(block)
+            self.inserting_block = True
+            await self._insert_block(block)
             self.app_log.warning("Digested block {}".format(block.height))
             return True
         except Exception as e:
@@ -314,6 +330,8 @@ class PosChain:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             return False
+        finally:
+            self.inserting_block = False
 
     async def check_round(self, a_round, blocks, fast_check=True):
         """
@@ -497,6 +515,10 @@ class SqlitePosChain(PosChain, SqliteBase):
                 else:
                     self.execute(SQL_INSERT_GENESIS)
                     self.commit()
+            else:
+                # fail safe: delete tx more recent than lastheight
+                self.execute(SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True)
+
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -530,7 +552,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         status.update(height_status.to_dict(as_hex=True))
         return status
 
-    async def insert_block(self, block):
+    async def _insert_block(self, block):
         """
         Saves to block object in db
 
@@ -540,6 +562,7 @@ class SqlitePosChain(PosChain, SqliteBase):
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
+        start_time = time.time()
         for tx in block.txs:
             if tx.block_height != block.height:
                 self.app_log.warning("TX had bad height {} instead of {}, fixed. - TODO: do not digest?"
@@ -548,15 +571,27 @@ class SqlitePosChain(PosChain, SqliteBase):
             tx_ids.append(tx.txid)
             # TODO: optimize push in a batch and do a single sql with all tx in a row
             await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
         # batch delete from mempool
         if len(tx_ids):
             await self.mempool.async_del_txids(tx_ids)
+            if block.unique_sources < 2:
+                self.app_log.error("block unique sources seems incorrect")
+        if block.msg_count != len(tx_ids):
+            self.app_log.error("block msg_count seems incorrect")
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after mempool del: {} sec'.format(time.time() - start_time))
         # Then the block and commit
         await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after block: {} sec'.format(time.time() - start_time))
         self._invalidate()
         self.block = block.to_dict()
         # force Recalc - could it be an incremental job ?
         await self._height_status()
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain _insert after recalc status: {} sec'.format(time.time() - start_time))
         return True
 
     async def rollback(self, block_count=1):
@@ -565,13 +600,15 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         :return:
         """
+        # FR: block_count not used
         res = await self.async_execute(SQL_ROLLBACK_BLOCKS, (self.height_status.height,), commit=True)
         if not res:
             self.app_log.error("Error rollback block {}".format(self.height_status.height))
         # TODO: this deletes the TX, but we want to move them back to mempool I suppose
+        # Since they were already validated, do not recheck again, only that they are no in poschain.
         res = await self.async_execute(SQL_ROLLBACK_BLOCKS_TXS, (self.height_status.height,), commit=True)
         if not res:
-            self.app_log.error("Error rollback block {}".format(self.height_status.height))
+            self.app_log.error("Error rollback block txs {}".format(self.height_status.height))
         self._invalidate()
         # force Recalc - could it be an incremental job ?
         await self._last_block()
@@ -584,13 +621,14 @@ class SqlitePosChain(PosChain, SqliteBase):
 
         :return:
         """
-        # TODO: WARNING, see binary blob sqlite3 and conversion.
-        self.app_log.warning("tx_exists?")
-        print(txid)  # debug
+        # TODO: WARNING, see binary blob sqlite3 and conversion. Seems ok, double check
+        # self.app_log.warning("tx_exists?")
+        # print(txid)  # debug
         # What is fed to this function? Bytes or hex string?
         exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))
         if exists:
-            self.app_log.info("{} already in our chain".format(txid))
+            if 'txdigest' in config.LOG:
+                self.app_log.info("{}[...] already in our chain".format(poscrypto.raw_to_hex(txid)[:16]))
             return True
         return False
 

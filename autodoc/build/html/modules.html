@@ -73,8 +73,7 @@ Tornado based</p>
 <dl class="docutils">
 <dt>Note:</dt>
 <dd>TODO: are prioritary actions TBD
-FR: are features request. Think of them as second class
-TODO items that are less urgent
+FR: are features request. Think of them as second class TO DO items that are less urgent
 FR: will go into TODO: as TODO: is cleared.</dd>
 </dl>
 <dl class="class">
@@ -318,7 +317,25 @@ Stream has to be closed after use.</p>
 <dl class="method">
 <dt id="poshn.Poshn._new_tx">
 <code class="descname">_new_tx</code><span class="sig-paren">(</span><em>recipient=''</em>, <em>what=0</em>, <em>params=''</em>, <em>value=0</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn._new_tx" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Insert a new TX (message) in the local mempool</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>recipient</strong> – </li>
+<li><strong>what</strong> – </li>
+<li><strong>params</strong> – </li>
+<li><strong>value</strong> – </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="poshn.Poshn._round_sync">
@@ -673,6 +690,22 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="poschain.PosChain._insert_block">
+<code class="descname">_insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain._insert_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves to block object in db</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poschain.PosChain._invalidate">
 <code class="descname">_invalidate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain._invalidate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Something changed in our chain, invalidate the status.
@@ -738,7 +771,7 @@ Does not modify the chain, can be used on existing current round to check validi
 
 <dl class="method">
 <dt id="poschain.PosChain.digest_block">
-<code class="descname">digest_block</code><span class="sig-paren">(</span><em>proto_block</em>, <em>from_miner=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.digest_block" title="Permalink to this definition">¶</a></dt>
+<code class="descname">digest_block</code><span class="sig-paren">(</span><em>proto_block</em>, <em>from_miner=False</em>, <em>relaxed_checks=False</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.digest_block" title="Permalink to this definition">¶</a></dt>
 <dd><p>Checks if the block is valid and saves it</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -747,6 +780,7 @@ Does not modify the chain, can be used on existing current round to check validi
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>proto_block</strong> – a protobuf ‘block’ object</li>
 <li><strong>from_miner</strong> – True if came from a live miner (current slot)</li>
+<li><strong>relaxed_checks</strong> – True if we want light checks (like our own block)</li>
 </ul>
 </td>
 </tr>
@@ -766,22 +800,6 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="poschain.PosChain.insert_block">
-<code class="descname">insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.PosChain.insert_block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves to block object in db</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -861,6 +879,22 @@ Does not modify the chain, can be used on existing current round to check validi
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="poschain.SqlitePosChain._insert_block">
+<code class="descname">_insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain._insert_block" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves to block object in db</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -1031,22 +1065,6 @@ The caller is responsible for updating state if necessary</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>a_round</strong> – </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="poschain.SqlitePosChain.insert_block">
-<code class="descname">insert_block</code><span class="sig-paren">(</span><em>block</em><span class="sig-paren">)</span><a class="headerlink" href="#poschain.SqlitePosChain.insert_block" title="Permalink to this definition">¶</a></dt>
-<dd><p>Saves to block object in db</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>block</strong> – a native PosBlock object</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
@@ -1715,14 +1733,12 @@ with <em>binary content as hex encoded string</em>.</p>
 <dt id="posmempool.SqliteMempool.async_purge">
 <code class="descname">async_purge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_purge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Async. Purge old txs</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="posmempool.SqliteMempool.async_purge_start">
+<code class="descname">async_purge_start</code><span class="sig-paren">(</span><em>address</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.SqliteMempool.async_purge_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Purge our old start messages if they are too numerous or too old</p>
 </dd></dl>
 
 <dl class="method">
@@ -1821,7 +1837,7 @@ with <em>binary content as hex encoded string</em>.</p>
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7faa3977aea0&gt; = None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f0556dc7ea0&gt; = None</em>, <em>ram=False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
@@ -2878,7 +2894,7 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7faa3977aea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f0556dc7ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

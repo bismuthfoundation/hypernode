@@ -7,6 +7,7 @@ Used by mempool and poschain
 import asyncio
 import logging
 import sqlite3
+import sys
 import time
 
 import aiosqlite3
@@ -71,7 +72,8 @@ class SqliteBase:
                 tries += 1
                 if tries >= 10:
                     self.app_log.error("Database Error, closing")
-                    raise ValueError("Too many retries")
+                    # raise ValueError("Too many retries")
+                    sys.exit()
                 time.sleep(0.1)
 
         if commit:
@@ -112,9 +114,10 @@ class SqliteBase:
             try:
                 # open
                 self.app_log.info("Opening async {} db".format(self.db_name))
-                self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop())
+                self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop(), isolation_level=None)
                 self.async_db.row_factory = sqlite3.Row
                 self.async_db.text_factory = str
+                self.async_db.isolation_level = None
             except Exception as e:
                 self.app_log.warning("async_execute {}: {}".format(self.db_name, e))
         # TODO: add a try count and die if we lock
@@ -127,13 +130,21 @@ class SqliteBase:
                 else:
                     await cursor.execute(sql)
                 break
+            except sqlite3.IntegrityError as e:
+                # 'UNIQUE constraint failed'
+                raise
             except Exception as e:
-                self.app_log.warning("Database query: {} {}".format(sql, param))
-                self.app_log.warning("Database {} retry reason: {}".format(self.db_name, e))
+                # TODO: Bad hack to sort out
+                self.app_log.warning("Database {} query: {} {}, retry because {}".format(self.db_name, sql, param, e))
+                if 'cannot start a transaction within a transaction' in str(e):
+                    self.app_log.info("Auto-committing")
+                    await self.async_commit()
                 asyncio.sleep(0.1)
                 max_tries -= 1
         if not max_tries:
-            raise ValueError("Too many retries")
+            self.app_log.error("Too many retries")
+            sys.exit()
+            # raise ValueError("Too many retries")
         if commit:
             await self.async_commit()
             try:

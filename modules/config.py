@@ -7,7 +7,7 @@ Also serves as config file for POC and tests
 
 from hashlib import blake2b
 
-__version__ = '0.0.18'
+__version__ = '0.0.19'
 
 """
 User config - You can change these one - See doc
@@ -25,8 +25,9 @@ DEBUG = False
 
 # optional log details we may want. AVAILABLE_LOGS lists all possible extra details.
 # Copy the ones you want in LOG
-LOG = []
-AVAILABLE_LOGS = ['connections']
+LOG = ['mempool', 'timing']
+
+AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg',  'txdigest', 'timing']
 
 # Path to the Bismuth chain
 # TODO: override by config.json, see notes.md

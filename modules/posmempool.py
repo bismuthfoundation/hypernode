@@ -14,8 +14,9 @@ import sqlite3
 
 # Our modules
 # import common
-# import poscrypto
+import config
 import posblock
+import poscrypto
 from sqlitebase import SqliteBase
 
 
@@ -100,7 +101,7 @@ class Mempool:
             # Protobuf, convert to object
             tx = posblock.PosMessage().from_proto(tx)
         # TODO: if list, convert also
-        if self.verbose:
+        if self.verbose and 'txdigest' in config.LOG:
             self.app_log.info("Digesting {}".format(tx.to_json()))
         try:
             if await self.tx_exists(tx.txid):
@@ -115,10 +116,11 @@ class Mempool:
             # TODO: also add the pubkey in index if present.
             # returns the native tx object
             return tx
-        except:
+        except Exception as e:
+            self.app_log.error("mempool digest_tx: {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            print(exc_type, fname, exc_tb.tb_lineno)
+            self.app_log.error(exc_type, fname, exc_tb.tb_lineno)
             raise
 
     async def tx_exists(self, txid):
@@ -249,7 +251,7 @@ class SqliteMempool(Mempool, SqliteBase):
             await self.async_execute(SQL_PURGE_START1, (address, address), commit=True)
             how_many = await self.async_fetchone(SQL_COUNT_START_MESSAGES, (address, address))
             how_many = how_many[0]
-            print("how many", how_many)
+            # print("how many", how_many)
             await self.async_execute(SQL_PURGE_START2, (address, address, how_many - 5), commit=True)
             await self.async_execute("VACUUM", commit=True)
         except Exception as e:
@@ -311,7 +313,8 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))
         if exists:
-            self.app_log.info("{} already in our mempool".format(txid))
+            if 'txdigest' in config.LOG:
+                self.app_log.info("{}[...] already in our mempool".format(poscrypto.raw_to_hex(txid)[:16]))
             return True
         return False
 
@@ -342,8 +345,11 @@ class SqliteMempool(Mempool, SqliteBase):
         # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
         # TODO: Could not work, see binary and conversion.
         self.app_log.warning("TODO:check async_del_txids")
-        for tx in txids:
-            await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
-        tx = 0
-        await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
+        try:
+            for tx in txids:
+                await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
+        finally:
+            await self.async_db.commit()
+            # tx = 0
+            # await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
         return True

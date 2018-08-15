@@ -117,7 +117,7 @@ async def tickets_to_jurors(tickets_list, reference_hash):
     REF_HASH = reference_hash
     # sort the tickets according to their hash distance.
     tickets_list.sort(key=my_hash_distance)
-    if VERBOSE:
+    if VERBOSE and 'determine' in config.LOG:
         # print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
     final_list = [ticket[:2] for i, ticket in enumerate(tickets_list) if i < config.MAX_ROUND_SLOTS]
