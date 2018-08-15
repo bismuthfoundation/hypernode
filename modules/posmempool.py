@@ -1,5 +1,8 @@
 """
 A Safe thread object interfacing the PoS mempool.
+
+FR: Dump mempool to disk when closing, and re-import/filter out on load so we don't loose potentially important
+messages when things go wrong and everyone crashes.
 """
 import threading
 import json
@@ -20,7 +23,7 @@ import poscrypto
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.41'
+__version__ = '0.0.42'
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -95,7 +98,7 @@ class Mempool:
         """
         Async. Check validity of the transaction and insert if mempool if ok.
         TODO: 2 steps when getting batch: first checks, then a single insert
-        FR: We could also keep just the txids in a ram dict to filter out faster.
+        FR: We could also keep just the txids in a ram dict to filter out faster. (no need if ram mempool)
 
         :param tx:
         :param poschain:

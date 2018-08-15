@@ -1213,10 +1213,10 @@ def test_mempool_digest(benchmark):
         poscrypto.load_keys('./bench_wallet.json')
         # Generate random tx
         if benchmark:
-            txs = test_helpers.create_txs(10, True)
+            txs = test_helpers.create_txs(100, True)
             benchmark(sync_digest_txs, loop, mempool, txs)
         else:
-            n = 10
+            n = 100
             txs = test_helpers.create_txs(n, True)
             start = time.time()
             sync_digest_txs(loop, mempool, txs)
@@ -1243,7 +1243,7 @@ def test_mempool_del(benchmark):
         mempool.check()
         poscrypto.load_keys('./bench_wallet.json')
         # Generate random tx
-        txs = test_helpers.create_txs(10, True)
+        txs = test_helpers.create_txs(100, True)
         if benchmark:
             sync_digest_txs(loop, mempool, txs)
             txids = [tx.txid for tx in txs]

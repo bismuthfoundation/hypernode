@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -171,12 +171,10 @@ SQL_INSERT_GENESIS = """INSERT INTO pos_chain (
                     """
 
 
-class PosChain:
-    """
-    Generic Class
-    """
+class SqlitePosChain(SqliteBase):
 
-    def __init__(self, verbose=False, app_log=None, mempool=None):
+    def __init__(self, verbose=False, db_path='data/', app_log=None, mempool=None):
+        self.custom_data_dir = db_path
         self.verbose = verbose
         # self.block_height = 0  # double usage with height_status and block ?
         self.block = None
@@ -185,250 +183,6 @@ class PosChain:
         self.mempool = mempool
         # Avoid re-entrance
         self.inserting_block = False
-
-    async def status(self):
-        print("PosChain Virtual Method Status")
-
-    def genesis_block(self):
-        """
-        Build up genesis block info
-
-        :return:
-        """
-        # No tx for genesis
-        txids = []
-        block_dict = {'height': 0, 'round': 0, 'sir': 0, 'timestamp': config.ORIGIN_OF_TIME,
-                      'previous_hash': poscrypto.blake(config.GENESIS_SEED.encode('utf-8')).digest(),
-                      'msg_count': 0, 'unique_sources': 0, 'txs': txids, 'forger': config.GENESIS_ADDRESS,
-                      'block_hash': b'', 'signature': b''}
-        # print(block_dict)
-        block = PosBlock().from_dict(block_dict)
-        # print(block.to_json())
-        block.sign()
-        print(block.to_json())
-        if self.verbose:
-            print(block.to_json())
-        return block
-
-    async def _insert_block(self, block):
-        """
-        Saves to block object in db
-
-        :param block: a native PosBlock object
-        :return:
-        """
-        print("PosChain Virtual Method _insert_block")
-
-    async def rollback(self, block_count=1):
-        """
-        revert latest block_count blocks
-
-        :return:
-        """
-        print("PosChain Virtual Method rollback")
-
-    async def last_block(self):
-        """
-        Returns last know block as a dict
-
-        :return:
-        """
-        if not self.block:
-            self.block = await self._last_block()
-        return self.block
-
-    async def _last_block(self):
-        print("PosChain Virtual Method _last_block")
-
-    async def tx_exists(self, txid):
-        """
-        Tell is the given txid is in our mempool
-
-        :return:
-        """
-        print("Virtual Method tx_exists")
-
-    def _invalidate(self):
-        """
-        Something changed in our chain, invalidate the status.
-        It will then be recalc when needed.
-
-        :return:
-        """
-        self.height_status = None
-        self.block = None
-
-    async def async_height(self):
-        """
-        returns a BlockHeight object with our current state
-
-        :return:
-        """
-        if not self.height_status:
-            self.height_status = await self._height_status()
-        return self.height_status
-
-    async def _height_status(self):
-        print("Virtual Method async_height")
-
-    async def async_blockinfo(self, height):
-        print("Virtual Method async_blockinfo")
-
-    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False):
-        """
-        Checks if the block is valid and saves it
-
-        :param proto_block: a protobuf 'block' object
-        :param from_miner: True if came from a live miner (current slot)
-        :param relaxed_checks: True if we want light checks (like our own block)
-
-        :return:
-        """
-        try:
-            block_from = 'from Peer'
-            if from_miner:
-                block_from = 'from Miner'
-            if relaxed_checks:
-                block_from += ' (Relaxed checks)'
-            # Avoid re-entrance
-            if self.inserting_block:
-                self.app_log.warning("Digestion of block {} aborted".format(block_from))
-                return
-            # print(">> protoblock", proto_block)
-            block = PosBlock().from_proto(proto_block)
-            # print(">> dictblock", block.to_dict())
-            if 'txdigest' in config.LOG:
-                self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
-            else:
-                self.app_log.warning("Digesting block {} {} : {} txs, {} uniques sources.".format(block.height, block_from, len(block.txs), block.unique_sources))
-            # Good height? - FR: harmonize, use objects everywhere?
-            if block.height != self.block['height'] + 1:
-                self.app_log.warning("Digesting block {} : bad height, our current height is {}"
-                                     .format(block.height, self.block['height']))
-                return False
-            # Good hash?
-            if block.previous_hash != self.block['block_hash']:
-                self.app_log.warning("Digesting block {} : bad hash {} vs our {}"
-                                     .format(block.height, block.previous_hash, self.block['block_hash']))
-                return False
-            # TODO: more checks
-            # TODO: if from miner, make sure we refreshed the round first.
-            # timestamp of blocks
-            # fits with current round?
-            # TODO : only tx from valid HNs (registered for that round?)
-            # recount uniques_sources?
-            # msg_count = tx# ?
-            # right juror?
-            # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
-            self.inserting_block = True
-            await self._insert_block(block)
-            self.app_log.warning("Digested block {}".format(block.height))
-            return True
-        except Exception as e:
-            self.app_log.error("digest_block Error {}".format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
-            return False
-        finally:
-            self.inserting_block = False
-
-    async def check_round(self, a_round, blocks, fast_check=True):
-        """
-        Given a round number and all blocks for this round, checks that these blocks are valid candidates.
-        Does not modify the chain, can be used on existing current round to check validity alternate chains.
-
-        :param a_round:
-        :param blocks: a PosBlock object
-        :param fast_check:
-        :return: a height dict, containing the simulated final state of the chain, or False if blocks are not valid.
-
-        ``{'height': 3631, 'round': 6420, 'sir': 1, 'block_hash': 'a03ffeea35a48f0773bc993289213c3c72165ee0',
-        'uniques': 4, 'uniques_round': 0, 'forgers': 4, 'forgers_round': 1, 'count': 0, 'peers': []'``
-        """
-        try:
-            start_time = time.time()
-            # Get the last block of the a-round -1 round from our chain
-            height = await self.async_fetchone(SQL_LAST_HEIGHT_OF_ROUND, (a_round - 1, ), as_dict=True)
-            """ TODO
-            [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
-            [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353
-            """
-            height = height.get('height')
-            # print("\nheight", height)
-            # get height stats at that level
-            ref_height = await self.async_blockinfo(height)
-            # print("\nref_height", ref_height.to_dict(as_hex=True))
-            # for each block, validate and inc stats
-            uniques_round = []
-            forgers_round = []
-            ref_blockheight = ref_height.height
-            ref_hash = ref_height.block_hash
-            end_block = None
-            for block in blocks.block_value:
-                # Good height?
-                if block.height != ref_blockheight + 1:
-                    self.app_log.warning("Checking block {} : bad height, ref height is {}"
-                                         .format(block.height, ref_blockheight))
-                    return False
-                # Good hash?
-                if block.previous_hash != ref_hash:
-                    self.app_log.warning("Checking block {} : bad hash {} vs our {}"
-                                         .format(block.height, block.previous_hash, ref_hash))
-                    return False
-                # count uniques
-                if block.forger not in forgers_round:
-                    forgers_round.append(block.forger)
-                if block.txs:
-                    for tx in block.txs:
-                        if tx.sender not in uniques_round:
-                            uniques_round.append(tx.sender)
-                # move to next block
-                ref_blockheight += 1
-                ref_hash = block.block_hash
-                end_block = block  # So we can access it out of the loop.
-            ref_height.height = end_block.height
-            ref_height.round = end_block.round
-            ref_height.sir = end_block.sir
-            ref_height.block_hash = end_block.block_hash
-            ref_height.uniques_round = len(uniques_round)
-            ref_height.forgers_round = len(forgers_round)
-            # Beware: uniques and forgers (not _round) are not good since this would mean recount all since the begin
-            # with both sqlite and local data, too costly.
-            # print(">> final_height", ref_height.to_dict(as_hex=True))
-            if self.verbose:
-                self.app_log.info("check_round done in {}s.".format(time.time() - start_time))
-            # return Simulated height.
-            return ref_height.to_dict(as_hex=True)
-        except Exception as e:
-            self.app_log.error("check_round Error {}".format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
-            return False
-
-
-class MemoryPosChain(PosChain):
-    """
-    Memory Storage, POC only
-    """
-
-    def __init__(self, verbose=False, app_log=None):
-        super().__init__(verbose=verbose, app_log=app_log)
-        # Just a list
-        self.blocks = [self.genesis_block()]
-
-    async def status(self):
-        return self.blocks
-
-
-class SqlitePosChain(PosChain, SqliteBase):
-
-    def __init__(self, verbose=False, db_path='data/', app_log=None, mempool=None):
-        self.custom_data_dir = db_path
-        # if not app_log:
-        #     self.app_log =
-        PosChain.__init__(self, verbose=verbose, app_log=app_log, mempool=mempool)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='poc_pos_chain.db', app_log=app_log)
 
     def check(self):
@@ -538,6 +292,191 @@ class SqlitePosChain(PosChain, SqliteBase):
         self.db = None
         self.cursor = None
 
+    def genesis_block(self):
+        """
+        Build up genesis block info
+
+        :return:
+        """
+        # No tx for genesis
+        txids = []
+        block_dict = {'height': 0, 'round': 0, 'sir': 0, 'timestamp': config.ORIGIN_OF_TIME,
+                      'previous_hash': poscrypto.blake(config.GENESIS_SEED.encode('utf-8')).digest(),
+                      'msg_count': 0, 'unique_sources': 0, 'txs': txids, 'forger': config.GENESIS_ADDRESS,
+                      'block_hash': b'', 'signature': b''}
+        # print(block_dict)
+        block = PosBlock().from_dict(block_dict)
+        # print(block.to_json())
+        block.sign()
+        print(block.to_json())
+        if self.verbose:
+            print(block.to_json())
+        return block
+
+    async def last_block(self):
+        """
+        Returns last know block as a dict
+
+        :return:
+        """
+        if not self.block:
+            self.block = await self._last_block()
+        return self.block
+
+    def _invalidate(self):
+        """
+        Something changed in our chain, invalidate the status.
+        It will then be recalc when needed.
+
+        :return:
+        """
+        self.height_status = None
+        self.block = None
+
+    async def async_height(self):
+        """
+        Returns a BlockHeight object with our current state
+
+        :return:
+        """
+        if not self.height_status:
+            self.height_status = await self._height_status()
+        return self.height_status
+
+    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False):
+        """
+        Checks if the block is valid and saves it
+
+        :param proto_block: a protobuf 'block' object
+        :param from_miner: True if came from a live miner (current slot)
+        :param relaxed_checks: True if we want light checks (like our own block)
+
+        :return:
+        """
+        try:
+            block_from = 'from Peer'
+            if from_miner:
+                block_from = 'from Miner'
+            if relaxed_checks:
+                block_from += ' (Relaxed checks)'
+            # Avoid re-entrance
+            if self.inserting_block:
+                self.app_log.warning("Digestion of block {} aborted".format(block_from))
+                return
+            # print(">> protoblock", proto_block)
+            block = PosBlock().from_proto(proto_block)
+            # print(">> dictblock", block.to_dict())
+            if 'txdigest' in config.LOG:
+                self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
+            else:
+                self.app_log.warning("Digesting block {} {} : {} txs, {} uniques sources.".format(block.height, block_from, len(block.txs), block.unique_sources))
+            # Good height? - FR: harmonize, use objects everywhere?
+            if block.height != self.block['height'] + 1:
+                self.app_log.warning("Digesting block {} : bad height, our current height is {}"
+                                     .format(block.height, self.block['height']))
+                return False
+            # Good hash?
+            if block.previous_hash != self.block['block_hash']:
+                self.app_log.warning("Digesting block {} : bad hash {} vs our {}"
+                                     .format(block.height, block.previous_hash, self.block['block_hash']))
+                return False
+            # TODO: more checks
+            # TODO: if from miner, make sure we refreshed the round first.
+            # timestamp of blocks
+            # fits with current round?
+            # TODO : only tx from valid HNs (registered for that round?)
+            # recount uniques_sources?
+            # msg_count = tx# ?
+            # right juror?
+            # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
+            # see also tx checks from mempool. Maybe lighter
+            self.inserting_block = True
+            await self._insert_block(block)
+            self.app_log.warning("Digested block {}".format(block.height))
+            return True
+        except Exception as e:
+            self.app_log.error("digest_block Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            return False
+        finally:
+            self.inserting_block = False
+
+    async def check_round(self, a_round, blocks, fast_check=True):
+        """
+        Given a round number and all blocks for this round, checks that these blocks are valid candidates.
+        Does not modify the chain, can be used on existing current round to check validity alternate chains.
+
+        :param a_round:
+        :param blocks: a PosBlock object
+        :param fast_check:
+        :return: a height dict, containing the simulated final state of the chain, or False if blocks are not valid.
+
+        ``{'height': 3631, 'round': 6420, 'sir': 1, 'block_hash': 'a03ffeea35a48f0773bc993289213c3c72165ee0',
+        'uniques': 4, 'uniques_round': 0, 'forgers': 4, 'forgers_round': 1, 'count': 0, 'peers': []'``
+        """
+        try:
+            start_time = time.time()
+            # Get the last block of the a-round -1 round from our chain
+            height = await self.async_fetchone(SQL_LAST_HEIGHT_OF_ROUND, (a_round - 1, ), as_dict=True)
+            """ TODO
+            [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
+            [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353
+            """
+            height = height.get('height')
+            # print("\nheight", height)
+            # get height stats at that level
+            ref_height = await self.async_blockinfo(height)
+            # print("\nref_height", ref_height.to_dict(as_hex=True))
+            # for each block, validate and inc stats
+            uniques_round = []
+            forgers_round = []
+            ref_blockheight = ref_height.height
+            ref_hash = ref_height.block_hash
+            end_block = None
+            for block in blocks.block_value:
+                # Good height?
+                if block.height != ref_blockheight + 1:
+                    self.app_log.warning("Checking block {} : bad height, ref height is {}"
+                                         .format(block.height, ref_blockheight))
+                    return False
+                # Good hash?
+                if block.previous_hash != ref_hash:
+                    self.app_log.warning("Checking block {} : bad hash {} vs our {}"
+                                         .format(block.height, block.previous_hash, ref_hash))
+                    return False
+                # count uniques
+                if block.forger not in forgers_round:
+                    forgers_round.append(block.forger)
+                if block.txs:
+                    for tx in block.txs:
+                        if tx.sender not in uniques_round:
+                            uniques_round.append(tx.sender)
+                # move to next block
+                ref_blockheight += 1
+                ref_hash = block.block_hash
+                end_block = block  # So we can access it out of the loop.
+            ref_height.height = end_block.height
+            ref_height.round = end_block.round
+            ref_height.sir = end_block.sir
+            ref_height.block_hash = end_block.block_hash
+            ref_height.uniques_round = len(uniques_round)
+            ref_height.forgers_round = len(forgers_round)
+            # Beware: uniques and forgers (not _round) are not good since this would mean recount all since the begin
+            # with both sqlite and local data, too costly.
+            # print(">> final_height", ref_height.to_dict(as_hex=True))
+            if self.verbose:
+                self.app_log.info("check_round done in {}s.".format(time.time() - start_time))
+            # return Simulated height.
+            return ref_height.to_dict(as_hex=True)
+        except Exception as e:
+            self.app_log.error("check_round Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            return False
+
     async def _last_block(self, with_tx=False):
         """
         Returns last know block as a dict
@@ -575,10 +514,22 @@ class SqlitePosChain(PosChain, SqliteBase):
                                      .format(tx.block_height, block.height))
                 tx.block_height = block.height
             tx_ids.append(tx.txid)
+            # TODO: do a single insert
             params.append(tx.to_db())
             # optimize push in a batch and do a single sql with all tx in a row
             # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        if len(tx_ids):
+            if block.unique_sources < 2:
+                self.app_log.error("block unique sources seems incorrect")
+        # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
+        if block.msg_count != len(tx_ids):
+            self.app_log.error("block msg_count seems incorrect")
+
+        if 'timing' in config.LOG:
+            self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids, time.time() - start_time)))
+
         await self.async_execute(SQL_INSERT_TX, tuple(params), commit=True, many=True)
+        """
         if config.DUMP_INSERTS:
             params2 = []
             for tx in params:
@@ -588,15 +539,12 @@ class SqlitePosChain(PosChain, SqliteBase):
                 params2.append(tx)
             with open(self.custom_data_dir + '/insert_tx_{}.json'.format(block.height), 'w') as f:
                 json.dump(f, params2)
+        """
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
         # batch delete from mempool
         if len(tx_ids):
             await self.mempool.async_del_txids(tx_ids)
-            if block.unique_sources < 2:
-                self.app_log.error("block unique sources seems incorrect")
-        if block.msg_count != len(tx_ids):
-            self.app_log.error("block msg_count seems incorrect")
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert after mempool del: {} sec'.format(time.time() - start_time))
         # Then the block and commit
