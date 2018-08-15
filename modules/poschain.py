@@ -5,7 +5,7 @@ A Safe thread/process object interfacing the PoS chain
 # import threading
 import os
 import sys
-# import json
+import json
 import time
 import sqlite3
 # import asyncio
@@ -17,7 +17,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -350,6 +350,10 @@ class PosChain:
             start_time = time.time()
             # Get the last block of the a-round -1 round from our chain
             height = await self.async_fetchone(SQL_LAST_HEIGHT_OF_ROUND, (a_round - 1, ), as_dict=True)
+            """ TODO
+            [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
+            [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353
+            """
             height = height.get('height')
             # print("\nheight", height)
             # get height stats at that level
@@ -421,6 +425,7 @@ class MemoryPosChain(PosChain):
 class SqlitePosChain(PosChain, SqliteBase):
 
     def __init__(self, verbose=False, db_path='data/', app_log=None, mempool=None):
+        self.custom_data_dir = db_path
         # if not app_log:
         #     self.app_log =
         PosChain.__init__(self, verbose=verbose, app_log=app_log, mempool=mempool)
@@ -563,14 +568,26 @@ class SqlitePosChain(PosChain, SqliteBase):
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
         start_time = time.time()
+        params = []
         for tx in block.txs:
             if tx.block_height != block.height:
                 self.app_log.warning("TX had bad height {} instead of {}, fixed. - TODO: do not digest?"
                                      .format(tx.block_height, block.height))
                 tx.block_height = block.height
             tx_ids.append(tx.txid)
-            # TODO: optimize push in a batch and do a single sql with all tx in a row
-            await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+            params.append(tx.to_db())
+            # optimize push in a batch and do a single sql with all tx in a row
+            # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        await self.async_execute(SQL_INSERT_TX, tuple(params), commit=True, many=True)
+        if config.DUMP_INSERTS:
+            params2 = []
+            for tx in params:
+                tx = list(tx)
+                tx[0] = bytes(tx[0])
+                tx[8] = bytes(tx[8])
+                params2.append(tx)
+            with open(self.custom_data_dir + '/insert_tx_{}.json'.format(block.height), 'w') as f:
+                json.dump(f, params2)
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
         # batch delete from mempool

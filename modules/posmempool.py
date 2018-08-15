@@ -133,7 +133,7 @@ class Mempool:
 
     async def async_all(self, block_height=0):
         """
-        Returns all tx to embed in current block
+        Return all tx to embed in current block
 
         :return:
         """
@@ -177,7 +177,7 @@ class SqliteMempool(Mempool, SqliteBase):
 
     def check(self):
         """
-        Checks and creates mempool. This is not async yet, so we close afterward.
+        Check and creates mempool. This is not async yet, so we close afterward.
 
         :return:
         """
@@ -293,7 +293,7 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def async_all(self, block_height=0):
         """
-        Returns all transactions in current mempool
+        Return all transactions in current mempool
 
         :return: list() of PosMessages instances
         """
@@ -320,7 +320,7 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def async_alltxids(self):
         """
-        Returns all txids from mempool.
+        Return all txids from mempool.
 
         :return: list()
         """
@@ -337,7 +337,7 @@ class SqliteMempool(Mempool, SqliteBase):
 
     async def async_del_txids(self, txids):
         """
-        Deletes a list of the txs from mempool
+        Delete a list of the txs from mempool
 
         :param txids:
         :return: True
@@ -345,6 +345,9 @@ class SqliteMempool(Mempool, SqliteBase):
         # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
         # TODO: Could not work, see binary and conversion.
         self.app_log.warning("TODO:check async_del_txids")
+        params = [(txid,) for txid in txids]
+        await self.async_execute(SQL_REMOVE_TXID, params, commit=True, many=True)
+        """
         try:
             for tx in txids:
                 await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
@@ -352,4 +355,5 @@ class SqliteMempool(Mempool, SqliteBase):
             await self.async_db.commit()
             # tx = 0
             # await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
+        """
         return True

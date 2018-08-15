@@ -878,6 +878,10 @@ class Poshn:
             # print("simulated", simulated_target)
             # Check it matches the target,
             if poshelpers.heights_match(promised_height, simulated_target):
+                """ TODO
+                [E 180815 09:09:42 poshn:902] _round_sync error "'bool' object has no attribute 'get'"
+                [E 180815 09:09:42 poshn:905] detail <class 'AttributeError'> poshn.py 880
+                """
                 if self.verbose:
                     app_log.info('Distant Round {} Data from {} fits expectations.'.format(a_round, peer))
                 # Delete the round to replace

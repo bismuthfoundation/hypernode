@@ -21,6 +21,9 @@ DO_NOT_FORGE = False
 # Dev only - break nice color
 DEBUG = False
 
+# Dev only, dumps sql insert params in data dir
+DUMP_INSERTS = True
+
 # FR: default log level? or just as a command line switch?
 
 # optional log details we may want. AVAILABLE_LOGS lists all possible extra details.

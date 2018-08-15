@@ -14,7 +14,7 @@ import aiosqlite3
 
 from fakelog import FakeLog
 
-__version__ = '0.0.24'
+__version__ = '0.0.25'
 
 
 class SqliteBase:
@@ -44,7 +44,7 @@ class SqliteBase:
         """
         self.app_log.info("Virtual Method {} Check".format(self.db_name))
 
-    def execute(self, sql: str, param: tuple=None, cursor=None, commit: bool=False):
+    def execute(self, sql: str, param: tuple=None, cursor=None, commit: bool=False, many: bool=False):
         """
         Safely execute the request
 
@@ -52,6 +52,7 @@ class SqliteBase:
         :param param:
         :param cursor: optional. will use the locked shared cursor if None
         :param commit: optional. will commit after sql
+        :param many: If True, will use an executemany call with param being a list of params.
         :return: cursor
         """
         if not self.db:
@@ -61,7 +62,9 @@ class SqliteBase:
             try:
                 if not cursor:
                     cursor = self.cursor
-                if param:
+                if many:
+                    cursor.executemany(sql, param)
+                elif param:
                     cursor.execute(sql, param)
                 else:
                     cursor.execute(sql)
@@ -99,13 +102,14 @@ class SqliteBase:
             return dict(data)
         return tuple(data)
 
-    async def async_execute(self, sql: str, param: tuple=None, commit: bool=False):
+    async def async_execute(self, sql: str, param: tuple=None, commit: bool=False, many: bool=False):
         """
         Async. Safely execute the request
 
         :param sql:
         :param param:
         :param commit: If True, will commit after the request.
+        :param many: If True, will use an executemany call with param being a list of params.
         :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be closed.
         """
         cursor = None
@@ -125,7 +129,9 @@ class SqliteBase:
         while max_tries:
             try:
                 cursor = await self.async_db.cursor()
-                if param:
+                if many:
+                    await cursor.executemany(sql, param)
+                elif param:
                     await cursor.execute(sql, param)
                 else:
                     await cursor.execute(sql)
