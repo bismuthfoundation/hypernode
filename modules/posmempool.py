@@ -64,8 +64,10 @@ SQL_COUNT = "SELECT COUNT(*) AS NB FROM pos_messages"
 SQL_LIST_TXIDS = "SELECT txid FROM pos_messages"
 SQL_REMOVE_TXID = "DELETE FROM pos_messages where txid = ?"
 
+SQL_REMOVE_TXID_IN = "DELETE FROM pos_messages where txid IN "
+
 # How old a transaction can be to be embedded in a block ? Don't pick too large a delta T
-NOT_OLDER_THAN_SECONDS = 60*30 * 1000
+NOT_OLDER_THAN_SECONDS = 60 * 30 * 1000
 
 
 class Mempool:
@@ -92,6 +94,8 @@ class Mempool:
     async def digest_tx(self, tx, poschain=None):
         """
         Async. Check validity of the transaction and insert if mempool if ok.
+        TODO: 2 steps when getting batch: first checks, then a single insert
+        FR: We could also keep just the txids in a ram dict to filter out faster.
 
         :param tx:
         :param poschain:
@@ -104,13 +108,16 @@ class Mempool:
         if self.verbose and 'txdigest' in config.LOG:
             self.app_log.info("Digesting {}".format(tx.to_json()))
         try:
+
             if await self.tx_exists(tx.txid):
+                # TODO: useless since we have an index, we can raise or ignore commit if exists.
                 return False
             if poschain:
                 if await poschain.tx_exists(tx.txid):
                     return False
             # Validity checks, will raise
             tx.check()
+
             # TODO: batch, so we can do a global commit?
             await self._insert_tx(tx)
             # TODO: also add the pubkey in index if present.
@@ -168,8 +175,10 @@ class SqliteMempool(Mempool, SqliteBase):
     Sqlite storage backend.
     """
 
-    # TODO: Allow for memory mempool
     def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
+        if ram:
+            # Allow for memory mempool: replaces boolean by schema definition
+            ram = SQL_CREATE_MEMPOOL
         Mempool.__init__(self, verbose=verbose, app_log=app_log)
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='posmempool.db', app_log=app_log, ram=ram)
 
@@ -325,7 +334,7 @@ class SqliteMempool(Mempool, SqliteBase):
         :return: list()
         """
         try:
-            res = await self.async_fetchall(SQL_LIST_TXIDS, )
+            res = await self.async_fetchall(SQL_LIST_TXIDS)
             res = [tx['txid'] for tx in res]
             return res
         except Exception as e:
@@ -335,19 +344,18 @@ class SqliteMempool(Mempool, SqliteBase):
             print(exc_type, fname, exc_tb.tb_lineno)
             raise
 
-    async def async_del_txids(self, txids):
+    async def async_del_txids_old(self, txids):
         """
-        Delete a list of the txs from mempool
+        Delete a list of the txs from mempool. Older and slower version, kept for temp. reference.
 
         :param txids:
         :return: True
         """
-        # TODO: optimize, build a single "WHERE txid IN (,,,,)" request
-        # TODO: Could not work, see binary and conversion.
-        self.app_log.warning("TODO:check async_del_txids")
-        params = [(txid,) for txid in txids]
+        # optimize, build a single "WHERE txid IN (,,,,)" request
+        params = ((txid,) for txid in txids)
         await self.async_execute(SQL_REMOVE_TXID, params, commit=True, many=True)
         """
+        # Even slower
         try:
             for tx in txids:
                 await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=False)
@@ -356,4 +364,19 @@ class SqliteMempool(Mempool, SqliteBase):
             # tx = 0
             # await self.async_execute(SQL_REMOVE_TXID, (tx, ), commit=True)
         """
+        return True
+
+    async def async_del_txids(self, txids):
+        """
+        Delete a list of the txs from mempool. Optimized, more than 100x executemany()
+
+        :param txids:
+        :return: True
+        """
+        #
+        # FR: Slice to cut in reasonable batches (like 100 to 500)
+        params = ["X'" + poscrypto.raw_to_hex(txid) + "'" for txid in txids]
+        sql = SQL_REMOVE_TXID_IN + '(' + ', '.join(params) + ')'
+        # print(params)
+        await self.async_execute(sql, commit=True)
         return True

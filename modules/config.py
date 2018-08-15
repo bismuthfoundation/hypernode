@@ -22,7 +22,7 @@ DO_NOT_FORGE = False
 DEBUG = False
 
 # Dev only, dumps sql insert params in data dir
-DUMP_INSERTS = True
+DUMP_INSERTS = False
 
 # FR: default log level? or just as a command line switch?
 

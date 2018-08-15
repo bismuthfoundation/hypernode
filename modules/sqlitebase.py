@@ -14,7 +14,7 @@ import aiosqlite3
 
 from fakelog import FakeLog
 
-__version__ = '0.0.25'
+__version__ = '0.0.26'
 
 
 class SqliteBase:
@@ -22,7 +22,15 @@ class SqliteBase:
     Generic Sqlite storage backend.
     """
     def __init__(self, verbose=False, db_path: str='./data/', db_name: str='posmempool.db', app_log: logging.log=None,
-                 ram=False):
+                 ram: str=False):
+        """
+
+        :param verbose:
+        :param db_path:
+        :param db_name:
+        :param app_log:
+        :param ram: empty or SQL definition of the ram table to create.
+        """
         self.db_path = db_path + db_name
         self.db_name = db_name
         self.db = None
@@ -33,6 +41,7 @@ class SqliteBase:
         self.cursor = None
         self.check()
         self.async_db = None
+        self.ram = ram
 
     # ========================= Generic DB Handling Methods ====================
 
@@ -85,7 +94,7 @@ class SqliteBase:
             cursor = None
         return cursor
 
-    def fetch_one(self, sql: str, param: tuple=None, as_dict: bool=False):
+    def fetchone(self, sql: str, param: tuple=None, as_dict: bool=False):
         """
         Fetch one and Returns data.
 
@@ -118,16 +127,27 @@ class SqliteBase:
             try:
                 # open
                 self.app_log.info("Opening async {} db".format(self.db_name))
-                self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop(), isolation_level=None)
+                if self.ram:
+                    self.async_db = await aiosqlite3.connect('file:temp?mode=memory', loop=asyncio.get_event_loop(),
+                                                             isolation_level = None, uri = True)
+                    # Since we create in ram, the db is empty, so we recreateit here
+                    await self.async_execute(self.ram)
+                else:
+                    self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop(),
+                                                             isolation_level=None)
                 self.async_db.row_factory = sqlite3.Row
                 self.async_db.text_factory = str
                 self.async_db.isolation_level = None
+                await self.async_db.execute('PRAGMA journal_mode = WAL;')
+                await self.async_db.execute('PRAGMA page_size = 4096')
+                # self.async_db.execute("PRAGMA synchronous=OFF")  # Not so much faster
             except Exception as e:
                 self.app_log.warning("async_execute {}: {}".format(self.db_name, e))
         # TODO: add a try count and die if we lock
         max_tries = 10
         while max_tries:
             try:
+                # FR: Do we have to create a new cursor? Why not use async_db directly?
                 cursor = await self.async_db.cursor()
                 if many:
                     await cursor.executemany(sql, param)

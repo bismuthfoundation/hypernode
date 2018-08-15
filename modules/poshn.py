@@ -432,7 +432,7 @@ class Poshn:
             poscrypto.load_keys(wallet)
             self.address = poscrypto.ADDRESS
             # Time sensitive props
-            self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/')
+            self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/', ram=True)
             self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,
                                                     db_path=datadir+'/', mempool=self.mempool)
             self.powchain = PowInterface(app_log=app_log)
