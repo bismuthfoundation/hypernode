@@ -147,6 +147,11 @@ GENESIS_ADDRESS = 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne'
 GENESIS_SIGNATURE = ''
 # TODO: check chain: verify that fits.
 
+"""
+Global Variables
+"""
+
+STOP_EVENT = None
 
 if __name__ == "__main__":
     print("I'm a module, can't run!")

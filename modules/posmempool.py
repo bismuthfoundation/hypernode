@@ -3,6 +3,9 @@ A Safe thread object interfacing the PoS mempool.
 
 FR: Dump mempool to disk when closing, and re-import/filter out on load so we don't loose potentially important
 messages when things go wrong and everyone crashes.
+
+See https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup
+or https://github.com/husio/python-sqlite3-backup
 """
 import threading
 import json

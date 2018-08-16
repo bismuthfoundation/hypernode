@@ -141,7 +141,7 @@ class HnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.ko, "Did not say hello", stream, peer_ip)
                 return
             # Here the peer said Hello and we accepted its version, we can have a date.
-            while not Poshn.stop_event.is_set():
+            while not config.STOP_EVENT.is_set():
                 try:
                     # Loop over the requests until disconnect or end of server.
                     msg = await async_receive(stream, full_peer)
@@ -376,8 +376,6 @@ class Poshn:
     # list of inbound server connections
     inbound = {}
 
-    stop_event = aioprocessing.AioEvent()  # FR: Move these to instance prop?
-
     def __init__(self, ip, port, address='', peers=None, verbose=False,
                  wallet="poswallet.json", datadir="data", suffix='', version=''):
         """
@@ -395,6 +393,7 @@ class Poshn:
         """
         global app_log
         global access_log
+        config.STOP_EVENT = aioprocessing.AioEvent()
         self.ip = ip
         self.port = port
         self.address = address
@@ -562,7 +561,7 @@ class Poshn:
         """
         global app_log
         app_log.info("Trying to close nicely...")
-        self.stop_event.set()
+        config.STOP_EVENT.set()
         # wait for potential threads to finish
         try:
             pass
@@ -584,7 +583,7 @@ class Poshn:
         await self.refresh_last_block()
         await self.check_round()
         await self._new_tx(recipient=self.address, what=202, params='START', value=self.round)
-        while not self.stop_event.is_set():
+        while not config.STOP_EVENT.is_set():
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()
@@ -1205,7 +1204,7 @@ class Poshn:
                 # Set connected status
                 self.clients[full_peer]['stats'][com_helpers.STATS_ACTIVEP] = True
                 self.clients[full_peer]['stats'][com_helpers.STATS_COSINCE] = connect_time
-            while not self.stop_event.is_set():
+            while not config.STOP_EVENT.is_set():
                 if peer not in self.connect_to and self.state in [HNState.SYNCING]:
                     retry = False
                     raise ValueError("Closing for this round")
@@ -1246,7 +1245,7 @@ class Poshn:
                                 info = posblock.PosHeight().from_proto(msg.height_value)
                                 # await asyncio.sleep(5)
                             app_log.info(">> Should have rolled back to {} level.".format(full_peer))
-                            # self.stop_event.set()
+                            # config.STOP_EVENT.set()
                             # sys.exit()
 
                     if self.state == HNState.CATCHING_UP_SYNC:
@@ -1552,7 +1551,7 @@ class Poshn:
             try:
                 io_loop.start()
             except KeyboardInterrupt:
-                self.stop_event.set()
+                config.STOP_EVENT.set()
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(self.mempool.async_close())
                 io_loop.stop()

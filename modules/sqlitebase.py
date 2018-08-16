@@ -6,15 +6,17 @@ Used by mempool and poschain
 
 import asyncio
 import logging
+import os
 import sqlite3
 import sys
 import time
 
 import aiosqlite3
 
-from fakelog import FakeLog
+import com_helpers
+# from fakelog import FakeLog
 
-__version__ = '0.0.26'
+__version__ = '0.0.27'
 
 
 class SqliteBase:
@@ -36,7 +38,7 @@ class SqliteBase:
         self.db = None
         self.verbose = verbose
         if not app_log:
-            app_log = FakeLog()
+            app_log = logging.getLogger('foo')  # FakeLog()
         self.app_log = app_log
         self.cursor = None
         self.check()
@@ -85,7 +87,7 @@ class SqliteBase:
                 if tries >= 10:
                     self.app_log.error("Database Error, closing")
                     # raise ValueError("Too many retries")
-                    sys.exit()
+                    com_helpers.MY_NODE.stop()
                 time.sleep(0.1)
 
         if commit:
@@ -143,7 +145,7 @@ class SqliteBase:
                 # self.async_db.execute("PRAGMA synchronous=OFF")  # Not so much faster
             except Exception as e:
                 self.app_log.warning("async_execute {}: {}".format(self.db_name, e))
-        # TODO: add a try count and die if we lock
+        # Try count so we can die if we lock
         max_tries = 10
         while max_tries:
             try:
@@ -160,8 +162,14 @@ class SqliteBase:
                 # 'UNIQUE constraint failed'
                 raise
             except Exception as e:
-                # TODO: Bad hack to sort out
                 self.app_log.warning("Database {} query: {} {}, retry because {}".format(self.db_name, sql, param, e))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                self.app_log.warning('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                if 'syntax error' in str(e):
+                    # No need to retry
+                    com_helpers.MY_NODE.stop()
+                # TODO: Bad hack to sort out
                 if 'cannot start a transaction within a transaction' in str(e):
                     self.app_log.info("Auto-committing")
                     await self.async_commit()
@@ -169,8 +177,7 @@ class SqliteBase:
                 max_tries -= 1
         if not max_tries:
             self.app_log.error("Too many retries")
-            sys.exit()
-            # raise ValueError("Too many retries")
+            com_helpers.MY_NODE.stop()
         if commit:
             await self.async_commit()
             try:
@@ -186,25 +193,35 @@ class SqliteBase:
         """
         if not self.db:
             raise ValueError("Closed {} DB".format(self.db_name))
-        while True:
+        max_tries = 10
+        while max_tries:
             try:
                 self.db.commit()
                 break
             except Exception as e:
                 self.app_log.warning("Database {} retry reason: {}".format(self.db_name, e))
                 time.sleep(0.1)
+            max_tries -= 1
+        if not max_tries:
+            self.app_log.error("Too many retries")
+            com_helpers.MY_NODE.stop()
 
     async def async_commit(self):
         """
         Async. Safe commit
         """
-        while True:
+        max_tries = 10
+        while max_tries:
             try:
                 await self.async_db.commit()
                 break
             except Exception as e:
                 self.app_log.warning("Database {} retry reason: {}".format(self.db_name, e))
                 asyncio.sleep(0.1)
+            max_tries -= 1
+        if not max_tries:
+            self.app_log.error("Too many retries")
+            com_helpers.MY_NODE.stop()
 
     async def async_fetchone(self, sql: str, param: tuple=None, as_dict: bool=False):
         """

@@ -13,11 +13,12 @@ import sqlite3
 # Our modules
 import config
 import poscrypto
+import com_helpers
 import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -274,7 +275,7 @@ class SqlitePosChain(SqliteBase):
                 if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
-                    sys.exit()
+                    com_helpers.MY_NODE.stop()
                 else:
                     self.execute(SQL_INSERT_GENESIS)
                     self.commit()
@@ -522,25 +523,25 @@ class SqlitePosChain(SqliteBase):
             str_txs.append(" (" + ", ".join(temp) + ") ")
             # optimize push in a batch and do a single sql with all tx in a row
             # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
-        values = SQL_INSERT_INTO_VALUES + ",".join(str_txs)
-
         if len(tx_ids):
+            values = SQL_INSERT_INTO_VALUES + ",".join(str_txs)
+
             if block.unique_sources < 2:
                 self.app_log.error("block unique sources seems incorrect")
-        # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
-        if block.msg_count != len(tx_ids):
-            self.app_log.error("block msg_count seems incorrect")
+            # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
+            if block.msg_count != len(tx_ids):
+                self.app_log.error("block msg_count seems incorrect")
 
-        if 'timing' in config.LOG:
-            self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
+            if 'timing' in config.LOG:
+                self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
 
-        await self.async_execute(values, commit=True)
+            await self.async_execute(values, commit=True)
 
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
         # batch delete from mempool
         if len(tx_ids) and self.mempool:
-            await self.mempool.async_del_txids(tx_ids)
+            await self.mempool.async_del_hex_txids(tx_ids)
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert after mempool del: {} sec'.format(time.time() - start_time))
         # Then the block and commit
