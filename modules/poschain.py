@@ -47,6 +47,7 @@ SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY hei
 # TODO: duplicate round in pos_messages table to avoid these extra requests
 SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+SQL_LAST_HEIGHT_BEFORE_ROUND = "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
 SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max FROM pos_chain WHERE round >= ? and round <= ?"
 
 
@@ -424,7 +425,8 @@ class SqlitePosChain(SqliteBase):
         try:
             start_time = time.time()
             # Get the last block of the a-round -1 round from our chain
-            height = await self.async_fetchone(SQL_LAST_HEIGHT_OF_ROUND, (a_round - 1, ), as_dict=True)
+            height = await self.async_fetchone(SQL_LAST_HEIGHT_BEFORE_ROUND, (a_round , ), as_dict=True)
+            print(SQL_LAST_HEIGHT_BEFORE_ROUND, a_round )
             """ TODO
             [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
             [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353

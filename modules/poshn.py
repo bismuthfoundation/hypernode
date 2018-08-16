@@ -892,13 +892,15 @@ class Poshn:
                 await self.status(log=False)
                 # TODO: get PoS address from peer (it's a ip:0port string)
                 recipient = 'TEMP_TODO {}'.format(peer)
+                recipient = "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne"
                 await self._new_tx(recipient, what=200, params='R.SYNC:{}'.format(peer), value=a_round)
             else:
                 app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
                 # TODO: get PoS address from peer (it's a ip:0port string)
                 recipient = 'TEMP_TODO {}'.format(peer)
+                recipient = "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne"
                 await self._new_tx(recipient, what=101, params='P.FAIL:{}'.format(peer), value=a_round)
-                # FR: Add to buffer instead of sendng right away (avoid tx spam)
+                # FR: Add to buffer instead of sending right away (avoid tx spam)
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
