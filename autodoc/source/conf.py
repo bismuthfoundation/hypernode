@@ -16,7 +16,7 @@ import os
 import sys
 # sys.path.insert(0, os.path.abspath('../modules'))
 # sys.path.insert(0, os.path.abspath('../../hypernode'))
-sys.path.insert(0, os.path.abspath('../../hypernode'))
+sys.path.insert(0, os.path.abspath('../../main'))
 sys.path.insert(0, os.path.abspath('../../modules'))
 
 

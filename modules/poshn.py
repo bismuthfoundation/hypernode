@@ -48,7 +48,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.83'
+__version__ = '0.0.84'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -189,7 +189,6 @@ class HnServer(TCPServer):
         :param stream:
         :param peer_ip:
         """
-        global access_log
         if self.verbose and 'srvmsg' in config.LOG:
             access_log.info("SRV: Got msg >{}< from {}:{}"
                             .format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
@@ -249,7 +248,6 @@ class HnServer(TCPServer):
                 # This is a list of PosMessage objects
                 await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
 
-
             elif msg.command == commands_pb2.Command.height:
                 await self.node.digest_height(msg.height_value, full_peer, server=True)
                 height = await self.node.poschain.async_height()
@@ -282,7 +280,6 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.getheaders:
                 blocks = await self.node.poschain.async_getheaders(msg.string_value)
                 await async_send_block(blocks, stream, full_peer)
-
 
             elif msg.command == commands_pb2.Command.update:
                 # TODO: rights/auth and config management
@@ -419,10 +416,12 @@ class Poshn:
         self.forged_count = 0  # How many blocks forged since start of the HN
         self.slots = None
         self.test_slots = None
-        self.tests_to_run = []
-        self.tests_to_answer = []
+        self.tests_to_run = []  # Holds the tests to run this slot
+        self.tests_to_answer = []  # and the tests others will ask us this slot.
         self.no_test_this_round = False
         self.no_test_sent = 0
+        self.testing = False  # Flag: we are currently running a test.
+        self.being_tested = False
         # From whom are we digesting mempool?
         self.mempool_digesting = ''
         try:
@@ -1270,6 +1269,7 @@ class Poshn:
                                     if await self.poschain.digest_block(block, from_miner=False):
                                         blocks_count += 1
                                 app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
+                                await self.poschain.async_commit()
                                 if not blocks_count:
                                     app_log.error("Error while inserting block from {}".format(full_peer))
                                     break
@@ -1511,16 +1511,15 @@ class Poshn:
                 # purge old tx
                 await self.mempool.async_purge()
 
-                if (self.sir == 0) and (self.no_test_sent == 0):
+                if self.no_test_this_round and (self.sir == 0) and (self.no_test_sent == 0):
                     await asyncio.sleep(5)
                     # FR: param is optional, all could go into 'what' to spare bandwith
                     self.no_test_sent += 1
                     await self._new_tx(recipient=self.address, what=201, params='NO_TEST:1', value=self.round)
-                if (self.sir == config.MAX_ROUND_SLOTS + config.END_ROUND_SLOTS - 1) and (self.no_test_sent == 1):
+                if  self.no_test_this_round and (self.sir == config.MAX_ROUND_SLOTS + config.END_ROUND_SLOTS - 1) and (self.no_test_sent == 1):
                     self.no_test_sent += 1
                     await self._new_tx(recipient=self.address, what=201, params='NO_TEST:2', value=self.round)
                     # self.run_test(self.address, self.address, 0 )
-
 
     def serve(self):
         """

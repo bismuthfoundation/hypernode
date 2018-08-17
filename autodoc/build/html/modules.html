@@ -53,6 +53,12 @@
 Common variables for PoS</p>
 <p>Also serves as config file for POC and tests</p>
 <dl class="data">
+<dt id="config.GENESIS_SIGNATURE">
+<code class="descclassname">config.</code><code class="descname">GENESIS_SIGNATURE</code><em class="property"> = ''</em><a class="headerlink" href="#config.GENESIS_SIGNATURE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Global Variables</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.POC_LAST_BROADHASH">
 <code class="descclassname">config.</code><code class="descname">POC_LAST_BROADHASH</code><em class="property"> = b'123456789abcdef12345'</em><a class="headerlink" href="#config.POC_LAST_BROADHASH" title="Permalink to this definition">¶</a></dt>
 <dd><p>Here comes tuneable algorithm variables - Do not change those or you will fork or be unable to sync</p>
@@ -630,11 +636,6 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dd><p>Signal to stop cleanly.</p>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="poshn.Poshn.stop_event">
-<code class="descname">stop_event</code><em class="property"> = &lt;aioprocessing.locks.AioEvent object&gt;</em><a class="headerlink" href="#poshn.Poshn.stop_event" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 <dl class="method">
 <dt id="poshn.Poshn.update_inbound">
 <code class="descname">update_inbound</code><span class="sig-paren">(</span><em>ip</em>, <em>port</em>, <em>properties</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.update_inbound" title="Permalink to this definition">¶</a></dt>
@@ -987,14 +988,6 @@ The caller is responsible for updating state if necessary</p>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="poschain.SqlitePosChain.height">
-<code class="descname">height</code><em class="property"> = None</em><a class="headerlink" href="#poschain.SqlitePosChain.height" title="Permalink to this definition">¶</a></dt>
-<dd><p>TODO
-[E 180815 09:09:42 poschain:400] check_round Error ‘NoneType’ object has no attribute ‘get’
-[E 180815 09:09:42 poschain:403] detail &lt;class ‘AttributeError’&gt; poschain.py 353</p>
 </dd></dl>
 
 <dl class="method">
@@ -1523,6 +1516,8 @@ with <em>binary content as hex encoded string</em>.</p>
 <span class="target" id="module-posmempool"></span><p>A Safe thread object interfacing the PoS mempool.</p>
 <p>FR: Dump mempool to disk when closing, and re-import/filter out on load so we don’t loose potentially important
 messages when things go wrong and everyone crashes.</p>
+<p>See <a class="reference external" href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup">https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.backup</a>
+or <a class="reference external" href="https://github.com/husio/python-sqlite3-backup">https://github.com/husio/python-sqlite3-backup</a></p>
 <dl class="class">
 <dt id="posmempool.MemoryMempool">
 <em class="property">class </em><code class="descclassname">posmempool.</code><code class="descname">MemoryMempool</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>app_log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#posmempool.MemoryMempool" title="Permalink to this definition">¶</a></dt>
@@ -1828,7 +1823,7 @@ FR: We could also keep just the txids in a ram dict to filter out faster. (no ne
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f3fa6419ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f6ba3e43ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
@@ -2887,7 +2882,7 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f3fa6419ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f6ba3e43ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

@@ -101,6 +101,9 @@ message Command {
         // gethypernodes - list of valid hypernodes. accept a string param for extra related info
         // this optional param is "full,start_round,end_round" where full is "0" or "1"
         gethypernodes = 19;
+        test = 20;
+        // comes with a partial tx_value containing a single unsigned tx with what, params, returns with value filled in.
+        // both parts will then add this filled tx, signed, to the chain.
     }
     required Type command = 1;
 
