@@ -494,6 +494,28 @@ Tries to connect to the given peer, terminates on error and deletes itself on cl
 </dd></dl>
 
 <dl class="method">
+<dt id="poshn.Poshn.do_test_peer">
+<code class="descname">do_test_peer</code><span class="sig-paren">(</span><em>proto_block</em>, <em>peer_ip</em>, <em>peer_port</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.do_test_peer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async. Send the test block to a given peer</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>proto_block</strong> – a protobuf block</li>
+<li><strong>peer_ip</strong> – the peer ip</li>
+<li><strong>peer_port</strong> – the peer port</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">the answer from the peer</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poshn.Poshn.forge">
 <code class="descname">forge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.forge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Async. Consensus has been reached, we are forger, forge and send block.</p>
@@ -610,6 +632,25 @@ Update the inner properties.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="poshn.Poshn.run_test_peer">
+<code class="descname">run_test_peer</code><span class="sig-paren">(</span><em>test</em><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.run_test_peer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run a single test of a given peer, and store the result in a new transaction.
+TODO: check (local cache or chain) that this test was not already done.
+Edge case of a node that is restarted then does the tests again because it’s still the same slot.
+Like a temp dir, with json of this round tests only. Keep a version in ram, and save to disk, so we can reload on start.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>test</strong> – tuple (from, recipient, test id)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
 <dt id="poshn.Poshn.serve">
 <code class="descname">serve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.serve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run the Tornado socket server.
@@ -633,7 +674,7 @@ Once we called that, the calling thread is stopped until the server closes.</p>
 <dl class="method">
 <dt id="poshn.Poshn.stop">
 <code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#poshn.Poshn.stop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Signal to stop cleanly.</p>
+<dd><p>Signal to stop as cleanly as possible.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1823,7 +1864,7 @@ FR: We could also keep just the txids in a ram dict to filter out faster. (no ne
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f6ba3e43ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f97b8fdeea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
@@ -2721,6 +2762,11 @@ Base58 encoding, decoding, checksum of PoS addresses</p>
 <p>Bismuth
 Common helpers for PoS</p>
 <dl class="function">
+<dt id="poshelpers.bool_to_dbstr">
+<code class="descclassname">poshelpers.</code><code class="descname">bool_to_dbstr</code><span class="sig-paren">(</span><em>a_bool: bool</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.bool_to_dbstr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="poshelpers.download_file">
 <code class="descclassname">poshelpers.</code><code class="descname">download_file</code><span class="sig-paren">(</span><em>url: str</em>, <em>filename: str</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.download_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch a file from an URL with progress indicator</p>
@@ -2882,7 +2928,7 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f6ba3e43ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f97b8fdeea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

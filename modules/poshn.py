@@ -38,6 +38,7 @@ import com_helpers
 import commands_pb2
 import config
 import determine
+import hn_db
 import poschain
 import posmempool
 import posblock
@@ -48,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.84'
+__version__ = '0.0.85'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -134,6 +135,14 @@ class HnServer(TCPServer):
                 await self.node.check_round()  # Make sure our round info is up to date
                 for block in msg.block_value:
                     await self.node.poschain.digest_block(block, from_miner=True)
+                return
+            elif msg.command == commands_pb2.Command.test:
+                # block sending does not require hello
+                access_log.error("SRV: Got test block from {}".format(peer_ip))
+                # TODO: check that this ip is in the current test round, or add to anomalies buffer
+                # await self.node.check_round()  # Make sure our round info is up to date
+                await self.node._new_tx(msg.tx_values[0].sender, 203, msg.tx_values[0].params, int(time.time()))
+                await async_send_block(msg, stream, peer_ip)
                 return
             else:
                 access_log.warning("SRV: {} did not say hello".format(peer_ip))
@@ -434,6 +443,7 @@ class Poshn:
             self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,
                                                     db_path=datadir+'/', mempool=self.mempool)
             self.powchain = PowInterface(app_log=app_log)
+            self.hn_db = hn_db.SqliteHNDB(verbose=verbose, app_log=app_log, db_path=datadir+'/')
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
@@ -556,11 +566,17 @@ class Poshn:
 
     def stop(self):
         """
-        Signal to stop cleanly.
+        Signal to stop as cleanly as possible.
         """
         global app_log
         app_log.info("Trying to close nicely...")
         config.STOP_EVENT.set()
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.poschain.async_commit())
+        loop.create_task(self.poschain.async_close())
+        loop.create_task(self.mempool.async_close())
+        loop.create_task(self.hn_db.async_close())
+        loop.create_task(asyncio.sleep(2))
         # wait for potential threads to finish
         try:
             pass
@@ -569,6 +585,77 @@ class Poshn:
             # self.whatever_thread.join()
         except Exception as e:
             app_log.error("Closing {}".format(e))
+        app_log.info("Bye!")
+        sys.exit()
+
+    async def do_test_peer(self, proto_block, peer_ip, peer_port):
+        """
+        Async. Send the test block to a given peer
+
+        :param proto_block: a protobuf block
+        :param peer_ip: the peer ip
+        :param peer_port: the peer port
+        :return: the answer from the peer
+        """
+        stream = None
+        if self.verbose:
+            app_log.info("Sending test request to {}:{}".format(peer_ip, peer_port))
+        try:
+            full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
+            stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
+            await async_send_block(proto_block, stream, full_peer)
+            res = await async_receive(stream, full_peer)
+            return res
+        except StreamClosedError:
+            return None
+        except Exception as e:
+            app_log.warning("Error '{}' sending test block to {}:{}".format(e, peer_ip, peer_port))
+        finally:
+            if stream:
+                stream.close()
+
+    async def run_test_peer(self, test):
+        """
+        Run a single test of a given peer, and store the result in a new transaction.
+        TODO: check (local cache or chain) that this test was not already done.
+        Edge case of a node that is restarted then does the tests again because it's still the same slot.
+        Like a temp dir, with json of this round tests only. Keep a version in ram, and save to disk, so we can reload on start.
+
+        :param test: tuple (from, recipient, test id)
+        :return:
+        """
+        # ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', 'BDs2Lc78KuWSB7CQj7aNaxJZLVBZV6hsTC', 4)
+        app_log.warning("Running test {}".format(json.dumps(test)))
+        # construct block
+        protocmd = commands_pb2.Command()
+        protocmd.Clear()
+        protocmd.command = commands_pb2.Command.test
+        #tx_values[0].txid, tx_values[0].block_height, tx_values[0].pubkey
+        tx = protocmd.tx_values.add()
+        tx.timestamp, tx.sender, tx.recipient = int(time.time()), test[0], test[1]
+        tx.txid, tx.block_height, tx.pubkey = b"", 0, b""
+        # 202 = A tests B - 203 = B reports being tested by A - 204 = failed test
+        tx.what, tx.params, tx.value = 202, "TEST:{}".format(test[2]), 0
+        # print(protocmd)
+        # get ip, port from address
+        peer = await self.hn_db.hn_from_address(test[1], self.round)
+        # TODO: deal with NONE result
+        future = self.do_test_peer(protocmd, peer['ip'], peer['port'])
+        # send block
+        try:
+            result = await asyncio.wait_for(future, 30)
+        except asyncio.TimeoutError as e:
+            app_log.warning('Test Timeout')
+            result = None
+        if result:
+            app_log.warning("Good test from {}".format(test[1]))
+            await self._new_tx(test[1], 202, tx.params, result.tx_values[0].value)
+        else:
+            app_log.warning("Failed test from {}".format(test[1]))
+            await self._new_tx(test[1], 204, tx.params, tx.timestamp)
+        # print(result)
+        # self.stop()
+        # write result
 
     async def manager(self):
         """
@@ -662,6 +749,15 @@ class Poshn:
                         if self.verbose:
                             app_log.info("My slot, but too low a consensus to forge now.")
 
+                if self.state == HNState.SYNCING and self.net_height and len(self.tests_to_run) and not self.testing:
+                    # time to run a test!
+                    self.testing = True
+                    try:
+                        test = self.tests_to_run.pop(0)
+                        await self.run_test_peer(test)
+                    finally:
+                        self.testing = False
+
                 # FR: Maybe don't display each time
                 await self.status(log=True)
                 if self.connecting:
@@ -689,6 +785,8 @@ class Poshn:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+        if self.verbose:
+            app_log.info("Closed HN Manager")
 
     async def change_state_to(self, new_state):
         """
@@ -1308,6 +1406,7 @@ class Poshn:
                             app_log.info("Sending ping to {}".format(full_peer))
                         # keeps connection active, or raise error if connection lost
                         await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
+            retry = False
             raise ValueError("Closing")
         except tornado.iostream.StreamClosedError as e:
             if self.verbose and 'connections' in config.LOG:
@@ -1319,11 +1418,16 @@ class Poshn:
                                     .format(peer[1], e))
                     return
         except Exception as e:
-            app_log.error("Connection lost to {} because {}. Retry in {} sec."
-                          .format(peer[1], e, config.PEER_RETRY_SECONDS))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            if retry:
+                app_log.error("Connection lost to {} because {}. Retry in {} sec."
+                              .format(peer[1], e, config.PEER_RETRY_SECONDS))
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            else:
+                app_log.error("Connection lost to {} because {}."
+                              .format(peer[1], e))
+                return
             try:
                 stream.close()
             except:
@@ -1455,6 +1559,10 @@ class Poshn:
                     if self.verbose:
                         app_log.info('Status: {} registered HN, among which {} are active'
                                      .format(len(self.powchain.regs), len(self.active_regs)))
+                    # Now save these infos in the hn db
+                    await self.hn_db.clear_rounds_before(self.round - 2)  # keep 2 old rounds for what it costs.
+                    await self.hn_db.save_hn_from_regs(self.powchain.regs, self.round)
+
                     # FR: Should be some refactoring to do in all these mess of various structures.
                     # Recreate self.peers.
                     # list of ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0")

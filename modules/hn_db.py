@@ -10,10 +10,11 @@ import sys
 import sqlite3
 
 # Our modules
+import poshelpers
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.4'
 
 SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
     round       BIGINT,
@@ -32,31 +33,28 @@ SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
         ip,
         port
     )
-    ON CONFLICT FAIL
+    ON CONFLICT REPLACE
     );"""
 
 SQL_CLEAR = 'DELETE FROM hypernodes'
 
 SQL_DEL_OLDER_THAN_ROUND = "DELETE FROM hypernodes WHERE round < ?"
 
+SQL_HN_FROM_ADDRESS_ROUND = "SELECT * FROM hypernodes WHERE address= ? AND round = ?"
 
-class HNDB:
-    """
-    Generic Parent Class
-    """
-
-    def __init__(self, verbose=False, app_log=None):
-        self.verbose = verbose
-        self.app_log = app_log
+# Incomplete sql for fast batch insert.
+SQL_INSERT_HN_VALUES = "INSERT INTO hypernodes (round, address, ip, port, weight, registrar, reward, " \
+                       "ts_register, ts_edit, active) VALUES"
 
 
-class SqliteHNDB(HNDB, SqliteBase):
+class SqliteHNDB(SqliteBase):
     """
     Sqlite storage backend.
     """
 
     def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
-        HNDB.__init__(self, verbose=verbose, app_log=app_log)
+        self.verbose = verbose
+        self.app_log = app_log
         SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='hndb.db', app_log=app_log, ram=ram)
 
     # ========================= Generic DB Handling Methods ====================
@@ -122,3 +120,34 @@ class SqliteHNDB(HNDB, SqliteBase):
         await self.async_execute(SQL_DEL_OLDER_THAN_ROUND, (a_round,), commit=True)
         # Good time to cleanup
         await self.async_execute("VACUUM", commit=True)
+
+    async def hn_from_address(self, address:str, round:int):
+        """
+        Async. Return a dict with all info from local hn db
+
+        :param address: pos address of the hn
+        :param round: the related round (current one, older rounds may been pruned)
+        :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
+        """
+
+        hn = await self.async_fetchone(SQL_HN_FROM_ADDRESS_ROUND, (address, round), as_dict=True)
+        # TEST DEV ONLY
+        # hn['port'] = 6969  # instance 0
+        return hn
+
+    async def save_hn_from_regs(self, regs:dict, round:int):
+        """
+        Async. Stores the HN info from the pow in local index.
+
+        :param regs:  is a dict, with keys = pow address,
+        value = dict : 'ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'
+        :param round:
+        :return:
+        """
+        values = [" (" + ", ".join([str(round), "'"+value['pos']+"'", "'"+value['ip']+"'", str(value['port']),
+                                    str(value['weight']), "'"+registrar+"'", "'"+value['reward']+"'",
+                                    str(value['timestamp']), str(0), poshelpers.bool_to_dbstr(value['active'])]) + ") "
+                  for registrar, value in regs.items()]
+        if len(values):
+            values = SQL_INSERT_HN_VALUES + ",".join(values)
+            await self.async_execute(values, commit=True)

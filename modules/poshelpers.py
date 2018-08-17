@@ -16,7 +16,7 @@ import requests
 import config
 import poscrypto
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 # GENERIC HELPERS ##############################################################
@@ -67,6 +67,12 @@ def update_source(url: str, app_log: logging.log=None):
         if app_log:
             app_log.warning("Something went wrong in update_source: {}, aborted".format(e))
         raise
+
+# DB #####################################################################
+
+
+def bool_to_dbstr(a_bool:bool):
+    return '1' if a_bool else '0'
 
 
 # Height Helpers #####################################################################
