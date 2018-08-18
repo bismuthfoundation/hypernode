@@ -311,7 +311,7 @@ class SqlitePosChain(SqliteBase):
         txids = []
         block_dict = {'height': 0, 'round': 0, 'sir': 0, 'timestamp': config.ORIGIN_OF_TIME,
                       'previous_hash': poscrypto.blake(config.GENESIS_SEED.encode('utf-8')).digest(),
-                      'msg_count': 0, 'unique_sources': 0, 'txs': txids, 'forger': config.GENESIS_ADDRESS,
+                      'msg_count': 0, 'uniques_sources': 0, 'txs': txids, 'forger': config.GENESIS_ADDRESS,
                       'block_hash': b'', 'signature': b''}
         # print(block_dict)
         block = PosBlock().from_dict(block_dict)
@@ -378,7 +378,7 @@ class SqlitePosChain(SqliteBase):
             if 'txdigest' in config.LOG:
                 self.app_log.warning("Digesting block {} {} : {}".format(block.height, block_from, block.to_json()))
             else:
-                self.app_log.warning("Digesting block {} {} : {} txs, {} uniques sources.".format(block.height, block_from, len(block.txs), block.unique_sources))
+                self.app_log.warning("Digesting block {} {} : {} txs, {} uniques sources.".format(block.height, block_from, len(block.txs), block.uniques_sources))
             # Good height? - FR: harmonize, use objects everywhere?
             if block.height != self.block['height'] + 1:
                 self.app_log.warning("Digesting block {} : bad height, our current height is {}"
@@ -531,7 +531,7 @@ class SqlitePosChain(SqliteBase):
         if len(tx_ids):
             values = SQL_INSERT_INTO_VALUES + ",".join(str_txs)
 
-            if block.unique_sources < 2:
+            if block.uniques_sources < 2:
                 self.app_log.error("block unique sources seems incorrect")
             # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
             if block.msg_count != len(tx_ids):
@@ -584,7 +584,7 @@ class SqlitePosChain(SqliteBase):
             # optimize push in a batch and do a single sql with all tx in a row
             # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
         if len(tx_ids):
-            if block.unique_sources < 2:
+            if block.uniques_sources < 2:
                 self.app_log.error("block unique sources seems incorrect")
         # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
         if block.msg_count != len(tx_ids):
