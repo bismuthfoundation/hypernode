@@ -50,10 +50,12 @@ async def async_receive(stream, ip):
     """
     global MY_NODE
     protomsg = commands_pb2.Command()
+    # TODO: add some timeout here
     header = await stream.read_bytes(4)
     if len(header) < 4:
         raise RuntimeError("Socket EOF")
     data_len = struct.unpack('>i', header[:4])[0]
+    # TODO: and here (depending on size?)
     data = await stream.read_bytes(data_len)
     try:
         MY_NODE.clients[ip]['stats'][STATS_LASTACT] = time.time()

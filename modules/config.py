@@ -28,7 +28,7 @@ DUMP_INSERTS = False
 
 # optional log details we may want. AVAILABLE_LOGS lists all possible extra details.
 # Copy the ones you want in LOG
-LOG = ['mempool', 'timing']
+LOG = []
 
 AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg',  'txdigest', 'timing']
 
@@ -57,6 +57,8 @@ POC_HYPER_NODES_LIST = []
 # Leave True for Real world use.
 # if False - DEV ONLY - hn_instance will load from hn_temp dir.
 LOAD_HN_FROM_POW = False
+# DEV only - number of test HN to consider. 49 max.
+MAX_DEBUG_HN = 20
 
 # The broadhash of the previous round determines the shuffle.
 # block hashes and broad hashes are 20 bytes

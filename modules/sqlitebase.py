@@ -87,13 +87,15 @@ class SqliteBase:
                 if tries >= 10:
                     self.app_log.error("Database Error, closing")
                     # raise ValueError("Too many retries")
-                    com_helpers.MY_NODE.stop()
+                    if com_helpers.MY_NODE:
+                        com_helpers.MY_NODE.stop()
+                    else:
+                        sys.exit()
                 time.sleep(0.1)
 
         if commit:
             self.commit()
-            cursor.close()
-            cursor = None
+            return None
         return cursor
 
     def fetchone(self, sql: str, param: tuple=None, as_dict: bool=False):
@@ -125,15 +127,16 @@ class SqliteBase:
         """
         cursor = None
         if not self.async_db:
-            # TODO: RAM Mode
             try:
                 # open
                 self.app_log.info("Opening async {} db".format(self.db_name))
                 if self.ram:
                     self.async_db = await aiosqlite3.connect('file:temp?mode=memory', loop=asyncio.get_event_loop(),
                                                              isolation_level = None, uri = True)
-                    # Since we create in ram, the db is empty, so we recreateit here
-                    await self.async_execute(self.ram)
+                    # Since we create in ram, the db is empty, so we recreate it here
+                    cursor = await self.async_db.execute(self.ram)
+                    await self.async_commit()
+                    await cursor.close()
                 else:
                     self.async_db = await aiosqlite3.connect(self.db_path, loop=asyncio.get_event_loop(),
                                                              isolation_level=None)
@@ -142,6 +145,7 @@ class SqliteBase:
                 self.async_db.isolation_level = None
                 await self.async_db.execute('PRAGMA journal_mode = WAL;')
                 await self.async_db.execute('PRAGMA page_size = 4096')
+                # self.cursor = await self.async_db.cursor()
                 # self.async_db.execute("PRAGMA synchronous=OFF")  # Not so much faster
             except Exception as e:
                 self.app_log.warning("async_execute {}: {}".format(self.db_name, e))
@@ -150,13 +154,14 @@ class SqliteBase:
         while max_tries:
             try:
                 # FR: Do we have to create a new cursor? Why not use async_db directly?
-                cursor = await self.async_db.cursor()
+                # cursor = await self.async_db.cursor()
                 if many:
-                    await cursor.executemany(sql, param)
+                    # await cursor.executemany(sql, param)
+                    cursor = await self.async_db.executemany(sql, param)
                 elif param:
-                    await cursor.execute(sql, param)
+                    cursor = await self.async_db.execute(sql, param)
                 else:
-                    await cursor.execute(sql)
+                    cursor = await self.async_db.execute(sql)
                 break
             except sqlite3.IntegrityError as e:
                 # 'UNIQUE constraint failed'
@@ -173,6 +178,8 @@ class SqliteBase:
                 if 'cannot start a transaction within a transaction' in str(e):
                     self.app_log.info("Auto-committing")
                     await self.async_commit()
+                if cursor:
+                    await cursor.close()
                 asyncio.sleep(0.1)
                 max_tries -= 1
         if not max_tries:

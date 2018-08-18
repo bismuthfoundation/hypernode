@@ -14,7 +14,7 @@ import poshelpers
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
     round       BIGINT,
@@ -40,7 +40,9 @@ SQL_CLEAR = 'DELETE FROM hypernodes'
 
 SQL_DEL_OLDER_THAN_ROUND = "DELETE FROM hypernodes WHERE round < ?"
 
-SQL_HN_FROM_ADDRESS_ROUND = "SELECT * FROM hypernodes WHERE address= ? AND round = ?"
+SQL_HN_FROM_ADDRESS_ROUND = "SELECT * FROM hypernodes WHERE address = ? AND round = ?"
+
+SQL_HN_FROM_IP_PORT_ROUND = "SELECT * FROM hypernodes WHERE ip = ? AND port = ? AND round = ?"
 
 # Incomplete sql for fast batch insert.
 SQL_INSERT_HN_VALUES = "INSERT INTO hypernodes (round, address, ip, port, weight, registrar, reward, " \
@@ -134,6 +136,22 @@ class SqliteHNDB(SqliteBase):
         # TEST DEV ONLY
         # hn['port'] = 6969  # instance 0
         return hn
+
+    async def hn_from_peer(self, peer:str, round:int):
+        """
+        Async. Return a dict with all info from local hn db
+
+        :param peer: a ip:port or ip:00port
+        :param round: the related round (current one, older rounds may been pruned)
+        :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
+        """
+        ip, port = peer.split(':')
+        port = int(port)  # will drop the leading 0s
+        hn = await self.async_fetchone(SQL_HN_FROM_IP_PORT_ROUND, (ip, port, round), as_dict=True)
+        # TEST DEV ONLY
+        # hn['port'] = 6969  # instance 0
+        return hn
+
 
     async def save_hn_from_regs(self, regs:dict, round:int):
         """

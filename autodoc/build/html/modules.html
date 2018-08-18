@@ -1149,7 +1149,7 @@ and conversion between them all.</p>
 
 <dl class="attribute">
 <dt id="posblock.PosBlock.props">
-<code class="descname">props</code><em class="property"> = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count', 'unique_sources', 'signature', 'block_hash', 'received_by', 'forger')</em><a class="headerlink" href="#posblock.PosBlock.props" title="Permalink to this definition">¶</a></dt>
+<code class="descname">props</code><em class="property"> = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count', 'uniques_sources', 'signature', 'block_hash', 'received_by', 'forger')</em><a class="headerlink" href="#posblock.PosBlock.props" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1864,7 +1864,7 @@ FR: We could also keep just the txids in a ram dict to filter out faster. (no ne
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f97b8fdeea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7fafd3fb8ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
@@ -2928,7 +2928,7 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f97b8fdeea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7fafd3fb8ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />

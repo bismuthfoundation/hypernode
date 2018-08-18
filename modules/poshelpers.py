@@ -221,6 +221,8 @@ def fake_hn_dict(inactive_last_round, app_log):
                 regs["bis{}".format(i)] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
                                               ['127.0.0.1', 6969 + i, hn['address'], "bis{}".format(i), weight, 0, True]))
             i += 1
+            if i > config.MAX_DEBUG_HN:
+                break
         for address, items in regs.items():
             if items['pos'] in inactive_last_round:
                 regs[address]['active'] = False

@@ -22,8 +22,8 @@ import test_helpers
 NB = 0
 
 async def digest_txs(test_poschain, block):
-    res = await test_poschain.async_execute("delete from pos_messages")
-    res = await test_poschain.async_execute("delete from pos_chain")
+    res = await test_poschain.async_execute("delete from pos_messages", commit=True)
+    res = await test_poschain.async_execute("delete from pos_chain", commit=True)
     await test_poschain._insert_block(block)
 
 

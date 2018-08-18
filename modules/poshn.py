@@ -71,7 +71,7 @@ LTIMEOUT = 45
 MINIMUM_CONNECTIVITY = 1  # let 1 for growth phase.
 
 # 30% for growth phase? should be 50% or more later on depending on uptime of registered HN.
-MIN_FORGE_CONSENSUS = 30
+MIN_FORGE_CONSENSUS = 20
 
 # Some systems do not support reuse_port
 REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
@@ -734,17 +734,22 @@ class Poshn:
 
                 if self.state == HNState.STRONG_CONSENSUS:
                     if self.consensus_pc > MIN_FORGE_CONSENSUS and not config.DO_NOT_FORGE:
-                        # Make sure we are at least 15 sec after round start, to let other nodes be synced.
-                        if time.time() - self.current_round_start > 15:
-                            await self.change_state_to(HNState.FORGING)
-                            # Forge will send also
-                            await self.forge()
-                            # await asyncio.sleep(10)
-                            self.forged = True
-                            await self.change_state_to(HNState.SYNCING)
+                        mempool_status = await self.mempool.status()
+                        if mempool_status["NB"] >= config.REQUIRED_MESSAGES_PER_BLOCK:
+                            # Make sure we are at least 15 sec after round start, to let other nodes be synced.
+                            if time.time() - self.current_round_start > 15:
+                                await self.change_state_to(HNState.FORGING)
+                                # Forge will send also
+                                await self.forge()
+                                # await asyncio.sleep(10)
+                                self.forged = True
+                                await self.change_state_to(HNState.SYNCING)
+                            else:
+                                if self.verbose:
+                                    app_log.info("My slot, but too soon to forge now.")
                         else:
                             if self.verbose:
-                                app_log.info("My slot, but too soon to forge now.")
+                                app_log.info("My slot, but too few tx in mempool to forge now.")
                     else:
                         if self.verbose:
                             app_log.info("My slot, but too low a consensus to forge now.")
@@ -859,7 +864,7 @@ class Poshn:
                                 app_log.warning('Peer {} disagrees'.format(ip))
                     except:
                         pass
-            total = len(config.POC_HYPER_NODES_LIST)
+            total = len(self.all_peers)
             pc = round(nb * 100 / total)
             app_log.info('Status: {} Peers do agree with us, {}%'.format(nb, pc))
             peers_status = peers_status.values()
@@ -987,16 +992,14 @@ class Poshn:
                 for block in the_blocks.block_value:
                     await self.poschain.digest_block(block, from_miner=False)
                 await self.status(log=False)
-                # TODO: get PoS address from peer (it's a ip:0port string)
-                recipient = 'TEMP_TODO {}'.format(peer)
-                recipient = "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne"
-                await self._new_tx(recipient, what=200, params='R.SYNC:{}'.format(peer), value=a_round)
+                # get PoS address from peer (it's a ip:0port string)
+                hn = await self.hn_db.hn_from_peer(peer, self.round)
+                await self._new_tx(hn['address'], what=200, params='R.SYNC:{}'.format(peer), value=a_round)
             else:
                 app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
-                # TODO: get PoS address from peer (it's a ip:0port string)
-                recipient = 'TEMP_TODO {}'.format(peer)
-                recipient = "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne"
-                await self._new_tx(recipient, what=101, params='P.FAIL:{}'.format(peer), value=a_round)
+                # get PoS address from peer (it's a ip:0port string)
+                hn = await self.hn_db.hn_from_peer(peer, self.round)
+                await self._new_tx(hn['address'], what=101, params='P.FAIL:{}'.format(peer), value=a_round)
                 # FR: Add to buffer instead of sending right away (avoid tx spam)
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
@@ -1183,7 +1186,8 @@ class Poshn:
             if not len(block.txs):
                 # not enough TX, won't pass in prod
                 # raise ValueError("No TX to embed, block won't be valid.")
-                app_log.warning("No TX to embed, block won't be valid.")
+                app_log.error("No TX to embed, block won't be valid.")
+            # TODO: count also uniques_sources
             # Remove from mempool
             await self.mempool.clear()
             # print(block.to_dict())
@@ -1350,12 +1354,13 @@ class Poshn:
                     if self.state == HNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.
                         # The peer will send as many blocks as he wants, and sends empty when it's over.
-
+                        failed = False
                         # warning: we use a property that can be None instead of the method.
                         while self.net_height['height'] > self.poschain.height_status.height:
                             await com_helpers.async_send_int32(
                                 commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
                                 stream, full_peer)
+                            # TODO: Add some timeout not to be stuck if the peer does not answer.
                             msg = await com_helpers.async_receive(stream, full_peer)
                             if not msg.block_value:
                                 app_log.info("No more blocks from {}".format(full_peer))
@@ -1366,13 +1371,27 @@ class Poshn:
                                 for block in msg.block_value:
                                     if await self.poschain.digest_block(block, from_miner=False):
                                         blocks_count += 1
-                                app_log.info("Saved {} blocks from {}".format(blocks_count, full_peer))
-                                await self.poschain.async_commit()
+                                    else:
+                                        break  # no need to go on
+                                app_log.info("Saved {}/{} blocks from {}".format(blocks_count, len(msg.block_value), full_peer))
+                                await self.poschain.async_commit()  # Should not be necessary
                                 if not blocks_count:
                                     app_log.error("Error while inserting block from {}".format(full_peer))
+                                    failed = True
+                                    break
+                                if blocks_count <  len(msg.block_value):
+                                    app_log.error("Error while inserting block from {}".format(full_peer))
+                                    failed = True
                                     break
 
-                        app_log.info(">> Net Synced via {}".format(full_peer))
+                        hn = await self.hn_db.hn_from_peer(full_peer, self.round)
+                        if failed:
+                            await self._new_tx(hn['address'], what=101, params='C.FAIL:{}'.format(full_peer), value=self.round)
+                            app_log.warning(">> Net Synced failed via {}".format(full_peer))
+                        else:
+                            await self._new_tx(hn['address'], what=200, params='C.SYNC:{}'.format(full_peer), value=self.round)
+                            app_log.info(">> Net Synced via {}".format(full_peer))
+
                         # Trigger re-eval of peers and such (do that as blocks come?)
                         self.previous_round = 0  # Force re calc
                         await self.check_round()
@@ -1683,7 +1702,7 @@ class Poshn:
         # FR: more checks
 
         """
-        app_log.info("Initial coherence check")
+        app_log.info("Initial mempool coherence check")
         try:
             # Now test coherence and mempool
             await self.mempool.async_purge()

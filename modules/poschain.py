@@ -71,8 +71,11 @@ SQL_HEIGHT_BLOCK = "SELECT * FROM pos_chain WHERE height = ? LIMIT 1"
 SQL_ROLLBACK_BLOCKS = "DELETE FROM pos_chain WHERE height >= ?"
 SQL_ROLLBACK_BLOCKS_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
 
+SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
+
 SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN " \
-                       "(SELECT block_height FROM pos_chain WHERE round = ?)"
+                       "(SELECT height FROM pos_chain WHERE round = ?)"
+
 SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
 
 SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
@@ -273,7 +276,7 @@ class SqlitePosChain(SqliteBase):
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:
                 # empty db, try to bootstrap - only Genesis HN can do this
-                if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
+                if False:  # poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
                     if com_helpers.MY_NODE:
@@ -285,7 +288,11 @@ class SqlitePosChain(SqliteBase):
                     self.commit()
             else:
                 # fail safe: delete tx more recent than lastheight
-                self.execute(SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True)
+                self.execute(SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True)  # Unwanted: this closes the cursor?!?
+                test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
+                if test2[0] != test[0]:
+                    self.app_log.error('Inconsistency height {} but only messages for {}'.format(test[0], test2[0]))
+                    # sys.exit()
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -297,9 +304,13 @@ class SqlitePosChain(SqliteBase):
                 print("Error {}".format(e))
                 print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
 
-        self.db.close()
-        self.db = None
-        self.cursor = None
+        finally:
+            if self.db:
+                self.db.commit()
+                self.db.close()
+                self.db = None
+                self.cursor = None
+            self.app_log.warning('Poschain check end')
 
     def genesis_block(self):
         """
@@ -389,6 +400,10 @@ class SqlitePosChain(SqliteBase):
                 self.app_log.warning("Digesting block {} : bad hash {} vs our {}"
                                      .format(block.height, block.previous_hash, self.block['block_hash']))
                 return False
+            if block.msg_count != len(block.txs):
+                self.app_log.warning("Digesting block {} : {} txs reported but {} included"
+                                     .format(block.height, block.msg_count, len(block.txs)))
+                return False
             # TODO: more checks
             # TODO: if from miner, make sure we refreshed the round first.
             # timestamp of blocks
@@ -455,6 +470,11 @@ class SqlitePosChain(SqliteBase):
                 if block.previous_hash != ref_hash:
                     self.app_log.warning("Checking block {} : bad hash {} vs our {}"
                                          .format(block.height, block.previous_hash, ref_hash))
+                    return False
+                # right count of txs?
+                if block.msg_count != len(block.txs):
+                    self.app_log.warning("Checking block {} : tx count mismatch {} vs announced {}"
+                                         .format(block.height, len(block.txs), block.msg_count))
                     return False
                 # count uniques
                 if block.forger not in forgers_round:
@@ -661,7 +681,9 @@ class SqlitePosChain(SqliteBase):
         """
         # First delete the tx
         # TODO: this deletes the TX, but we want to move them back to mempool !important
-        await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=False)
+        # TEMP
+        self.app_log.error("TEMP: Delete round {}".format(a_round))
+        await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=True)
         # Then the block data itself
         await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
         # reset status so future block digestions will be ok.
@@ -739,15 +761,19 @@ class SqlitePosChain(SqliteBase):
 
             blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (height, config.BLOCK_SYNC_COUNT))
             for block in blocks:
-                print("1", dict(block))
                 block = PosBlock().from_dict(dict(block))
-                print("2", block.to_dict(as_hex=True))
                 # Add the block txs
                 txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))
                 for tx in txs:
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
+                # check block integrity
+                if len(txs) != block.msg_count:
+                    self.app_log.error(
+                        "Only {} tx for block {} instead of {} announced".format(len(txs), height, block.msg_count))
+                    com_helpers.MY_NODE.stop()
                 block.add_to_proto(protocmd)
+            #print(protocmd)
             return protocmd
         except Exception as e:
             self.app_log.error("SRV: async_blocksync: Error {}".format(e))
@@ -780,6 +806,11 @@ class SqlitePosChain(SqliteBase):
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
                 block.add_to_proto(protocmd)
+            # check block integrity
+            if len(txs) != block.msg_count:
+                self.app_log.error("Only {} tx for block {} instead of {} announced".format(len(txs), block.height, block.msg_count))
+                com_helpers.MY_NODE.stop()
+
             return protocmd
 
         except Exception as e:
