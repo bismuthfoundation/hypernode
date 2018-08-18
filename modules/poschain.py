@@ -739,7 +739,9 @@ class SqlitePosChain(SqliteBase):
 
             blocks = await self.async_fetchall(SQL_BLOCKS_SYNC, (height, config.BLOCK_SYNC_COUNT))
             for block in blocks:
+                print("1", dict(block))
                 block = PosBlock().from_dict(dict(block))
+                print("2", block.to_dict(as_hex=True))
                 # Add the block txs
                 txs = await self.async_fetchall(SQL_TXS_FOR_HEIGHT, (block.height,))
                 for tx in txs:

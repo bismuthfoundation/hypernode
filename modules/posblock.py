@@ -17,7 +17,7 @@ import poscrypto
 import time
 
 
-__version__ = '0.0.82'
+__version__ = '0.0.3'
 
 
 class PosMessage:
@@ -252,7 +252,7 @@ class PosMessage:
 class PosBlock:
 
     props = ('height', 'round', 'sir', 'timestamp', 'previous_hash', 'msg_count',
-             'unique_sources', 'signature', 'block_hash', 'received_by', 'forger')
+             'uniques_sources', 'signature', 'block_hash', 'received_by', 'forger')
 
     # Properties that need encoding for string representation
     hex_encodable = ('previous_hash', 'block_hash', 'signature')
@@ -265,7 +265,7 @@ class PosBlock:
         self.timestamp = 0
         self.previous_hash = b''
         self.msg_count = 0
-        self.unique_sources = 0
+        self.uniques_sources = 0
         self.signature = b''
         self.block_hash = b''
         self.received_by = ''
@@ -345,7 +345,7 @@ class PosBlock:
         """
         # sqlite3.Binary encodes bin data for sqlite.
         return tuple([self.height, self.round, self.sir, self.timestamp, sqlite3.Binary(self.previous_hash),
-                      self.msg_count, self.unique_sources, sqlite3.Binary(self.signature),
+                      self.msg_count, self.uniques_sources, sqlite3.Binary(self.signature),
                       sqlite3.Binary(self.block_hash), self.received_by, self.forger])
 
     def to_raw(self):
@@ -382,7 +382,7 @@ class PosBlock:
             my_tx = PosMessage().from_proto(tx)
             self.txs.append(my_tx)
         # Todo: unify sources / names
-        self.msg_count, self.unique_sources = block_proto.msg_count, block_proto.sources
+        self.msg_count, self.uniques_sources = block_proto.msg_count, block_proto.sources
         self.signature, self.block_hash = block_proto.signature, block_proto.block_hash
         self.forger = block_proto.forger
         return self
@@ -402,7 +402,7 @@ class PosBlock:
         for tx in self.txs:
             tx.add_to_proto_block(block)
         # todo: unify sources / names
-        block.msg_count, block.sources = self.msg_count, self.unique_sources
+        block.msg_count, block.sources = self.msg_count, self.uniques_sources
         block.signature, block.block_hash = self.signature, self.block_hash
         block.forger = self.forger
         # protocmd.block_value = block
@@ -421,7 +421,7 @@ class PosBlock:
             for tx in self.txs:
                 tx.add_to_proto_block(block)
             # todo: unify sources / names
-            block.msg_count, block.sources = self.msg_count, self.unique_sources
+            block.msg_count, block.sources = self.msg_count, self.uniques_sources
             block.signature, block.block_hash = self.signature, self.block_hash
             block.forger = self.forger
             # protocmd.block_value = block
@@ -451,7 +451,7 @@ class PosBlock:
             print(raw)
         self.msg_count = len(self.txs)
         # set removes duplicates.
-        self.unique_sources = len(set([tx.sender for tx in self.txs]))
+        self.uniques_sources = len(set([tx.sender for tx in self.txs]))
         self.signature = poscrypto.sign(raw, verify=True)
         self.block_hash = poscrypto.blake(raw).digest()
 
