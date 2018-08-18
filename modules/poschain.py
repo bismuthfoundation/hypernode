@@ -276,7 +276,10 @@ class SqlitePosChain(SqliteBase):
                 if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
-                    com_helpers.MY_NODE.stop()
+                    if com_helpers.MY_NODE:
+                        com_helpers.MY_NODE.stop()
+                    else:
+                        sys.exit()
                 else:
                     self.execute(SQL_INSERT_GENESIS)
                     self.commit()
@@ -536,7 +539,7 @@ class SqlitePosChain(SqliteBase):
 
             if 'timing' in config.LOG:
                 self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
-
+            # print(values)
             await self.async_execute(values, commit=True)
 
         if 'timing' in config.LOG:

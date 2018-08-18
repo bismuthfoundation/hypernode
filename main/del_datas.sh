@@ -7,4 +7,5 @@ for i in {0..50}
 do
     rm "./data${i}/posmempool.db"
     rm "./data${i}/poc_pos_chain.db"
+    rm "./data${i}/hndb.db"
 done
