@@ -11,9 +11,10 @@ import time
 # Custom modules
 import config
 import poscrypto
+import poshelpers
 
 
-__version__ = '0.0.23'
+__version__ = '0.0.24'
 
 # local verbose switch
 VERBOSE = True
@@ -241,7 +242,8 @@ async def connect_ok_from(msg, access_log):
     :return: reason (string), ok (boolean)
     """
     # TODO: 0. Check if ip in our HN list, if not drop and warn so we can add firewall rule if needed
-    posnet, port, peer_address = msg[:10], msg[10:15], msg[15:]
+    # posnet, port, peer_address = msg[:10], msg[10:15], msg[15:]
+    posnet, port, peer_address = poshelpers.hello_to_params(msg)
     # TODO: except for dev, we could force port to be fixed (thus disallowing multiple HN per ip)
     reason = None
     ok = True

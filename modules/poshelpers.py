@@ -16,7 +16,7 @@ import requests
 import config
 import poscrypto
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 # GENERIC HELPERS ##############################################################
@@ -166,6 +166,13 @@ def hello_string(port: int=101, posnet: str=None, address: str=None):
     address = poscrypto.ADDRESS if not address else address
     poscrypto.validate_address(address)  # Will raise if invalid
     return posnet + str(port).zfill(5) + address
+
+
+def hello_to_params(hello:str, as_dict=False):
+    posnet, port, peer_address = hello[:10], hello[10:15], hello[15:]
+    if as_dict:
+        return {'posnet': posnet, 'port':int(port), 'address': peer_address}
+    return posnet, port, peer_address
 
 
 def load_hn_temp():

@@ -65,7 +65,7 @@ class Posclient:
                 return
 
             if 'hello' == action:
-                # TODO - return version infos: posnet000106969BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV
+                print(json.dumps(poshelpers.hello_to_params(msg.string_value, as_dict=True)))
                 return
 
             if 'status' == action:

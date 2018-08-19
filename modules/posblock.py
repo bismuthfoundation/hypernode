@@ -375,6 +375,9 @@ class PosBlock:
         :param block_proto: a protobuff object
         :return: self
         """
+        """
+        TODO: error: "command object has no attribute round" on self forged block??
+        """
         self.height, self.round, self.sir = block_proto.height, block_proto.round, block_proto.sir
         self.timestamp, self.previous_hash = block_proto.ts, block_proto.previous_hash
         self.txs = list()

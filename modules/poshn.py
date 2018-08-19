@@ -1361,6 +1361,7 @@ class Poshn:
                                 commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
                                 stream, full_peer)
                             # TODO: Add some timeout not to be stuck if the peer does not answer.
+                            # TODO: or at least, go out of this sync mode if the sync peer closes.
                             msg = await com_helpers.async_receive(stream, full_peer)
                             if not msg.block_value:
                                 app_log.info("No more blocks from {}".format(full_peer))
