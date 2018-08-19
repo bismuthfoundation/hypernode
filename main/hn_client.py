@@ -46,6 +46,12 @@ Commands are issued via ``--action`` and ``--param`` command line switches.
 
 ``--action=hello``
 ------------------
+Returns posnet version, port and PoS address, as a json dict.
+
+Sample Output:
+
+```{"posnet": "posnet0001", "port": 6969, "address": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne"}```
+
 
 ``--action=ping``
 -----------------
@@ -260,7 +266,7 @@ DESC = 'Bismuth Hypernode client'
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=DESC)
-    parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4]')
+    parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4] - Dev only')
     parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='HN Host to connect to (127.0.0.1)')
     parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')

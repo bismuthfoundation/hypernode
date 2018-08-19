@@ -1,0 +1,46 @@
+# This is the default config. Text file, one line per param, Key=Value.
+# ! No space around the = sign
+# Do *NOT* edit this file, but place your settings into a config.txt file
+# Why? This config.default.txt file will be overwritten by updates, whereas your own config.txt won't.
+# Only overload the settings you want to change, do *NOT* duplicate everything."
+
+
+# Path to the Bismuth PoW Ledger.
+# Usually static/ledger.db under your Bismuth dir.
+POW_LEDGER_DB=../../Bismuth/static/ledger.db
+
+# What extra logs to show
+# Empty, of list of items among : determine, connections, mempool, srvmsg, workermsg, txdigest, timing
+# For instance:
+#LOG=
+#LOG=mempool,timing
+LOG=
+
+
+# =========================================================================================================
+# The following params you should not change nor overload in your config.txt
+# They will change with the releases.
+# These params have an incidence on global network load and stability, so do *not* change unless asked to.
+# =========================================================================================================
+
+
+# The current posnet version.
+POSNET=posnet0001
+
+# The allowable posnet versions.
+POSNET_ALLOW=posnet0001,posnet0002
+
+# How many peers at most to try to connect to?
+MAX_CONNECT_TO=25
+
+# How many blocks - at most - to send in a single message when syncing catching up nodes
+BLOCK_SYNC_COUNT=20
+
+# How long to wait in the main client loop
+WAIT=10
+
+# Wait time when catching up, to speed things up.
+SHORT_WAIT=0.001
+
+# How long to wait before retrying a failed peer?
+PEER_RETRY_SECONDS=20

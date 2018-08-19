@@ -444,7 +444,7 @@ class SqlitePosChain(SqliteBase):
             start_time = time.time()
             # Get the last block of the a-round -1 round from our chain
             height = await self.async_fetchone(SQL_LAST_HEIGHT_BEFORE_ROUND, (a_round , ), as_dict=True)
-            print(SQL_LAST_HEIGHT_BEFORE_ROUND, a_round )
+            # print(SQL_LAST_HEIGHT_BEFORE_ROUND, a_round )
             """ TODO
             [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
             [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353
@@ -682,7 +682,7 @@ class SqlitePosChain(SqliteBase):
         # First delete the tx
         # TODO: this deletes the TX, but we want to move them back to mempool !important
         # TEMP
-        self.app_log.error("TEMP: Delete round {}".format(a_round))
+        self.app_log.warning("TEMP: Delete round {}".format(a_round))
         await self.async_execute(SQL_DELETE_ROUND_TXS, (a_round,), commit=True)
         # Then the block data itself
         await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)

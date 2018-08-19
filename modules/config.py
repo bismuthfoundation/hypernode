@@ -6,8 +6,9 @@ Also serves as config file for POC and tests
 """
 
 from hashlib import blake2b
+from os import path
 
-__version__ = '0.0.19'
+__version__ = '0.0.20'
 
 """
 User config - You can change these one - See doc
@@ -62,6 +63,7 @@ MAX_DEBUG_HN = 20
 
 # The broadhash of the previous round determines the shuffle.
 # block hashes and broad hashes are 20 bytes
+# Not used except for tests.
 POC_LAST_BROADHASH = b"123456789abcdef12345"
 
 
@@ -89,8 +91,8 @@ MIN_ACTIVE_HNS = 10
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 # TODO: Estimate block size depending on the HN count
-
 BLOCK_SYNC_COUNT = 20
+
 # How long to wait in the main client loop
 WAIT = 10
 
@@ -154,6 +156,60 @@ Global Variables
 """
 
 STOP_EVENT = None
+
+# --------------------------------------------------- #
+
+# The potential variables and their type
+VARS = {
+    "POW_LEDGER_DB": "str",
+    "LOG": "list",
+    "POSNET": "str",
+    "POSNET_ALLOW": "list",
+    "MAX_CONNECT_TO": "int",
+    "BLOCK_SYNC_COUNT": "int",
+    "WAIT": "int",
+    "SHORT_WAIT": "float",
+    "PEER_RETRY_SECONDS": "int"
+    }
+
+
+def overload(file_name: str):
+    for line in open(file_name):
+        if line and line[0] == '#':
+            continue
+        if '=' in line:
+            left, right = map(str.strip,line.rstrip("\n").split("="))
+            if left not in VARS:
+                continue
+            param = VARS[left]
+            if param == "int":
+                right = int(right)
+            elif param == "float":
+                right = float(right)
+            elif param == "list":
+                right = [str(item.strip()) for item in right.split(",")]
+            elif param == "bool":
+                if right.lower() in ["false", "0", "", "no"]:
+                    right = False
+                else:
+                    right = True
+            else:
+                # treat as "str"
+                pass
+            globals().update({left: right})
+
+
+def load():
+    """
+    Overload info with config.default.txt and config.txt
+    :return:
+    """
+    overload("config.default.txt")
+    if path.exists("config.txt"):
+        overload("config.txt")
+
+    return {var: globals()[var] for var in VARS}
+
 
 if __name__ == "__main__":
     print("I'm a module, can't run!")

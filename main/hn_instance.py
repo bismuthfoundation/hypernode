@@ -32,7 +32,7 @@ __version__ = '0.0.54'
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Bismuth Proof of concept PoS HyperNode')
+    parser = argparse.ArgumentParser(description='Bismuth HyperNode')
     parser.add_argument("-i", "--index", type=int, default = -1, help='Demo address index [0-4]')
     parser.add_argument("-I", "--ip", type=str, default = '', help="IP to listen on ('ALL' for all interfaces)")
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
@@ -69,9 +69,9 @@ if __name__ == "__main__":
             else:
                 wallet_name = "poswallet.json"
                 datadir = "./data"
+                config.load()
                 if len(config.POC_HYPER_NODES_LIST) <= 0:
                     config.POC_HYPER_NODES_LIST = config.POC_HYPER_NODES_LIST_0
-                my_info = config.POC_HYPER_NODES_LIST[args.index]
                 ip = args.ip if args.ip else None
                 port = config.DEFAULT_PORT
                 suffix=''

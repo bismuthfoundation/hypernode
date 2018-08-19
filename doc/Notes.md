@@ -58,7 +58,8 @@ Raspberry pi image of node + HN
 
 config: short or full status into the logs.
 
-add a config.json to override the config.py param
+add a config.txt to override the config.py param
+
 
 > Simulate connect_to , max , depending on hn list size and failure rates to estimate 
 add this to config.json so we can adjust depending on the net state.
