@@ -49,26 +49,20 @@ find consensus on N well noted mn, then fetch full data from any and recheck sig
 keep a table with only signatures of previous rounds.
 for sir 0, use whole prev_round hash instead of last blocks? (= hash of all the blocks hashes)
 
-for past rounds, fetch one round in a single go.
-get round total hash and # of sources from peers, take the biggest from our peers, fetch from him.
-check on receive. if he lied, issue a tx and ignore him for a while.
-add a message for that. 
-
 
 Raspberry pi image of node + HN
 (not enough. orange pi2e : 2Gb, could do)
 
 
-# TODO
+### TODO ###
 
 config: short or full status into the logs.
 
 add a config.json to override the config.py param
 
-> Add "hello" to client commands.
-
 > Simulate connect_to , max , depending on hn list size and failure rates to estimate 
 add this to config.json so we can adjust depending on the net state.
+
 
 Message on the pos chain to announce recommended params and alert divergences?
 
@@ -109,17 +103,10 @@ Most diff. thing: the sync state loop to clearly decompose.
 
 Reread docs and code, change occurrences of MN to HN (code ok)
 
-WIP - Probly use static type hints? - MyPy
-
 HN need a full ledger - Enforce. Include historical pow data in tests?
 
 Protocol: should we exchange current forger as part as current height to be safe?
 > Not hard to do, not much overhead, would id splitting HNs before they even split.
-
-HN Should send at least 1 or 2 message per round to say it's active, even if it has no test to be part of.
-(then he sends "No test for this round" to himself at begin and end of the round)
-
-Send a message at launch also (signal it's alive, and is a QoS metric... restarts too often = issue)
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
@@ -128,9 +115,6 @@ Allow sync from jurors for non juror MNs (for current round)
 same if juror missed a forged block: allow for late sync.
 
 Auto-update/restart when code update or specific message (WIP - needs proper sync and bootstrap first) 
-
-See mempool related Todo: real since and filter. 
-after tests, alleviate mempool verbosity
 
 Check time > slot begin + delta not to send block too fast
 
@@ -142,13 +126,17 @@ reference repo for bootstrapping.
 update repo for auto updating (can be disabled)
 
 
-If same round than at least N peers, but peers get more valuable chain, get current round from one and fast check.
-if ok, digest (deep check) or replace.
+=== Memo ===
+
+WIP - Probly use static type hints? - MyPy => adding as we go
+
 
 btc messages use:
 - magic number to resync failed stream
 - checksum in header
 Both are easy to add with little overhead. reserve space for them in protobuf structure, even if not enforced at start.
+
+=== DONE ===
 
 DONE. See network number + checksum and b58encoding in btc https://en.bitcoin.it/wiki/File:PubKeyToAddr.png
 Done  Do *not* send mempool if our mempool is empty? The other will send it to us anyway. And we will feed our also.
@@ -158,4 +146,15 @@ done delete tx from mempool when catching up/digesting block
 done digested block from miner: does not show tx, whereas there were. check.
 done Important: see wallet server, add filehandler counts and such for debug/status.
 DONE common.py: TODO: split this file into 2: one "utils" with the functions, and one "params" or "posconfig" with the chain parameters.
+DONE Add "hello" to client commands.
+DONE If same round than at least N peers, but peers get more valuable chain, get current round from one and fast check. if ok, digest (deep check) or replace.
+DONE See mempool related Todo: real since and filter. 
+DONE after tests, alleviate mempool verbosity
+DONE Send a message at launch also (signal it's alive, and is a QoS metric... restarts too often = issue)
+DONE HN Should send at least 1 or 2 message per round to say it's active, even if it has no test to be part of. (then he sends "No test for this round" to himself at begin and end of the round)
+
+for past rounds, fetch one round in a single go.
+get round total hash and # of sources from peers, take the biggest from our peers, fetch from him.
+check on receive. if he lied, issue a tx and ignore him for a while.
+add a message for that. 
 
