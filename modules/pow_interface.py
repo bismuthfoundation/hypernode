@@ -5,6 +5,7 @@ Helpers and classes to interface with the main Bismuth PoW chain
 
 from math import floor
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -17,7 +18,7 @@ import poshelpers
 from sqlitebase import SqliteBase
 import testvectors
 
-__version__ = '0.0.2'
+__version__ = '0.0.4'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -28,14 +29,18 @@ SQL_REGS_FROM_TO = "SELECT block_height, address, operation, openfield, timestam
                    "AND block_height >= ? AND block_height <= ? " \
                    "ORDER BY block_height ASC"
 
+SQL_QUICK_BALANCE_CREDITS = "SELECT sum(amount+reward) FROM transactions WHERE recipient = ? AND block_height <= ?"
+
+SQL_QUICK_BALANCE_DEBITS = "SELECT sum(amount+fee) FROM transactions WHERE address = ? AND block_height <= ?"
+
 
 class PowInterface:
 
-    def __init__(self, app_log=None):
+    def __init__(self, app_log=None, verbose=None):
         if not app_log:
             app_log = FakeLog()
         self.app_log = app_log
-        self.verbose = config.VERBOSE
+        self.verbose = verbose if verbose else config.VERBOSE
         self.regs = {}
         """
         registered HN from PoW. Can be temp. wrong when updating. Calling object must keep a cached working version. 
@@ -55,10 +60,17 @@ class PowInterface:
         :return: weight (1, 2 or 3)
         """
         # TODO
-
         # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
         # needs previous round boundaries. Can use an approx method to be faster.
-        return 1
+
+        credits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_CREDITS, (address, height))
+        debits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_DEBITS, (address, height))
+        balance = credits[0] - debits[0]
+        weight = math.floor(balance/10000)
+        if weight > 3:
+            weight = 3
+        # print(credits[0], debits[0], balance, weight)
+        return weight
 
     def reg_extract(self, openfield, address):
         """
@@ -70,14 +82,16 @@ class PowInterface:
         options = {}
         if ',' in openfield:
             # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
-            openfield, extra = openfield.split(',')
-            key, value = extra.split('=')
-            options[key] = value
+            parts = openfield.split(',')
+            openfield = parts.pop(0)
+            for extra in parts:
+                key, value = extra.split('=')
+                options[key] = value
         ip, port, pos = openfield.split(':')
         reward = options['reward'] if 'reward' in options else address
         return ip, port, pos, reward
 
-    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None):
+    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None, force_all=False):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 
@@ -99,7 +113,9 @@ class PowInterface:
             height -= 30
             # And round to previous multiple of 60
             height = 60 * floor(height / 60)
-            # print('ref height', height)
+            if force_all:
+                height = 8000000
+            #print('ref height', height)
             # FR: this should be part of the bootstrap archive
             if os.path.isfile(pow_cache_file_name):
                 self.app_log.info("powhncache exists in {}".format(datadir))
@@ -118,7 +134,7 @@ class PowInterface:
             if self.verbose:
                 self.app_log.info("Parsing reg messages from {} to {}, {} inactive HNs."
                                   .format(checkpoint +1, height, len(inactive_last_round)))
-            if config.LOAD_HN_FROM_POW:
+            if config.LOAD_HN_FROM_POW or force_all:
                 cursor = self.pow_chain.execute(SQL_REGS_FROM_TO, (checkpoint +1, height))
             else:
                 if False:
@@ -128,12 +144,14 @@ class PowInterface:
                     self.regs = poshelpers.fake_hn_dict(inactive_last_round, self.app_log)
                     return self.regs
 
+            weight = await self.reg_check_balance("01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab", height)
+
             for row in cursor:
                 block_height, address, operation, openfield, timestamp = row
                 valid = True
                 try:
                     ip, port, pos, reward = self.reg_extract(openfield, address)
-                    if operation=='hypernode:register':
+                    if operation == 'hypernode:register':
                         # There is a small hack here: the following tests seem to do nothing, but they DO
                         # raise an exception if there is a dup. Allow for single line faster test.
                         # since list comprehension is heavily optimized.
@@ -168,6 +186,7 @@ class PowInterface:
                             raise ValueError("Invalid unregistration sender")
 
                 except (ValueError, ZeroDivisionError) as e:
+                    # print(e)
                     valid = False
                     pass
                 if self.verbose:
@@ -175,10 +194,11 @@ class PowInterface:
                         valid, operation, address, openfield, block_height))
             if self.verbose:
                 self.app_log.info("PoW Valid HN :{}".format(json.dumps(self.regs)))
-            with open(pow_cache_file_name, 'w') as f:
-                # Save before we filter out inactive
-                cache = { "height": height, "timestamp": int(time.time()), "HNs": self.regs}
-                json.dump(f, cache)
+            if not force_all:
+                with open(pow_cache_file_name, 'w') as f:
+                    # Save before we filter out inactive
+                    cache = { "height": height, "timestamp": int(time.time()), "HNs": self.regs}
+                    json.dump(f, cache)
             # Now, if round > 0, set active state depending on last round activity
             for address, items in self.regs.items():
                 if items['pos'] in inactive_last_round:

@@ -8,9 +8,10 @@ operation
 hypernode:register
 
 data
-ip:port:pos_address
+ip:port:pos_address,source=bis_address
 
-Sent from the dedicated collateral address (controller wallet) to itself
+Sent from the dedicated collateral address (controller wallet) to itself.  
+bis_address is that same collateral address, as a double check.
 
 ### Options
 
@@ -20,7 +21,7 @@ operation
 hypernode:register
 
 data
-ip:port:pos_address,reward=bis_addr
+ip:port:pos_address,source=bis_address,reward=bis_addr
 
 
 ## Unreg message
@@ -29,9 +30,9 @@ operation
 hypernode:unregister
 
 data
-ip:port:pos_address
+ip:port:pos_address,source=bis_address
 
-(Has to be sent from the same bis_addr as the register message to be valid)
+(Has to be sent from the same bis_address as the register message to be valid)
 
 ## Auto unreg
 
