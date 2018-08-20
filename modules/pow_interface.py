@@ -91,7 +91,8 @@ class PowInterface:
         reward = options['reward'] if 'reward' in options else address
         return ip, port, pos, reward
 
-    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None, force_all=False):
+    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None,
+                          force_all=False, no_cache=False, ignore_config=False):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 
@@ -115,7 +116,7 @@ class PowInterface:
             height = 60 * floor(height / 60)
             if force_all:
                 height = 8000000
-            #print('ref height', height)
+            print('ref height', height)
             # FR: this should be part of the bootstrap archive
             if os.path.isfile(pow_cache_file_name):
                 self.app_log.info("powhncache exists in {}".format(datadir))
@@ -134,7 +135,7 @@ class PowInterface:
             if self.verbose:
                 self.app_log.info("Parsing reg messages from {} to {}, {} inactive HNs."
                                   .format(checkpoint +1, height, len(inactive_last_round)))
-            if config.LOAD_HN_FROM_POW or force_all:
+            if config.LOAD_HN_FROM_POW or force_all or ignore_config:
                 cursor = self.pow_chain.execute(SQL_REGS_FROM_TO, (checkpoint +1, height))
             else:
                 if False:
@@ -194,10 +195,12 @@ class PowInterface:
                         valid, operation, address, openfield, block_height))
             if self.verbose:
                 self.app_log.info("PoW Valid HN :{}".format(json.dumps(self.regs)))
-            if not force_all:
+            if False:  # not no_cache:
                 with open(pow_cache_file_name, 'w') as f:
                     # Save before we filter out inactive
                     cache = { "height": height, "timestamp": int(time.time()), "HNs": self.regs}
+                    # TODO: Error Object of type 'TextIOWrapper' is not JSON serializable
+                    # TODO test cache.
                     json.dump(f, cache)
             # Now, if round > 0, set active state depending on last round activity
             for address, items in self.regs.items():

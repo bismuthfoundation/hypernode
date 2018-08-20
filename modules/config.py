@@ -57,8 +57,8 @@ POC_HYPER_NODES_LIST = []
 
 # Leave True for Real world use.
 # if False - DEV ONLY - hn_instance will load from hn_temp dir.
-LOAD_HN_FROM_POW = False
-# DEV only - number of test HN to consider. 49 max.
+LOAD_HN_FROM_POW = True
+# DEV only - number of test HN to consider. 49 max. - Unused for real world.
 MAX_DEBUG_HN = 20
 
 # The broadhash of the previous round determines the shuffle.
@@ -135,11 +135,13 @@ REQUIRED_MESSAGES_PER_BLOCK = 4
 REQUIRED_SOURCES_PER_BLOCK = 3
 
 # This is a constant. Time for block 0, slot 0 of the PoS chain. Can't change once launched.
-ORIGIN_OF_TIME = 1522419000  # Legacy tests
-ORIGIN_OF_TIME = 1533980000  # Firsts tests with 1 hour round time, 3 min slot time.
+# ORIGIN_OF_TIME = 1522419000  # Legacy tests
+# ORIGIN_OF_TIME = 1533980000  # First tests with 1 hour round time, 3 min slot time.
+ORIGIN_OF_TIME = 1534716000  # Real Origin: August 20
+
 
 # Do not change this.
-POS_CONTROL_ADDRESS = '3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16'
+POS_CONTROL_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
 
 # Round time in seconds
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
@@ -147,7 +149,7 @@ ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 # Genesis block
 GENESIS_SEED = 'BIG_BANG_HASH'
 GENESIS_HASH = blake2b(GENESIS_SEED.encode('utf-8'), digest_size=20)
-GENESIS_ADDRESS = 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne'
+GENESIS_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
 GENESIS_SIGNATURE = ''
 # TODO: check chain: verify that fits.
 

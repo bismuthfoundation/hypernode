@@ -18,7 +18,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.9'
+__version__ = '0.1.0'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -165,18 +165,19 @@ SQL_INSERT_GENESIS = """INSERT INTO pos_chain (
                           height
                       )
                       VALUES (
-                          'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne',
+                          'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn',
                           '',
-                          X'598C8B39746AF46AC31497A0F1F7306E98E10099',
-                          X'4F96C2CFBB15D40D877A06D7E08947DA0198FF16304AB069558EBD90A5B6591C2B689C7D3275B9B9D217696EB8642F180133E183730C499330CBCBA43238F77D',
+                          X'87D5AD9988B88DDA92AA988267E30C89479FC2D2',
+                          X'4F9BE873ED7F4EF047ABEE6A2266C7586B019CB69D76B782988A574642604C5F31CE7597A49E018F76253C1418CB0549A3B8DB3D42453C661C15EEE8A62D4215',
                           0,
                           0,
                           X'C0CB310E2877D73E2F29A949AABB8FEF0EA00EDF',
-                          1533980000,
+                          1534716000,
                           0,
                           0,
                           0
                       );
+
                     """
 
 
@@ -276,7 +277,7 @@ class SqlitePosChain(SqliteBase):
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:
                 # empty db, try to bootstrap - only Genesis HN can do this
-                if False:  # poscrypto.ADDRESS == config.GENESIS_ADDRESS:
+                if poscrypto.ADDRESS == config.GENESIS_ADDRESS:
                     gen = self.genesis_block()
                     self.execute(SQL_INSERT_BLOCK, gen.to_db(), commit=True)
                     if com_helpers.MY_NODE:
