@@ -259,7 +259,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.55'
+__version__ = '0.0.56'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -290,7 +290,10 @@ if __name__ == "__main__":
         print("Client version {}".format(__version__))
         print("Client Lib version {}".format(posclient.__version__))
     try:
-        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet="hn_temp/mn{}.json".format(args.index),
+        wallet = "poswallet.json"
+        if args.index:
+            wallet="hn_temp/mn{}.json".format(args.index)
+        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet=wallet,
                                                   verbose=args.verbose, version=__version__)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))
