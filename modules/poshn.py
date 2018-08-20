@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.85'
+__version__ = '0.0.86'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -922,7 +922,7 @@ class Poshn:
         :return:
         """
         if not param:
-            return config.POC_HYPER_NODES_LIST
+            return self.all_peers
         if param == '1':
             full = '1'
             start_round = self.round
@@ -934,7 +934,7 @@ class Poshn:
         # TODO: from local DB and powchain.regs: show also inactive
         hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
                                 "recipient": item[5], "kpis":{}}
-                      for item in config.POC_HYPER_NODES_LIST}
+                      for item in self.all_peers}
         if full == '1':
             app_log.info("Computing HN KPIs for Round {} to {}".format(start_round, end_round))
             # Find all the HN who sent a tx (or forged a block) for those rounds, and update their props
@@ -1205,8 +1205,8 @@ class Poshn:
             self.forged_count += 1
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2])
-                       for peer in config.POC_HYPER_NODES_LIST
-                       if not (peer[1] == self.ip and peer[2] == self.port)]
+                       for peer in self.all_peers
+                       if not (peer[1] == self.ip and int(peer[2]) == self.port)]
             try:
                 await asyncio.wait(to_send, timeout=30)
             except Exception as e:
