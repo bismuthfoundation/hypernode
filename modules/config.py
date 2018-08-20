@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.20'
+__version__ = '0.0.21'
 
 """
 User config - You can change these one - See doc
@@ -81,7 +81,7 @@ NETWORK_ID = b'\x19'
 # NETWORK_ID = b'\x55'
 
 # Default Hypernodes port
-DEFAULT_PORT = 6960
+DEFAULT_PORT = 6969
 
 # How many peers at most to try to connect to?
 MAX_CONNECT_TO = 25
