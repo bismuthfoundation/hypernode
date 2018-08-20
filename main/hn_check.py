@@ -40,7 +40,7 @@ if __name__ == "__main__":
     python = instances[0]['exe'] if nb_instances else 'N/A'
     status['running_instances'] = nb_instances
     status['python'] = python
-    status['external_ip'] = subprocess.getoutput("curl -s v4.ifconfig.co")
+    status['external_ip'] = subprocess.getoutput("curl -4 -s ifconfig.co")
     status['default_port'] = config.DEFAULT_PORT
     if args.json:
         print(json.dumps(status))
