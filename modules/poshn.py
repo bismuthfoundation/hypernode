@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.87'
+__version__ = '0.0.88'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -139,7 +139,7 @@ class HnServer(TCPServer):
                 if not self.node.forger:
                     access_log.warning("Got block from {} but no current forger".format(peer_ip))
                     return
-                hn = self.node.hn_db.hn_from_address(self.node.forger)
+                hn = await self.node.hn_db.hn_from_address(self.node.forger, self.node.round)
                 if hn['ip'] != peer_ip:
                     access_log.warning("Got block from {} but forger {} ip is {}"
                                        .format(peer_ip, self.node.forger, hn['ip']))
