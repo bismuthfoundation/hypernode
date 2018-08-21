@@ -140,7 +140,7 @@ class PowInterface:
                 # TEMP
                 if self.verbose:
                     self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint +1, height))
-                cursor = await self.pow_chain.async_execute(SQL_REGS_FROM_TO, (checkpoint +1, height))
+                cursor = await self.pow_chain.async_fetchall(SQL_REGS_FROM_TO, (checkpoint +1, height))
             else:
                 if False:
                     # Temp DEV test
@@ -206,9 +206,9 @@ class PowInterface:
             if self.verbose:
                 self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
 
-            await cursor.close()
+            # await cursor.close()
             # TEMP
-            # sys.exit()
+            sys.exit()
 
             if False:  # not no_cache:
                 with open(pow_cache_file_name, 'w') as f:
