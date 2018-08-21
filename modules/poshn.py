@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.86'
+__version__ = '0.0.87'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -131,13 +131,29 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.block:
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
-                # TODO: check that this ip is in the current forging round, or add to anomalies buffer
+                if peer_ip not in self.node.registered_ips:
+                    # TODO: add to anomalies buffer
+                    access_log.warning("Got block from {} but not a registered ip".format(peer_ip))
+                    return
                 await self.node.check_round()  # Make sure our round info is up to date
+                if not self.node.forger:
+                    access_log.warning("Got block from {} but no current forger".format(peer_ip))
+                    return
+                hn = self.node.hn_db.hn_from_address(self.node.forger)
+                if hn['ip'] != peer_ip:
+                    access_log.warning("Got block from {} but forger {} ip is {}"
+                                       .format(peer_ip, self.node.forger, hn['ip']))
+                    # TODO: add to anomalies buffer
+                    return
                 for block in msg.block_value:
                     await self.node.poschain.digest_block(block, from_miner=True)
                 return
             elif msg.command == commands_pb2.Command.test:
                 # block sending does not require hello
+                if peer_ip not in self.node.registered_ips:
+                    # TODO: add to anomalies buffer
+                    access_log.warning("Got block from {} but not a registered ip".format(peer_ip))
+                    return
                 access_log.error("SRV: Got test block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current test round, or add to anomalies buffer
                 # await self.node.check_round()  # Make sure our round info is up to date
@@ -225,6 +241,7 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.tx:
                 # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
                 # external txs from a "controller / wallet or such
+                # TODO: check that the sender address is a registered HN address (anti spam)
                 try:
                     await self.node.digest_txs(msg.tx_values, full_peer)
                     await async_send_void(commands_pb2.Command.ok, stream, full_peer)
@@ -233,11 +250,15 @@ class HnServer(TCPServer):
                     await async_send_void(commands_pb2.Command.ko, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.mempool:
-                # peer mempool extract
-                try:
-                    await self.node.digest_txs(msg.tx_values, full_peer)
-                except Exception as e:
-                    app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                if peer_ip not in self.node.registered_ips:
+                    access_log.warning("Got mempool from {} but not a registered ip".format(peer_ip))
+                    # just don't digest?
+                else:
+                    # peer mempool extract
+                    try:
+                        await self.node.digest_txs(msg.tx_values, full_peer)
+                    except Exception as e:
+                        app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
                 # Use clients stats to get real since - beware of one shot clients, send full (int_value=1)
                 # sys.exit()
                 stats = self.node.inbound[full_peer]['stats']
@@ -258,7 +279,11 @@ class HnServer(TCPServer):
                 await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.height:
-                await self.node.digest_height(msg.height_value, full_peer, server=True)
+                if peer_ip in self.node.registered_ips:
+                    await self.node.digest_height(msg.height_value, full_peer, server=True)
+                else:
+                    # just don't digest
+                    access_log.warning("Got Height request from {} but not a registered ip.".format(peer_ip))
                 height = await self.node.poschain.async_height()
                 await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
 
@@ -291,7 +316,10 @@ class HnServer(TCPServer):
                 await async_send_block(blocks, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.update:
-                # TODO: rights/auth and config management
+                if peer_ip not in self.node.registered_ips:
+                    # TODO: More rights/auth and config management here
+                    access_log.warning("Got Update from {} but not a registered ip".format(peer_ip))
+                    return
                 await self.update(msg.string_value, stream, full_peer)
 
             else:
@@ -382,7 +410,7 @@ class Poshn:
     # list of inbound server connections
     inbound = {}
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False,
+    def __init__(self, ip, port, address='', peers=None, verbose=False, outip='127.0.0.1',
                  wallet="poswallet.json", datadir="data", suffix='', version=''):
         """
         TODO
@@ -401,9 +429,11 @@ class Poshn:
         global access_log
         config.STOP_EVENT = aioprocessing.AioEvent()
         self.ip = ip
+        self.outip = outip
         self.port = port
         self.address = address
         self.all_peers = peers
+        self.registered_ips = []
         self.active_peers = list(peers)
         self.verbose = verbose
         self.server_thread = None
@@ -448,6 +478,7 @@ class Poshn:
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
             self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
+            self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
             app_log.info('Status: At launch, {} registered HN, among which {} are active'.format(len(self.powchain.regs), len(self.active_regs)))
             self.is_delegate = False
             self.round = -1
@@ -1212,7 +1243,7 @@ class Poshn:
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [self.post_block(block, peer[1], peer[2])
                        for peer in self.all_peers
-                       if not (peer[1] == self.ip and int(peer[2]) == self.port)]
+                       if not (peer[1] == self.outip and int(peer[2]) == self.port)]
             try:
                 await asyncio.wait(to_send, timeout=30)
             except Exception as e:
@@ -1607,6 +1638,7 @@ class Poshn:
                                   if items['active']]
                     self.all_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
                                       for address, items in self.powchain.regs.items()]
+                    self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
                     self.current_round_start = int(time.time())
                     self.previous_round = self.round
                     # We try to connect to inactive peers anyway, or they have less chances of coming back.
@@ -1769,7 +1801,7 @@ class Poshn:
                          format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
 
         status = {'config':
-                      {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose},
+                      {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose, 'outip': self.outip},
                   'instance':
                       {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
                   'chain': poschain_status,

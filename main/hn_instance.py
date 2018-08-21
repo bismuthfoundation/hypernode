@@ -15,6 +15,7 @@ Example:
 
 import argparse
 import os
+import subprocess
 import sys
 import time
 
@@ -28,7 +29,7 @@ import poscrypto
 import poshelpers
 import pow_interface
 
-__version__ = '0.0.54'
+__version__ = '0.0.55'
 
 
 if __name__ == "__main__":
@@ -78,7 +79,8 @@ if __name__ == "__main__":
             if args.ip == 'ALL':
                 ip = None
             peers = config.POC_HYPER_NODES_LIST
-            com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose,
+            outip = subprocess.getoutput("curl -4 -s ifconfig.co")
+            com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose, outip=outip,
                                         wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__)
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it

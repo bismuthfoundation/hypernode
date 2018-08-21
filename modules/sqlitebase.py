@@ -164,6 +164,7 @@ class SqliteBase:
                 elif param:
                     if 'ledger' in self.db_path:
                         self.app_log.info("async_execute 1")
+                    # BUG: Blocks here !?
                     cursor = await self.async_db.execute(sql, param)
                     if 'ledger' in self.db_path:
                         self.app_log.info("async_execute 2")
