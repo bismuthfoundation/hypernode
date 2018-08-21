@@ -208,7 +208,7 @@ class PowInterface:
 
             # await cursor.close()
             # TEMP
-            sys.exit()
+            # sys.exit()
 
             if False:  # not no_cache:
                 with open(pow_cache_file_name, 'w') as f:
