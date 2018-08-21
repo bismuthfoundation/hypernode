@@ -110,13 +110,14 @@ class PowInterface:
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
             # Current height, or height at begin of the new round.
             height = self.pow_chain.get_block_before_ts(round_ts)
-            # Now take back 30 minutes to account for possible large rollbacks
+            # Now take back 30 blocks to account for possible large rollbacks
             height -= 30
             # And round to previous multiple of 60
             height = 60 * floor(height / 60)
             if force_all:
                 height = 8000000
-            print('ref height', height)
+            if self.verbose:
+                self.app_log.info("load_hn_pow, round {}, ref height={}".format(a_round, height))
             # FR: this should be part of the bootstrap archive
             if os.path.isfile(pow_cache_file_name):
                 self.app_log.info("powhncache exists in {}".format(datadir))

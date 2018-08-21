@@ -611,8 +611,11 @@ class Poshn:
         except Exception as e:
             app_log.warning("Error '{}' sending test block to {}:{}".format(e, peer_ip, peer_port))
         finally:
-            if stream:
-                stream.close()
+            try:
+                if stream:
+                    stream.close()
+            except:
+                pass
 
     async def run_test_peer(self, test):
         """
@@ -645,6 +648,9 @@ class Poshn:
         try:
             result = await asyncio.wait_for(future, 30)
         except asyncio.TimeoutError as e:
+            app_log.warning('Test Timeout')
+            result = None
+        except Exception as e:
             app_log.warning('Test Timeout')
             result = None
         if result:
@@ -1336,9 +1342,18 @@ class Poshn:
                             app_log.info(">> Block mismatch, will rollback")
                             # FR: find the common ancestor faster via height/hash list
                             while self.poschain.height_status.block_hash != info.block_hash:
+                                # TODO: limit possible rollback to a few heights, like 1 or 2 rounds worth of blocks.
                                 if self.verbose:  # FR: remove later on
                                     print('self', self.poschain.height_status.to_dict(as_hex=True))
                                     print('peer', info.to_dict(as_hex=True))
+                                if self.poschain.height_status.height == 0:
+                                    app_log.warning(">> Won't rollback block 0")
+                                    # TODO: temp ban (store on disk)
+                                    # TODO: send warning tx
+                                    # allow to sync again from another one
+                                    await self.change_state_to(HNState.SYNCING)
+                                    # close
+                                    return
                                 await self.poschain.rollback()
                                 await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
                                                                    self.poschain.height_status.height, stream,
@@ -1574,7 +1589,7 @@ class Poshn:
                         # Also covers for recovering if previous round had no block because of low consensus.
                         inactive_hns = []
                         app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
-                    await self.powchain.load_hn_pow(datadir=self.datadir, inactive_last_round=list(inactive_hns))
+                    await self.powchain.load_hn_pow(datadir=self.datadir, inactive_last_round=list(inactive_hns), a_round=self.round)
                     self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
                     if self.verbose:
                         app_log.info('Status: {} registered HN, among which {} are active'

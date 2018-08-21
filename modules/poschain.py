@@ -707,6 +707,7 @@ class SqlitePosChain(SqliteBase):
         # Or compute and store
         # FR: All this needs way too many requests. Refactor to a single one, or adjust db structure to alleviate
         # Some things could also be incremental and not queried each time.
+        # TODO: wrap in try/except and log when error, happen on rollback block 0, maybe at other times.
         status1 = await self.async_fetchone(SQL_STATE_1, as_dict=True)
         height_of_round = await self.async_fetchone(SQL_HEIGHT_OF_ROUND, (status1['round'], ), as_dict=True)
         # self.app_log.info("Height of round {} is {}".format(status1['round'], height_of_round['height']))
