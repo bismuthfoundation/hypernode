@@ -136,7 +136,10 @@ class PowInterface:
                 self.app_log.info("Parsing reg messages from {} to {}, {} inactive HNs."
                                   .format(checkpoint +1, height, len(inactive_last_round)))
             if config.LOAD_HN_FROM_POW or force_all or ignore_config:
-                cursor = self.pow_chain.execute(SQL_REGS_FROM_TO, (checkpoint +1, height))
+                # TEMP
+                if self.verbose:
+                    self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint +1, height))
+                cursor = await self.pow_chain.async_execute(SQL_REGS_FROM_TO, (checkpoint +1, height))
             else:
                 if False:
                     # Temp DEV test
@@ -145,10 +148,14 @@ class PowInterface:
                     self.regs = poshelpers.fake_hn_dict(inactive_last_round, self.app_log)
                     return self.regs
 
-            weight = await self.reg_check_balance("01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab", height)
-
+            # Temp
+            if self.verbose:
+                self.app_log.info("Parsing reg info...")
             for row in cursor:
                 block_height, address, operation, openfield, timestamp = row
+                # TEMP
+                if self.verbose:
+                    self.app_log.info("Row {}: {}, {}".format(block_height, address, operation))
                 valid = True
                 try:
                     ip, port, pos, reward = self.reg_extract(openfield, address)
@@ -191,10 +198,17 @@ class PowInterface:
                     valid = False
                     pass
                 if self.verbose:
-                    self.app_log.info("{} msg {} from {} : {}. ({})".format(
+                    """self.app_log.info("{} msg {} from {} : {}. ({})".format(
                         valid, operation, address, openfield, block_height))
+                    """
+                    self.app_log.info("{}".format(valid))
             if self.verbose:
-                self.app_log.info("PoW Valid HN :{}".format(json.dumps(self.regs)))
+                self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
+
+            await cursor.close()
+            # TEMP
+            # sys.exit()
+
             if False:  # not no_cache:
                 with open(pow_cache_file_name, 'w') as f:
                     # Save before we filter out inactive

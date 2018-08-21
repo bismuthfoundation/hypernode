@@ -129,7 +129,7 @@ class SqliteBase:
         if not self.async_db:
             try:
                 # open
-                self.app_log.info("Opening async {} db".format(self.db_name))
+                self.app_log.info("Opening async {} {} db".format(self.db_path, self.db_name))
                 if self.ram:
                     self.async_db = await aiosqlite3.connect('file:temp?mode=memory', loop=asyncio.get_event_loop(),
                                                              isolation_level = None, uri = True)
