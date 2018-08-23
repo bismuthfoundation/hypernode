@@ -18,7 +18,7 @@ import poshelpers
 from sqlitebase import SqliteBase
 import testvectors
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -32,6 +32,10 @@ SQL_REGS_FROM_TO = "SELECT block_height, address, operation, openfield, timestam
 SQL_QUICK_BALANCE_CREDITS = "SELECT sum(amount+reward) FROM transactions WHERE recipient = ? AND block_height <= ?"
 
 SQL_QUICK_BALANCE_DEBITS = "SELECT sum(amount+fee) FROM transactions WHERE address = ? AND block_height <= ?"
+
+SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , " \
+                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b WHERE address = ? AND block_height <= ?) " \
+                        "WHERE a.recipient = ? AND a.block_height <= ?"
 
 
 class PowInterface:
@@ -63,9 +67,11 @@ class PowInterface:
         # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
         # needs previous round boundaries. Can use an approx method to be faster.
 
-        credits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_CREDITS, (address, height))
-        debits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_DEBITS, (address, height))
-        balance = credits[0] - debits[0]
+        # credits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_CREDITS, (address, height))
+        # debits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_DEBITS, (address, height))
+        # balance = credits[0] - debits[0]
+        res = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_ALL, (address, height, address, height))
+        balance = res[0]
         weight = math.floor(balance/10000)
         if weight > 3:
             weight = 3
