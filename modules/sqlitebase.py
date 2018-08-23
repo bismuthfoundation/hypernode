@@ -128,7 +128,7 @@ class SqliteBase:
         cursor = None
         if 'ledger' in self.db_path:
             self.app_log.info("async_execute {}, {}, commit {}, many {}".format(sql, str(param), commit, many))
-            self.app_log.info("async_execute {}".format(self.async_db))
+            # self.app_log.info("async_execute {}".format(self.async_db))
         if not self.async_db:
             try:
                 # open

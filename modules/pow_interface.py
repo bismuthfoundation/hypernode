@@ -113,6 +113,7 @@ class PowInterface:
                 round_ts = int(time.time())
             if not inactive_last_round:
                 inactive_last_round = []
+            print(time.time())
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
             # Current height, or height at begin of the new round.
             height = self.pow_chain.get_block_before_ts(round_ts)
@@ -146,7 +147,9 @@ class PowInterface:
                 # TEMP
                 if self.verbose:
                     self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint +1, height))
+                print(time.time())
                 cursor = await self.pow_chain.async_fetchall(SQL_REGS_FROM_TO, (checkpoint +1, height))
+                print(time.time())
             else:
                 if False:
                     # Temp DEV test
@@ -178,7 +181,9 @@ class PowInterface:
                         if address in self.regs:
                             raise ValueError("Already an active registration")
                         # Requires a db query, runs last - Will raise if not enough.
+                        print(time.time())
                         weight = await self.reg_check_balance(address, block_height)
+                        print(time.time())
                         active = True  # by default
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
                                                       [ip, port, pos, reward, weight, timestamp, active]))
