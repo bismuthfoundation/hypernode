@@ -18,7 +18,7 @@ import poshelpers
 from sqlitebase import SqliteBase
 import testvectors
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -116,7 +116,7 @@ class PowInterface:
             print("h1", time.time())
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
             # Current height, or height at begin of the new round.
-            height = self.pow_chain.get_block_before_ts(round_ts)
+            height = await self.pow_chain.async_get_block_before_ts(round_ts)
             print("after height", time.time())
             # Now take back 30 blocks to account for possible large rollbacks
             height -= 30
@@ -269,6 +269,19 @@ class SqlitePowChain(SqliteBase):
         :return: block_height preceding the given TS
         """
         height = self.fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
+        height = height[0]
+        if self.verbose:
+            self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
+        return height
+
+    async def async_get_block_before_ts(self, a_timestamp):
+        """
+        Async. Returns the last PoW block height preceding the given timestamp.
+
+        :param a_timestamp:
+        :return: block_height preceding the given TS
+        """
+        height = await self.fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
         height = height[0]
         if self.verbose:
             self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
