@@ -281,7 +281,7 @@ class SqlitePowChain(SqliteBase):
         :param a_timestamp:
         :return: block_height preceding the given TS
         """
-        height = await self.fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
+        height = await self.async_fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
         height = height[0]
         if self.verbose:
             self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
