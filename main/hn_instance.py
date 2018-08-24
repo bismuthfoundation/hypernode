@@ -29,7 +29,7 @@ import poscrypto
 import poshelpers
 import pow_interface
 
-__version__ = '0.0.55'
+__version__ = '0.0.56'
 
 
 if __name__ == "__main__":

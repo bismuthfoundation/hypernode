@@ -477,6 +477,9 @@ class Poshn:
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
+            if not self.powchain.regs:
+                app_log.error('No registered HN found, closing.')
+                sys.exit()
             self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
             self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
             app_log.info('Status: At launch, {} registered HN, among which {} are active'.format(len(self.powchain.regs), len(self.active_regs)))
@@ -1621,6 +1624,8 @@ class Poshn:
                         inactive_hns = []
                         app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
                     await self.powchain.load_hn_pow(datadir=self.datadir, inactive_last_round=list(inactive_hns), a_round=self.round)
+                    if not self.powchain.regs:
+                        self.stop()
                     self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
                     if self.verbose:
                         app_log.info('Status: {} registered HN, among which {} are active'

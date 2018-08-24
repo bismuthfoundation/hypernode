@@ -17,6 +17,18 @@ POW_LEDGER_DB=../../Bismuth/static/ledger.db
 LOG=
 
 
+
+
+# =========================================================================================================
+# The following params you should not change nor overload in your config.txt
+# They are - often temporary - debug params.
+# These params may have unwanted impact, so do *not* change unless asked to.
+# =========================================================================================================
+
+# Use a distinct process to query PoW chain?
+POW_DISTINCT_PROCESS=True
+
+
 # =========================================================================================================
 # The following params you should not change nor overload in your config.txt
 # They will change with the releases.
@@ -44,3 +56,5 @@ SHORT_WAIT=0.001
 
 # How long to wait before retrying a failed peer?
 PEER_RETRY_SECONDS=20
+
+

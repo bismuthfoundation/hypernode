@@ -16,7 +16,7 @@ import aiosqlite3
 import com_helpers
 # from fakelog import FakeLog
 
-__version__ = '0.0.27'
+__version__ = '0.0.28'
 
 
 class SqliteBase:
@@ -126,13 +126,16 @@ class SqliteBase:
         :return: a cursor async proxy, or None if commit. If not commit, cursor() has to be closed.
         """
         cursor = None
+        """
         if 'ledger' in self.db_path:
             self.app_log.info("async_execute {}, {}, commit {}, many {}".format(sql, str(param), commit, many))
             # self.app_log.info("async_execute {}".format(self.async_db))
+        """
         if not self.async_db:
             try:
                 # open
-                self.app_log.info("Opening async {} {} db".format(self.db_path, self.db_name))
+                if self.verbose:
+                    self.app_log.info("Opening async {} {} db".format(self.db_path, self.db_name))
                 if self.ram:
                     self.async_db = await aiosqlite3.connect('file:temp?mode=memory', loop=asyncio.get_event_loop(),
                                                              isolation_level = None, uri = True)
@@ -162,12 +165,16 @@ class SqliteBase:
                     # await cursor.executemany(sql, param)
                     cursor = await self.async_db.executemany(sql, param)
                 elif param:
+                    """
                     if 'ledger' in self.db_path:
                         self.app_log.info("async_execute 1")
                     # BUG: Blocks here !?
+                    """
                     cursor = await self.async_db.execute(sql, param)
+                    """
                     if 'ledger' in self.db_path:
                         self.app_log.info("async_execute 2")
+                    """
 
                 else:
                     cursor = await self.async_db.execute(sql)

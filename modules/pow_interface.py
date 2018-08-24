@@ -3,22 +3,23 @@ Helpers and classes to interface with the main Bismuth PoW chain
 
 """
 
-from math import floor
+import asyncio
 import json
 import math
 import os
 import sqlite3
 import sys
 import time
+from math import floor
 
 # Our modules
 import config
-from fakelog import FakeLog
 import poshelpers
-from sqlitebase import SqliteBase
 import testvectors
+from fakelog import FakeLog
+from sqlitebase import SqliteBase
 
-__version__ = '0.0.6'
+__version__ = '0.0.7'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -42,17 +43,26 @@ SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions a
 
 class PowInterface:
 
-    def __init__(self, app_log=None, verbose=None):
+    def __init__(self, app_log=None, verbose=None, distinct_process=False):
+        """
+        Interface to the PoW chain.
+
+        :param app_log:
+        :param verbose:
+        :param distinct_process: If True, does not connect directly to the db,
+        but calls - async - an external process with timeout.
+        """
         if not app_log:
             app_log = FakeLog()
         self.app_log = app_log
-        self.verbose = verbose if verbose else config.VERBOSE
+        self.verbose = config.VERBOSE if verbose is None else verbose
+        self.distinct_process = distinct_process
         self.regs = {}
         """
         registered HN from PoW. Can be temp. wrong when updating. Calling object must keep a cached working version. 
         Indexed by pow address.
         """
-        self.pow_chain = SqlitePowChain(db_path=config.POW_LEDGER_DB, verbose=config.VERBOSE, app_log=app_log)
+        self.pow_chain = SqlitePowChain(db_path=config.POW_LEDGER_DB, verbose=self.verbose, app_log=app_log)
 
     async def reg_check_balance(self, address, height):
         """
@@ -99,23 +109,25 @@ class PowInterface:
         reward = options['reward'] if 'reward' in options else address
         return ip, port, pos, reward
 
-    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None,
-                          force_all=False, no_cache=False, ignore_config=False):
+    async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
+                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False):
         """
-        Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
+        Load from async sqlite3 connection from the same process.
+        Been experienced an can hang the whole HN on busy nodes.
 
         :param a_round:
         :param datadir:
-        :param inactive_last_round: list of pos_address that did not sent any tx previous round, to drop from list.
+        :param inactive_last_round:
+        :param force_all:
+        :param no_cache:
+        :param ignore_config:
+        :return:
         """
         try:
             if a_round:
                 round_ts = config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
             else:
                 round_ts = int(time.time())
-            if not inactive_last_round:
-                inactive_last_round = []
-            # print("h1", time.time())
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
             # Current height, or height at begin of the new round.
             height = await self.pow_chain.async_get_block_before_ts(round_ts)
@@ -127,31 +139,33 @@ class PowInterface:
             if force_all:
                 height = 8000000
             if self.verbose:
-                self.app_log.info("load_hn_pow, round {}, ref height={}".format(a_round, height))
+                self.app_log.info("Same Process, ref height={}".format(height))
             # FR: this should be part of the bootstrap archive
-            if os.path.isfile(pow_cache_file_name):
+            if os.path.isfile(pow_cache_file_name) and not no_cache:
                 self.app_log.info("powhncache exists in {}".format(datadir))
                 # load this checkpoint and go on since there.
-                # take latest checkpoint anyway, even if we wanted an older one.
+                # take latest checkpoint anyway, even if we wanted an older one? means we can't verify a posteriori
+                # unless we store per round in DB (do it)
                 with open(pow_cache_file_name, 'r') as f:
                     # Save before we filter out inactive
-                    cache =json.load(f)
+                    cache = json.load(f)
                     self.regs = cache['HNs']
             else:
-                self.app_log.info("no powhncache in {}".format(datadir))
+                if self.verbose:
+                    self.app_log.info("no powhncache in {}".format(datadir))
                 # Start from scratch and reconstruct current state from history
                 self.regs = {}
                 checkpoint = 773800  # No Hypernode tx earlier
 
             if self.verbose:
                 self.app_log.info("Parsing reg messages from {} to {}, {} inactive HNs."
-                                  .format(checkpoint +1, height, len(inactive_last_round)))
+                                  .format(checkpoint + 1, height, len(inactive_last_round)))
             if config.LOAD_HN_FROM_POW or force_all or ignore_config:
                 # TEMP
                 if self.verbose:
-                    self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint +1, height))
-                # print("c1", time.time())
-                cursor = await self.pow_chain.async_fetchall(SQL_REGS_FROM_TO, (checkpoint +1, height))
+                    self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint + 1, height))
+                #  print("c1", time.time())
+                cursor = await self.pow_chain.async_fetchall(SQL_REGS_FROM_TO, (checkpoint + 1, height))
                 # print("c2", time.time())
             else:
                 if False:
@@ -177,9 +191,9 @@ class PowInterface:
                         # raise an exception if there is a dup. Allow for single line faster test.
                         # since list comprehension is heavily optimized.
                         # Dup ip?
-                        [1/0 for items in self.regs.values() if items['ip']==ip]
+                        [1 / 0 for items in self.regs.values() if items['ip'] == ip]
                         # Dup pos address?
-                        [1/0 for items in self.regs.values() if items['pos']==pos]
+                        [1 / 0 for items in self.regs.values() if items['pos'] == pos]
                         # Dup pow address?
                         if address in self.regs:
                             raise ValueError("Already an active registration")
@@ -189,7 +203,7 @@ class PowInterface:
                         # print("w2", time.time())
                         active = True  # by default
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
-                                                      [ip, port, pos, reward, weight, timestamp, active]))
+                                                      [str(ip), port, str(pos), str(reward), weight, timestamp, active]))
                     else:
                         pass
                         # It's an unreg
@@ -203,7 +217,7 @@ class PowInterface:
                                 raise ValueError("Invalid unregistration params")
 
                         elif address == config.POS_CONTROL_ADDRESS:
-                            self.regs = {key:items for key,items in self.regs.items()
+                            self.regs = {key: items for key, items in self.regs.items()
                                          if (items['ip'], items['port'], items['pos']) != (ip, port, pos)}
                         else:
                             raise ValueError("Invalid unregistration sender")
@@ -219,6 +233,100 @@ class PowInterface:
                     self.app_log.info("{}".format(valid))
             if self.verbose:
                 self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
+        except Exception as e:
+            self.app_log.error("load_hn_same_process Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            sys.exit()
+
+    async def stream_subprocess(self, cmd, timeout=1):
+        """
+
+        :param cmd:
+        :param timeout:
+        :return:
+        """
+        process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE,
+                                                       stderr=asyncio.subprocess.PIPE)
+        p = None
+        try:
+            p = await asyncio.wait_for(process.wait(), timeout)
+        except Exception as e:
+            p = None
+        if not (p is None):
+            if p == 0:
+                out = await process.stdout.read()
+                out = out.decode('utf8')
+                return out
+            """
+            print("p", p)  # return code (0 if ok)
+            print("stdout:", (await process.stdout.read()).decode('utf8'))
+            print("stderr:", (await process.stderr.read()).decode('utf8'))
+            """
+        return 'false'
+
+    async def load_hn_distinct_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
+                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False):
+        """
+        Load from async sqlite3 connection from an external process with timeout.
+
+        :param a_round:
+        :param datadir:
+        :param inactive_last_round:
+        :param force_all:
+        :param no_cache:
+        :param ignore_config:
+        :return:
+        """
+        try:
+            cmd = ["python3", "hn_reg_feed.py"]
+            if a_round > 0:
+                cmd = ["python3", "hn_reg_feed.py", "-r {}".format(a_round)]
+            self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
+            if self.verbose:
+                count = 0
+                if self.regs:
+                    count = len(self.regs)
+                self.app_log.info("{} PoW Valid HN :{}".format(count, json.dumps(self.regs)))
+        except Exception as e:
+            self.app_log.error("load_hn_distinct_process Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            sys.exit()
+
+    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None,
+                          force_all=False, no_cache=False, ignore_config=False, distinct_process=None):
+        """
+        Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
+
+        :param a_round:
+        :param datadir:
+        :param inactive_last_round: list of pos_address that did not sent any tx previous round, to drop from list.
+        """
+        # TODO: check it's not a round we have in our local DB first.
+        # If we have, just return the one stored.
+        if distinct_process is None:
+            distinct_process = config.POW_DISTINCT_PROCESS
+        self.distinct_process = distinct_process
+        if self.verbose:
+            self.app_log.info("load_hn_pow, round {}".format(a_round))
+        try:
+
+            if not inactive_last_round:
+                inactive_last_round = []
+            # print("h1", time.time())
+
+            # Here query one way or the other
+            if self.distinct_process:
+                await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
+                                                    force_all=force_all, ignore_config=ignore_config)
+            else:
+                await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
+                                                force_all=force_all, ignore_config=ignore_config)
+
+            # Here we have self.regs
 
             # await cursor.close()
             # TEMP
@@ -232,12 +340,14 @@ class PowInterface:
                     # TODO test cache.
                     json.dump(f, cache)
             # Now, if round > 0, set active state depending on last round activity
-            for address, items in self.regs.items():
-                if items['pos'] in inactive_last_round:
-                    self.regs[address]['active'] = False
+            if self.regs:
+                for address, items in self.regs.items():
+                    if items['pos'] in inactive_last_round:
+                        self.regs[address]['active'] = False
             if self.verbose:
                 self.app_log.info("PoW+PoS Valid HN :{}".format(json.dumps(self.regs)))
             # sys.exit()
+            # TODO: save in local DB for this round
             return self.regs
         except Exception as e:
             self.app_log.error("load_hn_pow Error {}".format(e))
@@ -259,7 +369,7 @@ class SqlitePowChain(SqliteBase):
         if not os.path.isfile("{}".format(self.db_path)):
             raise ValueError("Bismuth PoW Ledger not found at {}.".format(self.db_path))
         if not self.db:
-            self.db = sqlite3.connect(self.db_path, timeout=1)
+            self.db = sqlite3.connect(self.db_path, timeout=10)
             self.db.text_factory = str
             self.cursor = self.db.cursor()
 

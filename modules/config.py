@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.21'
+__version__ = '0.0.22'
 
 """
 User config - You can change these one - See doc
@@ -153,6 +153,14 @@ GENESIS_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
 GENESIS_SIGNATURE = ''
 # TODO: check chain: verify that fits.
 
+
+"""
+DEBUG VARS
+"""
+
+POW_DISTINCT_PROCESS = False
+PROCESS_TIMEOUT = 15
+
 """
 Global Variables
 """
@@ -171,7 +179,9 @@ VARS = {
     "BLOCK_SYNC_COUNT": "int",
     "WAIT": "int",
     "SHORT_WAIT": "float",
-    "PEER_RETRY_SECONDS": "int"
+    "PEER_RETRY_SECONDS": "int",
+
+    "POW_DISTINCT_PROCESS": "bool"
     }
 
 
