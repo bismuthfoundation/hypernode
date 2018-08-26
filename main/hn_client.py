@@ -161,8 +161,7 @@ Sample output:
 "163.172.161.7:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
 "188.165.199.153:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
 "163.172.143.181:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8}
-}
-``
+}``
 
 
 
