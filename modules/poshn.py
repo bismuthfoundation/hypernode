@@ -997,7 +997,7 @@ class Poshn:
         if full == '1':
             app_log.info("Computing HN KPIs for Round {} to {}".format(start_round, end_round))
             # Find all the HN who sent a tx (or forged a block) for those rounds, and update their props
-            actives = await self.poschain.async_active_hns(start_round, end_round)
+            actives = await self.poschain.async_active_hns_details(start_round, end_round)
             # Avoiding dict comprehension here since more will come later on.
             for hypernode in hypernodes:
                 # TODO: success: ok tests. errors: ko tests. warnings: strange behavior logued
@@ -1006,9 +1006,14 @@ class Poshn:
                 hypernodes[hypernode]['kpis'] = {"success": 0, "errors": 0, "failed_pings": 0, "ok_pings": 0,
                                                  "warnings": 0, "rounds": 0, "sources": 0}
                 if hypernode in actives:
+                    hypernodes[hypernode]['kpis'] = {key: value for key, value in actives[hypernode].items()}
                     hypernodes[hypernode]['kpis']["active"] = True
                 else:
                     hypernodes[hypernode]['kpis']["active"] = False
+
+
+            # forgers = await self.poschain.async_forger_hns(start_round, end_round)
+
 
         return hypernodes
 

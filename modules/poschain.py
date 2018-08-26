@@ -18,7 +18,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -80,6 +80,44 @@ SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
 
 SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
 SQL_ROUNDS_SOURCES = "SELECT DISTINCT(sender) FROM pos_messages WHERE block_height >= ? AND block_height <= ?"
+
+# ----------------- KPIs -----------------
+
+SQL_ROUNDS_FORGERS_COUNT = "SELECT forger, count(*) as blocks FROM pos_chain " \
+                           "WHERE round >= ? AND round <= ? GROUP BY forger"
+
+SQL_ROUNDS_SOURCES_COUNT = "SELECT sender, count(*) as messages FROM pos_messages " \
+                           "WHERE block_height >= ? AND block_height <= ? GROUP BY sender"
+
+# recipient=self.address, what=202, params='START'
+SQL_ROUNDS_START_COUNT = "SELECT sender, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=202 and params='START' GROUP BY sender"
+
+# recipient=self.address, what=201, params='NO_TEST:2'/ NO_TEST:1
+SQL_ROUNDS_NO_TESTS_COUNT = "SELECT sender, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=201 GROUP BY sender"
+
+# test[1], 202
+SQL_ROUNDS_OK_TESTS_COUNT = "SELECT sender, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=202 and params != 'START' GROUP BY sender"
+
+# test[1], 204
+SQL_ROUNDS_KO_TESTS_COUNT = "SELECT sender, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=204 GROUP BY sender"
+
+# hn['address'], what=200, params='R.SYNC:{}' or C.SYNC
+SQL_ROUNDS_OK_ACTION_COUNT = "SELECT recipient, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=200 GROUP BY recipient"
+
+# hn['address'], what=101, params='P.FAIL:{}' or C.FAIL
+SQL_ROUNDS_KO_ACTION_COUNT = "SELECT recipient, count(*) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=101 GROUP BY recipient"
 
 """ pos chain db structure """
 
@@ -959,6 +997,7 @@ class SqlitePosChain(SqliteBase):
     async def async_active_hns(self, start_round, end_round=0):
         """
         Returns a list of active HN for the round range.
+
         :param start_round:
         :param end_round: optional, will use start_round if = 0
         :return: list of PoS addresses
@@ -974,6 +1013,57 @@ class SqlitePosChain(SqliteBase):
             forgers.extend(list(sources))
         # Uniques only
         return list(set(forgers))
+
+    async def async_active_hns_details(self, start_round, end_round=0):
+        """
+        Returns a list of active HN for the round range with several metrics.
+
+        :param start_round:
+        :param end_round: optional, will use start_round if = 0
+        :return: dict(PoS addresses = dict())
+        """
+        if not end_round:
+            end_round = start_round
+        forgers = await self.async_fetchall(SQL_ROUNDS_FORGERS_COUNT, (start_round, end_round))
+        # print(dict(forgers))
+        res = {forger: {'forged': value, 'sources': 0} for forger, value in dict(forgers).items()}
+        # print("res forge", res)
+        h_min, h_max = await self.async_fetchone(SQL_MINMAXHEIGHT_OF_ROUNDS, (start_round, end_round))
+
+        sources = await self.async_fetchall(SQL_ROUNDS_SOURCES_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+            if address in res:
+                res[address]['sources'] = sources
+            else:
+                res[address]= {'sources': sources, 'forged': 0}
+
+        sources = await self.async_fetchall(SQL_ROUNDS_START_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['start_count'] = sources
+
+        sources = await self.async_fetchall(SQL_ROUNDS_NO_TESTS_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['no_tests_sent'] = sources
+
+        sources = await self.async_fetchall(SQL_ROUNDS_OK_TESTS_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['ok_tests_sent'] = sources
+
+        sources = await self.async_fetchall(SQL_ROUNDS_KO_TESTS_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['ko_tests_sent'] = sources
+
+        sources = await self.async_fetchall(SQL_ROUNDS_OK_ACTION_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['ok_actions_received'] = sources
+
+        sources = await self.async_fetchall(SQL_ROUNDS_KO_ACTION_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+                res[address]['ko_actions_received'] = sources
+
+        # print("res forge", res)
+        # sys.exit()
+        return res
 
 
 if __name__ == "__main__":
