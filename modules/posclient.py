@@ -17,7 +17,7 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.39'
+__version__ = '0.0.41'
 
 
 class Posclient:
@@ -40,7 +40,7 @@ class Posclient:
         """
         try:
             if action not in ('hello', 'ping', 'status', 'tx', 'address_txs', 'mempool', 'update', 'txtest', 'block',
-                              'round', 'hypernodes', 'blocksync', 'headers'):
+                              'round', 'hypernodes', 'blocksync', 'headers', 'heights'):
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
@@ -95,6 +95,14 @@ class Posclient:
                     await com_helpers.async_send_void(commands_pb2.Command.gethypernodes, stream, self.ip)
                 msg = await com_helpers.async_receive(stream, self.ip)
                 if msg.command == commands_pb2.Command.gethypernodes:
+                    status = json.loads(msg.string_value)
+                    print(json.dumps(status))
+                    return
+
+            if 'heights' == action:
+                await com_helpers.async_send_void(commands_pb2.Command.getheights, stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip)
+                if msg.command == commands_pb2.Command.getheights:
                     status = json.loads(msg.string_value)
                     print(json.dumps(status))
                     return

@@ -142,6 +142,30 @@ Sample output (full=1):
 ``WIP``
 
 
+``--action=heights``
+--------------------
+Returns dict of peers height for current block.
+
+.. code-block:: text
+
+  python3 hn_client.py --action=heights
+
+Sample output:
+
+``{
+"51.15.228.170:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"91.121.87.99:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"51.15.225.223:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"163.172.222.163:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"51.15.95.155:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"163.172.161.7:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"188.165.199.153:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8},
+"163.172.143.181:06969": {"height": 1971, "round": 156, "sir": 16, "block_hash": "24f5d113a1e8a4f0db860a9f8ae8841f27fc387e", "uniques": 10, "uniques_round": 9, "forgers": 8, "forgers_round": 8}
+}
+``
+
+
+
 ``--action=block --param=block_height``
 ---------------------------------------
 Returns block info and list of transactions for given height
@@ -259,7 +283,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.56'
+__version__ = '0.0.57'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -275,7 +299,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--action", type=str, default=None,
                         help='Specific action. hello, ping, status, round, block, tx, address_txs, mempool, blocksync, '
-                             'hypernodes, headers, txtest.')
+                             'hypernodes, headers, txtest, heights.')
     parser.add_argument("--param", type=str, default=None, help='Input param from block and tx command.')
     args = parser.parse_args()
     if len(sys.argv) == 1:

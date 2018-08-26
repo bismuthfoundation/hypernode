@@ -4,9 +4,11 @@ Helpers and classes to interface with the main Bismuth PoW chain
 """
 
 import asyncio
+import ipaddress
 import json
 import math
 import os
+import re
 import sqlite3
 import sys
 import time
@@ -14,12 +16,13 @@ from math import floor
 
 # Our modules
 import config
+import poscrypto
 import poshelpers
 import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.7'
+__version__ = '0.0.8'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -41,9 +44,26 @@ SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions a
                         "WHERE a.recipient = ? AND a.block_height <= ?"
 
 
+# ================== Helpers ================
+
+
+def validate_pow_address(address: str):
+    """
+    Validate a bis (PoW address).
+
+    :param address:
+    :return: True if address is valid, raise a ValueError exception if not.
+    """
+    if re.match('[abcdef0123456789]{56}', address):
+        return True
+    raise ValueError('Bis Address format error')
+
+
+# ================== Classes ================
+
 class PowInterface:
 
-    def __init__(self, app_log=None, verbose=None, distinct_process=False):
+    def __init__(self, app_log=None, verbose: bool=None, distinct_process: bool=False):
         """
         Interface to the PoW chain.
 
@@ -107,6 +127,9 @@ class PowInterface:
                 options[key] = value
         ip, port, pos = openfield.split(':')
         reward = options['reward'] if 'reward' in options else address
+        source = options['source'] if 'source' in options else None
+        if source and source != address:
+            raise ValueError("Bad source address")
         return ip, port, pos, reward
 
     async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
@@ -129,6 +152,9 @@ class PowInterface:
             else:
                 round_ts = int(time.time())
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
+            # FR: Check the pow chain is up to date?
+            # beware, we can't print what we want, output is read as json.
+            # latest_ts =  await self.pow_chain.async_get_last_ts()
             # Current height, or height at begin of the new round.
             height = await self.pow_chain.async_get_block_before_ts(round_ts)
             # print("after height", time.time())
@@ -182,7 +208,7 @@ class PowInterface:
                 block_height, address, operation, openfield, timestamp = row
                 # TEMP
                 if self.verbose:
-                    self.app_log.info("Row {}: {}, {}".format(block_height, address, operation))
+                    self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
                 valid = True
                 try:
                     ip, port, pos, reward = self.reg_extract(openfield, address)
@@ -190,6 +216,13 @@ class PowInterface:
                         # There is a small hack here: the following tests seem to do nothing, but they DO
                         # raise an exception if there is a dup. Allow for single line faster test.
                         # since list comprehension is heavily optimized.
+                        # invalid ip
+                        ipaddress.ip_address(ip)
+                        # invalid bis addresses
+                        validate_pow_address(address)
+                        validate_pow_address(reward)
+                        # invalid pos address
+                        poscrypto.validate_address(pos)
                         # Dup ip?
                         [1 / 0 for items in self.regs.values() if items['ip'] == ip]
                         # Dup pos address?

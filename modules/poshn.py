@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.88'
+__version__ = '0.0.89'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -237,6 +237,10 @@ class HnServer(TCPServer):
                 hypernodes = await self.node.get_hypernodes(msg.string_value)
                 await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(hypernodes),
                                         stream, full_peer)
+
+            elif msg.command == commands_pb2.Command.getheights:
+                heights = await self.node.get_heights()
+                await async_send_string(commands_pb2.Command.getheights, json.dumps(heights), stream, full_peer)
 
             elif msg.command == commands_pb2.Command.tx:
                 # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
@@ -552,7 +556,7 @@ class Poshn:
             if limit[0] < 65000:
                 app_log.warning("ulimit shows non optimum value, consider tuning your system.")
         else:
-            app_log.warning("Non Posix system, requirements are not satisfied. Use at your own risks.")
+            app_log.error("Non Posix system, requirements are not satisfied. Use at your own risks.")
 
     def add_inbound(self, ip, port, properties=None):
         """
@@ -951,9 +955,23 @@ class Poshn:
             self.net_height = None
         return pc
 
+    async def get_heights(self):
+        """
+        Return dict of known peers heights.
+        """
+        heights = {key: value['height_status'] for key, value in self.clients.items() if 'height_status' in value}
+        # add inbound
+        # TEMP
+        print(">> in", self.inbound)
+        for key, value in self.inbound.items():
+            if key not in heights:
+                if 'height_status' in value:
+                    heights[key] = value['height_value']
+        return heights
+
     async def get_hypernodes(self, param):
         """
-        Returns list of registered and active Hypernodes with metrics.
+        Return list of registered and active Hypernodes with metrics.
 
         param is an optional string param "full,start_round,end_round" where full is "0" or "1".
 
@@ -971,7 +989,8 @@ class Poshn:
             full, start_round, end_round = map(str.strip, param.split(','))
         app_log.info("Registered Hypernodes, round {} to {}".format(start_round, end_round))
         # Get all HN who were valid for at least a round
-        # TODO: from local DB and powchain.regs: show also inactive
+        # from local DB and powchain.regs: show also inactive
+        # FR: these are only the HNs still reg for latest round, we should maybe be more cool
         hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
                                 "recipient": item[5], "kpis":{}}
                       for item in self.all_peers}

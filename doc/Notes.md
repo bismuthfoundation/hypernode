@@ -58,7 +58,10 @@ Raspberry pi image of node + HN
 
 config: short or full status into the logs.
 
-add a config.txt to override the config.py param
+check latest block timestamp(pow) and warns, suggests pow node not synced.
+
+end of round: count how many times each peer was late (> 1 round late) to send a tx mentioning late nodes and slots #
+(a late node is useless)
 
 
 > Simulate connect_to , max , depending on hn list size and failure rates to estimate 
@@ -158,4 +161,11 @@ for past rounds, fetch one round in a single go.
 get round total hash and # of sources from peers, take the biggest from our peers, fetch from him.
 check on receive. if he lied, issue a tx and ignore him for a while.
 add a message for that. 
+
+TESTING heights message (client) to get heights of inbound + outbound peers
+DONE Invalid reg if ip is not an ip / bis address / pos address
+DONE close with error if windows: already an error message if not Posix.
+DONE add a config.txt to override the config.py param
+
+
 

@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package bismuth;
 
-// version 0.0.6
+// version 0.0.9
 
 // A single tx
 message TX {
@@ -104,6 +104,7 @@ message Command {
         test = 20;
         // comes with a partial tx_value containing a single unsigned tx with what, params, returns with value filled in.
         // both parts will then add this filled tx, signed, to the chain.
+        getheights = 21; // json of known peers heights
     }
     required Type command = 1;
 
