@@ -846,10 +846,11 @@ class SqlitePosChain(SqliteBase):
                     tx = PosMessage().from_dict(dict(tx))
                     block.txs.append(tx)
                 block.add_to_proto(protocmd)
-            # check block integrity
-            if len(txs) != block.msg_count:
-                self.app_log.error("Only {} tx for block {} instead of {} announced".format(len(txs), block.height, block.msg_count))
-                com_helpers.MY_NODE.stop()
+                # check block integrity
+                if len(txs) != block.msg_count:
+                    self.app_log.error("Only {} tx for block {} instead of {} announced"
+                                       .format(len(txs), block.height, block.msg_count))
+                    com_helpers.MY_NODE.stop()
 
             return protocmd
 

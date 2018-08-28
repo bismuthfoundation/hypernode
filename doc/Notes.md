@@ -56,7 +56,16 @@ Raspberry pi image of node + HN
 
 ### TODO ###
 
-config: short or full status into the logs.
+Bootstrap. From h.b.live and/or bp12?
+
+still some freeze when getting pow chain.
+add a plugin to save the pow info from the node.
+hn plugin, with ip filter included
+- create data dir for hn list
+- on status, create cache file for current round (a little in advance)
+- keep N last files (or all? 1 per hour => clean)
+
+config: short or full status into the logs?
 
 check latest block timestamp(pow) and warns, suggests pow node not synced.
 
