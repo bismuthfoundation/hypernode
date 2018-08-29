@@ -2,6 +2,6 @@
 
 Main directory with important commands:
 
-- hn_instance.py : runs a Hypernode server
+- hn_instance.py : runs a Hypernode server `python3 hn_instance.py -v`
 
-- hn_client.py : client to conenct to a Hypernode server
+- hn_client.py : client to connect to a Hypernode server
