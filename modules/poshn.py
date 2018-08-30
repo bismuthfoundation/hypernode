@@ -972,7 +972,7 @@ class Poshn:
             for key, value in self.inbound.items():
                 if key not in heights:
                     if 'height_status' in value:
-                        heights[key] = value['height_value']
+                        heights[key] = value['height_status']
             return heights
         except Exception as e:
             app_log.error('get_heights error "{}"'.format(e))
