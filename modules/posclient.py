@@ -17,16 +17,17 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.41'
+__version__ = '0.0.42'
 
 
 class Posclient:
 
-    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version=''):
+    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version='', source_ip=''):
         self.ip = ip
         self.port = port
         self.verbose = verbose
         self.client_version = version
+        self.source_ip = source_ip
         poscrypto.load_keys(wallet, verbose=self.verbose)
         self.hello_string = poshelpers.hello_string(port=101)
 
@@ -44,7 +45,10 @@ class Posclient:
                 raise ValueError("Unknown action: {}".format(action))
             tcp_client = TCPClient()
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
-            stream = await tcp_client.connect(self.ip, self.port)
+            if self.source_ip:
+                stream = await tcp_client.connect(self.ip, self.port, source_ip=self.source_ip)
+            else:
+                stream = await tcp_client.connect(self.ip, self.port)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string, stream, self.ip)
             msg = await com_helpers.async_receive(stream, self.ip)

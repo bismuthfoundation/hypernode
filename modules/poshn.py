@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.89'
+__version__ = '0.0.90'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -414,7 +414,7 @@ class Poshn:
     # list of inbound server connections
     inbound = {}
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False, outip='127.0.0.1',
+    def __init__(self, ip, port, address='', peers=None, verbose=False, outip='127.0.0.1', interface='',
                  wallet="poswallet.json", datadir="data", suffix='', version=''):
         """
         TODO
@@ -434,6 +434,7 @@ class Poshn:
         config.STOP_EVENT = aioprocessing.AioEvent()
         self.ip = ip
         self.outip = outip
+        self.interface = interface
         self.port = port
         self.address = address
         self.all_peers = peers
@@ -640,7 +641,11 @@ class Poshn:
             app_log.info("Sending test request to {}:{}".format(peer_ip, peer_port))
         try:
             full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
-            stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
+            if self.interface:
+                # If we specified a custom interface, we want to force listen on the associated ip.
+                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5, source_ip=self.outip)
+            else:
+                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
             res = await async_receive(stream, full_peer)
             return res
@@ -1219,7 +1224,10 @@ class Poshn:
         try:
             full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
             # FR: Are context managers possible here? would lighten the finally step
-            stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
+            if self.interface:
+                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5, source_ip=self.outip)
+            else:
+                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
         except Exception as e:
             app_log.warning("Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port))
@@ -1314,7 +1322,10 @@ class Poshn:
             if self.verbose:
                 access_log.info("Initiating client connection to {}".format(full_peer))
             # ip_port = "{}:{}".format(peer[1], peer[2])
-            stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
+            if self.interface:
+                stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT, source_ip=self.outip)
+            else:
+                stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
             # connect_time = time.time()
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(temp=temp),
                                                 stream, full_peer)
@@ -1353,7 +1364,10 @@ class Poshn:
             if self.verbose and 'connections' in config.LOG:
                 access_log.info("Initiating client co-routine for {}".format(full_peer))
             # ip_port = "{}:{}".format(peer[1], peer[2])
-            stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
+            if self.interface:
+                stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT, source_ip=self.outip)
+            else:
+                stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
             msg = await com_helpers.async_receive(stream, full_peer)

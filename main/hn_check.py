@@ -17,13 +17,14 @@ import poscrypto
 import psutil
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth HyperNode Check')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("-j", "--json", action="count", default=False, help='Return json content')
+    parser.add_argument("-N", "--interface", type=str, default="", help='Use a specific network interface')
     # parser.add_argument("--action", type=str, default=None, help='Specific action. ')
     args = parser.parse_args()
     wallet_name = "poswallet.json"
@@ -40,7 +41,10 @@ if __name__ == "__main__":
     python = instances[0]['exe'] if nb_instances else 'N/A'
     status['running_instances'] = nb_instances
     status['python'] = python
-    status['external_ip'] = subprocess.getoutput("curl -4 -s ifconfig.co")
+    if args.interface:
+        status['external_ip'] = subprocess.getoutput("curl --interface {} -4 -s ifconfig.co".format(args.interface))
+    else:
+        status['external_ip'] = subprocess.getoutput("curl -4 -s ifconfig.co")
     status['default_port'] = config.DEFAULT_PORT
     if args.json:
         print(json.dumps(status))

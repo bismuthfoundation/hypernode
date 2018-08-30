@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -313,9 +313,9 @@ class PowInterface:
         :return:
         """
         try:
-            cmd = ["python3", "hn_reg_feed.py"]
+            cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py"]
             if a_round > 0:
-                cmd = ["python3", "hn_reg_feed.py", "-r {}".format(a_round)]
+                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {}".format(a_round)]
             self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
             if self.verbose:
                 count = 0

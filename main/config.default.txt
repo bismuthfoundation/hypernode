@@ -16,7 +16,8 @@ POW_LEDGER_DB=../../Bismuth/static/ledger.db
 #LOG=mempool,timing
 LOG=
 
-
+# If you need to run a specific python runtime,like /usr/local/bin/python3.6, use this setting.
+PYTHON_EXECUTABLE=python3
 
 
 # =========================================================================================================

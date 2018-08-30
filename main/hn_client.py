@@ -291,6 +291,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=DESC)
     parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4] - Dev only')
     parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='HN Host to connect to (127.0.0.1)')
+    parser.add_argument("-S", "--sourceip", type=str, default="", help='Use a specific network interface (source ip, not ifname)')
     parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
 
@@ -316,7 +317,7 @@ if __name__ == "__main__":
         wallet = "poswallet.json"
         if args.index:
             wallet="hn_temp/mn{}.json".format(args.index)
-        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet=wallet,
+        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet=wallet, source_ip=args.sourceip,
                                                   verbose=args.verbose, version=__version__)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))

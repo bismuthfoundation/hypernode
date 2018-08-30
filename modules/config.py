@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.22'
+__version__ = '0.0.23'
 
 """
 User config - You can change these one - See doc
@@ -37,6 +37,7 @@ AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg', 
 # TODO: override by config.json, see notes.md
 POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
 
+PYTHON_EXECUTABLE = "python3"
 
 """
 Here comes temp. PoC variables
@@ -180,7 +181,7 @@ VARS = {
     "WAIT": "int",
     "SHORT_WAIT": "float",
     "PEER_RETRY_SECONDS": "int",
-
+    "PYTHON_EXECUTABLE": "str",
     "POW_DISTINCT_PROCESS": "bool"
     }
 
