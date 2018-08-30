@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.90'
+__version__ = '0.0.91'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -964,15 +964,22 @@ class Poshn:
         """
         Return dict of known peers heights.
         """
-        heights = {key: value['height_status'] for key, value in self.clients.items() if 'height_status' in value}
-        # add inbound
-        # TEMP
-        print(">> in", self.inbound)
-        for key, value in self.inbound.items():
-            if key not in heights:
-                if 'height_status' in value:
-                    heights[key] = value['height_value']
-        return heights
+        try:
+            heights = {key: value['height_status'] for key, value in self.clients.items() if 'height_status' in value}
+            # add inbound
+            # TEMP
+            print(">> in", self.inbound)
+            for key, value in self.inbound.items():
+                if key not in heights:
+                    if 'height_status' in value:
+                        heights[key] = value['height_value']
+            return heights
+        except Exception as e:
+            app_log.error('get_heights error "{}"'.format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            sys.exit()
 
     async def get_hypernodes(self, param):
         """
