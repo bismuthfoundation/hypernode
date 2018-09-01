@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -242,6 +242,8 @@ class PowInterface:
                         active = True  # by default
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
                                                       [str(hip), port, str(pos), str(reward), weight, timestamp, active]))
+                        if show:
+                            self.app_log.info("Ok, Weight={}".format(weight))
                     else:
                         pass
                         # It's an unreg
@@ -259,8 +261,8 @@ class PowInterface:
                                          if (items['ip'], items['port'], items['pos']) != (hip, port, pos)}
                         else:
                             raise ValueError("Invalid unregistration sender")
-                    if show:
-                        self.app_log.info("Ok")
+                        if show:
+                            self.app_log.info("Ok")
 
                 except (ValueError, ZeroDivisionError) as e:
                     # print(e)
