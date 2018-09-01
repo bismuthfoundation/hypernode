@@ -10,6 +10,7 @@ import sys
 import time
 
 from tornado.tcpclient import TCPClient
+from tornado.util import TimeoutError
 
 import com_helpers
 import commands_pb2
@@ -17,17 +18,28 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.42'
+__version__ = '0.0.43'
 
 
 class Posclient:
 
-    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version='', source_ip=''):
+    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version='', source_ip='', timeout=10):
+        """
+
+        :param ip:
+        :param port:
+        :param verbose:
+        :param wallet:
+        :param version:
+        :param source_ip:
+        :param timeout: in seconds
+        """
         self.ip = ip
         self.port = port
         self.verbose = verbose
         self.client_version = version
         self.source_ip = source_ip
+        self.timeout = timeout
         poscrypto.load_keys(wallet, verbose=self.verbose)
         self.hello_string = poshelpers.hello_string(port=101)
 
@@ -46,9 +58,9 @@ class Posclient:
             tcp_client = TCPClient()
             # FR: if self.verbose, print time to connect, time to hello, time end to end. Use a finally: section
             if self.source_ip:
-                stream = await tcp_client.connect(self.ip, self.port, source_ip=self.source_ip)
+                stream = await tcp_client.connect(self.ip, self.port, source_ip=self.source_ip, timeout=self.timeout)
             else:
-                stream = await tcp_client.connect(self.ip, self.port)
+                stream = await tcp_client.connect(self.ip, self.port, timeout=self.timeout)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string, stream, self.ip)
             msg = await com_helpers.async_receive(stream, self.ip)
@@ -199,6 +211,9 @@ class Posclient:
 
             msg = await com_helpers.async_receive(stream, self.ip)
             print("Client got {}".format(msg.__str__().strip()))
+
+        except TimeoutError:
+            print("'Timeout'")
 
         except ValueError as e:
             print("Client:", e)

@@ -58,6 +58,24 @@ Raspberry pi image of node + HN
 
 Bootstrap. From h.b.live and/or bp12?
 
+> hn_client, status: do not freeze but timeout after a few secs.
+
+> plugin HN in node
+- os check?
+- quicksync force false
+- filter ec2
+
+> hn_reg_feed : filter for 1 ip
+
+> raise % 50% ?
+
+Supervision / crontab
+
+auto update
+
+doc config python_executable
+
+
 still some freeze when getting pow chain.
 add a plugin to save the pow info from the node.
 hn plugin, with ip filter included
