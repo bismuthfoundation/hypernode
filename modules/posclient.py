@@ -11,6 +11,7 @@ import time
 
 from tornado.tcpclient import TCPClient
 from tornado.util import TimeoutError
+from tornado.iostream import StreamClosedError
 
 import com_helpers
 import commands_pb2
@@ -18,7 +19,7 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.43'
+__version__ = '0.0.44'
 
 
 class Posclient:
@@ -214,6 +215,9 @@ class Posclient:
 
         except TimeoutError:
             print("'Timeout'")
+
+        except StreamClosedError:
+            print("'Closed'")
 
         except ValueError as e:
             print("Client:", e)
