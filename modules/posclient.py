@@ -19,12 +19,13 @@ import posblock
 import poscrypto
 import poshelpers
 
-__version__ = '0.0.44'
+__version__ = '0.0.45'
 
 
 class Posclient:
 
-    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version='', source_ip='', timeout=10):
+    def __init__(self, ip, port, verbose=False, wallet="poswallet.json", version='', source_ip='', timeout=10,
+                 read_timeout=30):
         """
 
         :param ip:
@@ -34,6 +35,7 @@ class Posclient:
         :param version:
         :param source_ip:
         :param timeout: in seconds
+        :param read_timeout: in seconds
         """
         self.ip = ip
         self.port = port
@@ -41,6 +43,7 @@ class Posclient:
         self.client_version = version
         self.source_ip = source_ip
         self.timeout = timeout
+        self.read_timeout = read_timeout
         poscrypto.load_keys(wallet, verbose=self.verbose)
         self.hello_string = poshelpers.hello_string(port=101)
 
@@ -64,7 +67,8 @@ class Posclient:
                 stream = await tcp_client.connect(self.ip, self.port, timeout=self.timeout)
             # Clients identifies itself as port 00101. ports < 1000 won't be used as peers.
             await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string, stream, self.ip)
-            msg = await com_helpers.async_receive(stream, self.ip)
+            # Don't use too short a timeout, or long commands will timeout, too.
+            msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
             if self.verbose:
                 print("Client got {}".format(msg.__str__().strip()))
 
@@ -88,7 +92,7 @@ class Posclient:
             if 'status' == action:
                 start_time = time.time()
                 await com_helpers.async_send_void(commands_pb2.Command.status, stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.status:
                     end_time = time.time()
                     status = json.loads(msg.string_value)
@@ -99,7 +103,7 @@ class Posclient:
 
             if 'round' == action:
                 await com_helpers.async_send_void(commands_pb2.Command.getround, stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.getround:
                     status = json.loads(msg.string_value)
                     print(json.dumps(status))
@@ -110,7 +114,7 @@ class Posclient:
                     await com_helpers.async_send_string(commands_pb2.Command.gethypernodes, str(param), stream, self.ip)
                 else:
                     await com_helpers.async_send_void(commands_pb2.Command.gethypernodes, stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.gethypernodes:
                     status = json.loads(msg.string_value)
                     print(json.dumps(status))
@@ -118,7 +122,7 @@ class Posclient:
 
             if 'heights' == action:
                 await com_helpers.async_send_void(commands_pb2.Command.getheights, stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.getheights:
                     status = json.loads(msg.string_value)
                     print(json.dumps(status))
@@ -126,7 +130,7 @@ class Posclient:
 
             if 'tx' == action:
                 await com_helpers.async_send_string(commands_pb2.Command.gettx, str(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.gettx:
                     if msg.tx_values:
                         txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
@@ -138,7 +142,7 @@ class Posclient:
 
             if 'address_txs' == action:
                 await com_helpers.async_send_string(commands_pb2.Command.getaddtxs, str(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.getaddtxs:
                     txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
                     print(json.dumps(txs))
@@ -148,7 +152,7 @@ class Posclient:
                 try:
                     # mempool with an "1" int value means send full mempool, unfiltered
                     await com_helpers.async_send_int32(commands_pb2.Command.mempool, 1, stream, self.ip)
-                    msg = await com_helpers.async_receive(stream, self.ip)
+                    msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                     if msg.command == commands_pb2.Command.mempool:
                         txs = [posblock.PosMessage().from_proto(tx).to_list(as_hex=True) for tx in msg.tx_values]
                         print(json.dumps(txs))
@@ -175,7 +179,7 @@ class Posclient:
 
             if 'block' == action:
                 await com_helpers.async_send_int32(commands_pb2.Command.getblock, int(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.getblock:
                     if msg.block_value:
                         block = posblock.PosBlock().from_proto(msg.block_value[0])
@@ -186,7 +190,7 @@ class Posclient:
 
             if 'blocksync' == action:
                 await com_helpers.async_send_int32(commands_pb2.Command.blocksync, int(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.blocksync:
                     if msg.block_value:
                         blocks = []
@@ -199,7 +203,7 @@ class Posclient:
 
             if 'headers' == action:
                 await com_helpers.async_send_string(commands_pb2.Command.getheaders, str(param), stream, self.ip)
-                msg = await com_helpers.async_receive(stream, self.ip)
+                msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
                 if msg.command == commands_pb2.Command.getheaders:
                     if msg.block_value:
                         blocks = []
@@ -210,7 +214,7 @@ class Posclient:
                         print('false')
                     return
 
-            msg = await com_helpers.async_receive(stream, self.ip)
+            msg = await com_helpers.async_receive(stream, self.ip, timeout=self.read_timeout)
             print("Client got {}".format(msg.__str__().strip()))
 
         except TimeoutError:

@@ -2,13 +2,15 @@
 Communication helper utils for Bismuth Hypernodes
 =================================================
 """
+import datetime
 import struct
 import time
 
+import tornado.gen
+
 import commands_pb2
 
-
-__version__ = '0.0.31'
+__version__ = '0.0.32'
 
 
 # Index for clients stats
@@ -40,23 +42,30 @@ def cmd_to_text(command):
     return commands_pb2._COMMAND_TYPE.values[command].name
 
 
-async def async_receive(stream, ip):
+async def async_receive(stream, ip, timeout=-1):
     """
     Get a command block from the stream, async version
 
     :param stream:
     :param ip: the related ip, for stats purposes
+    :param timeout: timeout for getting answer
     :return: a protobuf object
     """
     global MY_NODE
     protomsg = commands_pb2.Command()
     # TODO: add some timeout here
-    header = await stream.read_bytes(4)
+    if timeout == -1:
+        header = await stream.read_bytes(4)
+    else:
+        header = await tornado.gen.with_timeout(datetime.timedelta(seconds=timeout), stream.read_bytes(4))
     if len(header) < 4:
         raise RuntimeError("Socket EOF")
     data_len = struct.unpack('>i', header[:4])[0]
     # TODO: and here (depending on size?)
-    data = await stream.read_bytes(data_len)
+    if timeout == -1:
+        data = await stream.read_bytes(data_len)
+    else:
+        data = await tornado.gen.with_timeout(datetime.timedelta(seconds=timeout), stream.read_bytes(data_len))
     try:
         MY_NODE.clients[ip]['stats'][STATS_LASTACT] = time.time()
         MY_NODE.clients[ip]['stats'][STATS_MSGRECV] += 1

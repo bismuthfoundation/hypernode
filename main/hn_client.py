@@ -282,7 +282,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.58'
+__version__ = '0.0.59'
 
 DESC = 'Bismuth Hypernode client'
 
@@ -294,6 +294,7 @@ if __name__ == "__main__":
     parser.add_argument("-S", "--sourceip", type=str, default="", help='Use a specific network interface (source ip, not ifname)')
     parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
     parser.add_argument("-t", "--timeout", type=int, default = 10, help='Connect timeout (sec) - default 10')
+    parser.add_argument("-r", "--readtimeout", type=int, default = 30, help='Read timeout (sec) - default 30')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
 
     parser.add_argument("-V", "--version", action="count", default=False, help='Show version')
@@ -319,7 +320,8 @@ if __name__ == "__main__":
         if args.index:
             wallet="hn_temp/mn{}.json".format(args.index)
         com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet=wallet, source_ip=args.sourceip,
-                                                  verbose=args.verbose, version=__version__, timeout=args.timeout)
+                                                  verbose=args.verbose, version=__version__, timeout=args.timeout,
+                                                  read_timeout=args.readtimeout)
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))
 
