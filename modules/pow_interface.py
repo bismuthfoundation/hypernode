@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.9'
+__version__ = '0.1.0'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -133,7 +133,7 @@ class PowInterface:
         return ip, port, pos, reward
 
     async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False):
+                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip=''):
         """
         Load from async sqlite3 connection from the same process.
         Been experienced an can hang the whole HN on busy nodes.
@@ -144,6 +144,7 @@ class PowInterface:
         :param force_all:
         :param no_cache:
         :param ignore_config:
+        :param ip:
         :return:
         """
         try:
@@ -210,21 +211,25 @@ class PowInterface:
                 if self.verbose:
                     self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
                 valid = True
+                show = False
                 try:
-                    ip, port, pos, reward = self.reg_extract(openfield, address)
+                    if "{}:".format(ip) in openfield:
+                        show = True
+                        self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
+                    hip, port, pos, reward = self.reg_extract(openfield, address)
                     if operation == 'hypernode:register':
                         # There is a small hack here: the following tests seem to do nothing, but they DO
                         # raise an exception if there is a dup. Allow for single line faster test.
                         # since list comprehension is heavily optimized.
                         # invalid ip
-                        ipaddress.ip_address(ip)
+                        ipaddress.ip_address(hip)
                         # invalid bis addresses
                         validate_pow_address(address)
                         validate_pow_address(reward)
                         # invalid pos address
                         poscrypto.validate_address(pos)
                         # Dup ip?
-                        [1 / 0 for items in self.regs.values() if items['ip'] == ip]
+                        [1 / 0 for items in self.regs.values() if items['ip'] == hip]
                         # Dup pos address?
                         [1 / 0 for items in self.regs.values() if items['pos'] == pos]
                         # Dup pow address?
@@ -236,13 +241,13 @@ class PowInterface:
                         # print("w2", time.time())
                         active = True  # by default
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
-                                                      [str(ip), port, str(pos), str(reward), weight, timestamp, active]))
+                                                      [str(hip), port, str(pos), str(reward), weight, timestamp, active]))
                     else:
                         pass
                         # It's an unreg
                         if address in self.regs:
                             # unreg from owner
-                            if (ip, port, pos) == (self.regs[address]['ip'], self.regs[address]['port'],
+                            if (hip, port, pos) == (self.regs[address]['ip'], self.regs[address]['port'],
                                                    self.regs[address]['pos']):
                                 # same infos
                                 del self.regs[address]
@@ -251,13 +256,17 @@ class PowInterface:
 
                         elif address == config.POS_CONTROL_ADDRESS:
                             self.regs = {key: items for key, items in self.regs.items()
-                                         if (items['ip'], items['port'], items['pos']) != (ip, port, pos)}
+                                         if (items['ip'], items['port'], items['pos']) != (hip, port, pos)}
                         else:
                             raise ValueError("Invalid unregistration sender")
+                    if show:
+                        self.app_log.info("Ok")
 
                 except (ValueError, ZeroDivisionError) as e:
                     # print(e)
                     valid = False
+                    if show:
+                        self.app_log.warning("Ko: {}".format(e))
                     pass
                 if self.verbose:
                     """self.app_log.info("{} msg {} from {} : {}. ({})".format(
@@ -300,7 +309,7 @@ class PowInterface:
         return 'false'
 
     async def load_hn_distinct_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False):
+                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip=''):
         """
         Load from async sqlite3 connection from an external process with timeout.
 
@@ -310,13 +319,20 @@ class PowInterface:
         :param force_all:
         :param no_cache:
         :param ignore_config:
+        :param ip:
         :return:
         """
         try:
-            cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py"]
+            cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={}".format(ip)]
             if a_round > 0:
-                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {}".format(a_round)]
-            self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
+                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={}".format(a_round, ip)]
+            if ip:
+                res = await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT)
+                print(res)
+                self.regs = {}
+                return
+            else:
+                self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
             if self.verbose:
                 count = 0
                 if self.regs:
@@ -330,13 +346,18 @@ class PowInterface:
             sys.exit()
 
     async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None,
-                          force_all=False, no_cache=False, ignore_config=False, distinct_process=None):
+                          force_all=False, no_cache=False, ignore_config=False, distinct_process=None, ip=''):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 
         :param a_round:
         :param datadir:
         :param inactive_last_round: list of pos_address that did not sent any tx previous round, to drop from list.
+        :param force_all:
+        :param no_cache:
+        :param ignore_config:
+        :param distinct_process:
+        :param ip:
         """
         # TODO: check it's not a round we have in our local DB first.
         # If we have, just return the one stored.
@@ -354,10 +375,10 @@ class PowInterface:
             # Here query one way or the other
             if self.distinct_process:
                 await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                    force_all=force_all, ignore_config=ignore_config)
+                                                    force_all=force_all, ignore_config=ignore_config, ip=ip)
             else:
                 await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                force_all=force_all, ignore_config=ignore_config)
+                                                force_all=force_all, ignore_config=ignore_config, ip=ip)
 
             # Here we have self.regs
 
