@@ -58,7 +58,6 @@ Raspberry pi image of node + HN
 
 Bootstrap. From h.b.live and/or bp12?
 
-> hn_client, status: do not freeze but timeout after a few secs.
 
 > plugin HN in node
 - os check?
@@ -123,7 +122,7 @@ UFW for Python.
 
 JWT for client/HN auth? - cf PyJWT, python micro services.
 
-hn_instance: opt config: what ip to listen on? (default all)
+DONE hn_instance: opt config: what ip to listen on? (default all)
 
 Since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
 If so, use the docstring to add "Async" prefix instead to all async functions.
@@ -132,12 +131,13 @@ Write a simplified async node, with only node related commands, no client comman
 Could serve as a base for a full async node later on, and will lighten the load on the hosting.
 Most diff. thing: the sync state loop to clearly decompose.
 
-Reread docs and code, change occurrences of MN to HN (code ok)
+DONE Reread docs and code, change occurrences of MN to HN (code ok)
 
 HN need a full ledger - Enforce. Include historical pow data in tests?
 
 Protocol: should we exchange current forger as part as current height to be safe?
 > Not hard to do, not much overhead, would id splitting HNs before they even split.
+Needs HF
 
 peers agree with us : differentiate jurors (for forging) and all (for sync when late and not juror)
 jurors only trust jurors.
@@ -193,6 +193,7 @@ TESTING heights message (client) to get heights of inbound + outbound peers
 DONE Invalid reg if ip is not an ip / bis address / pos address
 DONE close with error if windows: already an error message if not Posix.
 DONE add a config.txt to override the config.py param
+DONE hn_client, status: do not freeze but timeout after a few secs.
 
 
 

@@ -12,12 +12,31 @@ import sys
 # custom modules
 sys.path.append('../modules')
 import config
+import os
 import poshn
 import poscrypto
 import psutil
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
+
+
+def check_os(status):
+    """
+    Dup from hn_client. FR: factorize
+    """
+    if os.name == "posix":
+        process = psutil.Process()
+        limit = process.rlimit(psutil.RLIMIT_NOFILE)
+        status["flimit"] = limit
+        if limit[0] < 1024:
+            status['errors'].append("Too small ulimit, please tune your system.")
+            sys.exit()
+        if limit[0] < 65000:
+            status['errors'].append("ulimit shows non optimum value, consider tuning your system.")
+    else:
+        status["flimit"] = 'N/A'
+        status['errors'].append("Non Posix system, requirements are not satisfied. Use at your own risks.")
 
 
 if __name__ == "__main__":
@@ -32,6 +51,7 @@ if __name__ == "__main__":
     status = {"address": poscrypto.ADDRESS, "errors": []}
     status['hn_lib_version'] = poshn.__version__
     status['config'] = config.load()
+    check_os(status)
     # check if db exists
     if not path.isfile(config.POW_LEDGER_DB):
         status['errors'].append("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
@@ -41,22 +61,29 @@ if __name__ == "__main__":
     python = instances[0]['exe'] if nb_instances else 'N/A'
     status['running_instances'] = nb_instances
     status['python'] = python
+    status['python_version'] = subprocess.getoutput('{} --version'.format(config.PYTHON_EXECUTABLE))
+    status['pwd'] = subprocess.getoutput("pwd")
     if args.interface:
         status['external_ip'] = subprocess.getoutput("curl --interface {} -4 -s ifconfig.co".format(args.interface))
+        status['interface'] = args.interface
     else:
         status['external_ip'] = subprocess.getoutput("curl -4 -s ifconfig.co")
+        status['interface'] = ''
     status['default_port'] = config.DEFAULT_PORT
+    with open("check.json", 'w') as f:
+        json.dump(status, f)
     if args.json:
         print(json.dumps(status))
     else:
         if args.verbose:
-            for var in ['address', 'hn_lib_version', 'default_port', 'external_ip', 'running_instances', 'python']:
+            for var in ['address', 'hn_lib_version', 'default_port', 'external_ip', 'running_instances', 'python',
+                        'python_version', 'interface', 'pwd', 'flimit']:
                 print(var, ':', json.dumps(status[var]))
             print("\n== Config ==\n")
             for var, value in status['config'].items():
                 print(var, ':', json.dumps(value))
         else:
-            for var in ['address', 'default_port', 'external_ip', 'running_instances']:
+            for var in ['address', 'default_port', 'external_ip', 'running_instances', 'python_version', 'pwd']:
                 print(var, ':', json.dumps(status[var]))
             for var in ['POW_LEDGER_DB']:
                 print(var, ':', json.dumps(status['config'][var]))
@@ -64,6 +91,3 @@ if __name__ == "__main__":
             print("\n!! There are error(s) !!\n")
             for value in status['errors']:
                 print("Error:", value)
-
-
-
