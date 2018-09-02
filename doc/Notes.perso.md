@@ -64,7 +64,6 @@ Bootstrap. From h.b.live and/or bp12?
 - quicksync force false
 - filter ec2
 
-> hn_reg_feed : filter for 1 ip
 
 > raise % 50% ?
 
@@ -194,6 +193,7 @@ DONE Invalid reg if ip is not an ip / bis address / pos address
 DONE close with error if windows: already an error message if not Posix.
 DONE add a config.txt to override the config.py param
 DONE hn_client, status: do not freeze but timeout after a few secs.
+DONE hn_reg_feed : filter for 1 ip
 
 
 

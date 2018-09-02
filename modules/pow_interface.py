@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -361,6 +361,8 @@ class PowInterface:
         :param distinct_process:
         :param ip:
         """
+        if ip == '':
+            ip = False
         # TODO: check it's not a round we have in our local DB first.
         # If we have, just return the one stored.
         if distinct_process is None:
