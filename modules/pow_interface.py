@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -213,7 +213,7 @@ class PowInterface:
                 valid = True
                 show = False
                 try:
-                    if "{}:".format(ip) in openfield:
+                    if ip and "{}:".format(ip) in openfield:
                         show = True
                         self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
                     hip, port, pos, reward = self.reg_extract(openfield, address)
@@ -325,15 +325,18 @@ class PowInterface:
         :return:
         """
         try:
-            cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={}".format(ip)]
-            if a_round > 0:
-                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={}".format(a_round, ip)]
             if ip:
+                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={}".format(ip)]
+                if a_round > 0:
+                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={}".format(a_round, ip)]
                 res = await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT)
                 print(res)
                 self.regs = {}
                 return
             else:
+                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py"]
+                if a_round > 0:
+                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {}".format(a_round)]
                 self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
             if self.verbose:
                 count = 0
@@ -361,6 +364,8 @@ class PowInterface:
         :param distinct_process:
         :param ip:
         """
+
+
         if ip == '':
             ip = False
         # TODO: check it's not a round we have in our local DB first.
@@ -368,6 +373,7 @@ class PowInterface:
         if distinct_process is None:
             distinct_process = config.POW_DISTINCT_PROCESS
         self.distinct_process = distinct_process
+
         if self.verbose:
             self.app_log.info("load_hn_pow, round {}".format(a_round))
         try:
