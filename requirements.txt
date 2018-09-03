@@ -7,3 +7,5 @@ ecdsa
 protobuf
 psutil
 pytest
+dnspython3
+ipwhois

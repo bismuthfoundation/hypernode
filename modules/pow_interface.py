@@ -40,7 +40,8 @@ SQL_QUICK_BALANCE_CREDITS = "SELECT sum(amount+reward) FROM transactions WHERE r
 SQL_QUICK_BALANCE_DEBITS = "SELECT sum(amount+fee) FROM transactions WHERE address = ? AND block_height <= ?"
 
 SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , " \
-                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b WHERE address = ? AND block_height <= ?) " \
+                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b " \
+                        "WHERE address = ? AND block_height <= ?) " \
                         "WHERE a.recipient = ? AND a.block_height <= ?"
 
 
@@ -115,6 +116,7 @@ class PowInterface:
         Extract data from openfield. 'ip:port:pos' or with option 'ip2:port:pos2,reward=bis2a'
 
         :param openfield: str
+        :param address: str
         :return: tuple (ip, port, pos, reward)
         """
         options = {}
@@ -132,8 +134,26 @@ class PowInterface:
             raise ValueError("Bad source address")
         return ip, port, pos, reward
 
+    def extract_reason(self, openfield):
+        """
+        Extract optional reason data from openfield.
+
+        :param openfield: str
+        :return: str
+        """
+        if ',' in openfield:
+            # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
+            parts = openfield.split(',')
+            parts.pop(0)
+            for extra in parts:
+                key, value = extra.split('=')
+                if key == 'reason':
+                    return value
+        return ''
+
     async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip=''):
+                                   force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
+                                   ip: str=''):
         """
         Load from async sqlite3 connection from the same process.
         Been experienced an can hang the whole HN on busy nodes.
@@ -154,7 +174,7 @@ class PowInterface:
                 round_ts = int(time.time())
             pow_cache_file_name = "{}/powhncache.json".format(datadir)
             # FR: Check the pow chain is up to date?
-            # beware, we can't print what we want, output is read as json.
+            # beware, we can't print what we want, output is read as json.
             # latest_ts =  await self.pow_chain.async_get_last_ts()
             # Current height, or height at begin of the new round.
             height = await self.pow_chain.async_get_block_before_ts(round_ts)
@@ -177,6 +197,7 @@ class PowInterface:
                     # Save before we filter out inactive
                     cache = json.load(f)
                     self.regs = cache['HNs']
+                checkpoint = 773800  # TODO: adjust from cache file
             else:
                 if self.verbose:
                     self.app_log.info("no powhncache in {}".format(datadir))
@@ -250,17 +271,20 @@ class PowInterface:
                         if address in self.regs:
                             # unreg from owner
                             if (hip, port, pos) == (self.regs[address]['ip'], self.regs[address]['port'],
-                                                   self.regs[address]['pos']):
-                                # same infos
+                                                    self.regs[address]['pos']):
+                                # same info
                                 del self.regs[address]
                             else:
                                 raise ValueError("Invalid unregistration params")
 
-                        elif address == config.POS_CONTROL_ADDRESS:
+                        elif address == config.POW_CONTROL_ADDRESS:
                             self.regs = {key: items for key, items in self.regs.items()
                                          if (items['ip'], items['port'], items['pos']) != (hip, port, pos)}
+                            if show:
+                                self.app_log.warning("Unreg by controller, reason '{}'."
+                                                     .format(self.extract_reason(openfield)))
                         else:
-                            raise ValueError("Invalid unregistration sender")
+                            raise ValueError("Invalid un-registration sender")
                         if show:
                             self.app_log.info("Ok")
 
@@ -293,10 +317,9 @@ class PowInterface:
         """
         process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE,
                                                        stderr=asyncio.subprocess.PIPE)
-        p = None
         try:
             p = await asyncio.wait_for(process.wait(), timeout)
-        except Exception as e:
+        except Exception:
             p = None
         if not (p is None):
             if p == 0:
@@ -364,8 +387,6 @@ class PowInterface:
         :param distinct_process:
         :param ip:
         """
-
-
         if ip == '':
             ip = False
         # TODO: check it's not a round we have in our local DB first.
@@ -399,7 +420,7 @@ class PowInterface:
             if False:  # not no_cache:
                 with open(pow_cache_file_name, 'w') as f:
                     # Save before we filter out inactive
-                    cache = { "height": height, "timestamp": int(time.time()), "HNs": self.regs}
+                    cache = {"height": height, "timestamp": int(time.time()), "HNs": self.regs}
                     # TODO: Error Object of type 'TextIOWrapper' is not JSON serializable
                     # TODO test cache.
                     json.dump(f, cache)

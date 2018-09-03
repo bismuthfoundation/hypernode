@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.23'
+__version__ = '0.0.24'
 
 """
 User config - You can change these one - See doc
@@ -34,7 +34,6 @@ LOG = []
 AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg',  'txdigest', 'timing']
 
 # Path to the Bismuth chain
-# TODO: override by config.json, see notes.md
 POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
 
 PYTHON_EXECUTABLE = "python3"
@@ -110,12 +109,12 @@ PING_DELAY = 30
 FUTURE_ALLOWED = 5
 
 # Duration of a PoS slot in minute - each slot can be filled by a block (or stay empty)
-POS_SLOT_TIME_MIN = 5  # POC test
+# POS_SLOT_TIME_MIN = 5  # POC test
 POS_SLOT_TIME_MIN = 3  # Real world setting?
 POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 
 # How many slots in a round? Better keep them an odd number.
-MAX_ROUND_SLOTS = 3  # POC test
+# MAX_ROUND_SLOTS = 3  # POC test
 MAX_ROUND_SLOTS = 19  # Real world. 19+1 = 20 , 3x20 = 60 (round time)
 
 # How many block times to wait at the end of a round to reach consensus?
@@ -141,8 +140,9 @@ REQUIRED_SOURCES_PER_BLOCK = 3
 ORIGIN_OF_TIME = 1534716000  # Real Origin: August 20
 
 
-# Do not change this.
+# Do not change these - Private contract controller.
 POS_CONTROL_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
+POW_CONTROL_ADDRESS = '3591b3d42ccf4ff6f29f21ca2f4edf530e767aaa522eb2fbf63ac218'
 
 # Round time in seconds
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
@@ -191,7 +191,7 @@ def overload(file_name: str):
         if line and line[0] == '#':
             continue
         if '=' in line:
-            left, right = map(str.strip,line.rstrip("\n").split("="))
+            left, right = map(str.strip, line.rstrip("\n").split("="))
             if left not in VARS:
                 continue
             param = VARS[left]

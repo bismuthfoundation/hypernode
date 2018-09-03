@@ -5,9 +5,13 @@ Checks the wallet, config, and tells if an hn instance is running.
 
 import argparse
 import json
-from os import path
 import subprocess
 import sys
+from os import path
+from warnings import filterwarnings
+from warnings import resetwarnings
+
+from ipwhois import IPWhois
 
 # custom modules
 sys.path.append('../modules')
@@ -37,6 +41,22 @@ def check_os(status):
     else:
         status["flimit"] = 'N/A'
         status['errors'].append("Non Posix system, requirements are not satisfied. Use at your own risks.")
+
+
+def get_ip_provider(ip:str):
+    """
+    Returns thhe descriptino of the network provider for the public ip.
+    Dupped code from plugin
+
+    :param ip: str
+    :return: str
+    """
+    filterwarnings(action="ignore")
+    obj = IPWhois(ip)
+    res = obj.lookup_whois()
+    desc = res.get('asn_description')
+    resetwarnings()
+    return desc
 
 
 if __name__ == "__main__":
@@ -69,6 +89,7 @@ if __name__ == "__main__":
     else:
         status['external_ip'] = subprocess.getoutput("curl -4 -s ifconfig.co")
         status['interface'] = ''
+    status['provider'] = get_ip_provider(status['external_ip'])
     status['default_port'] = config.DEFAULT_PORT
     with open("check.json", 'w') as f:
         json.dump(status, f)

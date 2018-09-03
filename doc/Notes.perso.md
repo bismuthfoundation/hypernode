@@ -60,12 +60,9 @@ Bootstrap. From h.b.live and/or bp12?
 
 
 > plugin HN in node
-- os check?
-- quicksync force false
-- filter ec2
-
-
-> raise % 50% ?
+- quicksync force false : !!Needs access to config object!!
+- ok filter ec2
+- ok add requirements from plugin to hn_check
 
 Supervision / crontab
 
@@ -76,7 +73,7 @@ doc config python_executable
 
 still some freeze when getting pow chain.
 add a plugin to save the pow info from the node.
-hn plugin, with ip filter included
+hn plugin, with ip filter included (+whitelist from successful regs)
 - create data dir for hn list
 - on status, create cache file for current round (a little in advance)
 - keep N last files (or all? 1 per hour => clean)
