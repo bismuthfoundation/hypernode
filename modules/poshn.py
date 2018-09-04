@@ -1002,7 +1002,7 @@ class Poshn:
         app_log.info("Registered Hypernodes, round {} to {}".format(start_round, end_round))
         # Get all HN who were valid for at least a round
         # from local DB and powchain.regs: show also inactive
-        # FR: these are only the HNs still reg for latest round, we should maybe be more cool
+        # TODO: these are only the HNs still reg for latest round, we should maybe be more cool
         hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
                                 "recipient": item[5], "kpis":{}}
                       for item in self.all_peers}

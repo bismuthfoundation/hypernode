@@ -70,6 +70,8 @@ auto update
 
 doc config python_executable
 
+> save round info to db at round start
+
 
 still some freeze when getting pow chain.
 add a plugin to save the pow info from the node.
@@ -118,8 +120,6 @@ UFW for Python.
 
 JWT for client/HN auth? - cf PyJWT, python micro services.
 
-DONE hn_instance: opt config: what ip to listen on? (default all)
-
 Since almost all code is async, maybe remove async_prefix we did not enforce everywhere, anyway.
 If so, use the docstring to add "Async" prefix instead to all async functions.
 
@@ -127,7 +127,6 @@ Write a simplified async node, with only node related commands, no client comman
 Could serve as a base for a full async node later on, and will lighten the load on the hosting.
 Most diff. thing: the sync state loop to clearly decompose.
 
-DONE Reread docs and code, change occurrences of MN to HN (code ok)
 
 HN need a full ledger - Enforce. Include historical pow data in tests?
 
@@ -191,6 +190,8 @@ DONE close with error if windows: already an error message if not Posix.
 DONE add a config.txt to override the config.py param
 DONE hn_client, status: do not freeze but timeout after a few secs.
 DONE hn_reg_feed : filter for 1 ip
+DONE hn_instance: opt config: what ip to listen on? (default all)
+DONE Reread docs and code, change occurrences of MN to HN (code ok)
 
 
 

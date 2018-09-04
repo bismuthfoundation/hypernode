@@ -22,6 +22,8 @@ __version__ = '0.1.1'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
+# TODO: Benchmark vs "SELECT * FROM pos_chain where height = (select max(height) from pos_chain)"
+# and "SELECT * FROM pos_chain where rowid = (select last_insert_rowid() from pos_chain)"  # KO, not the last one
 
 SQL_INSERT_BLOCK = "INSERT INTO pos_chain VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
@@ -43,7 +45,7 @@ SQL_TX_FOR_TXID = "SELECT * FROM pos_messages WHERE txid = ?"
 SQL_TX_STATS_FOR_HEIGHT = "SELECT COUNT(txid) AS NB, COUNT(DISTINCT(sender)) AS SOURCES FROM pos_messages " \
                           "WHERE block_height = ?"
 
-SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
+SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"  # FR: opt
 # TODO: duplicate round in pos_messages table to avoid these extra requests
 SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
