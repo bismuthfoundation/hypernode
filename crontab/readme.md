@@ -11,7 +11,7 @@ This guide may seem long, but it's just because I tried to think of everything f
 - HN installed
 - hn_check.py run once
 - hn_instance.py run once, was ok, stopped
-- all hypernode screens existed, the cron will handle them.
+- all hypernode screens closed, the cron will handle them.
 
 - if your python setup is non standard, but then you know, you may have to edit the "python3" invocation command within cron1.py script.
 
