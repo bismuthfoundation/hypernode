@@ -27,7 +27,7 @@ In regard, one minute is cool.
 
 ## Install
 
-Make sur in which dir you are.  
+Make sure in which dir you are.  
 Default install is `~/hypernode` so the crontab dir is `~/hypernode/crontab` but your real, full directory should contain your username.  
 Once in hypernode dir, type `pwd`.  
 You should have something like `/root/hypernode` or `/home/your_user_name/hypernode`.  
@@ -48,7 +48,7 @@ paste these 2 lines:
 Or course, replace `/your/crontab/dir` by your real, custom, crontab dir above.    
 If your invocation of python is not `python3`, edit also.
 
-exit and save (Ctrl-x , Y, enter)
+Exit and save (Ctrl-x , Y, enter)
 
 ## Test
 
@@ -78,9 +78,9 @@ comment out the 2 lines by adding a `#` character at the begin of each line, so 
 # * * * * */5 cd /your/crontab/dir;python3 cron5.py
 ```
 
-exit and save (Ctrl-x , Y, enter)
+Exit and save (Ctrl-x , Y, enter)
 
-redo and remove the `#` to activate again
+Redo and remove the `#` to activate again
 
 ## Changelog
 
