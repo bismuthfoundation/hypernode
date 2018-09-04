@@ -24,6 +24,11 @@ except:
     # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
     config.NETWORK_ID = b'\x19'
 
+# FR: move from python ecdsa to libsecp256k1, supposed t obe way faster to sign and verify transactions.
+# Use test cases and test vectors to make sure all is the same.
+# 2 candidates, https://github.com/ofek/coincurve  seems up to date and pretty good
+# https://github.com/ludbb/secp256k1-py   is older
+
 
 __version__ = '0.0.41'
 

@@ -5,7 +5,7 @@ They will restart it should it die.
 
 This guide may seem long, but it's just because I tried to think of everything for newbies.
 
-## Pre-requisites
+## Pre-requisites
 
 - Running node
 - HN installed
@@ -15,7 +15,7 @@ This guide may seem long, but it's just because I tried to think of everything f
 
 - if your python setup is non standard, but then you know, you may have to edit the "python3" invocation command within cron1.py script.
 
-## What does that do?
+## What does that do?
 
 cron1 is to be run every minute. It will restart missing HN.
 
@@ -25,7 +25,7 @@ This HN will then be restarted by the cron1 a minute after.
 Those as pretty "large" times, but it's ok. Round time is one hour. Slot time is 3 minutes.  
 In regard, one minute is cool. 
 
-## Install
+## Install
 
 Make sure in which dir you are.  
 Default install is `~/hypernode` so the crontab dir is `~/hypernode/crontab` but your real, full directory should contain your username.  
@@ -50,7 +50,7 @@ If your invocation of python is not `python3`, edit also.
 
 Exit and save (Ctrl-x , Y, enter)
 
-## Test
+## Test
 
 This should launch your HN within the minute.  
 `screen -ls`  lists all the running screens.  run it until you see "*hypernode*" in the list.  
@@ -65,7 +65,7 @@ Run `screen -ls` again until you see it coming back to life.
 
 Done :)
 
-## How to disable
+## How to disable
 
 If you want to stop your Hypernode for a reason (like an update), then you need to deactivate the cron jobs first.
 
