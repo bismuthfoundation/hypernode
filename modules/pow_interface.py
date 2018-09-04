@@ -22,7 +22,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -373,8 +373,9 @@ class PowInterface:
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
 
-    async def load_hn_pow(self, a_round=0, datadir='', inactive_last_round=None,
-                          force_all=False, no_cache=False, ignore_config=False, distinct_process=None, ip=''):
+    async def load_hn_pow(self, a_round: int=0, datadir: str='', inactive_last_round=None,
+                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
+                          distinct_process=None, ip: str=''):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 

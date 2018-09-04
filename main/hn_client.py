@@ -126,7 +126,9 @@ param is an optional string param "full,start_round,end_round" where full is "0"
 start_round and end_round are the start and end round (inclusive) to consider.
 Round can be derived from a timestamp.
 
-If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+If *full* is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+
+If *full* is set to "2", start_round is ignored, a dict is returned with registered HN up to end_round, each with weight and active state.
 
 Sample output (no param):
 
@@ -139,6 +141,13 @@ Sample output (no param):
 ]``
 
 Sample output (full=1):
+``python3 hn_client.py --action=hypernodes --param=1,0,100``
+
+``WIP``
+
+Sample output (full=2):
+``python3 hn_client.py --action=hypernodes --param=2,0,100``
+
 ``WIP``
 
 
@@ -282,7 +291,7 @@ import posclient
 import com_helpers
 
 
-__version__ = '0.0.59'
+__version__ = '0.0.60'
 
 DESC = 'Bismuth Hypernode client'
 

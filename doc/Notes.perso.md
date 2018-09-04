@@ -54,9 +54,13 @@ Raspberry pi image of node + HN
 (not enough. orange pi2e : 2Gb, could do)
 
 
+
+
 ### TODO ###
 
 Bootstrap. From h.b.live and/or bp12?
+
+
 
 
 > plugin HN in node
@@ -87,9 +91,6 @@ check latest block timestamp(pow) and warns, suggests pow node not synced.
 end of round: count how many times each peer was late (> 1 round late) to send a tx mentioning late nodes and slots #
 (a late node is useless)
 
-
-> Simulate connect_to , max , depending on hn list size and failure rates to estimate 
-add this to config.json so we can adjust depending on the net state.
 
 
 Message on the pos chain to announce recommended params and alert divergences?
@@ -192,6 +193,12 @@ DONE hn_client, status: do not freeze but timeout after a few secs.
 DONE hn_reg_feed : filter for 1 ip
 DONE hn_instance: opt config: what ip to listen on? (default all)
 DONE Reread docs and code, change occurrences of MN to HN (code ok)
+DONE
+    [I 180904 12:55:10 poshn:1402] >> Entering presync with 51.15.211.92:06969
+    [E 180904 12:55:10 poshn:1537] Connection lost to 51.15.211.92 because 'NoneType' object is not subscriptable. Retry in 20 sec.
+    [E 180904 12:55:10 poshn:1540] detail <class 'TypeError'> poshn.py 1453
+DONE Simulate connect_to , max , depending on hn list size and failure rates to estimate 
+DONE add this to config.txt so we can adjust depending on the net state.
 
 
 

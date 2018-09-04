@@ -49,7 +49,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.91'
+__version__ = '0.0.92'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -988,6 +988,9 @@ class Poshn:
         param is an optional string param "full,start_round,end_round" where full is "0" or "1".
 
         If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
+
+        If full is set to "2", a dict is return instead of a list, with weight and active status up to end_round.
+
         :param param:
         :return:
         """
@@ -997,9 +1000,18 @@ class Poshn:
             full = '1'
             start_round = self.round
             end_round = self.round
+        elif param == '2':
+            full = '2'
+            start_round = 0
+            end_round = self.round
         else:
             full, start_round, end_round = map(str.strip, param.split(','))
-        app_log.info("Registered Hypernodes, round {} to {}".format(start_round, end_round))
+        app_log.info("Registered Hypernodes, full {}, round {} to {}".format(full, start_round, end_round))
+        if full == '2':
+            hypernodes = await self.powchain.load_hn_pow(int(end_round), datadir=self.datadir)
+            # TODO: we should remove from this list the ones that were inactive the round before.
+            return hypernodes
+
         # Get all HN who were valid for at least a round
         # from local DB and powchain.regs: show also inactive
         # TODO: these are only the HNs still reg for latest round, we should maybe be more cool
@@ -1450,35 +1462,35 @@ class Poshn:
                         # The peer will send as many blocks as he wants, and sends empty when it's over.
                         failed = False
                         # warning: we use a property that can be None instead of the method.
-                        while self.net_height['height'] > self.poschain.height_status.height:
-                            await com_helpers.async_send_int32(
-                                commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
-                                stream, full_peer)
-                            # TODO: Add some timeout not to be stuck if the peer does not answer.
-                            # TODO: or at least, go out of this sync mode if the sync peer closes.
-                            msg = await com_helpers.async_receive(stream, full_peer)
-                            if not msg.block_value:
-                                app_log.info("No more blocks from {}".format(full_peer))
-                                # Exit or we are stuck
-                                break
-                            else:
-                                blocks_count = 0
-                                for block in msg.block_value:
-                                    if await self.poschain.digest_block(block, from_miner=False):
-                                        blocks_count += 1
-                                    else:
-                                        break  # no need to go on
-                                app_log.info("Saved {}/{} blocks from {}".format(blocks_count, len(msg.block_value), full_peer))
-                                await self.poschain.async_commit()  # Should not be necessary
-                                if not blocks_count:
-                                    app_log.error("Error while inserting block from {}".format(full_peer))
-                                    failed = True
+                        if self.net_height:
+                            while self.net_height['height'] > self.poschain.height_status.height:
+                                await com_helpers.async_send_int32(
+                                    commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
+                                    stream, full_peer)
+                                # TODO: Add some timeout not to be stuck if the peer does not answer.
+                                # TODO: or at least, go out of this sync mode if the sync peer closes.
+                                msg = await com_helpers.async_receive(stream, full_peer)
+                                if not msg.block_value:
+                                    app_log.info("No more blocks from {}".format(full_peer))
+                                    # Exit or we are stuck
                                     break
-                                if blocks_count <  len(msg.block_value):
-                                    app_log.error("Error while inserting block from {}".format(full_peer))
-                                    failed = True
-                                    break
-
+                                else:
+                                    blocks_count = 0
+                                    for block in msg.block_value:
+                                        if await self.poschain.digest_block(block, from_miner=False):
+                                            blocks_count += 1
+                                        else:
+                                            break  # no need to go on
+                                    app_log.info("Saved {}/{} blocks from {}".format(blocks_count, len(msg.block_value), full_peer))
+                                    await self.poschain.async_commit()  # Should not be necessary
+                                    if not blocks_count:
+                                        app_log.error("Error while inserting block from {}".format(full_peer))
+                                        failed = True
+                                        break
+                                    if blocks_count <  len(msg.block_value):
+                                        app_log.error("Error while inserting block from {}".format(full_peer))
+                                        failed = True
+                                        break
                         hn = await self.hn_db.hn_from_peer(full_peer, self.round)
                         if failed:
                             await self._new_tx(hn['address'], what=101, params='C.FAIL:{}'.format(full_peer), value=self.round)
