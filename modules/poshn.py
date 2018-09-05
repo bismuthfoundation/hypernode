@@ -18,8 +18,9 @@ import json
 import logging
 from operator import itemgetter
 import os
-import psutil
+# import psutil
 import random
+import resource
 import sys
 import time
 # Tornado
@@ -49,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.92'
+__version__ = '0.0.93'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -548,8 +549,7 @@ class Poshn:
 
     def check_os(self):
         if os.name == "posix":
-            self.process = psutil.Process()
-            limit = self.process.rlimit(psutil.RLIMIT_NOFILE)
+            limit = resource.getrlimit(resource.RLIMIT_NOFILE)
             app_log.info("OS File limits {}, {}".format(limit[0], limit[1]))
             if limit[0] < 1024:
                 app_log.error("Too small ulimit, please tune your system.")

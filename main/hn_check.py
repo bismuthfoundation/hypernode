@@ -5,12 +5,14 @@ Checks the wallet, config, and tells if an hn instance is running.
 
 import argparse
 import json
+import resource
 import subprocess
 import sys
 from os import path
 from warnings import filterwarnings
 from warnings import resetwarnings
 
+import psutil
 from ipwhois import IPWhois
 
 # custom modules
@@ -19,34 +21,31 @@ import config
 import os
 import poshn
 import poscrypto
-import psutil
-import resource
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
-def check_os(status):
+def check_os(a_status):
     """
     Dup from hn_client. FR: factorize
     """
     if os.name == "posix":
-        process = psutil.Process()
         limit = resource.getrlimit(resource.RLIMIT_NOFILE)
-        status["flimit"] = limit
+        a_status["flimit"] = limit
         if limit[0] < 1024:
-            status['errors'].append("Too small ulimit, please tune your system.")
+            a_status['errors'].append("Too small ulimit, please tune your system.")
             sys.exit()
-        if limit[1] < 65000:
-            status['errors'].append("ulimit shows non optimum value, consider tuning your system.")
+        if limit[0] < 65000:
+            a_status['errors'].append("ulimit shows non optimum value, consider tuning your system.")
     else:
-        status["flimit"] = 'N/A'
-        status['errors'].append("Non Posix system, requirements are not satisfied. Use at your own risks.")
+        a_status["flimit"] = 'N/A'
+        a_status['errors'].append("Non Posix system, requirements are not satisfied. Use at your own risks.")
 
 
-def get_ip_provider(ip:str):
+def get_ip_provider(ip: str):
     """
-    Returns thhe descriptino of the network provider for the public ip.
+    Returns the description of the network provider for the public ip.
     Dupped code from plugin
 
     :param ip: str
@@ -77,7 +76,8 @@ if __name__ == "__main__":
     if not path.isfile(config.POW_LEDGER_DB):
         status['errors'].append("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
     # check if process runs
-    instances = [p.info for p in psutil.process_iter(attrs=['pid', 'name', 'exe', 'cmdline']) if 'python' in p.info['name'] and 'hn_instance.py' in p.info['cmdline']]
+    instances = [p.info for p in psutil.process_iter(attrs=['pid', 'name', 'exe', 'cmdline'])
+                 if 'python' in p.info['name'] and 'hn_instance.py' in p.info['cmdline']]
     nb_instances = len(instances)
     python = instances[0]['exe'] if nb_instances else 'N/A'
     status['running_instances'] = nb_instances

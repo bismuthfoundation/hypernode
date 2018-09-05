@@ -27,7 +27,7 @@ from poshn import Poshn
 from poschain import SqlitePosChain
 import poscrypto
 import poshelpers
-import pow_interface
+# import pow_interface
 
 __version__ = '0.0.57'
 
