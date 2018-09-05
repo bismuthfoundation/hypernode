@@ -20,6 +20,7 @@ import os
 import poshn
 import poscrypto
 import psutil
+import resource
 
 
 __version__ = '0.0.3'
@@ -31,12 +32,12 @@ def check_os(status):
     """
     if os.name == "posix":
         process = psutil.Process()
-        limit = process.rlimit(psutil.RLIMIT_NOFILE)
+        limit = resource.getrlimit(resource.RLIMIT_NOFILE)
         status["flimit"] = limit
         if limit[0] < 1024:
             status['errors'].append("Too small ulimit, please tune your system.")
             sys.exit()
-        if limit[0] < 65000:
+        if limit[1] < 65000:
             status['errors'].append("ulimit shows non optimum value, consider tuning your system.")
     else:
         status["flimit"] = 'N/A'
