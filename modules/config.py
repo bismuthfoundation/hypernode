@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.24'
+__version__ = '0.0.25'
 
 """
 User config - You can change these one - See doc
@@ -75,6 +75,9 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # TODO: enforce 10 chars when assembling chain
 POSNET = 'posnet0001'
 POSNET_ALLOW = 'posnet0001,posnet0002'
+
+# None yet.
+BOOTSTRAP_URLS = ''
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
 NETWORK_ID = b'\x19'
