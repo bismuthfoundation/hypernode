@@ -53,14 +53,16 @@ def update_source(url: str, app_log: logging.log=None):
     :return:
     """
     try:
-        archive_path = "./hnd.tgz"
+        archive_path = "./hypernode.tar.tgz"
         download_file(url, archive_path)
         tar = tarfile.open(archive_path)
         tar.extractall("./")
         tar.close()
         # move to current dir
-        from_dir = "./hnd_zip/"
+        from_dir = "./hypernode/"
         files = os.listdir(from_dir)
+        print("Files", files)
+        sys.exit()
         for f in files:
             shutil.move(from_dir + f, './' + f)
     except Exception as e:

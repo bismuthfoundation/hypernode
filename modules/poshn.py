@@ -321,9 +321,11 @@ class HnServer(TCPServer):
                 await async_send_block(blocks, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.update:
-                if peer_ip not in self.node.registered_ips:
-                    # TODO: More rights/auth and config management here
-                    access_log.warning("Got Update from {} but not a registered ip".format(peer_ip))
+                if not config.AUTO_UPDATE:
+                    access_log.warning("Got Update from {} but not allowed by config.".format(peer_ip))
+                    return
+                if peer_ip not in config.ALLOW_UPDATES_FROM:
+                    access_log.warning("Got Update from {} but not an allowed ip.".format(peer_ip))
                     return
                 await self.update(msg.string_value, stream, full_peer)
 
@@ -360,7 +362,7 @@ class HnServer(TCPServer):
             if LooseVersion(__version__) < LooseVersion(version):
                 app_log.info("Newer {} version, updating.".format(version))
                 # fetch archive and extract
-                poshelpers.update_source(url + "hnd.tgz", app_log)
+                poshelpers.update_source(url + "hypernode.tar.gz", app_log)
                 # FR: bootstrap db on condition or other message ?
                 await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 # restart

@@ -5,6 +5,7 @@ Common variables for PoS
 Also serves as config file for POC and tests
 """
 
+import json
 from hashlib import blake2b
 from os import path
 
@@ -43,6 +44,10 @@ POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
 PYTHON_EXECUTABLE = "python3"
 
 AUTO_UPDATE = True
+
+# List of safe IPs we accept auto update requests from.
+# Do not change unless you know what you're doing
+ALLOW_UPDATES_FROM = "127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70"
 
 """
 Here comes temp. PoC variables
@@ -87,7 +92,7 @@ PLUGIN_VERSION = "0.0.4"
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
-POSNET = 'posnet0001'
+POSNET = 'posnet0002'
 POSNET_ALLOW = 'posnet0001;posnet0002;posnet0003'
 
 # None yet.
@@ -202,7 +207,52 @@ VARS = {
     "PYTHON_EXECUTABLE": "str",
     "POW_DISTINCT_PROCESS": "bool",
     "AUTO_UPDATE": "bool",
+    "ALLOW_UPDATES_FROM": "str"
 }
+
+COLORED_VARS = {
+    # "POW_LEDGER_DB": "str",
+    # "LOG": "list",
+    # "POSNET": "str",
+    "POSNET_ALLOW": "list",
+    "MAX_CONNECT_TO": "int",
+    "BLOCK_SYNC_COUNT": "int",
+    # "WAIT": "int",
+    # "SHORT_WAIT": "float",
+    # "PEER_RETRY_SECONDS": "int",
+    # "PYTHON_EXECUTABLE": "str",
+    # "POW_DISTINCT_PROCESS": "bool",
+    # "AUTO_UPDATE": "bool",
+    "ALLOW_UPDATES_FROM": "str",
+
+    "TESTS_PER_SLOT": "int",
+    "PING_DELAY": "int",
+    "BOOTSTRAP_URLS": "str"
+
+}
+
+
+def get_left_right(line, var_list):
+    left, right = map(str.strip, line.rstrip("\n").split("="))
+    if left not in var_list:
+        return None, None
+    param = var_list[left]
+    if param == "int":
+        right = int(right)
+    elif param == "float":
+        right = float(right)
+    elif param == "list":
+        # Separator may be ; or ,
+        right = [str(item.strip()) for item in right.replace(';', ',').split(",")]
+    elif param == "bool":
+        if right.lower() in ["false", "0", "", "no"]:
+            right = False
+        else:
+            right = True
+    else:
+        # treat as "str"
+        pass
+    return left, right
 
 
 def overload(file_name: str):
@@ -210,25 +260,23 @@ def overload(file_name: str):
         if line and line[0] == '#':
             continue
         if '=' in line:
-            left, right = map(str.strip, line.rstrip("\n").split("="))
-            if left not in VARS:
-                continue
-            param = VARS[left]
-            if param == "int":
-                right = int(right)
-            elif param == "float":
-                right = float(right)
-            elif param == "list":
-                right = [str(item.strip()) for item in right.split(",")]
-            elif param == "bool":
-                if right.lower() in ["false", "0", "", "no"]:
-                    right = False
-                else:
-                    right = True
-            else:
-                # treat as "str"
-                pass
-            globals().update({left: right})
+            left, right = get_left_right(line, VARS)
+            if left:
+                globals().update({left: right})
+
+
+def update_colored():
+    # Check colored from plugin - if exists - and overload again
+    colored_file_name = POW_LEDGER_DB.replace('static/ledger.db', 'colored.json')
+    if path.isfile(colored_file_name):
+        with open(colored_file_name) as f:
+            colored = json.load(f)
+            rainbow = colored.get('rainbow')
+            for key_value in rainbow:
+                left, right = get_left_right(key_value, COLORED_VARS)
+                if left:
+                    print("Set {}={} from rainbow".format(left, right))
+                    globals().update({left: right})
 
 
 def load(prefix: str=''):
@@ -239,6 +287,7 @@ def load(prefix: str=''):
     overload(prefix + "config.default.txt")
     if path.exists(prefix + "config.txt"):
         overload(prefix + "config.txt")
+    update_colored()
 
     return {var: globals()[var] for var in VARS}
 
