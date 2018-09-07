@@ -82,6 +82,9 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # Round = 562
 NEXT_HF_AT_ROUND = 562
 
+# required version of the plugin version
+PLUGIN_VERSION = "0.0.4"
+
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
 POSNET = 'posnet0001'

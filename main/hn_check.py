@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Checks the wallet, config, and tells if an hn instance is running.
 
@@ -8,7 +9,9 @@ import json
 import resource
 import subprocess
 import sys
+from distutils.version import LooseVersion
 from os import path
+from shutil import copyfile
 from warnings import filterwarnings
 from warnings import resetwarnings
 
@@ -59,6 +62,42 @@ def get_ip_provider(ip: str):
     return desc
 
 
+def read_version_from_file(filename):
+    for line in open(filename):
+        if "__version__" in line:
+            return line.split("=")[-1].replace("'", '').strip()
+    return None
+
+
+def check_plugin():
+    """
+    Checks the companion plugin is installed and right version.
+
+    If not, do it.
+    """
+    # creates dir if need to be
+    plugin_dir = path.abspath(config.POW_LEDGER_DB.replace('static', 'plugins').replace('ledger.db', '500_hypernode'))
+    # print(plugin_dir)
+    if not path.isdir(plugin_dir):
+        os.makedirs(plugin_dir, exist_ok=True)
+    # copy file over if it does not exists
+    plugin_file_dest = "{}/__init__.py".format(plugin_dir)
+    if not path.isfile(plugin_file_dest):
+        copyfile('../node_plugin/__init__.py', plugin_file_dest)
+        print("\n>> Bismuth Node restart required!!!\n")
+    plugin_ver = read_version_from_file(plugin_file_dest)
+    ok = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
+    if not ok:
+        # was there but not right or high enough version
+        copyfile('../node_plugin/__init__.py', plugin_file_dest)
+        print("\n>> Bismuth Node restart required!!!\n")
+    plugin_ver = read_version_from_file(plugin_file_dest)
+    ok = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
+    print("Companion plugin Version {}, required {}, {}".format(plugin_ver, config.PLUGIN_VERSION, ok))
+    if not ok:
+        print("\n>> Bad companion plugin version\n")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth HyperNode Check')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
@@ -72,6 +111,7 @@ if __name__ == "__main__":
     status['hn_lib_version'] = poshn.__version__
     status['config'] = config.load()
     check_os(status)
+    check_plugin()
     # check if db exists
     if not path.isfile(config.POW_LEDGER_DB):
         status['errors'].append("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
