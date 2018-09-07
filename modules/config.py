@@ -11,7 +11,11 @@ from os import path
 __version__ = '0.0.26'
 
 """
-User config - You can change these one - See doc
+User config - You can change these ones, bu **See doc**
+Please use config.txt instead of editing here.  
+It's important this config.py is the one for the current release or you will end up unsynced.
+
+This file is only to be edited by dev or for debug purposes.
 """
 
 VERBOSE = True
@@ -72,6 +76,11 @@ POC_LAST_BROADHASH = b"123456789abcdef12345"
 """
 Here comes tuneable algorithm variables - Do not change those or you will fork or be unable to sync
 """
+
+# Wednesday Sept 12, 08:00 UTC
+# TS = 1536739200
+# Round = 562
+NEXT_HF_AT_ROUND = 562
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain

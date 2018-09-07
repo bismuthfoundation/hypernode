@@ -264,8 +264,9 @@ class PowInterface:
                         weight = await self.reg_check_balance(address, block_height)
                         # print("w2", time.time())
                         active = True  # by default
-                        # TODO: adjust to a round on Monday or wednesday
-                        if config.COMPUTING_REWARD or a_round >= 1000000:
+                        # inactive last round will no longer get a ticket.
+                        # When computing reward, they will not be counted for the round.
+                        if config.COMPUTING_REWARD or a_round >= config.NEXT_HF_AT_ROUND:
                             if pos in inactive_last_round:
                                 active = False
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],

@@ -35,10 +35,10 @@ BLOCK_800K_TS = 1535717485
 # Start and end rounds, inclusive
 START_ROUND = 279
 
-# Sept 8 1018, 08:00 UTC - End of Week 1
+# Sept 8 2018, 08:00 UTC - End of Week 1
 # TS = 1536393600
 # PoS Round = 466 (begins at that date, therefore use 465)
-END_ROUND = 440
+END_ROUND = 465
 # END_ROUND = 280
 
 # 0.2 is nice.
