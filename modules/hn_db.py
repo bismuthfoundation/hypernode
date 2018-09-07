@@ -2,17 +2,12 @@
 An object interfacing the Hypernodes SqliteDB.
 """
 
-import threading
-import json
-import time
 import os
-import sys
 import sqlite3
 
 # Our modules
 import poshelpers
 from sqlitebase import SqliteBase
-
 
 __version__ = '0.0.5'
 
@@ -36,9 +31,36 @@ SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
     ON CONFLICT REPLACE
     );"""
 
+
+# round, pos address, weight, nblocks, ntxs, nstarts, nnotests, noktests, nkotests, nokactions, nkoactions
+# From poschain
+SQL_CREATE_REWARD_STATS = """CREATE TABLE reward_stats (
+    round      INTEGER,
+    address    VARCHAR (34),
+    weight     INTEGER,
+    nblocks    INTEGER      DEFAULT (0),
+    ntxs       INTEGER      DEFAULT (0),
+    nstarts    INTEGER      DEFAULT (0),
+    nnotests   INTEGER      DEFAULT (0),
+    noktests   INTEGER      DEFAULT (0),
+    nkotests   INTEGER      DEFAULT (0),
+    nokactions INTEGER      DEFAULT (0),
+    nkoactions INTEGER      DEFAULT (0),
+    score      DOUBLE       DEFAULT (0),
+    reward_address    VARCHAR (56),
+    PRIMARY KEY (
+        round,
+        address
+    )
+    ON CONFLICT REPLACE
+    );"""
+
+
 SQL_CLEAR = 'DELETE FROM hypernodes'
 
 SQL_DEL_OLDER_THAN_ROUND = "DELETE FROM hypernodes WHERE round < ?"
+
+SQL_DEL_ROUND = "DELETE FROM hypernodes WHERE round = ?"
 
 SQL_HN_FROM_ADDRESS_ROUND = "SELECT * FROM hypernodes WHERE address = ? AND round = ?"
 
@@ -96,6 +118,13 @@ class SqliteHNDB(SqliteBase):
             self.execute(SQL_CREATE_HYPERNODES)
             self.commit()
             self.app_log.info("Status: Recreated hndb.db file")
+        self.cursor.execute("PRAGMA table_info('reward_stats')")
+        res = len(self.cursor.fetchall())
+        if res != 13:
+            self.execute(SQL_CREATE_REWARD_STATS)
+            self.commit()
+            self.app_log.info("Status: created reward_stats file")
+
         self.db.close()
         self.db = None
         self.cursor = None
@@ -123,46 +152,46 @@ class SqliteHNDB(SqliteBase):
         # Good time to cleanup
         await self.async_execute("VACUUM", commit=True)
 
-    async def hn_from_address(self, address:str, round:int):
+    async def hn_from_address(self, address: str, a_round: int):
         """
         Async. Return a dict with all info from local hn db
 
         :param address: pos address of the hn
-        :param round: the related round (current one, older rounds may been pruned)
+        :param a_round: the related round (current one, older rounds may been pruned)
         :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
         """
 
-        hn = await self.async_fetchone(SQL_HN_FROM_ADDRESS_ROUND, (address, round), as_dict=True)
+        hn = await self.async_fetchone(SQL_HN_FROM_ADDRESS_ROUND, (address, a_round), as_dict=True)
         # TEST DEV ONLY
         # hn['port'] = 6969  # instance 0
         return hn
 
-    async def hn_from_peer(self, peer:str, round:int):
+    async def hn_from_peer(self, peer: str, a_round: int):
         """
         Async. Return a dict with all info from local hn db
 
         :param peer: a ip:port or ip:00port
-        :param round: the related round (current one, older rounds may been pruned)
+        :param a_round: the related round (current one, older rounds may been pruned)
         :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
         """
         ip, port = peer.split(':')
         port = int(port)  # will drop the leading 0s
-        hn = await self.async_fetchone(SQL_HN_FROM_IP_PORT_ROUND, (ip, port, round), as_dict=True)
+        hn = await self.async_fetchone(SQL_HN_FROM_IP_PORT_ROUND, (ip, port, a_round), as_dict=True)
         # TEST DEV ONLY
         # hn['port'] = 6969  # instance 0
         return hn
 
-
-    async def save_hn_from_regs(self, regs:dict, round:int):
+    async def save_hn_from_regs(self, regs: dict, a_round: int):
         """
         Async. Stores the HN info from the pow in local index.
 
         :param regs:  is a dict, with keys = pow address,
         value = dict : 'ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'
-        :param round:
+        :param a_round:
         :return:
         """
-        values = [" (" + ", ".join([str(round), "'"+value['pos']+"'", "'"+value['ip']+"'", str(value['port']),
+        await self.async_execute(SQL_DEL_ROUND, (a_round,), commit=True)
+        values = [" (" + ", ".join([str(a_round), "'"+value['pos']+"'", "'"+value['ip']+"'", str(value['port']),
                                     str(value['weight']), "'"+registrar+"'", "'"+value['reward']+"'",
                                     str(value['timestamp']), str(0), poshelpers.bool_to_dbstr(value['active'])]) + ") "
                   for registrar, value in regs.items()]

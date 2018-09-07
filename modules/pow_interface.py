@@ -30,6 +30,8 @@ SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHER
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT max(block_height) FROM transactions WHERE timestamp <= ? '
 
+SQL_TS_OF_BLOCK = 'SELECT timestamp FROM transactions WHERE reward > 0 AND block_height = ?'
+
 SQL_REGS_FROM_TO = "SELECT block_height, address, operation, openfield, timestamp FROM transactions " \
                    "WHERE (operation='hypernode:register' OR operation='hypernode:unregister') " \
                    "AND block_height >= ? AND block_height <= ? " \
@@ -153,7 +155,7 @@ class PowInterface:
 
     async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
                                    force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
-                                   ip: str=''):
+                                   ip: str='', balance_check: bool=False):
         """
         Load from async sqlite3 connection from the same process.
         Been experienced an can hang the whole HN on busy nodes.
@@ -165,6 +167,7 @@ class PowInterface:
         :param no_cache:
         :param ignore_config:
         :param ip:
+        :param balance_check: Force balance check for all HN at the end of the call
         :return:
         """
         try:
@@ -261,6 +264,10 @@ class PowInterface:
                         weight = await self.reg_check_balance(address, block_height)
                         # print("w2", time.time())
                         active = True  # by default
+                        # TODO: adjust to a round on Monday or wednesday
+                        if config.COMPUTING_REWARD or a_round >= 1000000:
+                            if pos in inactive_last_round:
+                                active = False
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
                                                       [str(hip), port, str(pos), str(reward), weight, timestamp, active]))
                         if show:
@@ -288,6 +295,7 @@ class PowInterface:
                         if show:
                             self.app_log.info("Ok")
 
+
                 except (ValueError, ZeroDivisionError) as e:
                     # print(e)
                     valid = False
@@ -301,6 +309,23 @@ class PowInterface:
                     self.app_log.info("{}".format(valid))
             if self.verbose:
                 self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
+            if balance_check:
+                # recheck all balances
+                self.app_log.warning("Balance check required for PoW height {}".format(height))
+                for pow_address, detail in self.regs.items():
+                    # print(pow_address, detail)
+                    """
+                    {'ip': '51.15.95.155', 'port': '6969', 'pos': 'BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne',
+                     'reward': '8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39', 'weight': 3,
+                     'timestamp': 1534711530.06, 'active': True}
+                    """
+                    weight = await self.reg_check_balance(pow_address, height)
+                    if weight < detail['weight']:
+                        # Can be more, can't be less.
+                        self.app_log.warning("PoW address {}, weight {} instead of {} - removing from list.".format(pow_address, weight, detail['weight']))
+                        # Remove from the list.
+                        self.regs.pop(pow_address, None)
+
         except Exception as e:
             self.app_log.error("load_hn_same_process Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -334,7 +359,8 @@ class PowInterface:
         return 'false'
 
     async def load_hn_distinct_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip=''):
+                                       force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip='',
+                                       balance_check=False):
         """
         Load from async sqlite3 connection from an external process with timeout.
 
@@ -345,13 +371,15 @@ class PowInterface:
         :param no_cache:
         :param ignore_config:
         :param ip:
+        :param balance_check: Force balance check for all HN at the end of the call
         :return:
         """
         try:
+            extra= '-b' if balance_check else ''
             if ip:
-                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={}".format(ip)]
+                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={} {}".format(ip, extra)]
                 if a_round > 0:
-                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={}".format(a_round, ip)]
+                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={} {}".format(a_round, ip, extra)]
                 res = await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT)
                 print(res)
                 self.regs = {}
@@ -375,7 +403,7 @@ class PowInterface:
 
     async def load_hn_pow(self, a_round: int=0, datadir: str='', inactive_last_round=None,
                           force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
-                          distinct_process=None, ip: str=''):
+                          distinct_process=None, ip: str='', balance_check: bool=False):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 
@@ -387,6 +415,7 @@ class PowInterface:
         :param ignore_config:
         :param distinct_process:
         :param ip:
+        :param balance_check: Force balance check for all HN at the end of the call
         """
         if ip == '':
             ip = False
@@ -407,10 +436,12 @@ class PowInterface:
             # Here query one way or the other
             if self.distinct_process:
                 await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                    force_all=force_all, ignore_config=ignore_config, ip=ip)
+                                                    force_all=force_all, ignore_config=ignore_config, ip=ip,
+                                                    balance_check=balance_check)
             else:
                 await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                force_all=force_all, ignore_config=ignore_config, ip=ip)
+                                                force_all=force_all, ignore_config=ignore_config, ip=ip,
+                                                balance_check=balance_check)
 
             # Here we have self.regs
 
@@ -471,6 +502,22 @@ class SqlitePowChain(SqliteBase):
         if self.verbose:
             self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
         return height
+
+    def get_ts_of_block(self, block_height):
+        """
+        Returns the timestamp of the given block height.
+
+        :param block_height:
+        :return: int timestamp
+        """
+        ts = self.fetchone(SQL_TS_OF_BLOCK, (block_height,))
+        if not ts:
+            return None
+        ts = ts[0]
+        if self.verbose:
+            self.app_log.info("Block {} has ts {}".format(block_height, ts))
+        return ts
+
 
     async def async_get_block_before_ts(self, a_timestamp):
         """

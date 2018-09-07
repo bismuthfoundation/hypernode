@@ -8,7 +8,7 @@ Also serves as config file for POC and tests
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.25'
+__version__ = '0.0.26'
 
 """
 User config - You can change these one - See doc
@@ -37,6 +37,8 @@ AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg', 
 POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
 
 PYTHON_EXECUTABLE = "python3"
+
+AUTO_UPDATE = True
 
 """
 Here comes temp. PoC variables
@@ -74,7 +76,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
 POSNET = 'posnet0001'
-POSNET_ALLOW = 'posnet0001,posnet0002'
+POSNET_ALLOW = 'posnet0001;posnet0002;posnet0003'
 
 # None yet.
 BOOTSTRAP_URLS = ''
@@ -162,11 +164,13 @@ DEBUG VARS
 """
 
 POW_DISTINCT_PROCESS = False
-PROCESS_TIMEOUT = 15
+PROCESS_TIMEOUT = 25
 
 """
 Global Variables
 """
+
+COMPUTING_REWARD = False
 
 STOP_EVENT = None
 
@@ -184,8 +188,9 @@ VARS = {
     "SHORT_WAIT": "float",
     "PEER_RETRY_SECONDS": "int",
     "PYTHON_EXECUTABLE": "str",
-    "POW_DISTINCT_PROCESS": "bool"
-    }
+    "POW_DISTINCT_PROCESS": "bool",
+    "AUTO_UPDATE": "bool",
+}
 
 
 def overload(file_name: str):
@@ -214,14 +219,14 @@ def overload(file_name: str):
             globals().update({left: right})
 
 
-def load():
+def load(prefix: str=''):
     """
     Overload info with config.default.txt and config.txt
     :return:
     """
-    overload("config.default.txt")
-    if path.exists("config.txt"):
-        overload("config.txt")
+    overload(prefix + "config.default.txt")
+    if path.exists(prefix + "config.txt"):
+        overload(prefix + "config.txt")
 
     return {var: globals()[var] for var in VARS}
 

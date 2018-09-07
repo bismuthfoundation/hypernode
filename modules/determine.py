@@ -206,6 +206,9 @@ def timestamp_to_round_slot(ts=0):
     return the_round, the_slot
 
 
+def round_to_timestamp(a_round=0):
+    return config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
+
 # TODO: time_to_next_slot
 
 # TODO: time_to_next_round

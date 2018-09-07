@@ -14,7 +14,7 @@ import config
 import pow_interface
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 if __name__ == "__main__":
@@ -22,6 +22,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--force", action="count", default=False, help='Read until last block, do not use real limit.')
     parser.add_argument("-r", "--round", default=0, help='Query for up to that round')
     parser.add_argument("-I", "--ip", type=str, default = '', help="Filter events for that IP only.")
+    parser.add_argument("-b", "--balancecheck", action="count", default=False, help='Do an extra global balance check at the end.')
 
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
     parser.add_argument("-d", "--distinct", action="count", default=False, help='Use the distinct process (debug)')
@@ -39,6 +40,7 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     res = loop.run_until_complete(pow.load_hn_pow(datadir='./data', a_round=int(args.round), inactive_last_round=None,
                                                   force_all=force, no_cache=True, ignore_config=True,
-                                                  distinct_process=distinct, ip=args.ip))
+                                                  distinct_process=distinct, ip=args.ip,
+                                                  balance_check=args.balancecheck))
     if not args.ip:
         print(json.dumps(res))

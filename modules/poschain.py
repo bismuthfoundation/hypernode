@@ -1042,26 +1042,32 @@ class SqlitePosChain(SqliteBase):
 
         sources = await self.async_fetchall(SQL_ROUNDS_START_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['start_count'] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_NO_TESTS_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['no_tests_sent'] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_OK_TESTS_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['ok_tests_sent'] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_KO_TESTS_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['ko_tests_sent'] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_OK_ACTION_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['ok_actions_received'] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_KO_ACTION_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
+            if address in res:
                 res[address]['ko_actions_received'] = sources
 
         # print("res forge", res)
