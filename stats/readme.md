@@ -2,4 +2,4 @@
 
 Temp dir for stat collection and analysis.
 
-Very crude, for tests only.
+Very crude, for tests and dev only.

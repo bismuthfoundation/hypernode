@@ -10,6 +10,9 @@ Helper to convert pos/pow round and heights to timestamp and vice versa
 
 --action=powheight2ts --param=810000
 
+# quick balance of hn pot at given pow block
+--action=hnbalance --param=811159
+
 """
 
 
@@ -27,7 +30,7 @@ from determine import timestamp_to_round_slot
 from determine import round_to_timestamp
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 def ts2utc(ts):
@@ -44,8 +47,8 @@ if __name__ == "__main__":
     verbose = True if args.verbose else False
     config.load('../main/')
     config.COMPUTING_REWARD = True
-
-    if args.action in ['ts2powheight', 'powheight2ts']:
+    pow = None
+    if args.action in ['ts2powheight', 'powheight2ts', 'hnbalance']:
         if not path.isfile(config.POW_LEDGER_DB):
             raise ValueError("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
         pow = pow_interface.PowInterface(verbose=verbose)
@@ -92,6 +95,16 @@ if __name__ == "__main__":
             print("UTC", ts2utc(ts))
         else:
             print("End of chain - Unknown block")
+
+    elif args.action == 'hnbalance':
+        height = int(args.param)
+        print("PoW Height", args.param)
+        print("-------------")
+        balance = pow.quick_check_balance('3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16', height)
+        if balance:
+            print("Balance", balance)
+        else:
+            print("No balance")
 
     else:
         parser.print_usage()

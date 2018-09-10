@@ -46,6 +46,11 @@ SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions a
                         "WHERE address = ? AND block_height <= ?) " \
                         "WHERE a.recipient = ? AND a.block_height <= ?"
 
+SQL_QUICK_BALANCE_ALL_MIRROR = "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , " \
+                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b " \
+                        "WHERE address = ? AND abs(block_height) <= ?) " \
+                        "WHERE a.recipient = ? AND abs(a.block_height) <= ?"
+
 
 # ================== Helpers ================
 
@@ -112,6 +117,25 @@ class PowInterface:
             weight = 3
         # print(credits[0], debits[0], balance, weight)
         return weight
+
+    def quick_check_balance(self, address, height):
+        """
+        Calc rough estimate (not up to 1e-8) of the balance of an account at a certain point in the past.
+        return the matching balance
+
+        Requires a full ledger.
+
+        :param address:
+        :param height: pow block (inclusive)
+        :return: balance
+        """
+        # TODO
+        # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
+        # needs previous round boundaries. Can use an approx method to be faster.
+
+        res = self.pow_chain.fetchone(SQL_QUICK_BALANCE_ALL_MIRROR, (address, height, address, height))
+        balance = res[0]
+        return balance
 
     def reg_extract(self, openfield, address):
         """

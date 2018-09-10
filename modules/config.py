@@ -88,7 +88,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 NEXT_HF_AT_ROUND = 562
 
 # required version of the plugin version
-PLUGIN_VERSION = "0.0.4"
+PLUGIN_VERSION = "0.0.5"
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
@@ -275,7 +275,7 @@ def update_colored():
             for key_value in rainbow:
                 left, right = get_left_right(key_value, COLORED_VARS)
                 if left:
-                    print("Set {}={} from rainbow".format(left, right))
+                    # print("Set {}={} from rainbow".format(left, right))
                     globals().update({left: right})
 
 

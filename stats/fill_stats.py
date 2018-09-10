@@ -156,4 +156,26 @@ if __name__ == "__main__":
 
         # shn : 1134 / 7776 = 14.58%
         # 300K sur 2M = 15%
-        # select address, reward_address, cast(sum(weight) as double)*7776.0/29573.0 as reward, sum(weight) from reward_stats where score >= 0.2 group by address order by reward desc
+        # select address, reward_address, cast(sum(weight) as double)*7776.0/29573.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc
+        # select address, reward_address, cast(sum(weight) as double)*7776.0/29573.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc
+"""
+select  sum(weight) as weight from reward_stats where score >= 0.2;
+34711
+select  sum(weight) as weight from reward_stats;
+36612
+hn pot at 811159: say 8900
+
+select address, reward_address, cast(sum(weight) as double)*8900.0/34711.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;
+select reward_address, cast(sum(weight) as double)*8900.0/34711.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;
+
+select  sum(weight) as weight from reward_stats where score >= 0;
+35935
+select reward_address, cast(sum(weight) as double)*8900.0/35935.0 as reward, sum(weight) as weight from reward_stats where score >= 0 group by reward_address order by reward desc;
+
+select  sum(weight) as weight from reward_stats where score >= 0.1;
+35477
+select reward_address, cast(sum(weight) as double)*8900.0/35477.0 as reward, sum(weight) as weight from reward_stats where score >= 0.1 group by reward_address order by reward desc;
+
+
+
+"""
