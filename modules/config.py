@@ -233,7 +233,6 @@ COLORED_VARS = {
 
     "TESTS_PER_SLOT": "int",
     "PING_DELAY": "int",
-    "BOOTSTRAP_URLS": "str",
     "MIN_FORGE_CONSENSUS": "int"
 }
 
@@ -283,7 +282,8 @@ def update_colored():
                 if left:
                     # print("Set {}={} from rainbow".format(left, right))
                     globals().update({left: right})
-
+            bootstrap = colored.get('bootstrap')
+            globals().update({'BOOTSTRAP_URLS': bootstrap})
 
 def load(prefix: str=''):
     """

@@ -72,6 +72,7 @@ if __name__ == "__main__":
                 wallet_name = "poswallet.json"
                 datadir = "./data"
                 config.load()
+                config.update_colored()
                 if len(config.POC_HYPER_NODES_LIST) <= 0:
                     config.POC_HYPER_NODES_LIST = config.POC_HYPER_NODES_LIST_0
                 ip = args.ip if args.ip else None

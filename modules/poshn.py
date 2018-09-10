@@ -483,6 +483,12 @@ class Poshn:
             self.check_os()
             poscrypto.load_keys(wallet)
             self.address = poscrypto.ADDRESS
+            # TODO: try to bootstrap if empty
+            if not os.path.isfile("{}/poc_pos_chain.db".format(datadir)) or not os.path.isfile("{}/hndb.db".format(datadir)):
+                app_log.warning('No chain found, Bootstrapping.')
+                if not poshelpers.bootstrap(datadir):
+                    app_log.warning('Bootstrapp failed, will catch slowly over the net.')
+                    time.sleep(10)
             # Time sensitive props
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/', ram=True)
             self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,

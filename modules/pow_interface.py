@@ -419,7 +419,8 @@ class PowInterface:
                 count = 0
                 if self.regs:
                     count = len(self.regs)
-                self.app_log.info("{} PoW Valid HN :{}".format(count, json.dumps(self.regs)))
+                # self.app_log.info("{} PoW Valid HN :{}".format(count, json.dumps(self.regs)))
+                self.app_log.info("{} PoW Valid HN".format(count))
         except Exception as e:
             self.app_log.error("load_hn_distinct_process Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()

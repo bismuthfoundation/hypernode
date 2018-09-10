@@ -44,6 +44,23 @@ def download_file(url: str, filename: str):
         print("Downloaded 100 %")
 
 
+def bootstrap(datadir):
+    """
+    Get the bootstrap archive and extract to the given datadir
+
+    :param datadir:
+    """
+    # print("Udating {} from {}".format(datadir, config.BOOTSTRAP_URLS))
+    if not len(config.BOOTSTRAP_URLS):
+        return False
+    url = random.choice(config.BOOTSTRAP_URLS)
+    archive_path = "{}/hn_bs.tar.gz".format(datadir)
+    download_file(url, archive_path)
+    with tarfile.open(archive_path) as tar:
+        tar.extractall(datadir)
+    return True
+
+
 def update_source(url: str, app_log: logging.log=None):
     """
     Update source file from an url
