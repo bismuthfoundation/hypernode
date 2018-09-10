@@ -13,7 +13,7 @@ This guide may seem long, but it's just because I tried to think of everything f
 - hn_instance.py run once, was ok, stopped
 - all hypernode screens closed, the cron will handle them.
 
-- if your python setup is non standard, but then you know, you may have to edit the "python3" invocation command within cron1.py script.
+- If your python setup is non standard, but then you know, you may have to edit the "python3" invocation command within cron1.py script.
 
 ## What does that do?
 
@@ -42,7 +42,7 @@ paste these 2 lines:
 
 ```
 * * * * * cd /your/crontab/dir;python3 cron1.py
-* * * * */5 cd /your/crontab/dir;python3 cron5.py
+*/5 * * * * cd /your/crontab/dir;python3 cron5.py
 ```
 
 Or course, replace `/your/crontab/dir` by your real, custom, crontab dir above.    
@@ -74,8 +74,8 @@ If you want to stop your Hypernode for a reason (like an update), then you need 
 comment out the 2 lines by adding a `#` character at the begin of each line, so it reads 
 
 ```
-# * * * * * cd /your/crontab/dir;python3 cron1.py
-# * * * * */5 cd /your/crontab/dir;python3 cron5.py
+#* * * * * cd /your/crontab/dir;python3 cron1.py
+#*/5 * * * * cd /your/crontab/dir;python3 cron5.py
 ```
 
 Exit and save (Ctrl-x , Y, enter)
@@ -84,4 +84,5 @@ Redo and remove the `#` to activate again
 
 ## Changelog
 
+V 1.1 - Fixed cron entry error
 V 1.0 - Initial commit

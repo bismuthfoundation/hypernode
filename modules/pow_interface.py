@@ -333,7 +333,8 @@ class PowInterface:
                     """
                     self.app_log.info("{}".format(valid))
             if self.verbose:
-                self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
+                # self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
+                self.app_log.info("{} PoW Valid HN.".format(len(self.regs)))
             if balance_check:
                 # recheck all balances
                 self.app_log.warning("Balance check required for PoW height {}".format(height))
@@ -487,7 +488,8 @@ class PowInterface:
                     if items['pos'] in inactive_last_round:
                         self.regs[address]['active'] = False
             if self.verbose:
-                self.app_log.info("PoW+PoS Valid HN :{}".format(json.dumps(self.regs)))
+                # self.app_log.info("PoW+PoS Valid HN :{}".format(json.dumps(self.regs)))
+                self.app_log.info("{} PoW+PoS Valid HN.".format(len(self.regs)))
             # sys.exit()
             # TODO: save in local DB for this round
             return self.regs
@@ -542,7 +544,6 @@ class SqlitePowChain(SqliteBase):
         if self.verbose:
             self.app_log.info("Block {} has ts {}".format(block_height, ts))
         return ts
-
 
     async def async_get_block_before_ts(self, a_timestamp):
         """

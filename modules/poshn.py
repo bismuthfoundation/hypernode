@@ -50,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.93'
+__version__ = '0.0.94'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -70,9 +70,6 @@ LTIMEOUT = 45
 # Minimum required connectivity before we are able to operate
 # FR: Could depend on the jurors count.
 MINIMUM_CONNECTIVITY = 1  # let 1 for growth phase.
-
-# 30% for growth phase? should be 50% or more later on depending on uptime of registered HN.
-MIN_FORGE_CONSENSUS = 20
 
 # Some systems do not support reuse_port
 REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
@@ -130,6 +127,9 @@ class HnServer(TCPServer):
                 remove = True
 
             elif msg.command == commands_pb2.Command.block:
+                while self.node.state in [HNState.NEWROUND]:
+                    # Do not run block processing while in new round computation
+                    await asyncio.sleep(1)
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 if peer_ip not in self.node.registered_ips:
@@ -219,6 +219,9 @@ class HnServer(TCPServer):
             access_log.info("SRV: Got msg >{}< from {}:{}"
                             .format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
         full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
+        while self.node.state in [HNState.NEWROUND]:
+            # Do not run incoming actions while in new round computation
+            await asyncio.sleep(1)
         try:
             # Don't do a thing.
             # if msg.command == commands_pb2.Command.ping:
@@ -234,7 +237,7 @@ class HnServer(TCPServer):
                 round_status = json.dumps(await self.node.round_status())
                 await async_send_string(commands_pb2.Command.getround, round_status, stream, full_peer)
 
-            elif msg.command == commands_pb2.Command.gethypernodes:
+            elif msg.command == commands_pb2.Command.gethypernodes and peer_ip in config.ALLOW_QUERIES_FROM:
                 hypernodes = await self.node.get_hypernodes(msg.string_value)
                 await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(hypernodes),
                                         stream, full_peer)
@@ -366,12 +369,15 @@ class HnServer(TCPServer):
                 # FR: bootstrap db on condition or other message ?
                 await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 # restart
+                """
                 args = sys.argv[:]
                 app_log.warning('Re-spawning {}'.format(' '.join(args)))
                 args.insert(0, sys.executable)
                 if sys.platform == 'win32':
                     args = ['"%s"' % arg for arg in args]
                 os.execv(sys.executable, args)
+                """
+                # Just close, the cronjob will do a clean relaunch
                 self.node.stop()
             else:
                 msg = "Keeping our {} version vs distant {}".format(__version__, version)
@@ -406,6 +412,7 @@ class HNState(Enum):
     CATCHING_UP_PRESYNC = 10
     CATCHING_UP_SYNC = 11
     ROUND_SYNC = 12
+    NEWROUND = 13
 
 
 class Poshn:
@@ -486,7 +493,7 @@ class Poshn:
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
             if not self.powchain.regs:
-                app_log.error('No registered HN found, closing.')
+                app_log.error('No registered HN found, closing. Try restarting.')
                 sys.exit()
             self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
             self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
@@ -784,7 +791,7 @@ class Poshn:
                     # FR: The given worker will be responsible for changing state on ok or failed status
 
                 if self.state == HNState.STRONG_CONSENSUS:
-                    if self.consensus_pc > MIN_FORGE_CONSENSUS and not config.DO_NOT_FORGE:
+                    if self.consensus_pc > config.MIN_FORGE_CONSENSUS and not config.DO_NOT_FORGE:
                         mempool_status = await self.mempool.status()
                         if mempool_status["NB"] >= config.REQUIRED_MESSAGES_PER_BLOCK:
                             # Make sure we are at least 15 sec after round start, to let other nodes be synced.
@@ -1037,9 +1044,7 @@ class Poshn:
                 else:
                     hypernodes[hypernode]['kpis']["active"] = False
 
-
             # forgers = await self.poschain.async_forger_hns(start_round, end_round)
-
 
         return hypernodes
 
@@ -1654,7 +1659,9 @@ class Poshn:
         Should not be called too often (1-10sec should be plenty)
         """
         self.round, self.sir = determine.timestamp_to_round_slot(time.time())
-
+        while self.state in [HNState.NEWROUND]:
+            # do not re-enter if new round ongoing
+            await asyncio.sleep(1)
         if (self.sir != self.previous_sir) or (self.round != self.previous_round):
             with self.round_lock:
                 # If we forged the last block, forget.
@@ -1665,10 +1672,15 @@ class Poshn:
                 self.tests_to_run = []
                 self.tests_to_answer = []
                 if self.round != self.previous_round:
+                    await self.change_state_to(HNState.NEWROUND)
+                    # let it sink
+                    await asyncio.sleep(0.2)
                     # Update all round related info, we get here only once at the beginning of a new round
                     await self.refresh_last_block()
                     if self.verbose:
                         app_log.warning("New Round {}".format(self.round))
+                    # Update possible new working vars
+                    config.update_colored()
                     # Empty test list so we don't go over round boundaries if there were pending tests.
                     self.test_slots = []
                     self.no_test_this_round = False
@@ -1729,6 +1741,8 @@ class Poshn:
                         app_log.warning("No test this round {}".format(self.round))
                     # TODO: save this round info to db
                     # TODO: clean up old info from round db
+                    await self.change_state_to(HNState.SYNCING)
+                    # END NEW ROUND
 
                 # We changed SIR, change tests for slots
                 self.previous_sir = self.sir

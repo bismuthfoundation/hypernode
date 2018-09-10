@@ -53,11 +53,12 @@ def update_source(url: str, app_log: logging.log=None):
     :return:
     """
     try:
-        archive_path = "./hypernode.tar.tgz"
+        archive_path = "../../hypernode.tar.tgz"
         download_file(url, archive_path)
         tar = tarfile.open(archive_path)
-        tar.extractall("./")
+        tar.extractall("../../")
         tar.close()
+        """
         # move to current dir
         from_dir = "./hypernode/"
         files = os.listdir(from_dir)
@@ -65,6 +66,7 @@ def update_source(url: str, app_log: logging.log=None):
         sys.exit()
         for f in files:
             shutil.move(from_dir + f, './' + f)
+        """
     except Exception as e:
         if app_log:
             app_log.warning("Something went wrong in update_source: {}, aborted".format(e))

@@ -34,6 +34,9 @@ How many peers at most to try to connect to?
 How many blocks - at most - to send in a single message when syncing catching up nodes.    
 > BLOCK_SYNC_COUNT=20
 
+How high a consensus % to reach before forging.
+> MIN_FORGE_CONSENSUS=20
+
 ### Network load related
 
 For the whole net  
@@ -45,7 +48,14 @@ Seconds between pings
 ## Default data
 POSNET_ALLOW=posnet0001;posnet0002,MAX_CONNECT_TO=25,BLOCK_SYNC_COUNT=20,TESTS_PER_SLOT=10,PING_DELAY=30,BOOTSTRAP_URLS=
 
+POSNET_ALLOW=posnet0001;posnet0002,MAX_CONNECT_TO=25,BLOCK_SYNC_COUNT=20,TESTS_PER_SLOT=10,PING_DELAY=30,MIN_FORGE_CONSENSUS=20
 
 ## Possible future params
 
-PLUGIN_VERSION
+?
+
+
+## Update
+BOOTSTRAP_URLS : moved to "bootstrap" color: list of urls  
+http://bp12.eggpool.net/hn_bs.tar.gz  
+color:bootstrap  

@@ -18,7 +18,7 @@ from warnings import filterwarnings
 # from warnings import resetwarnings
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 MANAGER = None
@@ -38,7 +38,7 @@ SQL_GET_COLOR_LIST = "SELECT openfield FROM transactions WHERE address = ? and o
                      "ORDER BY block_height DESC LIMIT 1"
 
 COLORED = dict()
-COLORS = ['white', 'cloud', 'brown', 'bismuth', 'gray', 'blue', 'red', 'orange', 'black', 'rainbow']
+COLORS = ['white', 'cloud', 'brown', 'bismuth', 'gray', 'blue', 'red', 'orange', 'black', 'rainbow', 'bootstrap']
 """
 Some colors are just reserved, not used yet.
 white: whitelist for specific ips that could be catched by global blacklists
@@ -51,6 +51,7 @@ red:
 orange:
 black: blacklist for real evil nodes
 rainbow: no ip list, but some global config params that can be globally tuned without asking for posnet or code update.
+bootstrap: urls of HN bootstrap file
 """
 
 POW_CONTROL_ADDRESS = 'cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff'

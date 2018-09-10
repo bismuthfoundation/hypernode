@@ -49,6 +49,8 @@ AUTO_UPDATE = True
 # Do not change unless you know what you're doing
 ALLOW_UPDATES_FROM = "127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70"
 
+# Some calls may be CPU intensive. limit them to some hosts (local host and official API servers)
+ALLOW_QUERIES_FROM = "127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70"
 """
 Here comes temp. PoC variables
 """
@@ -139,6 +141,9 @@ POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 # MAX_ROUND_SLOTS = 3  # POC test
 MAX_ROUND_SLOTS = 19  # Real world. 19+1 = 20 , 3x20 = 60 (round time)
 
+# To be adjusted depending on connectivity and HNs number.
+MIN_FORGE_CONSENSUS = 20
+
 # How many block times to wait at the end of a round to reach consensus?
 END_ROUND_SLOTS = 1
 
@@ -207,7 +212,8 @@ VARS = {
     "PYTHON_EXECUTABLE": "str",
     "POW_DISTINCT_PROCESS": "bool",
     "AUTO_UPDATE": "bool",
-    "ALLOW_UPDATES_FROM": "str"
+    "ALLOW_UPDATES_FROM": "str",
+    "ALLOW_QUERIES_FROM": "str"
 }
 
 COLORED_VARS = {
@@ -227,8 +233,8 @@ COLORED_VARS = {
 
     "TESTS_PER_SLOT": "int",
     "PING_DELAY": "int",
-    "BOOTSTRAP_URLS": "str"
-
+    "BOOTSTRAP_URLS": "str",
+    "MIN_FORGE_CONSENSUS": "int"
 }
 
 
