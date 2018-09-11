@@ -97,6 +97,6 @@ Note that it would be better to upgrade to ubuntu 18
 
 ## Changelog
 
-V 1.2 - Fix attemsp for pyenv on ubuntu 16
-V 1.1 - Fixed cron entry error
-V 1.0 - Initial commit
+- V 1.2 - Fix attemsp for pyenv on ubuntu 16  
+- V 1.1 - Fixed cron entry error  
+- V 1.0 - Initial commit  
