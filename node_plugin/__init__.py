@@ -18,7 +18,7 @@ from warnings import filterwarnings
 # from warnings import resetwarnings
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 MANAGER = None
@@ -144,17 +144,19 @@ def get_desc(ip):
         res = obj.lookup_whois()
         desc = res.get('asn_description')
         # resetwarnings()
-        UPDATED = True
-        DESC[ip] = desc.lower()
+        if desc:
+            UPDATED = True
+            DESC[ip] = desc.lower()
     return desc
 
 
 def filter_peer_ip(peer_ip):
     desc = get_desc(peer_ip['ip'])
-    for cloud in COLORED['cloud']:
-        if cloud in desc and (peer_ip['ip'] not in COLORED['white']):
-            MANAGER.app_log.warning("Spam Filter: Blocked IP {}".format(peer_ip['ip']))
-            peer_ip['ip'] = 'banned'
+    if desc:
+        for cloud in COLORED['cloud']:
+            if cloud in desc and (peer_ip['ip'] not in COLORED['white']):
+                MANAGER.app_log.warning("Spam Filter: Blocked IP {}".format(peer_ip['ip']))
+                peer_ip['ip'] = 'banned'
     return peer_ip
 
 

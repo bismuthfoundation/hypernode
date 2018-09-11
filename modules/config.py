@@ -90,7 +90,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = "0.0.5"
+PLUGIN_VERSION = '0.0.6'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
