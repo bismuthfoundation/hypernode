@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.26'
+__version__ = '0.0.28'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -84,10 +84,10 @@ POC_LAST_BROADHASH = b"123456789abcdef12345"
 Here comes tuneable algorithm variables - Do not change those or you will fork or be unable to sync
 """
 
-# Wednesday Sept 12, 08:00 UTC
-# TS = 1536739200
-# Round = 562
-NEXT_HF_AT_ROUND = 562
+# Wednesday Sept 12, 08:00 UTC + 1Day
+# TS = 1536739200 + 1day
+# Round = 562 => 586
+NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
 PLUGIN_VERSION = "0.0.5"
