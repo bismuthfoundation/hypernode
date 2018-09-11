@@ -361,9 +361,12 @@ class HnServer(TCPServer):
         version_url = url + 'version.txt'
         try:
             version = requests.get(version_url).text.strip()
+            if not version or 'html' in version:
+                app_log.warning("Version info not found")
+                return
             # compare to our version
             if LooseVersion(__version__) < LooseVersion(version):
-                app_log.info("Newer {} version, updating.".format(version))
+                app_log.info("Newer {} version than our {}, updating.".format(version, __version__))
                 # fetch archive and extract
                 poshelpers.update_source(url + "hypernode.tar.gz", app_log)
                 # FR: bootstrap db on condition or other message ?
