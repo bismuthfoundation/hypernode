@@ -82,7 +82,21 @@ Exit and save (Ctrl-x , Y, enter)
 
 Redo and remove the `#` to activate again
 
+## Fix for PyEnv (Ubuntu16)
+
+If you're using pyenv, for instance because ubuntu 16, then cronjob will **not** work because crontab sets its own path and pyenv will not activate.
+
+In that case, use the following crontab entries instead:
+
+```
+* * * * * source ~/.bashrc;cd /your/crontab/dir;python3 cron1.py
+*/5 * * * * source ~/.bashrc;cd /your/crontab/dir;python3 cron5.py
+```
+
+Note that it would be better to upgrade to ubuntu 18
+
 ## Changelog
 
+V 1.2 - Fix attemsp for pyenv on ubuntu 16
 V 1.1 - Fixed cron entry error
 V 1.0 - Initial commit
