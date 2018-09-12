@@ -48,6 +48,12 @@ Failsafe to avoid issues with lost keys and burned ips or old versions
 
 Can be handled by the HN themselves, but a private contract can also send unreg messages to have the current state easily readable in the pow chain alone.
 
+operation
+hypernode:unregister
+
+data
+ip:port:pos_address,reason=a_reason_why
+
 ## One IP per HN
 
 Register invalid if there is an already registered HN with that ip (whatever the port)
