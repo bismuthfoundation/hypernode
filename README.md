@@ -1,8 +1,8 @@
 # Bismuth Hypernodes
 
-Beta code, pre-release for tests.
+Pre-Release 0.0.95
 
-See Official (temp.) Install FAQ: https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Hypernodes/tmp.md
+See Official Install FAQ: https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Hypernodes/Hypernodes_Install_0-0-95.md
 
 ## Running the node
 
