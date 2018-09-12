@@ -53,6 +53,12 @@
 Common variables for PoS</p>
 <p>Also serves as config file for POC and tests</p>
 <dl class="data">
+<dt id="config.ALLOW_QUERIES_FROM">
+<code class="descclassname">config.</code><code class="descname">ALLOW_QUERIES_FROM</code><em class="property"> = '127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70'</em><a class="headerlink" href="#config.ALLOW_QUERIES_FROM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Here comes temp. PoC variables</p>
+</dd></dl>
+
+<dl class="data">
 <dt id="config.GENESIS_SIGNATURE">
 <code class="descclassname">config.</code><code class="descname">GENESIS_SIGNATURE</code><em class="property"> = ''</em><a class="headerlink" href="#config.GENESIS_SIGNATURE" title="Permalink to this definition">¶</a></dt>
 <dd><p>DEBUG VARS</p>
@@ -66,19 +72,18 @@ Common variables for PoS</p>
 
 <dl class="data">
 <dt id="config.PROCESS_TIMEOUT">
-<code class="descclassname">config.</code><code class="descname">PROCESS_TIMEOUT</code><em class="property"> = 15</em><a class="headerlink" href="#config.PROCESS_TIMEOUT" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">config.</code><code class="descname">PROCESS_TIMEOUT</code><em class="property"> = 25</em><a class="headerlink" href="#config.PROCESS_TIMEOUT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Global Variables</p>
 </dd></dl>
 
-<dl class="data">
-<dt id="config.PYTHON_EXECUTABLE">
-<code class="descclassname">config.</code><code class="descname">PYTHON_EXECUTABLE</code><em class="property"> = 'python3'</em><a class="headerlink" href="#config.PYTHON_EXECUTABLE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Here comes temp. PoC variables</p>
-</dd></dl>
+<dl class="function">
+<dt id="config.get_left_right">
+<code class="descclassname">config.</code><code class="descname">get_left_right</code><span class="sig-paren">(</span><em>line</em>, <em>var_list</em><span class="sig-paren">)</span><a class="headerlink" href="#config.get_left_right" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="function">
 <dt id="config.load">
-<code class="descclassname">config.</code><code class="descname">load</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#config.load" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">config.</code><code class="descname">load</code><span class="sig-paren">(</span><em>prefix: str = ''</em><span class="sig-paren">)</span><a class="headerlink" href="#config.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overload info with config.default.txt and config.txt
 :return:</p>
 </dd></dl>
@@ -86,6 +91,11 @@ Common variables for PoS</p>
 <dl class="function">
 <dt id="config.overload">
 <code class="descclassname">config.</code><code class="descname">overload</code><span class="sig-paren">(</span><em>file_name: str</em><span class="sig-paren">)</span><a class="headerlink" href="#config.overload" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="config.update_colored">
+<code class="descclassname">config.</code><code class="descname">update_colored</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#config.update_colored" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -138,6 +148,11 @@ FR: will go into TODO: as TODO: is cleared.</dd>
 <dl class="attribute">
 <dt id="poshn.HNState.MINIMAL_CONSENSUS">
 <code class="descname">MINIMAL_CONSENSUS</code><em class="property"> = 4</em><a class="headerlink" href="#poshn.HNState.MINIMAL_CONSENSUS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="poshn.HNState.NEWROUND">
+<code class="descname">NEWROUND</code><em class="property"> = 13</em><a class="headerlink" href="#poshn.HNState.NEWROUND" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
@@ -1938,7 +1953,7 @@ FR: We could also keep just the txids in a ram dict to filter out faster. (no ne
 <p>Used by mempool and poschain</p>
 <dl class="class">
 <dt id="sqlitebase.SqliteBase">
-<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7f9b80909ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">sqlitebase.</code><code class="descname">SqliteBase</code><span class="sig-paren">(</span><em>verbose=False</em>, <em>db_path: str = './data/'</em>, <em>db_name: str = 'posmempool.db'</em>, <em>app_log: &lt;function log at 0x7feb85b41ea0&gt; = None</em>, <em>ram: str = False</em><span class="sig-paren">)</span><a class="headerlink" href="#sqlitebase.SqliteBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Generic Sqlite storage backend.</p>
 <dl class="method">
@@ -2506,6 +2521,11 @@ the largest that can fit within the period of the Mersenne Twister random number
 </dd></dl>
 
 <dl class="function">
+<dt id="determine.round_to_timestamp">
+<code class="descclassname">determine.</code><code class="descname">round_to_timestamp</code><span class="sig-paren">(</span><em>a_round=0</em><span class="sig-paren">)</span><a class="headerlink" href="#determine.round_to_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="determine.tickets_to_jurors">
 <code class="descclassname">determine.</code><code class="descname">tickets_to_jurors</code><span class="sig-paren">(</span><em>tickets_list</em>, <em>reference_hash</em><span class="sig-paren">)</span><a class="headerlink" href="#determine.tickets_to_jurors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order and extract only the required number of candidates from the tickets</p>
@@ -2851,6 +2871,20 @@ Common helpers for PoS</p>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="poshelpers.bootstrap">
+<code class="descclassname">poshelpers.</code><code class="descname">bootstrap</code><span class="sig-paren">(</span><em>datadir</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.bootstrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the bootstrap archive and extract to the given datadir</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>datadir</strong> – </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="poshelpers.download_file">
 <code class="descclassname">poshelpers.</code><code class="descname">download_file</code><span class="sig-paren">(</span><em>url: str</em>, <em>filename: str</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.download_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fetch a file from an URL with progress indicator</p>
@@ -3017,7 +3051,7 @@ only checks the current round info, not the whole chain.</p>
 
 <dl class="function">
 <dt id="poshelpers.update_source">
-<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7f9b80909ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">poshelpers.</code><code class="descname">update_source</code><span class="sig-paren">(</span><em>url: str</em>, <em>app_log: &lt;function log at 0x7feb85b41ea0&gt; = None</em><span class="sig-paren">)</span><a class="headerlink" href="#poshelpers.update_source" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update source file from an url</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
