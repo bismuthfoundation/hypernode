@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.29'
+__version__ = '0.030'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -202,8 +202,6 @@ STOP_EVENT = None
 VARS = {
     "POW_LEDGER_DB": "str",
     "LOG": "list",
-    "POSNET": "str",
-    "POSNET_ALLOW": "list",
     "MAX_CONNECT_TO": "int",
     "BLOCK_SYNC_COUNT": "int",
     "WAIT": "int",
@@ -215,6 +213,9 @@ VARS = {
     "ALLOW_UPDATES_FROM": "str",
     "ALLOW_QUERIES_FROM": "str"
 }
+# These two have been removed from config - POSNET depends on code, not config, and POSNET_WALLOW comes from the PoW.
+# "POSNET": "str",
+# "POSNET_ALLOW": "list",
 
 COLORED_VARS = {
     # "POW_LEDGER_DB": "str",

@@ -50,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95b'
+__version__ = '0.0.95c'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.

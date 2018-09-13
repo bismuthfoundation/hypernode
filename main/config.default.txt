@@ -37,12 +37,6 @@ POW_DISTINCT_PROCESS=True
 # =========================================================================================================
 
 
-# The current posnet version.
-POSNET=posnet0001
-
-# The allowable posnet versions.
-POSNET_ALLOW=posnet0001,posnet0002
-
 # How many peers at most to try to connect to?
 MAX_CONNECT_TO=25
 
