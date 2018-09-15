@@ -90,13 +90,15 @@ if __name__ == "__main__":
         active_hns = loop.run_until_complete(poschain.async_active_hns(round))  # sends back pos address
         # print(all_peers)
         inactive_hns = set(all_peers) - set(active_hns)
-        # print(inactive_hns)
+        # print("inactive", inactive_hns)
         # Fail safe to avoid disabling everyone on edge cases or attack scenarios
         if len(active_hns) < config.MIN_ACTIVE_HNS:
             # Also covers for recovering if previous round had no block because of low consensus.
             inactive_hns = []
             app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
 
+        # TEMP
+        # inactive_hns = []
         res = loop.run_until_complete(pow.load_hn_pow(datadir='../main/data', a_round=int(round + 1), inactive_last_round=inactive_hns,
                                                   force_all=False, no_cache=True, ignore_config=True,
                                                   distinct_process=distinct, ip='', balance_check=True))

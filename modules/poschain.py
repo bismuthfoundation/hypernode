@@ -1010,6 +1010,7 @@ class SqlitePosChain(SqliteBase):
         forgers = await self.async_fetchall(SQL_ROUNDS_FORGERS, (start_round, end_round))
         forgers = [list(forger)[0] for forger in forgers]
         h_min, h_max = await self.async_fetchone(SQL_MINMAXHEIGHT_OF_ROUNDS, (start_round, end_round))
+        # print("minmax", h_min, h_max)
         sources = await self.async_fetchall(SQL_ROUNDS_SOURCES, (h_min, h_max))
         if sources:
             sources = [list(source)[0] for source in sources]

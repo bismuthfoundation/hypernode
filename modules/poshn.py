@@ -50,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95c'
+__version__ = '0.0.95d'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1028,8 +1028,11 @@ class Poshn:
             full, start_round, end_round = map(str.strip, param.split(','))
         app_log.info("Registered Hypernodes, full {}, round {} to {}".format(full, start_round, end_round))
         if full == '2':
-            hypernodes = await self.powchain.load_hn_pow(int(end_round), datadir=self.datadir)
-            # TODO: we should remove from this list the ones that were inactive the round before.
+            # We should remove from this list the ones that were inactive the round before.
+            active_hns = await self.poschain.async_active_hns(end_round - 1)
+            all_peers = [item[0] for item in self.all_peers]
+            inactive_hns = set(all_peers) - set(active_hns)
+            hypernodes = await self.powchain.load_hn_pow(int(end_round), datadir=self.datadir, inactive_last_round=inactive_hns)
             return hypernodes
 
         # Get all HN who were valid for at least a round
