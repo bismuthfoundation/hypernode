@@ -42,9 +42,10 @@ START_ROUND = 466  # Week 2
 END_ROUND = 465
 END_ROUND = 465 + (7 * 24) * 1  ## Week 2
 
-# Sept 15 2018, 08:00 UTC - End of Week 1
+# Sept 15 2018, 08:00 UTC - End of Week 2
 # TS = 1536998400
 # PoS Round = 634 (begins at that date, therefore use 633)
+# PoW block = 820954
 # Week 2: Rewards from round 466 to 633, Rewards=8064.0
 
 # 0.2 is nice.
@@ -192,5 +193,7 @@ select  sum(weight) as weight from reward_stats;
 37673
 
 hn pot at 811159: say 8000
+real pot:
+addr  3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16
 select reward_address, cast(sum(weight) as double)*8000.0/34188.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;
 """
