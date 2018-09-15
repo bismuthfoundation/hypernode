@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.030'
+__version__ = '0.031'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -47,10 +47,10 @@ AUTO_UPDATE = True
 
 # List of safe IPs we accept auto update requests from.
 # Do not change unless you know what you're doing
-ALLOW_UPDATES_FROM = "127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70"
+ALLOW_UPDATES_FROM = "127.0.0.1;192.99.34.19;163.172.222.163;51.15.56.70"
 
 # Some calls may be CPU intensive. limit them to some hosts (local host and official API servers)
-ALLOW_QUERIES_FROM = "127.0.0.1;216.21.239.197;163.172.222.163;51.15.56.70"
+ALLOW_QUERIES_FROM = "127.0.0.1;192.99.34.19;163.172.222.163;51.15.56.70"
 """
 Here comes temp. PoC variables
 """

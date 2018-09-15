@@ -33,13 +33,19 @@ height 3921
 BLOCK_800K_TS = 1535717485
 
 # Start and end rounds, inclusive
-START_ROUND = 279
+START_ROUND = 279  # Week 1
+START_ROUND = 466  # Week 2
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
 # TS = 1536393600
 # PoS Round = 466 (begins at that date, therefore use 465)
 END_ROUND = 465
-# END_ROUND = 280
+END_ROUND = 465 + (7 * 24) * 1  ## Week 2
+
+# Sept 15 2018, 08:00 UTC - End of Week 1
+# TS = 1536998400
+# PoS Round = 634 (begins at that date, therefore use 633)
+# Week 2: Rewards from round 466 to 633, Rewards=8064.0
 
 # 0.2 is nice.
 MIN_SCORE = 0.2
@@ -176,6 +182,15 @@ select  sum(weight) as weight from reward_stats where score >= 0.1;
 35477
 select reward_address, cast(sum(weight) as double)*8900.0/35477.0 as reward, sum(weight) as weight from reward_stats where score >= 0.1 group by reward_address order by reward desc;
 
+"""
 
+"""
+week2
+select  sum(weight) as weight from reward_stats where score >= 0.2;
+34188
+select  sum(weight) as weight from reward_stats;
+37673
 
+hn pot at 811159: say 8000
+select reward_address, cast(sum(weight) as double)*8000.0/34188.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;
 """

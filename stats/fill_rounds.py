@@ -78,7 +78,9 @@ if __name__ == "__main__":
 
     # get latest one from the current db, so we don't have to rebuilt all when bootstrapping
 
-    for round in range(last_round):
+    previous_round = 465  # last from week 1
+
+    for round in range(previous_round, last_round):
         # for round in range(200, 300):
         print("getting round ", round + 1)
 
