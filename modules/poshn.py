@@ -50,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95d'
+__version__ = '0.0.95e'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1009,7 +1009,7 @@ class Poshn:
 
         If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
 
-        If full is set to "2", a dict is return instead of a list, with weight and active status up to end_round.
+        If full is set to "2", no round info is needed. A dict is returned instead of a list, with weight and active status up to end_round.
 
         :param param:
         :return:
@@ -1029,7 +1029,7 @@ class Poshn:
         app_log.info("Registered Hypernodes, full {}, round {} to {}".format(full, start_round, end_round))
         if full == '2':
             # We should remove from this list the ones that were inactive the round before.
-            active_hns = await self.poschain.async_active_hns(end_round - 1)
+            active_hns = await self.poschain.async_active_hns(int(end_round) - 1)
             all_peers = [item[0] for item in self.all_peers]
             inactive_hns = set(all_peers) - set(active_hns)
             hypernodes = await self.powchain.load_hn_pow(int(end_round), datadir=self.datadir, inactive_last_round=inactive_hns)
