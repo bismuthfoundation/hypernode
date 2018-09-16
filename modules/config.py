@@ -98,7 +98,7 @@ POSNET = 'posnet0002'
 POSNET_ALLOW = 'posnet0001;posnet0002;posnet0003'
 
 # Default hard coded url.
-BOOTSTRAP_URLS = 'http://bp12.eggpool.net/hn_bs.tar.gz'
+BOOTSTRAP_URLS = ['http://bp12.eggpool.net/hn_bs.tar.gz']
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
 NETWORK_ID = b'\x19'
