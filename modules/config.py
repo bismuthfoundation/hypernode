@@ -284,7 +284,8 @@ def update_colored():
                     # print("Set {}={} from rainbow".format(left, right))
                     globals().update({left: right})
             bootstrap = colored.get('bootstrap')
-            globals().update({'BOOTSTRAP_URLS': bootstrap})
+            if bootstrap:
+                globals().update({'BOOTSTRAP_URLS': bootstrap})
 
 def load(prefix: str=''):
     """
