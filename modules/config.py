@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.031'
+__version__ = '0.032'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -87,7 +87,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # Wednesday Sept 12, 08:00 UTC + 1Day
 # TS = 1536739200 + 1day
 # Round = 562 => 586
-NEXT_HF_AT_ROUND = 586
+# NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
 PLUGIN_VERSION = '0.0.61'
@@ -97,8 +97,8 @@ PLUGIN_VERSION = '0.0.61'
 POSNET = 'posnet0002'
 POSNET_ALLOW = 'posnet0001;posnet0002;posnet0003'
 
-# None yet.
-BOOTSTRAP_URLS = ''
+# Default hard coded url.
+BOOTSTRAP_URLS = 'http://bp12.eggpool.net/hn_bs.tar.gz'
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
 NETWORK_ID = b'\x19'

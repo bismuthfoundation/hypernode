@@ -50,7 +50,7 @@ from pow_interface import PowInterface
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95e'
+__version__ = '0.0.95f'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -487,11 +487,11 @@ class Poshn:
             self.check_os()
             poscrypto.load_keys(wallet)
             self.address = poscrypto.ADDRESS
-            # TODO: try to bootstrap if empty
+            # Try to bootstrap if empty
             if not os.path.isfile("{}/poc_pos_chain.db".format(datadir)) or not os.path.isfile("{}/hndb.db".format(datadir)):
                 app_log.warning('No chain found, Bootstrapping.')
                 if not poshelpers.bootstrap(datadir):
-                    app_log.warning('Bootstrapp failed, will catch slowly over the net.')
+                    app_log.warning('Bootstrap failed, will catch slowly over the net.')
                     time.sleep(10)
             # Time sensitive props
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/', ram=True)

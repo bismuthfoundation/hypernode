@@ -290,9 +290,9 @@ class PowInterface:
                         active = True  # by default
                         # inactive last round will no longer get a ticket.
                         # When computing reward, they will not be counted for the round.
-                        if config.COMPUTING_REWARD or a_round >= config.NEXT_HF_AT_ROUND:
-                            if pos in inactive_last_round:
-                                active = False
+                        # if config.COMPUTING_REWARD or a_round >= config.NEXT_HF_AT_ROUND:
+                        if pos in inactive_last_round:
+                            active = False
                         self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
                                                       [str(hip), port, str(pos), str(reward), weight, timestamp, active]))
                         if show:
