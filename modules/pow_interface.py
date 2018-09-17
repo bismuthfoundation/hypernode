@@ -13,6 +13,7 @@ import sqlite3
 import sys
 import time
 from math import floor
+from os import path
 
 # Our modules
 import config
@@ -22,7 +23,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -51,6 +52,9 @@ SQL_QUICK_BALANCE_ALL_MIRROR = "SELECT sum(a.amount+a.reward)-debit FROM transac
                         "WHERE address = ? AND abs(block_height) <= ?) " \
                         "WHERE a.recipient = ? AND abs(a.block_height) <= ?"
 
+SQL_LAST_BLOCK_TS = "SELECT timestamp FROM transactions WHERE block_height = " \
+                    "(SELECT max(block_height) FROM transactions)"
+
 
 # ================== Helpers ================
 
@@ -65,6 +69,37 @@ def validate_pow_address(address: str):
     if re.match('[abcdef0123456789]{56}', address):
         return True
     raise ValueError('Bis Address format error')
+
+
+def read_node_version_from_file(filename):
+    for line in open(filename):
+        if "VERSION" in line:
+            # VERSION = "4.2.6"  # .03 - more hooks again
+            return line.split("=")[-1].split("#")[0].replace('"', '').replace("'", '').strip()
+    return None
+
+
+def get_pow_node_version():
+    """
+    Returns PoW node version
+    """
+    # creates dir if need to be
+    node_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'node.py'))
+    node_version = read_node_version_from_file(node_filename)
+    return node_version
+
+
+def get_pow_status():
+    """
+    Returns full json status from pow node - Requires 0.0.62+ companion plugin
+    """
+    status_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'powstatus.json'))
+    try:
+        with open(status_filename, 'r') as f:
+            status = json.load(f)
+        return status
+    except Exception as e:
+        return {"Error": str(e)}
 
 
 # ================== Classes ================
@@ -91,6 +126,28 @@ class PowInterface:
         Indexed by pow address.
         """
         self.pow_chain = SqlitePowChain(db_path=config.POW_LEDGER_DB, verbose=self.verbose, app_log=app_log)
+
+    async def wait_synced(self):
+        """
+        Waits until the PoW chain is synced.
+        """
+        if self.verbose:
+            self.app_log.info("Checking PoW sync state...")
+        synced = False
+        while not synced:
+            try:
+                res = await self.pow_chain.async_fetchone(SQL_LAST_BLOCK_TS)
+                last_ts = res[0]
+            except:
+                last_ts = -1
+            delay_min = (time.time() - last_ts) / 60
+            if self.verbose:
+                self.app_log.info("Last TS: {}, {:0.2f} min.".format(last_ts, delay_min))
+            # Up to 15 min late is ok (rollback, hard block)
+            synced = (delay_min < 15 )
+            if not synced:
+                self.app_log.warning("Last block {:0.2f} mins in the past, waiting for PoW sync.".format(delay_min))
+                await asyncio.sleep(30)
 
     async def reg_check_balance(self, address, height):
         """

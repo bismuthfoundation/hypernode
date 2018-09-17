@@ -46,11 +46,13 @@ import posblock
 import poscrypto
 import poshelpers
 from pow_interface import PowInterface
+from pow_interface import get_pow_node_version
+from pow_interface import get_pow_status
 
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95f'
+__version__ = '0.0.95g'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -69,7 +71,7 @@ LTIMEOUT = 45
 
 # Minimum required connectivity before we are able to operate
 # FR: Could depend on the jurors count.
-MINIMUM_CONNECTIVITY = 1  # let 1 for growth phase.
+MINIMUM_CONNECTIVITY = 3  # let 1 for growth phase.
 
 # Some systems do not support reuse_port
 REUSE_PORT = hasattr(socket, "SO_REUSEPORT")
@@ -417,6 +419,7 @@ class HNState(Enum):
     CATCHING_UP_SYNC = 11
     ROUND_SYNC = 12
     NEWROUND = 13
+    POW_NOT_SYNC = 14
 
 
 class Poshn:
@@ -480,6 +483,7 @@ class Poshn:
         self.no_test_sent = 0
         self.testing = False  # Flag: we are currently running a test.
         self.being_tested = False
+        self.not_reg = False  # Suppose we are reg by default
         # From whom are we digesting mempool?
         self.mempool_digesting = ''
         try:
@@ -500,6 +504,7 @@ class Poshn:
             self.powchain = PowInterface(app_log=app_log)
             self.hn_db = hn_db.SqliteHNDB(verbose=verbose, app_log=app_log, db_path=datadir+'/')
             loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.powchain.wait_synced())
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
             if not self.powchain.regs:
@@ -1689,6 +1694,8 @@ class Poshn:
                     await self.change_state_to(HNState.NEWROUND)
                     # let it sink
                     await asyncio.sleep(0.2)
+                    # Make sure the PoW node is working and synced.
+                    await self.powchain.wait_synced()
                     # Update all round related info, we get here only once at the beginning of a new round
                     await self.refresh_last_block()
                     if self.verbose:
@@ -1892,6 +1899,9 @@ class Poshn:
                          " - Forged {} since start.".
                          format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
 
+
+        # pow = {"node_version": get_pow_node_version()}
+        pow = get_pow_status()
         status = {'config':
                       {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose, 'outip': self.outip},
                   'instance':
@@ -1907,8 +1917,13 @@ class Poshn:
                             'round': self.round,
                             'sir': self.sir,
                             'forger': self.forger},
-                  'extra': extra}
+                  'extra': extra, "pow": pow}
         # 'peers': self.peers
+        if self.address not in [peer[0] for peer in self.all_peers]:
+            self.not_reg = True
+            app_log.warning("Status: This Hypernode is not registered nor activated yet.")
+        else:
+            self.not_reg = False
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
         if 'connections' in config.LOG:

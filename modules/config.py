@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.032'
+__version__ = '0.0.34'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -90,7 +90,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = '0.0.61'
+PLUGIN_VERSION = '0.0.62'
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain

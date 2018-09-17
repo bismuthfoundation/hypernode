@@ -18,7 +18,7 @@ from warnings import filterwarnings
 # from warnings import resetwarnings
 
 
-__version__ = '0.0.61'
+__version__ = '0.0.62'
 
 
 MANAGER = None
@@ -214,3 +214,5 @@ def action_status(status):
         with open("ipresolv.json", 'w') as f:
             json.dump(DESC, f)
         UPDATED = False
+    with open("powstatus.json", 'w') as f:
+        json.dump(status, f)

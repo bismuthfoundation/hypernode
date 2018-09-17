@@ -6,6 +6,7 @@ Checks the wallet, config, and tells if an hn instance is running.
 
 import argparse
 import json
+import os
 import resource
 import subprocess
 import sys
@@ -21,12 +22,11 @@ from ipwhois import IPWhois
 # custom modules
 sys.path.append('../modules')
 import config
-import os
 import poshn
 import poscrypto
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 def check_os(a_status):
