@@ -50,7 +50,7 @@ START_ROUND = 634  # Week 3
 # Sept 22 2018, 08:00 UTC - End of Week 3
 # TS = 1537603200
 # PoS Round = 802 (begins at that date, therefore use 801)
-# PoW block = 830xxx
+# PoW block = 831272
 # Week 3: Rewards from round 634 to 801, Rewards=8256.0
 
 END_ROUND = 633 + (7 * 24) * 1  ## Week 3
