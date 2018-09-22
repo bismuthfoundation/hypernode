@@ -23,7 +23,7 @@ __version__ = '0.0.2'
 
 
 """
-block 800k, timestamp = 2018/08/31,12:11:25 
+block 800k, timestamp = 2018/08/31,12:11:25
 1535717485.55
 
 Following POS round: 279, timestamp 1535720421
@@ -35,18 +35,25 @@ BLOCK_800K_TS = 1535717485
 # Start and end rounds, inclusive
 START_ROUND = 279  # Week 1
 START_ROUND = 466  # Week 2
+START_ROUND = 634  # Week 3
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
 # TS = 1536393600
 # PoS Round = 466 (begins at that date, therefore use 465)
-END_ROUND = 465
-END_ROUND = 465 + (7 * 24) * 1  ## Week 2
 
 # Sept 15 2018, 08:00 UTC - End of Week 2
 # TS = 1536998400
 # PoS Round = 634 (begins at that date, therefore use 633)
 # PoW block = 820954
 # Week 2: Rewards from round 466 to 633, Rewards=8064.0
+
+# Sept 22 2018, 08:00 UTC - End of Week 3
+# TS = 1537603200
+# PoS Round = 802 (begins at that date, therefore use 801)
+# PoW block = 830xxx
+# Week 3: Rewards from round 634 to 801, Rewards=8256.0
+
+END_ROUND = 633 + (7 * 24) * 1  ## Week 3
 
 # 0.2 is nice.
 MIN_SCORE = 0.2
@@ -101,7 +108,7 @@ if __name__ == "__main__":
     datadir = '../main/data/'
     app_log = logging.getLogger('foo')  # FakeLog()
 
-    print("Rewards from round {} to {}, Rewards={}".format(START_ROUND, END_ROUND, REWARDS))
+    print("Rewards from round {} to {}, Rewards (estimate only)={}".format(START_ROUND, END_ROUND, REWARDS))
 
     poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log, db_path=datadir, mempool=None)
     hn_db = hn_db.SqliteHNDB(verbose=verbose, app_log=app_log, db_path=datadir)
@@ -126,7 +133,7 @@ if __name__ == "__main__":
 
         details = loop.run_until_complete(poschain.async_active_hns_details(round))
         """
-        dict of 
+        dict of
          'BSZM7PcWevqhG5T3PfF94PdcWeW6hH3DUk': {'sources': 12, 'forged': 0, 'ok_tests_sent': 8, 'ko_tests_sent': 2, 'ok_actions_received': 2}
         """
         #hn = loop.run_until_complete(hn_db.async_fetchall("SELECT address, weight FROM hypernodes WHERE active=1 AND round= ?", (round,)))
@@ -196,4 +203,17 @@ hn pot at 811159: say 8000
 real pot:
 addr  3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16
 select reward_address, cast(sum(weight) as double)*8000.0/34188.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;
+"""
+
+"""
+week3
+select  sum(weight) as weight from reward_stats where score >= 0.2;
+39311
+select  sum(weight) as weight from reward_stats;
+44346
+
+hn pot at 831272: say 8256
+real pot:
+addr  3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16
+select reward_address, cast(sum(weight) as double)*8256.0/39311.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;
 """
