@@ -94,7 +94,7 @@ Get total valid weights:
 39311  
 
 We can compare without any filter:  
-`select  sum(weight) as weight from reward_stats;`
+`select  sum(weight) as weight from reward_stats;`  
 44346  
 
 Means 11.35% of lines (one line = 1 HN, 1 round) have been ignored.  
