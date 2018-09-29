@@ -54,11 +54,11 @@ START_ROUND = 634 + 168  # Week 4
 # PoW block = 831272
 # Week 3: Rewards from round 634 to 801, Rewards=8256.0
 
-# Sept 22 2018, 08:00 UTC - End of Week 3
-# TS = 1537603200
-# PoS Round = 802 (begins at that date, therefore use 801)
-# PoW block = 831272
-# Week 3: Rewards from round 634 to 801, Rewards=8256.0
+# Sept 29 2018, 08:00 UTC - End of Week 4
+# TS = 1538208000
+# PoS Round = 970 (begins at that date, therefore use 969)
+# PoW block = 841164
+# Week 3: Rewards from round 802 to 969, Rewards=7912.0
 
 
 END_ROUND = START_ROUND + (7 * 24) * 1 - 1  # Week 4
