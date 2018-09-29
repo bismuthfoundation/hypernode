@@ -23,7 +23,7 @@ import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -398,6 +398,7 @@ class PowInterface:
             if balance_check:
                 # recheck all balances
                 self.app_log.warning("Balance check required for PoW height {}".format(height))
+                bad_balance = []
                 for pow_address, detail in self.regs.items():
                     # print(pow_address, detail)
                     """
@@ -410,7 +411,12 @@ class PowInterface:
                         # Can be more, can't be less.
                         self.app_log.warning("PoW address {}, weight {} instead of {} - removing from list.".format(pow_address, weight, detail['weight']))
                         # Remove from the list.
-                        self.regs.pop(pow_address, None)
+                        #self.regs.pop(pow_address, None)
+                        self.regs[pow_address]['active'] = False
+                        bad_balance.append(pow_address)
+                # now remove the balance cheaters
+                for pow_address in bad_balance:
+                    self.regs.pop(pow_address, None)
 
         except Exception as e:
             self.app_log.error("load_hn_same_process Error {}".format(e))

@@ -36,6 +36,7 @@ BLOCK_800K_TS = 1535717485
 START_ROUND = 279  # Week 1
 START_ROUND = 466  # Week 2
 START_ROUND = 634  # Week 3
+START_ROUND = 634 + 168  # Week 4
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
 # TS = 1536393600
@@ -53,7 +54,17 @@ START_ROUND = 634  # Week 3
 # PoW block = 831272
 # Week 3: Rewards from round 634 to 801, Rewards=8256.0
 
-END_ROUND = 633 + (7 * 24) * 1  ## Week 3
+# Sept 22 2018, 08:00 UTC - End of Week 3
+# TS = 1537603200
+# PoS Round = 802 (begins at that date, therefore use 801)
+# PoW block = 831272
+# Week 3: Rewards from round 634 to 801, Rewards=8256.0
+
+
+END_ROUND = START_ROUND + (7 * 24) * 1 - 1  # Week 4
+
+print("Fill stats, from {} to {}".format(START_ROUND, END_ROUND))
+
 
 # 0.2 is nice.
 MIN_SCORE = 0.2
