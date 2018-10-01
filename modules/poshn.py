@@ -18,6 +18,7 @@ import json
 import logging
 from operator import itemgetter
 import os
+from os import path
 import psutil
 import random
 import resource
@@ -52,7 +53,7 @@ from pow_interface import get_pow_status
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.95g'
+__version__ = '0.0.96'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -491,12 +492,15 @@ class Poshn:
             self.check_os()
             poscrypto.load_keys(wallet)
             self.address = poscrypto.ADDRESS
-            # Try to bootstrap if empty
+            # Try to bootstrap if empty
             if not os.path.isfile("{}/poc_pos_chain.db".format(datadir)) or not os.path.isfile("{}/hndb.db".format(datadir)):
                 app_log.warning('No chain found, Bootstrapping.')
                 if not poshelpers.bootstrap(datadir):
                     app_log.warning('Bootstrap failed, will catch slowly over the net.')
                     time.sleep(10)
+            # Make sure node version is ok and node plugin runs.
+            self.check_node()
+            self.check_pow_status()
             # Time sensitive props
             self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/', ram=True)
             self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,
@@ -583,6 +587,43 @@ class Poshn:
                 app_log.warning("ulimit shows non optimum value, consider tuning your system.")
         else:
             app_log.error("Non Posix system, requirements are not satisfied. Use at your own risks.")
+
+    def check_node(self):
+        # TODO: dup code with hn_check, factorize in helpers.
+        node_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'node.py'))
+        node_version = None
+        for line in open(node_filename):
+            if "VERSION" in line:
+                node_version = line.split("=")[-1].split('#')[0].replace("'", '').replace('"', '').strip()
+                break
+        ok = LooseVersion(node_version) >= LooseVersion(config.REQUIRED_NODE_VERSION)
+        app_log.info("Companion node Version {}, required {}, {}".format(node_version, config.REQUIRED_NODE_VERSION, ok))
+        if not ok:
+            app_log.error("Insufficient companion node version")
+            # kill outdated nodes
+            try:
+                for proc in psutil.process_iter():
+                    if "node.py" in proc.cmdline():
+                        proc.kill()
+            finally:
+                sys.exit()
+
+    def check_pow_status(self):
+        # TODO: dup code with hn_check, factorize in helpers.
+        # FR: rule of 3: 3 times we do that hack to get a filename, use a helper.
+        status_filename = path.abspath(
+            config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'powstatus.json'))
+        ok = False
+        while not ok:
+            if not path.isfile(status_filename):
+                app_log.warning("No powstatus.json. Make sure the node runs. Waiting 30 sec")
+                time.sleep(30)
+            elif os.path.getmtime(status_filename) < time.time() - 6 * 60:
+                app_log.warning("powstatus.json seems too old. Make sure the node runs. Waiting 30 sec.")
+                time.sleep(30)
+            else:
+                app_log.info("powstatus.json ok.")
+                ok = True
 
     def add_inbound(self, ip, port, properties=None):
         """
@@ -1448,7 +1489,8 @@ class Poshn:
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
                         if self.verbose:  # FR: to remove later on
-                            print('self', self.poschain.height_status.to_dict(as_hex=True))
+                            if self.poschain.height_status:
+                                print('self', self.poschain.height_status.to_dict(as_hex=True))
                             print('peer', info.to_dict(as_hex=True))
                         if self.poschain.height_status.block_hash == info.block_hash \
                                 and self.poschain.height_status.round == info.round:
