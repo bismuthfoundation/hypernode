@@ -10,6 +10,7 @@ import os
 import resource
 import subprocess
 import sys
+import time
 from distutils.version import LooseVersion
 from os import path
 from shutil import copyfile
@@ -26,7 +27,7 @@ import poshn
 import poscrypto
 
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 
 def check_os(a_status):
@@ -98,6 +99,34 @@ def check_plugin():
         print("\n>> Bad companion plugin version\n")
 
 
+def check_node_version():
+    node_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'node.py'))
+    node_version = None
+    for line in open(node_filename):
+        if "VERSION" in line:
+            node_version = line.split("=")[-1].split('#')[0].replace("'", '').replace('"', '').strip()
+            break
+    ok = LooseVersion(node_version) >= LooseVersion(config.REQUIRED_NODE_VERSION)
+    print("Companion node Version {}, required {}, {}".format(node_version, config.REQUIRED_NODE_VERSION, ok))
+    if not ok:
+        print("\n>> Bad companion node version\n")
+
+
+def check_pow_status():
+    """
+    This is a check that node runs with the right plugin version and updates powstatus.json
+    :return:
+    """
+    # FR: rule of 3: 3 times we do that hack to get a filename, use a helper.
+    status_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'powstatus.json'))
+    if not path.isfile(status_filename):
+        print("\n>>No powstatus.json. Make sure the node runs. If it does, wait 5 min and retry.\n")
+    elif os.path.getmtime(status_filename) < time.time() - 6*60:
+        print("\n>>powstatus.json seems too old. Make sure the node runs. If it does, wait 5 min and retry.\n")
+    else:
+        print("powstatus.json ok.")
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Bismuth HyperNode Check')
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
@@ -112,6 +141,8 @@ if __name__ == "__main__":
     status['config'] = config.load()
     check_os(status)
     check_plugin()
+    check_node_version()
+    check_pow_status()
     # check if db exists
     if not path.isfile(config.POW_LEDGER_DB):
         status['errors'].append("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
@@ -138,14 +169,14 @@ if __name__ == "__main__":
         print(json.dumps(status))
     else:
         if args.verbose:
-            for var in ['address', 'hn_lib_version', 'default_port', 'external_ip', 'running_instances', 'python',
+            for var in ['address', 'default_port', 'external_ip', 'running_instances', 'hn_lib_version', 'python',
                         'python_version', 'interface', 'pwd', 'flimit']:
                 print(var, ':', json.dumps(status[var]))
             print("\n== Config ==\n")
             for var, value in status['config'].items():
                 print(var, ':', json.dumps(value))
         else:
-            for var in ['address', 'default_port', 'external_ip', 'running_instances', 'python_version', 'pwd']:
+            for var in ['address', 'default_port', 'external_ip', 'running_instances', 'hn_lib_version', 'python_version', 'pwd']:
                 print(var, ':', json.dumps(status[var]))
             for var in ['POW_LEDGER_DB']:
                 print(var, ':', json.dumps(status['config'][var]))
