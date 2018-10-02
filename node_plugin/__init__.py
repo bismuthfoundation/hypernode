@@ -18,7 +18,7 @@ from warnings import filterwarnings
 # from warnings import resetwarnings
 
 
-__version__ = '0.0.62'
+__version__ = '0.0.63'
 
 
 MANAGER = None
@@ -72,20 +72,27 @@ CACHE = '{"127.0.0.1": "localhost", "62.112.10.156": "worldstream, nl", "95.179.
 
 def init_colored():
     global COLORED
-    with sqlite3.connect(LEDGER_PATH, timeout=5) as db:
-        try:
-            for color in COLORS:
-                res = db.execute(SQL_GET_COLOR_LIST, (POW_CONTROL_ADDRESS, 'color:{}'.format(color)))
-                result = res.fetchone()
-                if result:
-                    result = result[0].strip().split(',')
-                else:
-                    result = []
-                COLORED[color] = result
-            with open(HNCOLORED, 'w') as f:
-                json.dump(COLORED, f)
-        except Exception as e:
-            print(e)
+    try:
+        with sqlite3.connect(LEDGER_PATH, timeout=30) as db:
+            try:
+                for color in COLORS:
+                    res = db.execute(SQL_GET_COLOR_LIST, (POW_CONTROL_ADDRESS, 'color:{}'.format(color)))
+                    result = res.fetchone()
+                    if result:
+                        result = result[0].strip().split(',')
+                    else:
+                        result = []
+                    COLORED[color] = result
+            except Exception as e:
+                print(e)
+    finally:
+        # Failsafe if we can't read from chain
+        if 'cloud' not in COLORED:
+            COLORED['cloud'] = ["amazon"]
+        if 'white' not in COLORED:
+            COLORED['white'] = ["34.231.198.116", "18.184.255.105"]
+        with open(HNCOLORED, 'w') as f:
+            json.dump(COLORED, f)
 
 
 def action_init(params):

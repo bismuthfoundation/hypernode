@@ -90,7 +90,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = '0.0.62'
+PLUGIN_VERSION = '0.0.63'
 
 # required minimal version of the node
 REQUIRED_NODE_VERSION = '4.2.7.0'
