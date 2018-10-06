@@ -24,55 +24,58 @@ Sept 29 2018, 08:00 UTC - End of Week 4
 > TS = 1537603200 + 604800
 > TS = 1538208000
 
+Oct 06 2018, 08:00 UTC - End of Week 5
+> TS = 1538208000 + 604800
+> TS = 1538812800
 
 7*86400 = 604800 seconds increments between each week
 
-From this timestamp, we can get the end PoS round. For week4:
+From this timestamp, we can get the end PoS round. For week 5:
 
-`python3 convert.py --action=ts2posround --param=1538208000`  
+`python3 convert.py --action=ts2posround --param=1538812800`  
 gives 
 ```
-UTC   2018-09-29T08:00:00Z
-Round 970
+UTC   2018-10-06T08:00:00Z
+Round 1138
 Slot  0
 ```
-This is the first round of week 5. So **the last PoS round of week 4 is 969**  
-Last PoS round of week 2 was 633.  
+This is the first round of week 6. So **the last PoS round of week 5 is 1137**  
+Last PoS round of week 4 was 969.  
 Each week adds 7*24 = 168 rounds.
 
-## Check the HN port at that time
+## Check the HN port at that time
 
 Get the PoW block at the end of week time :
 
-`python3 convert.py --action=ts2powheight --param=1538208000`  
+`python3 convert.py --action=ts2powheight --param=1538812800`  
 Gives
 ```
-UTC 2018-09-29T08:00:00Z
-PoW Height 841164
-Real TS 1538208040.11
-Next TS 1538208220.12
+UTC 2018-10-06T08:00:00Z
+PoW Height 851093
+Real TS 1538814216.1
+Next TS 1538814310.3
 
 ```
 
-So matching PoW block is 841164
+So matching PoW block is 851093
 
 ## Get balance of hn pot at given pow block
 
-`python3 convert.py --action=hnbalance --param=841164`  
+`python3 convert.py --action=hnbalance --param=851093`  
 Gives
 ```
-Balance 7912.9999999700085
+Balance 7944.999999979998
 ```
 
-So Balance=7912  
+So Balance=7944  
 (addr  3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16)
 
 
 ## Fill_rounds
 
 To go faster, edit fill_rounds.py , line 81, set previous_round to last round of previous week.   
-On week3:  
-previous_round = 633 
+On week 4:  
+previous_round = 969 
 
 `python3 fill_rounds.py`  
 1m27.726s
@@ -97,23 +100,22 @@ I use SQLiteStudio but command line (sqlite3) works also.
 
 Get total valid weights:  
 `select  sum(weight) as weight from reward_stats where score >= 0.2;`  
-39986  
+45607  
 
 We can compare without any filter:  
 `select  sum(weight) as weight from reward_stats;`  
-45570  
+50072  
 
-Means 11.35% of lines (one line = 1 HN, 1 round) have been ignored.  
-It's more than week 2, probably because of delayed node updates.
+Means 9.79% of lines (one line = 1 HN, 1 round) have been ignored.  
 
-hn pot at 831272: we said 7912
+hn pot at 851093: we said 7944
 
 We have to replace valid weights and pot in the following queries:
 
 ## Rewards, per reward address  
-`select reward_address, cast(sum(weight) as double)*7912.0/39986.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
-exported as week4_per_reward_address.csv
+`select reward_address, cast(sum(weight) as double)*7944.0/45607.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
+exported as week5_per_reward_address.csv
 
-## Rewards, per HN
-`select address, reward_address, cast(sum(weight) as double)*7912.0/39986.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
-exported as week4_per_hn_address.csv
+## Rewards, per HN
+`select address, reward_address, cast(sum(weight) as double)*7944.0/45607.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
+exported as week5_per_hn_address.csv
