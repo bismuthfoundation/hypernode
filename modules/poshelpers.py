@@ -7,16 +7,16 @@ import json
 import logging
 import os
 import random
-import shutil
 import sys
 import tarfile
+from operator import itemgetter
 
 import requests
 
 import config
 import poscrypto
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 # GENERIC HELPERS ##############################################################
@@ -122,6 +122,7 @@ def first_height_is_better(height_a: dict, height_b: dict):
     :param height_b:
     :return: Boolean, True if a is > b
     """
+    """
     if height_a['forgers'] > height_b['forgers']:
         return True
     if height_a['forgers_round'] > height_b['forgers_round']:
@@ -132,11 +133,18 @@ def first_height_is_better(height_a: dict, height_b: dict):
         return True
     if height_a['height'] > height_b['height']:
         return True
-    """
-    if height_a['uniques'] > height_b['uniques']:
+    # TODO: use timestamp instead?
+    if height_a['block_hash'] > height_b['block_hash']:
         return True
-    """
     return False
+    """
+    if height_a['block_hash'] == height_b['block_hash']:
+        return False
+    sorted_heights = sorted([height_a, height_b],
+                          key=itemgetter('forgers', 'uniques', 'round', 'height', 'forgers_round',
+                                         'uniques_round', 'block_hash'),
+                          reverse=True)
+    return sorted_heights[0]['block_hash'] == height_a['block_hash']
 
 
 def heights_match(height_a: dict, height_b: dict):

@@ -18,7 +18,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -578,7 +578,10 @@ class SqlitePosChain(SqliteBase):
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
         start_time = time.time()
+        # this is now an array of array. batch store the txs.
         str_txs = []
+        batch = []
+        batch_count = 0
         for tx in block.txs:
             if tx.block_height != block.height:
                 self.app_log.warning("TX had bad height {} instead of {}, fixed. - TODO: do not digest?"
@@ -586,11 +589,18 @@ class SqlitePosChain(SqliteBase):
                 tx.block_height = block.height
             temp = tx.to_str_list()
             tx_ids.append(temp[0])
-            str_txs.append(" (" + ", ".join(temp) + ") ")
+
+            batch.append(" (" + ", ".join(temp) + ") ")
+            batch_count += 1
+            if batch_count >= 100:
+                str_txs.append(batch)
+                batch_count = 0
+                batch = []
             # optimize push in a batch and do a single sql with all tx in a row
             # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+        if len(batch):
+            str_txs.append(batch)
         if len(tx_ids):
-            values = SQL_INSERT_INTO_VALUES + ",".join(str_txs)
 
             if block.uniques_sources < 2:
                 self.app_log.error("block unique sources seems incorrect")
@@ -601,7 +611,9 @@ class SqlitePosChain(SqliteBase):
             if 'timing' in config.LOG:
                 self.app_log.warning('TIMING: poschain create sql for {} txs : {} sec'.format(len(tx_ids), time.time() - start_time))
             # print(values)
-            await self.async_execute(values, commit=True)
+            for batch in str_txs:
+                values = SQL_INSERT_INTO_VALUES + ",".join(batch)
+                await self.async_execute(values, commit=True)
 
         if 'timing' in config.LOG:
             self.app_log.warning('TIMING: poschain _insert {} tx: {} sec'.format(len(tx_ids), time.time() - start_time))
