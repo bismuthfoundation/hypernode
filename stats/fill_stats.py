@@ -36,7 +36,8 @@ BLOCK_800K_TS = 1535717485
 START_ROUND = 279  # Week 1
 START_ROUND = 466  # Week 2
 START_ROUND = 634  # Week 3
-START_ROUND = 634 + 168  # Week 4
+WEEK = 6
+START_ROUND = 466 + 168* (WEEK - 2)  # Week 4
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
 # TS = 1536393600
@@ -64,7 +65,7 @@ START_ROUND = 634 + 168  # Week 4
 END_ROUND = START_ROUND + (7 * 24) * 1 - 1  # Week 4
 
 print("Fill stats, from {} to {}".format(START_ROUND, END_ROUND))
-
+# sys.exit()
 
 # 0.2 is nice.
 MIN_SCORE = 0.2
