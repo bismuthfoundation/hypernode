@@ -46,7 +46,7 @@ paste these 2 lines:
 ```
 
 Or course, replace `/your/crontab/dir` by your real, custom, crontab dir above.    
-If your invocation of python is not `python3`, edit also.
+If your invocation of python is not `python3`, edit also the file cron1.py accordingly.
 
 Exit and save (Ctrl-x , Y, enter)
 
