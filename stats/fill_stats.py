@@ -36,7 +36,7 @@ BLOCK_800K_TS = 1535717485
 START_ROUND = 279  # Week 1
 START_ROUND = 466  # Week 2
 START_ROUND = 634  # Week 3
-WEEK = 6
+WEEK = 7
 START_ROUND = 466 + 168* (WEEK - 2)  # Week 4
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
