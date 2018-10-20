@@ -1,14 +1,14 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # 2018 - Bismuth Foundation and NodeSupply
 # Distributed under the MIT software license, see http://www.opensource.org/licenses/mit-license.php.
 
-# Usage: ./bis-install.sh
+# Usage: bash ./bis-install.sh
 #
 # Setup a regular Bismuth node and hypernode on a fresh Ubuntu 18 install.
 
 # ATTENTION: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.11"
+VERSION="0.1.2"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -73,12 +73,12 @@ configure_firewall() {
 download_node() {
 	echo "Fetching Node"
 	cd
-    if [ -f ./4.2.6.tar.gz ]; then
-        rm 4.2.6.tar.gz
+    if [ -f ./4.2.7.tar.gz ]; then
+        rm 4.2.7.tar.gz
 	fi
-    wget https://github.com/hclivess/Bismuth/archive/4.2.6.tar.gz
-    tar -zxf 4.2.6.tar.gz
-    mv Bismuth-4.2.6 Bismuth
+    wget https://github.com/hclivess/Bismuth/archive/4.2.7.tar.gz
+    tar -zxf 4.2.7.tar.gz
+    mv Bismuth-4.2.7 Bismuth
     cd Bismuth
     echo "Downloading bootstrap"
     cd static
@@ -208,5 +208,5 @@ check_hypernode
 add_cron_jobs
 
 
-echo "Rebooting server..."
+echo "Rebooting server."
 reboot
