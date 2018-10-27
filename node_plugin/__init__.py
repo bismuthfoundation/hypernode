@@ -90,7 +90,7 @@ def init_colored():
         if 'cloud' not in COLORED:
             COLORED['cloud'] = ["amazon"]
         if 'white' not in COLORED:
-            COLORED['white'] = ["34.231.198.116", "18.184.255.105", "18.223.102.119", "13.58.108.209"]
+            COLORED['white'] = ["34.231.198.116", "18.184.255.105", "18.223.102.119", "13.58.108.209", "18.224.195.95"]
         with open(HNCOLORED, 'w') as f:
             json.dump(COLORED, f)
 

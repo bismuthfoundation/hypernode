@@ -32,63 +32,65 @@ Oct 13 2018, 08:00 UTC - End of Week 6
 > TS = 1538812800 + 604800
 > TS = 1539417600
 
-Oct 13 2018, 08:00 UTC - End of Week 7
+Oct 20 2018, 08:00 UTC - End of Week 7
 > TS = 1539417600 + 604800
 > TS = 1540022400
 
+Oct 27 2018, 08:00 UTC - End of Week 8
+> TS = 1540022400 + 604800
+> TS = 1540627200
+
 7*86400 = 604800 seconds increments between each week
 
-From this timestamp, we can get the end PoS round. For week 7:
+From this timestamp, we can get the end PoS round. For week 8:
 
-`python3 convert.py --action=ts2posround --param=1540022400`  
+`python3 convert.py --action=ts2posround --param=1540627200`  
 gives 
 ```
-TS 1540022400
+TS 1540627200
 -------------
-UTC   2018-10-20T08:00:00Z
-Round 1474
+UTC   2018-10-27T08:00:00Z
+Round 1642
 Slot  0
 ```
-This is the first round of week 8. So **the last PoS round of week7 is 1473**  
-Last PoS round of week 6 was 1305.  
+This is the first round of week 8. So **the last PoS round of week7 is 1641**  
+Last PoS round of week 7 was 1473.  
 Each week adds 7*24 = 168 rounds.
 
 ## Check the HN port at that time
 
 Get the PoW block at the end of week time :
 
-`python3 convert.py --action=ts2powheight --param=1540022400`  
+`python3 convert.py --action=ts2powheight --param=1540627200`  
 Gives
 ```
-TS 1540022400
+TS 1540627200
 -------------
-UTC 2018-10-20T08:00:00Z
-PoW Height 871701
-Real TS 1540022365.72
-Next TS 1540022407.78
-
-
+UTC 2018-10-27T08:00:00Z
+PoW Height 881888
+Real TS 1540629054.34
+Next TS 1540629081.51
 ```
 
-So matching PoW block is 871701
+So matching PoW block is 881888
 
 ## Get balance of hn pot at given pow block
 
-`python3 convert.py --action=hnbalance --param=871701`  
+`python3 convert.py --action=hnbalance --param=881888`  
 Gives
 ```
-Balance 8000.000000049986
+Balance 8145.7630638499
 ```
 
-So Balance=8000  
+So Balance=8145  
 (addr  3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16)
 
 
 ## Fill_rounds
 
 To go faster, edit fill_rounds.py , line 81, set previous_round to last round of previous week.   
-On week 7:  
-previous_round = 1305 
+On week 8:  
+previous_round = 1473 
 
 `python3 fill_rounds.py`  
 1m27.726s
@@ -96,8 +98,11 @@ previous_round = 1305
 Verifies again the registered and active HNs for each round of the period.    
 This will tell if any HN cheated on its balance (balance dropped below the registered collateral)
 
-Week 7:
-No other low balance HN than the one that was auto deactivated last week.
+
+Week 8:
+21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2 had his balance dropped from 10K to 0 since round 1552
+9affc41b1656f604e2b0a915302c7f69440d410b04cc43916aa62a86 had his balance dropped from 10K to 0 since round 1608
+
 
 ## Fill_stats
 
@@ -116,22 +121,21 @@ I use SQLiteStudio but command line (sqlite3) works also.
 
 Get total valid weights:  
 `select  sum(weight) as weight from reward_stats where score >= 0.2;`  
-40838  
+43537  
 
 We can compare without any filter:  
 `select  sum(weight) as weight from reward_stats;`  
-52840  
+56342  
 
-Means 12002 lines (one line = 1 HN, 1 round) have been ignored.  
 
-hn pot at 871701: we said 8000
+hn pot at 881888: we said 8145
 
 We have to replace valid weights and pot in the following queries:
 
 ## Rewards, per reward address  
-`select reward_address, cast(sum(weight) as double)*8000.0/40838.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
-exported as week7_per_reward_address.csv
+`select reward_address, cast(sum(weight) as double)*8145.0/43537.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
+exported as week8_per_reward_address.csv
 
 ## Rewards, per HN
-`select address, reward_address, cast(sum(weight) as double)*8000.0/40838.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
-exported as week7_per_hn_address.csv
+`select address, reward_address, cast(sum(weight) as double)*8145.0/43537.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
+exported as week8_per_hn_address.csv
