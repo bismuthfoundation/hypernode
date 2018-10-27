@@ -1,6 +1,6 @@
 # Registration rules
 
-## Reg message
+## Reg message
 
 ### Minimal message
 
@@ -24,7 +24,7 @@ data
 ip:port:pos_address,source=bis_address,reward=bis_addr
 
 
-## Unreg message
+## Unreg message
 
 operation
 hypernode:unregister
@@ -34,7 +34,7 @@ ip:port:pos_address,source=bis_address
 
 (Has to be sent from the same bis_address as the register message to be valid)
 
-## Auto unreg
+## Auto unreg
 
 Failsafe to avoid issues with lost keys and burned ips or old versions
 
