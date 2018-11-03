@@ -4,6 +4,8 @@ Pre-Release 0.0.95
 
 See Official Install FAQ: https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Hypernodes/Hypernodes_Install_0-0-95.md
 
+Hypernodes are Bismuth flavor of Masternodes. See https://Bismuth.cz and Discord https://discord.gg/ngssFAQ
+
 ## Running the node
 
 See "main" directory.
