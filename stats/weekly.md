@@ -104,8 +104,8 @@ This will tell if any HN cheated on its balance (balance dropped below the regis
 
 
 Week 9:
-Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list.
-Warning: PoW address 58df82e6159b00f5323521a4a60cfbea24f74a414cccf7bc802c2fa4, weight 0 instead of 2 - removing from list.
+Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list. (will be auto unreg)
+Warning: PoW address 58df82e6159b00f5323521a4a60cfbea24f74a414cccf7bc802c2fa4, weight 0 instead of 2 - removing from list. (temp issue)
 
 ## Fill_stats
 
@@ -124,11 +124,11 @@ I use SQLiteStudio but command line (sqlite3) works also.
 
 Get total valid weights:  
 `select  sum(weight) as weight from reward_stats where score >= 0.2;`  
-2437  
+42048  
 
 We can compare without any filter:  
 `select  sum(weight) as weight from reward_stats;`  
-3381  
+56598 
 
 
 hn pot at 891847: we said 7968
@@ -136,9 +136,9 @@ hn pot at 891847: we said 7968
 We have to replace valid weights and pot in the following queries:
 
 ## Rewards, per reward address  
-`select reward_address, cast(sum(weight) as double)*7968.0/2437.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
+`select reward_address, cast(sum(weight) as double)*7968.0/42048.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by reward_address order by reward desc;`  
 exported as week9_per_reward_address.csv
 
 ## Rewards, per HN
-`select address, reward_address, cast(sum(weight) as double)*7968.0/2437.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
+`select address, reward_address, cast(sum(weight) as double)*7968.0/42048.0 as reward, sum(weight) as weight from reward_stats where score >= 0.2 group by address order by reward desc;`
 exported as week9_per_hn_address.csv
