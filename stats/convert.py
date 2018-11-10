@@ -2,6 +2,9 @@
 """
 Helper to convert pos/pow round and heights to timestamp and vice versa
 
+
+--action=week --param=week
+
 --action=ts2posround --param=1536393600
 
 --action=posround2ts --param=466
@@ -17,6 +20,7 @@ Helper to convert pos/pow round and heights to timestamp and vice versa
 
 
 import argparse
+import json
 import sys
 import time
 from os import path
@@ -30,7 +34,7 @@ from determine import timestamp_to_round_slot
 from determine import round_to_timestamp
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 def ts2utc(ts):
@@ -48,7 +52,7 @@ if __name__ == "__main__":
     config.load('../main/')
     config.COMPUTING_REWARD = True
     pow = None
-    if args.action in ['ts2powheight', 'powheight2ts', 'hnbalance']:
+    if args.action in ['ts2powheight', 'powheight2ts', 'hnbalance', 'week']:
         if not path.isfile(config.POW_LEDGER_DB):
             raise ValueError("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
         pow = pow_interface.PowInterface(verbose=verbose)
@@ -61,6 +65,42 @@ if __name__ == "__main__":
         print("UTC  ", ts2utc(ts))
         print("Round", a_round)
         print("Slot ", a_slot)
+
+    elif args.action == 'week':
+        week = int(args.param)
+        if week < 2:
+            print("Not less than Week 2")
+            sys.exit()
+        end_of_week_ts = 1536998400 + (week - 2) * 604800
+        print("Week", week)
+        print("-------------")
+        print("TS  ", end_of_week_ts)
+        print("UTC ", ts2utc(end_of_week_ts))
+        a_round, a_slot = timestamp_to_round_slot(end_of_week_ts)
+        print("Round", a_round)
+        print("Slot ", a_slot)
+        last_pos_round = a_round -1
+        print("Last PoS Round", last_pos_round)
+        height = pow.pow_chain.get_block_before_ts(end_of_week_ts)
+        print("PoW Height", height)
+        ts1 = pow.pow_chain.get_ts_of_block(height)
+        print("Real TS", ts1)
+        ts2 = pow.pow_chain.get_ts_of_block(height + 1)
+        if ts2:
+            print("Next TS", ts2)
+        else:
+            print("End of chain - ts too far in the future.")
+        balance = pow.quick_check_balance('3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16', height)
+        if balance:
+            print("Balance", balance)
+        else:
+            print("No balance")
+        balance = int(balance)
+        print("Balance (int)", balance)
+        export = {"week": week, "ts": end_of_week_ts, "UTC": ts2utc(end_of_week_ts), "last_pos_round": last_pos_round,
+                   "pow_height": height, "balance": balance}
+        with open("week.json", 'w') as f:
+            json.dump(export, f)
 
     elif args.action == 'posround2ts':
         round = int(args.param)

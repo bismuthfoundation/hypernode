@@ -16,10 +16,12 @@ import sys
 sys.path.append('../modules')
 import config
 import hn_db
+import json
 import poschain
+from os import path
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 """
@@ -37,6 +39,15 @@ START_ROUND = 279  # Week 1
 START_ROUND = 466  # Week 2
 START_ROUND = 634  # Week 3
 WEEK = 9
+
+if not path.isfile('week.json'):
+    print("No week.json, run convert.py")
+    sys.exit()
+with open('week.json', 'r') as f:
+    datas = json.load(f)
+WEEK = datas['week']
+
+
 START_ROUND = 466 + 168* (WEEK - 2)  # Week 4
 
 # Sept 8 2018, 08:00 UTC - End of Week 1
@@ -64,7 +75,7 @@ START_ROUND = 466 + 168* (WEEK - 2)  # Week 4
 
 END_ROUND = START_ROUND + (7 * 24) * 1 - 1  # Week 4
 
-print("Fill stats, from {} to {}".format(START_ROUND, END_ROUND))
+print("Fill stats, week {}, from {} to {}".format(WEEK, START_ROUND, END_ROUND))
 # sys.exit()
 
 # 0.2 is nice.

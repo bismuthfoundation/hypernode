@@ -18,9 +18,10 @@ import config
 import hn_db
 import pow_interface
 import poschain
+from os import path
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 
 if __name__ == "__main__":
@@ -78,7 +79,14 @@ if __name__ == "__main__":
 
     # get latest one from the current db, so we don't have to rebuilt all when bootstrapping
 
-    previous_round = 1641  # last from week 8
+    # previous_round = 1641  # last from week 8
+    if not path.isfile('week.json'):
+        print("No week.json, run convert.py")
+        sys.exit()
+    with open('week.json', 'r') as f:
+        datas = json.load(f)
+    previous_round = datas['last_pos_round'] - 168
+    print("Last PoS round Week n-1 ", previous_round)
 
     for round in range(previous_round, last_round):
         # for round in range(200, 300):

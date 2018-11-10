@@ -29,7 +29,7 @@ __version__ = '0.1.6'
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
                                 'ORDER BY block_height DESC limit 1'
 
-SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT max(block_height) FROM transactions WHERE timestamp <= ? '
+SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT max(block_height) FROM transactions WHERE timestamp <= ? AND reward > 0'
 
 SQL_TS_OF_BLOCK = 'SELECT timestamp FROM transactions WHERE reward > 0 AND block_height = ?'
 
