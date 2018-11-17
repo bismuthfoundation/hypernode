@@ -123,6 +123,8 @@ SQL_ROUNDS_KO_ACTION_COUNT = "SELECT recipient, count(*) as messages FROM pos_me
 
 """ pos chain db structure """
 
+# TODO: Index missing!!!
+
 SQL_CREATE_ADDRESSES = "CREATE TABLE addresses (\
     address VARCHAR (34) PRIMARY KEY,\
     pubkey  BLOB (64),\

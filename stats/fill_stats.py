@@ -164,6 +164,7 @@ if __name__ == "__main__":
         # print(details)
         for pos, detail in details.items():
             # print(pos, detail)
+            # TODO: probably would be significantly faster by building a single request and inserting in a single TX.
             if pos in hns:
                 weight = hns[pos]['weight']
                 reward_address = hns[pos]['reward']

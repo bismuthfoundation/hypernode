@@ -10,24 +10,24 @@ convert.py allows to deal with timestamp and block conversion.
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
 Week 10:
-`python3 convert.py --action=week --param=10`
+`python3 convert.py --action=week --param=11`
 
 ```
-Week 10
+Week 11
 -------------
-TS   1541836800
-UTC  2018-11-10T08:00:00Z
-Round 1978
+TS   1542441600
+UTC  2018-11-17T08:00:00Z
+Round 2146
 Slot  0
-Last PoS Round 1977
-PoW Height 901872
-Real TS 1541836683.12
-Next TS 1541836829.7
-Balance 8024.763063809849
-Balance (int) 8024
+Last PoS Round 2145
+PoW Height 911941
+Real TS 1542441545.24
+Next TS 1542441623.26
+Balance 8056.7630638296105
+Balance (int) 8056
 ```
 
-week.json :
+week.json (week 10):
 ```
 {
   "week": 10,
@@ -49,7 +49,7 @@ The next scripts take the values from this json.
 Verifies again the registered and active HNs for each round of the period.   
 This will tell if any HN cheated on its balance (balance dropped below the registered collateral)
 
-Week 10:
+Week 11:
 Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list. (will be auto unreg)
 
 ## Fill_stats
@@ -67,7 +67,7 @@ Trigger was lowered from 0.2 to 0.1 this week as a test.
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week10_per_reward_address.csv
+exported as rewards/week11_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week10_per_hn_address.csv
+exported as rewards/week11_per_hn_address.csv
