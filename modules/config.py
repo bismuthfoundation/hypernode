@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.35'
+__version__ = '0.0.37'
 
 """
 User config - You can change these ones, bu **See doc**
@@ -144,10 +144,12 @@ POS_SLOT_TIME_SEC = POS_SLOT_TIME_MIN * 60
 
 # How many slots in a round? Better keep them an odd number.
 # MAX_ROUND_SLOTS = 3  # POC test
+# MAX_ROUND_SLOTS = 3  # POC test
 MAX_ROUND_SLOTS = 19  # Real world. 19+1 = 20 , 3x20 = 60 (round time)
 
 # To be adjusted depending on connectivity and HNs number.
-MIN_FORGE_CONSENSUS = 20
+MIN_FORGE_CONSENSUS = 18
+MIN_FORGE_CONSENSUS_LOW = 12
 
 # How many block times to wait at the end of a round to reach consensus?
 END_ROUND_SLOTS = 1

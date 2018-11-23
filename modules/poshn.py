@@ -53,7 +53,7 @@ from pow_interface import get_pow_status
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.98a'
+__version__ = '0.0.98c'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -532,6 +532,7 @@ class Poshn:
             self.connected_count = 0
             self.consensus_nb = 0
             self.consensus_pc = 0
+            self.peers_status = {}
             self.net_height = None
             self.sync_from = None
             self.current_round_start = 0
@@ -848,7 +849,9 @@ class Poshn:
                     # FR: The given worker will be responsible for changing state on ok or failed status
 
                 if self.state == HNState.STRONG_CONSENSUS:
-                    if self.consensus_pc > config.MIN_FORGE_CONSENSUS and not config.DO_NOT_FORGE:
+                    if ((self.consensus_pc > config.MIN_FORGE_CONSENSUS) or \
+                            (len(self.peers_status) == 1 and self.consensus_pc > config.MIN_FORGE_CONSENSUS_LOW)) \
+                            and (not config.DO_NOT_FORGE):
                         mempool_status = await self.mempool.status()
                         if mempool_status["NB"] >= config.REQUIRED_MESSAGES_PER_BLOCK:
                             # Make sure we are at least 15 sec after round start, to let other nodes be synced.
@@ -997,6 +1000,7 @@ class Poshn:
                 for h in peers_status:
                     print(' ', h)
 
+            self.peers_status = peers_status
             self.consensus_nb = nb
             self.consensus_pc = pc
 
