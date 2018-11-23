@@ -255,7 +255,7 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         res = await self.async_fetchone(SQL_COUNT)
         # Safety: if we have too many tx, drop the older than 30 min ones
-        if res > 100:
+        if res[0] > 100:
             await self.async_execute(SQL_PURGE_30, commit=True)
         return res
 
