@@ -53,7 +53,7 @@ from pow_interface import get_pow_status
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.97b'
+__version__ = '0.0.98a'
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -947,9 +947,12 @@ class Poshn:
                         peers_status[peer['height_status']['block_hash']]['count'] += 1
                         peers_status[peer['height_status']['block_hash']]['peers'].append(ip)
                     else:
-                        peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
-                        peers_status[peer['height_status']['block_hash']]['count'] = 1
-                        peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
+                        if peer['height_status']['block_hash'] in ['466cbd256fc248fd87f9aadedd8469afc8b4efa2']:
+                            app_log.warning('Peer {} banned hash {}'.format(ip, peer['height_status']['block_hash']))
+                        else:
+                            peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
+                            peers_status[peer['height_status']['block_hash']]['count'] = 1
+                            peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
                     if poshelpers.same_height(peer['height_status'], our_status):
                         if self.verbose:
                             app_log.info('Peer {} agrees'.format(ip))
@@ -1249,6 +1252,10 @@ class Poshn:
         # Hold digesting from a peer if we are already digesting from another one?
         # Also, can merge both from client and server side, same host!!!
         if not len(txs):
+            return
+        if len(txs) > 200:
+            if self.verbose and 'mempool' in config.LOG:
+                app_log.info("Too many ({}) txs to sync from {}, ignoring ".format(len(txs), peer_ip))
             return
         if peer_ip == self.mempool_digesting:
             if self.verbose and 'mempool' in config.LOG:

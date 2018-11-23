@@ -26,7 +26,7 @@ import poscrypto
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.42'
+__version__ = '0.0.43'
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -45,6 +45,10 @@ SQL_INSERT_TX = "INSERT OR IGNORE INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?,
 
 # Purge old txs that may be stuck
 SQL_PURGE = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
+
+# Purge old txs that may be stuck
+SQL_PURGE_30 = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-30 minute')"
+
 
 # Purge old start txs from our address
 SQL_PURGE_START1 = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour') AND sender=? AND recipient=? AND what=202"
@@ -250,6 +254,9 @@ class SqliteMempool(Mempool, SqliteBase):
         :return: int
         """
         res = await self.async_fetchone(SQL_COUNT)
+        # Safety: if we have too many tx, drop the older than 30 min ones
+        if res > 100:
+            await self.async_execute(SQL_PURGE_30, commit=True)
         return res
 
     async def async_purge(self):
