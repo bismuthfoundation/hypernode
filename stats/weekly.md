@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 10:
-`python3 convert.py --action=week --param=11`
+Week 12:
+`python3 convert.py --action=week --param=12`
 
 ```
-Week 11
+Week 12
 -------------
-TS   1542441600
-UTC  2018-11-17T08:00:00Z
-Round 2146
+TS   1543046400
+UTC  2018-11-24T08:00:00Z
+Round 2314
 Slot  0
-Last PoS Round 2145
-PoW Height 911941
-Real TS 1542441545.24
-Next TS 1542441623.26
-Balance 8056.7630638296105
-Balance (int) 8056
+Last PoS Round 2313
+PoW Height 921909
+Real TS 1543046367.21
+Next TS 1543046407.73
+Balance 7968.763063819526
+Balance (int) 7968
 ```
 
 week.json (week 10):
@@ -51,6 +51,8 @@ This will tell if any HN cheated on its balance (balance dropped below the regis
 
 Week 11:
 Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list. (will be auto unreg)
+Week 12
+Warning: PoW address 857f1193e311f6eacfdb0b75623c978b55839dd4a1d24138594d590d, weight 0 instead of 3 - removing from list.
 
 ## Fill_stats
 
