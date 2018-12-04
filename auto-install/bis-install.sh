@@ -8,7 +8,7 @@
 
 # ATTENTION: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.2"
+VERSION="0.1.3"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -76,9 +76,9 @@ download_node() {
     if [ -f ./4.2.7.tar.gz ]; then
         rm 4.2.7.tar.gz
 	fi
-    wget https://github.com/hclivess/Bismuth/archive/4.2.7.tar.gz
-    tar -zxf 4.2.7.tar.gz
-    mv Bismuth-4.2.7 Bismuth
+    wget https://github.com/hclivess/Bismuth/archive/4.2.8.1.tar.gz
+    tar -zxf 4.2.8.1.tar.gz
+    mv Bismuth-4.2.8.1 Bismuth
     cd Bismuth
     echo "Downloading bootstrap"
     cd static
