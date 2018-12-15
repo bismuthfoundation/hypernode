@@ -9,7 +9,7 @@ import sqlite3
 import poshelpers
 from sqlitebase import SqliteBase
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 
 SQL_CREATE_HYPERNODES = """CREATE TABLE hypernodes (
     round       BIGINT,
@@ -65,6 +65,11 @@ SQL_DEL_ROUND = "DELETE FROM hypernodes WHERE round = ?"
 SQL_HN_FROM_ADDRESS_ROUND = "SELECT * FROM hypernodes WHERE address = ? AND round = ?"
 
 SQL_HN_FROM_IP_PORT_ROUND = "SELECT * FROM hypernodes WHERE ip = ? AND port = ? AND round = ?"
+
+SQL_HN_FROM_POS_ADDR = "SELECT * FROM hypernodes WHERE address = ? ORDER BY round DESC limit 1"
+
+SQL_HN_FROM_POW_ADDR = "SELECT * FROM hypernodes WHERE registrar = ? ORDER BY round DESC limit 1"
+
 
 # Incomplete sql for fast batch insert.
 SQL_INSERT_HN_VALUES = "INSERT INTO hypernodes (round, address, ip, port, weight, registrar, reward, " \
@@ -152,19 +157,34 @@ class SqliteHNDB(SqliteBase):
         # Good time to cleanup
         await self.async_execute("VACUUM", commit=True)
 
-    async def hn_from_address(self, address: str, a_round: int):
+    async def hn_from_address(self, address: str, a_round: int=0):
         """
         Async. Return a dict with all info from local hn db
 
         :param address: pos address of the hn
-        :param a_round: the related round (current one, older rounds may been pruned)
+        :param a_round: the related round (current one, older rounds may been pruned). Use 0 to request the latest one.
         :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
         """
 
-        hn = await self.async_fetchone(SQL_HN_FROM_ADDRESS_ROUND, (address, a_round), as_dict=True)
+        if a_round == 0:
+            hn = await self.async_fetchone(SQL_HN_FROM_POS_ADDR, (address, ), as_dict=True)
+        else:
+            hn = await self.async_fetchone(SQL_HN_FROM_ADDRESS_ROUND, (address, a_round), as_dict=True)
         # TEST DEV ONLY
         # hn['port'] = 6969  # instance 0
         return hn
+
+    async def hn_from_pow(self, address: str):
+        """
+        Async. Return a dict with all info from local hn db
+
+        :param address: pow address of the hn collateral
+        :return: dict, with keys: address, ip, port, weight, registrar, reward, ts_register, ts_edit,  active
+        """
+
+        hn = await self.async_fetchone(SQL_HN_FROM_POW_ADDR, (address, ), as_dict=True)
+        return hn
+
 
     async def hn_from_peer(self, peer: str, a_round: int):
         """

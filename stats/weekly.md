@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 14:
-`python3 convert.py --action=week --param=14`
+Week 15:
+`python3 convert.py --action=week --param=15`
 
 ```
-Week 14
+Week 15
 -------------
-TS   1544256000
-UTC  2018-12-08T08:00:00Z
-Round 2650
+TS   1544860800
+UTC  2018-12-15T08:00:00Z
+Round 2818
 Slot  0
-Last PoS Round 2649
-PoW Height 942134
-Real TS 1544255975.86
-Next TS 1544256085.22
-Balance 8128.763063849532
-Balance (int) 8128
+Last PoS Round 2817
+PoW Height 952117
+Real TS 1544860791.19
+Next TS 1544860800.8
+Balance 7984.7630638395785
+Balance (int) 7984
 ```
 
 week.json (week 10):
@@ -72,6 +72,8 @@ Warning: PoW address dea8a5df9129dc9182ee17eddfda3eb91e3af79742636bff149bfc71, w
 
 
 Auto unreg does not work as intended. Will need some fix. No incidence on earnings.
+(Fixed with week 15)
+
 
 ## Fill_stats
 
@@ -88,7 +90,7 @@ Trigger was lowered from 0.2 to 0.1 this week as a test.
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week13_per_reward_address.csv
+exported as rewards/week15_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week13_per_hn_address.csv
+exported as rewards/week15_per_hn_address.csv
