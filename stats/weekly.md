@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 16:
-`python3 convert.py --action=week --param=17`
+Week 18:
+`python3 convert.py --action=week --param=18`
 
 ```
-Week 17
+Week 18
 -------------
-TS   1546070400
-UTC  2018-12-29T08:00:00Z
-Round 3154
+TS   1546675200
+UTC  2019-01-05T08:00:00Z
+Round 3322
 Slot  0
-Last PoS Round 3153
-PoW Height 972260
-Real TS 1546070369.96
-Next TS 1546070413.84
-Balance 8072.7630637994735
-Balance (int) 8072
+Last PoS Round 3321
+PoW Height 982219
+Real TS 1546675197.22
+Next TS 1546675260.41
+Balance 7960.753063809505
+Balance (int) 7960
 ```
 
 week.json (week 10):
@@ -70,7 +70,6 @@ Warning: PoW address 857f1193e311f6eacfdb0b75623c978b55839dd4a1d24138594d590d, w
 Warning: PoW address e812188c631c044d7baf01f5935cbec3402bde36ca32dad13ad6d407, weight 0 instead of 1 - removing from list.
 Warning: PoW address dea8a5df9129dc9182ee17eddfda3eb91e3af79742636bff149bfc71, weight 0 instead of 1 - removing from list.
 
-
 Auto unreg does not work as intended. Will need some fix. No incidence on earnings.
 (Fixed with week 15)
 
@@ -90,7 +89,7 @@ Trigger was lowered from 0.2 to 0.1 this week as a test.
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week17_per_reward_address.csv
+exported as rewards/week18_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week17_per_hn_address.csv
+exported as rewards/week18_per_hn_address.csv
