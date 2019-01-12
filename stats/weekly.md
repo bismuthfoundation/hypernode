@@ -9,8 +9,8 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 18:
-`python3 convert.py --action=week --param=18`
+Week 19:
+`python3 convert.py --action=week --param=19`
 
 ```
 Week 18
@@ -73,6 +73,12 @@ Warning: PoW address dea8a5df9129dc9182ee17eddfda3eb91e3af79742636bff149bfc71, w
 Auto unreg does not work as intended. Will need some fix. No incidence on earnings.
 (Fixed with week 15)
 
+Week 19:
+Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, weight 2 instead of 3 - removing from list.
+Warning: PoW address 9a92218d6682e4f2a01722dff41d1d3e9654c4807b4c29cdc7a95e47, weight 0 instead of 1 - removing from list.
+Warning: PoW address b4c32ab1e27a991dfee8f5460c1796a40e9e944c14a006e5e291e8a0, weight 1 instead of 3 - removing from list.
+
+3 HNs to be deactivated. Reminder: If you want to lower your collateral, you have to unreg, wait for the transaction to be mined, then rereg.
 
 ## Fill_stats
 
@@ -89,7 +95,7 @@ Trigger was lowered from 0.2 to 0.1 this week as a test.
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week18_per_reward_address.csv
+exported as rewards/week19_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week18_per_hn_address.csv
+exported as rewards/week19_per_hn_address.csv
