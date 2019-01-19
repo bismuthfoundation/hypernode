@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 19:
-`python3 convert.py --action=week --param=19`
+Week 20:
+`python3 convert.py --action=week --param=20`
 
 ```
-Week 18
+Week 20
 -------------
-TS   1546675200
-UTC  2019-01-05T08:00:00Z
-Round 3322
+TS   1547884800
+UTC  2019-01-19T08:00:00Z
+Round 3658
 Slot  0
-Last PoS Round 3321
-PoW Height 982219
-Real TS 1546675197.22
-Next TS 1546675260.41
-Balance 7960.753063809505
-Balance (int) 7960
+Last PoS Round 3657
+PoW Height 1002263
+Real TS 1547884769.75
+Next TS 1547884828.94
+Balance 8056.75306385936
+Balance (int) 8056
 ```
 
 week.json (week 10):
@@ -78,7 +78,15 @@ Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, w
 Warning: PoW address 9a92218d6682e4f2a01722dff41d1d3e9654c4807b4c29cdc7a95e47, weight 0 instead of 1 - removing from list.
 Warning: PoW address b4c32ab1e27a991dfee8f5460c1796a40e9e944c14a006e5e291e8a0, weight 1 instead of 3 - removing from list.
 
-3 HNs to be deactivated. Reminder: If you want to lower your collateral, you have to unreg, wait for the transaction to be mined, then rereg.
+Week 20:
+Warning: PoW address 7c35fc4f1cd74e886dab73d4fe6ee8e798301c3a7720529c4a7eb03b, weight 2 instead of 3 - removing from list.
+Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, weight 2 instead of 3 - removing from list.
+Warning: PoW address 9a92218d6682e4f2a01722dff41d1d3e9654c4807b4c29cdc7a95e47, weight 0 instead of 1 - removing from list.
+Warning: PoW address b4c32ab1e27a991dfee8f5460c1796a40e9e944c14a006e5e291e8a0, weight 2 instead of 3 - removing from list.
+Warning: PoW address 74f45adf91d0f0116cc3b61652822551dcfb19b7b02101cd5c86685d, weight 0 instead of 3 - removing from list.
+Warning: PoW address da06e77a08f9b07e4a7f6a4788ab269d3df0e09c38d8fa64f321374e, weight 0 instead of 3 - removing from list.
+
+6 HNs to be deactivated. Reminder: If you want to lower your collateral, you have to unreg, wait for the transaction to be mined, then rereg.
 
 ## Fill_stats
 
@@ -98,4 +106,4 @@ The script exports:
 exported as rewards/week19_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week19_per_hn_address.csv
+exported as rewards/week20_per_hn_address.csv
