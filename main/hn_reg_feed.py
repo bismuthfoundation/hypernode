@@ -15,7 +15,7 @@ import pow_interface
 from hn_db import SqliteHNDB
 
 
-__version__ = '0.0.6'
+__version__ = '0.0.61'
 
 
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     parser.add_argument("-f", "--force", action="count", default=False, help='Read until last block, do not use real limit.')
     parser.add_argument("-r", "--round", default=0, help='Query for up to that round')
     parser.add_argument("-I", "--ip", type=str, default = '', help="Filter events for that IP only.")
-    parser.add_argument("-P", "--pos", type=str, default = '', help="Filter events for that PoS address only.")
+    parser.add_argument("-P", "--pow", type=str, default = '', help="Filter events for that PoW address only.")
     parser.add_argument("-b", "--balancecheck", action="count", default=False, help='Do an extra global balance check at the end.')
 
     parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
@@ -39,15 +39,14 @@ if __name__ == "__main__":
         raise ValueError("Bismuth Full ledger not found at {}".format(config.POW_LEDGER_DB))
     pow = pow_interface.PowInterface(verbose=verbose)
     loop = asyncio.get_event_loop()
-    if args.pos:
-        # converts pos address to ip
-        hn = loop.run_until_complete(SqliteHNDB(verbose=True).hn_from_pow(args.pos))
+    if args.pow:
+        # converts pow address to ip
+        hn = loop.run_until_complete(SqliteHNDB(verbose=True).hn_from_pow(args.pow))
         print(hn)
         ip = hn['ip']
         args.ip = ip
-        """if True:  # args.verbose:
-            print("IP of {} is {}".format(args.pos, args.ip))
-        """
+        if args.verbose:
+            print("IP of {} is {}".format(args.pow, args.ip))
 
     res = loop.run_until_complete(pow.load_hn_pow(datadir='./data', a_round=int(args.round), inactive_last_round=None,
                                                   force_all=force, no_cache=True, ignore_config=True,
