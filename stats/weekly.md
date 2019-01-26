@@ -10,21 +10,21 @@ convert.py allows to deal with timestamp and block conversion.
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
 Week 20:
-`python3 convert.py --action=week --param=20`
+`python3 convert.py --action=week --param=21`
 
 ```
-Week 20
+Week 21
 -------------
-TS   1547884800
-UTC  2019-01-19T08:00:00Z
-Round 3658
+TS   1548489600
+UTC  2019-01-26T08:00:00Z
+Round 3826
 Slot  0
-Last PoS Round 3657
-PoW Height 1002263
-Real TS 1547884769.75
-Next TS 1547884828.94
-Balance 8056.75306385936
-Balance (int) 8056
+Last PoS Round 3825
+PoW Height 1012047
+Real TS 1548489570.3
+Next TS 1548489625.61
+Balance 7824.753063909331
+Balance (int) 7824
 ```
 
 week.json (week 10):
@@ -88,6 +88,10 @@ Warning: PoW address da06e77a08f9b07e4a7f6a4788ab269d3df0e09c38d8fa64f321374e, w
 
 6 HNs to be deactivated. Reminder: If you want to lower your collateral, you have to unreg, wait for the transaction to be mined, then rereg.
 
+Week 21:  
+Warning: PoW address 5841e2d6473c8b2d1285bf07bf8893738a34fc240f80122bae36c81c, weight 0 instead of 3 - removing from list.
+
+
 ## Fill_stats
 
 `time python3 fill_stats.py`  
@@ -98,12 +102,12 @@ Took 27m9.083s
 `python3 calc_rewards.py`
 
 Now does all the requests. Check SCORE_TRIGGER inside this script.  
-Trigger was lowered from 0.2 to 0.1 this week as a test.
+Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs).
 
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week19_per_reward_address.csv
+exported as rewards/week21_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week20_per_hn_address.csv
+exported as rewards/week21_per_hn_address.csv
