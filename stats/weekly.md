@@ -9,7 +9,7 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 20:
+Week 21:
 `python3 convert.py --action=week --param=21`
 
 ```
