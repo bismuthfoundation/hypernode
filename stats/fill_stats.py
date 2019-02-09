@@ -21,7 +21,7 @@ import poschain
 from os import path
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 """
@@ -113,9 +113,9 @@ def get_score(pos, weight, detail):
     tests_sent = (detail.get('no_tests_sent', 0) + detail.get('ok_tests_sent', 0) + detail.get('ko_tests_sent', 0))
     # 10 tests = 1 point, 1 moint max.
     score += min(tests_sent/10, 1)
-    # Needs 5 ok actions to counter one ko. non weighted. cap max number of ok?
-    score += detail.get('ok_actions_received', 0) / 5
-    score -= detail.get('ko_actions_received', 0)
+    # Needs 2 (was 5) ok actions to counter one ko. non weighted. cap max number of ok?
+    score += detail.get('ok_actions_received', 0) /4
+    score -= detail.get('ko_actions_received', 0) /2
     return score
 
 

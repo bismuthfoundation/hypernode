@@ -18,7 +18,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -116,10 +116,15 @@ SQL_ROUNDS_OK_ACTION_COUNT = "SELECT recipient, count(*) as messages FROM pos_me
                          "WHERE block_height >= ? AND block_height <= ? " \
                          "AND what=200 GROUP BY recipient"
 
-# hn['address'], what=101, params='P.FAIL:{}' or C.FAIL
-SQL_ROUNDS_KO_ACTION_COUNT = "SELECT recipient, count(*) as messages FROM pos_messages " \
+# hn['address'], what=101, params='P.FAIL:{}' or C.FAIL - Only count one sender per round to avoid flood from broken HNs
+SQL_ROUNDS_KO_ACTION_COUNT = "SELECT recipient, count(distinct(sender)) as messages FROM pos_messages " \
                          "WHERE block_height >= ? AND block_height <= ? " \
                          "AND what=101 GROUP BY recipient"
+
+# hn['address'], what=101, params='P.FAIL:{}' or C.FAIL - Only count one recipient per round
+SQL_ROUNDS_KO2_ACTION_COUNT = "SELECT sender, count(distinct(recipient)) as messages FROM pos_messages " \
+                         "WHERE block_height >= ? AND block_height <= ? " \
+                         "AND what=101 GROUP BY sender"
 
 """ pos chain db structure """
 
@@ -1084,6 +1089,12 @@ class SqlitePosChain(SqliteBase):
         for address, sources in dict(sources).items():
             if address in res:
                 res[address]['ko_actions_received'] = sources
+
+        # TODO: move in a metric of its own so we can warn
+        sources = await self.async_fetchall(SQL_ROUNDS_KO2_ACTION_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+            if address in res:
+                res[address]['ko_actions_received'] = sources + res[address].get('ko_actions_received', 0)
 
         # print("res forge", res)
         # sys.exit()
