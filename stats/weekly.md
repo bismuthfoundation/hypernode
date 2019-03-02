@@ -9,23 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 25:
-`python3 convert.py --action=week --param=25`
+Week 26:
+`python3 convert.py --action=week --param=26`
 
 ```
-Week 25
+Week 26
 -------------
-TS   1550908800
-UTC  2019-02-23T08:00:00Z
-Round 4498
+TS   1551513600
+UTC  2019-03-02T08:00:00Z
+Round 4666
 Slot  0
-Last PoS Round 4497
-PoW Height 1052293
-Real TS 1550908718.53
-Next TS 1550908873.95
-Balance 8064.753063859302
-Balance (int) 8064
-
+Last PoS Round 4665
+PoW Height 1062577
+Real TS 1551513513.06
+Next TS 1551513694.14
+Balance 8224.753063899232
+Balance (int) 8224
 ```
 
 week.json (week 10):
@@ -114,7 +113,7 @@ Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to accou
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week25_per_reward_address.csv
+exported as rewards/week26_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week25_per_hn_address.csv
+exported as rewards/week26_per_hn_address.csv
