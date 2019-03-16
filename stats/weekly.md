@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 27:
-`python3 convert.py --action=week --param=27`
+Week 28:
+`python3 convert.py --action=week --param=28`
 
 ```
-Week 27
+Week 28
 -------------
-TS   1552118400
-UTC  2019-03-09T08:00:00Z
-Round 4834
+TS   1552723200
+UTC  2019-03-16T08:00:00Z
+Round 5002
 Slot  0
-Last PoS Round 4833
-PoW Height 1072554
-Real TS 1552118314.85
-Next TS 1552118424.46
-Balance 7984.753063909186
-Balance (int) 7984
+Last PoS Round 5001
+PoW Height 1082699
+Real TS 1552723098.53
+Next TS 1552723203.41
+Balance 8112.753063919081
+Balance (int) 8112
 ```
 
 week.json (week 10):
@@ -97,14 +97,18 @@ Warning: PoW address ea00b8991c6f76c2922f522c6d135df5dfcbe800e58cb78507c4caeb, w
 Week24 and 25
 Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.
 
-Week 26
+Week 26 and 27
 Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.
 Warning: PoW address 6ab07aec4f68b3f4f1671da81f4cbe3287037e9041d3325fbdf5b46b, weight 0 instead of 1 - removing from list.
+
+Week 28
+Warning: PoW address 6191730b866836430df215651a2f97d4a3e8a526aacb95b27ebe3041, weight 2 instead of 3 - removing from list.
+Warning: PoW address e5e7452326fdd2bafbae55bc3acf32a635b4b9203d1bd56849393102, weight 0 instead of 3 - removing from list.
 
 ## Fill_stats
 
 `time python3 fill_stats.py`  
-Took 27m9.083s
+(about 11 min)
 
 # Rewards extraction
 
@@ -116,7 +120,7 @@ Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to accou
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week27_per_reward_address.csv
+exported as rewards/week28_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week27_per_hn_address.csv
+exported as rewards/week28_per_hn_address.csv
