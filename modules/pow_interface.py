@@ -14,6 +14,7 @@ import sys
 import time
 from math import floor
 from os import path
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 
 # Our modules
 import config
@@ -22,8 +23,9 @@ import poshelpers
 import testvectors
 from fakelog import FakeLog
 from sqlitebase import SqliteBase
+from determine import timestamp_to_round_slot
 
-__version__ = '0.1.6'
+__version__ = '0.1.8'
 
 
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
@@ -494,6 +496,64 @@ class PowInterface:
             self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
 
+    async def load_hn_remote_url(self, a_round: int=0, datadir: str='', inactive_last_round=None,
+                                       force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip='',
+                                       balance_check=False, url=''):
+        """
+        Load from an external url. Fallback for weak nodes that can't properly handle sqlite db sharing across processes.
+
+        :param a_round:
+        :param datadir:
+        :param inactive_last_round:
+        :param force_all:
+        :param no_cache:
+        :param ignore_config:
+        :param ip:
+        :param balance_check: Force balance check for all HN at the end of the call
+        :param url the base url to fetch json from
+        :return:
+        """
+        if balance_check:
+            self.app_log.error("load_hn_remote_url Error, can't do balance check.")
+            sys.exit()
+        if ip:
+            self.app_log.error("load_hn_remote_url Error, can't do ip.")
+            sys.exit()
+        if a_round <= 0:
+            a_round, a_slot = timestamp_to_round_slot(time.time())
+        try:
+            a_round = str(a_round)
+            # self.app_log.info("load_hn_remote_url around {}".format(a_round))
+            http_client = AsyncHTTPClient()
+            try:
+                full_url = "{}{}/{}/{}.json".format(url, a_round[0], a_round[1], a_round)
+                self.app_log.info("load_hn_remote_url {}".format(full_url))
+                response = await http_client.fetch(full_url)
+                self.regs = json.loads(response.body.decode('utf-8'))
+                self.app_log.info("load_hn_remote_urlok")
+            except HTTPError as e:
+                # HTTPError is raised for non-200 responses; the response
+                # can be found in e.response.
+                self.app_log.error("load_hn_remote_url http Error {}".format(str(e)))
+                self.regs = False
+            except Exception as e:
+                # Other errors are possible, such as IOError.
+                self.app_log.error("load_hn_remote_url other Error {}".format(str(e)))
+                self.regs = False
+            # http_client.close()  # unneeded for async
+            if self.verbose:
+                count = 0
+                if self.regs:
+                    count = len(self.regs)
+                # self.app_log.info("{} PoW Valid HN :{}".format(count, json.dumps(self.regs)))
+                self.app_log.info("{} PoW Valid HN".format(count))
+        except Exception as e:
+            self.app_log.error("load_hn_remote_url Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            sys.exit()
+
     async def load_hn_pow(self, a_round: int=0, datadir: str='', inactive_last_round=None,
                           force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
                           distinct_process=None, ip: str='', balance_check: bool=False):
@@ -527,14 +587,21 @@ class PowInterface:
             # print("h1", time.time())
 
             # Here query one way or the other
-            if self.distinct_process:
-                await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
+            if config.POW_ALTERNATE_URL != '':
+                self.app_log.info("Trying to load round {} from alternate URL".format(a_round))
+                # TODO: try to load from url
+                await self.load_hn_remote_url(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
+                                                    force_all=force_all, ignore_config=ignore_config, ip=ip,
+                                                    balance_check=balance_check, url=config.POW_ALTERNATE_URL)
+            if not self.regs:
+                if self.distinct_process:
+                    await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
+                                                        force_all=force_all, ignore_config=ignore_config, ip=ip,
+                                                        balance_check=balance_check)
+                else:
+                    await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
                                                     force_all=force_all, ignore_config=ignore_config, ip=ip,
                                                     balance_check=balance_check)
-            else:
-                await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                force_all=force_all, ignore_config=ignore_config, ip=ip,
-                                                balance_check=balance_check)
 
             # Here we have self.regs
 

@@ -9,10 +9,10 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.37'
+__version__ = '0.0.38'
 
 """
-User config - You can change these ones, bu **See doc**
+User config - You can change these ones, but **See doc**
 Please use config.txt instead of editing here.  
 It's important this config.py is the one for the current release or you will end up unsynced.
 
@@ -194,6 +194,7 @@ DEBUG VARS
 
 POW_DISTINCT_PROCESS = False
 PROCESS_TIMEOUT = 25
+POW_ALTERNATE_URL = ''
 
 """
 Global Variables
@@ -216,6 +217,7 @@ VARS = {
     "PEER_RETRY_SECONDS": "int",
     "PYTHON_EXECUTABLE": "str",
     "POW_DISTINCT_PROCESS": "bool",
+    "POW_ALTERNATE_URL": "str",
     "AUTO_UPDATE": "bool",
     "ALLOW_UPDATES_FROM": "str",
     "ALLOW_QUERIES_FROM": "str"

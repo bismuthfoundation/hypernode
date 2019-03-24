@@ -58,6 +58,7 @@ if __name__ == "__main__":
         pow = pow_interface.PowInterface(verbose=verbose)
 
     if args.action == 'ts2posround':
+        # TODO: json output if --json
         ts = int(args.param)
         a_round, a_slot = timestamp_to_round_slot(ts)
         print("TS", args.param)
