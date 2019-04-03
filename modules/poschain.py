@@ -18,7 +18,7 @@ import commands_pb2
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -451,8 +451,11 @@ class SqlitePosChain(SqliteBase):
             if block.msg_count != len(block.txs):
                 self.app_log.warning("Digesting block {} : {} txs reported but {} included"
                                      .format(block.height, block.msg_count, len(block.txs)))
-                return False
+                if block.height != 76171:
+                    # bad hack for edge case
+                    return False
             # TODO: more checks
+            # TODO: like, rechecking the tx hash....
             # TODO: if from miner, make sure we refreshed the round first.
             # timestamp of blocks
             # fits with current round?
@@ -832,7 +835,10 @@ class SqlitePosChain(SqliteBase):
                 if len(txs) != block.msg_count:
                     self.app_log.error(
                         "Only {} tx for block {} instead of {} announced".format(len(txs), height, block.msg_count))
-                    com_helpers.MY_NODE.stop()
+                    if height != 76171:
+                        # bad hack to cover an edge case.
+                        # bad hack to cover an edge case.
+                        com_helpers.MY_NODE.stop()
                 block.add_to_proto(protocmd)
             #print(protocmd)
             return protocmd
