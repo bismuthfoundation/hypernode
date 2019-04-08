@@ -49,7 +49,15 @@ def check5():
     if os.path.getmtime("../main/logs/pos_app.log") < time.time() -120:
         say("Hypernode is frozen, stopping...")
         getoutput("screen -S hypernode -X at '#' stuff $'\003'")
-
+    if os.path.getmtime("../main/logs/pos_app.log") < time.time() -300:
+        print("Hypernode is frozen, killing...")
+        data = subprocess.getoutput("screen -list")
+        i2 = data.find('.hypernode')
+        i1 = data.find(chr(9),i2-10)
+        if (i1>0) and (i2>i1):
+            data = data[i1+1:i2]
+            str = "kill -15 {}".format(data)
+            subprocess.getoutput(str)
 
 if __name__ == "__main__":
     say("Bismuth Sentinel v{} starting".format(__version__))
