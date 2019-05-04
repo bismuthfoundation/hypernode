@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 34:
-`python3 convert.py --action=week --param=34`
+Week 35:
+`python3 convert.py --action=week --param=35`
 
 ```
-Week 34
+Week 35
 -------------
-TS   1556352000
-UTC  2019-04-27T08:00:00Z
-Round 6010
+TS   1556956800
+UTC  2019-05-04T08:00:00Z
+Round 6178
 Slot  0
-Last PoS Round 6009
-PoW Height 1143060
-Real TS 1556351995.29
-Next TS 1556352130.2
-Balance 7984.75306441891
-Balance (int) 7984
+Last PoS Round 6177
+PoW Height 1152897
+Real TS 1556956787.57
+Next TS 1556956817.63
+Balance 7920.133249128703
+Balance (int) 7920
 ```
 
 week.json (week 10):
@@ -105,6 +105,11 @@ Week 28
 Warning: PoW address 6191730b866836430df215651a2f97d4a3e8a526aacb95b27ebe3041, weight 2 instead of 3 - removing from list.
 Warning: PoW address e5e7452326fdd2bafbae55bc3acf32a635b4b9203d1bd56849393102, weight 0 instead of 3 - removing from list.
 
+Week 35
+Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.
+Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 2 instead of 3 - removing from list.
+
+
 ## Fill_stats
 
 `time python3 fill_stats.py`  
@@ -120,7 +125,7 @@ Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to accou
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week34_per_reward_address.csv
+exported as rewards/week35_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week34_per_hn_address.csv
+exported as rewards/week35_per_hn_address.csv
