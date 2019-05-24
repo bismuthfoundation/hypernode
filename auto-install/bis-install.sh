@@ -8,7 +8,7 @@
 
 # ATTENTION: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.3"
+VERSION="0.1.4"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -63,6 +63,10 @@ configure_firewall() {
     ufw allow 5658/tcp
     # HN port
     ufw allow 6969/tcp
+    # Wallet server
+    ufw allow 8150/tcp
+    # Websocket server
+    ufw allow 8155/tcp
     ufw logging on
     ufw default deny incoming
     ufw default allow outgoing
@@ -76,19 +80,24 @@ download_node() {
     if [ -f ./4.2.7.tar.gz ]; then
         rm 4.2.7.tar.gz
 	fi
-    wget https://github.com/hclivess/Bismuth/archive/4.2.8.1.tar.gz
-    tar -zxf 4.2.8.1.tar.gz
-    mv Bismuth-4.2.8.1 Bismuth
+    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.0-beta.2.tar.gz
+    tar -zxf v4.3.0.0-beta.2.tar.gz
+    mv Bismuth-4.3.0.0-beta.2 Bismuth
     cd Bismuth
+    echo "Configuring node"    
+    echo "ram=False" >> config_custom.txt
+    echo "full_ledger=True" >> config_custom.txt
     echo "Downloading bootstrap"
     cd static
     if [ -f ./ledger.tar.gz ]; then
         rm ledger.tar.gz
 	fi
-    wget https://bismuth.cz/ledger.tar.gz
-    tar -zxf ledger.tar.gz
+    wget https://snapshots.s3.nl-ams.scw.cloud/ledger-1180000.tar.gz
+    tar -zxf ledger-1180000.tar.gz
+    # Make some room
+    rm ledger-1180000.tar.gz
     echo "Getting node sentinel"
-    cd ~/Bismuth
+    cd /root/Bismuth
     wget https://gist.githubusercontent.com/EggPool/e7ad9baa2b32e4d7d3ba658a40b6d643/raw/934598c7ff815180b913d6549bd2d9688e016855/node_sentinel.py
     echo "Installing PIP requirements"
     pip3 install setuptools
@@ -112,9 +121,9 @@ download_hypernode() {
 
 install_plugin() {
 	echo "Installing companion plugin"
-	mkdir ~/Bismuth/plugins
-	mkdir ~/Bismuth/plugins/500_hypernode
-	cp ~/hypernode/node_plugin/__init__.py ~/Bismuth/plugins/500_hypernode
+	mkdir /root/Bismuth/plugins
+	mkdir /root/Bismuth/plugins/500_hypernode
+	cp /root/hypernode/node_plugin/__init__.py /root/Bismuth/plugins/500_hypernode
 }
 
 start_node() {
@@ -126,7 +135,7 @@ start_node() {
 wait_ledger() {
 	echo "Waiting for ledger to download and extract"
 	while true; do
-	 if [ ! -f ~/Bismuth/static/ledger.db ]; then
+	 if [ ! -f /root/Bismuth/static/ledger.db ]; then
 		echo "."
 		sleep 10
 	 else
@@ -138,22 +147,22 @@ wait_ledger() {
 
 check_hypernode() {
 	echo "Checking Hypernode"
-    cd ~/hypernode/main
+    cd /root/hypernode/main
     python3 hn_check.py
 }
 
 add_cron_jobs() {
 	# Node sentinel
 	if ! crontab -l | grep "node_sentinel"; then
-	  (crontab -l ; echo "* * * * * cd ~/Bismuth;python3 node_sentinel.py") | crontab -
+	  (crontab -l ; echo "* * * * * cd /root/Bismuth;python3 node_sentinel.py") | crontab -
 	fi
 	# Hypernode sentinel1
 	if ! crontab -l | grep "cron1.py"; then
-	  (crontab -l ; echo "* * * * * cd ~/hypernode/crontab;python3 cron1.py") | crontab -
+	  (crontab -l ; echo "* * * * * cd /root/hypernode/crontab;python3 cron1.py") | crontab -
 	fi
 	# Hypernode sentinel5
 	if ! crontab -l | grep "cron5.py"; then
-	  (crontab -l ; echo "* * * * */5 cd ~/hypernode/crontab;python3 cron5.py") | crontab -
+	  (crontab -l ; echo "* * * * */5 cd /root/hypernode/crontab;python3 cron5.py") | crontab -
 	fi
 }
 
@@ -163,11 +172,11 @@ if [ "$(whoami)" != "root" ]; then
 fi
 
 while true; do
- if [ -d ~/Bismuth ]; then
-   printf "~/Bismuth/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
+ if [ -d /root/Bismuth ]; then
+   printf "/root/Bismuth/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
    pID=$(ps -ef | grep node.py | awk '{print $2}' | head -n 1)
    kill ${pID}
-   rm -rf ~/Bismuth/
+   rm -rf /root/Bismuth/
    break
  else
    break
@@ -175,11 +184,11 @@ while true; do
 done
 
 while true; do
- if [ -d ~/hypernode ]; then
-   printf "~/hypernode/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
+ if [ -d /root/hypernode ]; then
+   printf "/root/hypernode/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
    pID=$(ps -ef | grep hn_instance.py | awk '{print $2}' | head -n 1)
    kill ${pID}
-   rm -rf ~/hypernode/
+   rm -rf /root/hypernode/
    break
  else
    break
@@ -200,8 +209,8 @@ install_plugin
 # wait_ledger
 check_hypernode
 
-# TODO: call a HTTP hook to give feedback, could include check.json and poswallet.json from ~/hypernode/main
-# as well as wallet.der from ~/Bismuth
+# TODO: call a HTTP hook to give feedback, could include check.json and poswallet.json from /root/hypernode/main
+# as well as wallet.der from /root/Bismuth
 # check.json has pos wallet address as well as out ip
 
 # cron_jobs are what will launch at boot and auto-restart node and hypernode.
