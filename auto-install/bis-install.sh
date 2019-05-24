@@ -30,12 +30,14 @@ config_os() {
 	fi
 	if ! cat /etc/sysctl.conf | grep "fs.file-max = 100000"; then
 	    echo "fs.file-max = 100000" >> /etc/sysctl.conf
+	fi
 	if ! cat /etc/sysctl.conf | grep "vm.swappiness = 10"; then
 	    echo "vm.swappiness = 10" >> /etc/sysctl.conf
+	fi
 	if ! cat /etc/sysctl.conf | grep "vm.vfs_cache_pressure = 50"; then
 	    echo "vm.vfs_cache_pressure = 50" >> /etc/sysctl.conf
+        fi	    
         sysctl -p
-	fi
 	echo 1 > /proc/sys/net/ipv4/tcp_low_latency
 }
 
