@@ -286,32 +286,68 @@ import asyncio
 import sys
 
 # custom modules
-sys.path.append('../modules')
+sys.path.append("../modules")
 import posclient
 import com_helpers
 
 
-__version__ = '0.0.60'
+__version__ = "0.0.61"
 
-DESC = 'Bismuth Hypernode client'
+DESC = "Bismuth Hypernode client"
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=DESC)
-    parser.add_argument("-i", "--index", type=int, default = 0, help='Demo address index [0-4] - Dev only')
-    parser.add_argument("-I", "--ip", type=str, default = '127.0.0.1', help='HN Host to connect to (127.0.0.1)')
-    parser.add_argument("-S", "--sourceip", type=str, default="", help='Use a specific network interface (source ip, not ifname)')
-    parser.add_argument("-p", "--port", type=str, default = 6969, help='HN port (6969)')
-    parser.add_argument("-t", "--timeout", type=int, default = 10, help='Connect timeout (sec) - default 10')
-    parser.add_argument("-r", "--readtimeout", type=int, default = 30, help='Read timeout (sec) - default 30')
-    parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
+    parser.add_argument(
+        "-i", "--index", type=int, default=0, help="Demo address index [0-4] - Dev only"
+    )
+    parser.add_argument(
+        "-I",
+        "--ip",
+        type=str,
+        default="127.0.0.1",
+        help="HN Host to connect to (127.0.0.1)",
+    )
+    parser.add_argument(
+        "-S",
+        "--sourceip",
+        type=str,
+        default="",
+        help="Use a specific network interface (source ip, not ifname)",
+    )
+    parser.add_argument("-p", "--port", type=str, default=6969, help="HN port (6969)")
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=int,
+        default=10,
+        help="Connect timeout (sec) - default 10",
+    )
+    parser.add_argument(
+        "-r",
+        "--readtimeout",
+        type=int,
+        default=30,
+        help="Read timeout (sec) - default 30",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", default=False, help="Be verbose."
+    )
 
-    parser.add_argument("-V", "--version", action="count", default=False, help='Show version')
+    parser.add_argument(
+        "-V", "--version", action="count", default=False, help="Show version"
+    )
 
-    parser.add_argument("--action", type=str, default=None,
-                        help='Specific action. hello, ping, status, round, block, tx, address_txs, mempool, blocksync, '
-                             'hypernodes, headers, txtest, heights.')
-    parser.add_argument("--param", type=str, default=None, help='Input param from block and tx command.')
+    parser.add_argument(
+        "--action",
+        type=str,
+        default=None,
+        help="Specific action. hello, ping, status, round, block, tx, address_txs, mempool, blocksync, "
+        "hypernodes, headers, txtest, heights.",
+    )
+    parser.add_argument(
+        "--param", type=str, default=None, help="Input param from block and tx command."
+    )
     args = parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
@@ -327,10 +363,17 @@ if __name__ == "__main__":
     try:
         wallet = "poswallet.json"
         if args.index:
-            wallet="hn_temp/mn{}.json".format(args.index)
-        com_helpers.MY_NODE = posclient.Posclient(args.ip, args.port, wallet=wallet, source_ip=args.sourceip,
-                                                  verbose=args.verbose, version=__version__, timeout=args.timeout,
-                                                  read_timeout=args.readtimeout)
+            wallet = "hn_temp/mn{}.json".format(args.index)
+        com_helpers.MY_NODE = posclient.Posclient(
+            args.ip,
+            args.port,
+            wallet=wallet,
+            source_ip=args.sourceip,
+            verbose=args.verbose,
+            version=__version__,
+            timeout=args.timeout,
+            read_timeout=args.readtimeout,
+        )
         loop = asyncio.get_event_loop()
         loop.run_until_complete(com_helpers.MY_NODE.action(args.action, args.param))
 

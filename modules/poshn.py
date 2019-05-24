@@ -10,6 +10,7 @@ Note:
 
 import aioprocessing
 import asyncio
+
 # pip install ConcurrentLogHandler
 from cloghandler import ConcurrentRotatingFileHandler
 from distutils.version import LooseVersion
@@ -24,8 +25,10 @@ import random
 import resource
 import sys
 import time
+
 # Tornado
 from tornado.ioloop import IOLoop
+
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -53,7 +56,7 @@ from pow_interface import get_pow_status
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = '0.0.98e'
+__version__ = "0.0.98f"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -103,7 +106,7 @@ class HnServer(TCPServer):
         global access_log
         global app_log
         peer_ip, fileno = address
-        peer_port = '00000'
+        peer_port = "00000"
         access_log.info("SRV: Incoming connection from {}".format(peer_ip))
         remove = False  # So we do not remove inbound info for temp "block" command.
         # TODO: here, use tiered system to reserve safe slots for jurors,
@@ -111,22 +114,39 @@ class HnServer(TCPServer):
         try:
             # Get first message, we expect an hello with version number and address
             msg = await async_receive(stream, peer_ip)
-            if self.verbose and 'srvmsg' in config.LOG:
-                access_log.info("SRV: Got msg >{}< from {}".format(com_helpers.cmd_to_text(msg.command), peer_ip))
+            if self.verbose and "srvmsg" in config.LOG:
+                access_log.info(
+                    "SRV: Got msg >{}< from {}".format(
+                        com_helpers.cmd_to_text(msg.command), peer_ip
+                    )
+                )
             if msg.command == commands_pb2.Command.hello:
-                reason, ok = await determine.connect_ok_from(msg.string_value, access_log)
+                reason, ok = await determine.connect_ok_from(
+                    msg.string_value, access_log
+                )
                 peer_port = msg.string_value[10:15]
                 full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
-                access_log.info("SRV: Got Hello {} from {}".format(msg.string_value, full_peer))
+                access_log.info(
+                    "SRV: Got Hello {} from {}".format(msg.string_value, full_peer)
+                )
                 if not ok:
                     # FR: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
-                    await async_send_string(commands_pb2.Command.ko, reason, stream, peer_ip)
+                    await async_send_string(
+                        commands_pb2.Command.ko, reason, stream, peer_ip
+                    )
                     return
                 # Right version, we send our hello as well.
-                await async_send_string(commands_pb2.Command.hello, self.node.hello_string(), stream, peer_ip)
+                await async_send_string(
+                    commands_pb2.Command.hello,
+                    self.node.hello_string(),
+                    stream,
+                    peer_ip,
+                )
                 # Add the peer to inbound list
-                self.node.add_inbound(peer_ip, peer_port, {'hello': msg.string_value, 'stats': [0]*9})
+                self.node.add_inbound(
+                    peer_ip, peer_port, {"hello": msg.string_value, "stats": [0] * 9}
+                )
                 remove = True
 
             elif msg.command == commands_pb2.Command.block:
@@ -137,16 +157,25 @@ class HnServer(TCPServer):
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 if peer_ip not in self.node.registered_ips:
                     # TODO: add to anomalies buffer
-                    access_log.warning("Got block from {} but not a registered ip".format(peer_ip))
+                    access_log.warning(
+                        "Got block from {} but not a registered ip".format(peer_ip)
+                    )
                     return
                 await self.node.check_round()  # Make sure our round info is up to date
                 if not self.node.forger:
-                    access_log.warning("Got block from {} but no current forger".format(peer_ip))
+                    access_log.warning(
+                        "Got block from {} but no current forger".format(peer_ip)
+                    )
                     return
-                hn = await self.node.hn_db.hn_from_address(self.node.forger, self.node.round)
-                if hn['ip'] != peer_ip:
-                    access_log.warning("Got block from {} but forger {} ip is {}"
-                                       .format(peer_ip, self.node.forger, hn['ip']))
+                hn = await self.node.hn_db.hn_from_address(
+                    self.node.forger, self.node.round
+                )
+                if hn["ip"] != peer_ip:
+                    access_log.warning(
+                        "Got block from {} but forger {} ip is {}".format(
+                            peer_ip, self.node.forger, hn["ip"]
+                        )
+                    )
                     # TODO: add to anomalies buffer
                     return
                 for block in msg.block_value:
@@ -156,18 +185,27 @@ class HnServer(TCPServer):
                 # block sending does not require hello
                 if peer_ip not in self.node.registered_ips:
                     # TODO: add to anomalies buffer
-                    access_log.warning("Got block from {} but not a registered ip".format(peer_ip))
+                    access_log.warning(
+                        "Got block from {} but not a registered ip".format(peer_ip)
+                    )
                     return
                 access_log.error("SRV: Got test block from {}".format(peer_ip))
                 # TODO: check that this ip is in the current test round, or add to anomalies buffer
                 # await self.node.check_round()  # Make sure our round info is up to date
-                await self.node._new_tx(msg.tx_values[0].sender, 203, msg.tx_values[0].params, int(time.time()))
+                await self.node._new_tx(
+                    msg.tx_values[0].sender,
+                    203,
+                    msg.tx_values[0].params,
+                    int(time.time()),
+                )
                 await async_send_block(msg, stream, peer_ip)
                 return
             else:
                 access_log.warning("SRV: {} did not say hello".format(peer_ip))
                 # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
-                await async_send_string(commands_pb2.Command.ko, "Did not say hello", stream, peer_ip)
+                await async_send_string(
+                    commands_pb2.Command.ko, "Did not say hello", stream, peer_ip
+                )
                 return
             # Here the peer said Hello and we accepted its version, we can have a date.
             while not config.STOP_EVENT.is_set():
@@ -177,17 +215,21 @@ class HnServer(TCPServer):
                     await self._handle_msg(msg, stream, peer_ip, peer_port)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
-                    if 'connections' in config.LOG:
+                    if "connections" in config.LOG:
                         access_log.info("SRV: Peer {} left.".format(full_peer))
                     return
                 except Exception as e:
                     what = str(e)
                     # FR: Would be cleaner with a custom exception
-                    if 'OK' not in what:
-                        app_log.error("SRV: handle_stream {} for ip {}".format(what, full_peer))
+                    if "OK" not in what:
+                        app_log.error(
+                            "SRV: handle_stream {} for ip {}".format(what, full_peer)
+                        )
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                    app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                    app_log.error(
+                        "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                    )
                     return
 
         except Exception as e:
@@ -198,7 +240,7 @@ class HnServer(TCPServer):
             # Used also in other files.
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             return
 
         finally:
@@ -218,9 +260,12 @@ class HnServer(TCPServer):
         :param stream:
         :param peer_ip:
         """
-        if self.verbose and 'srvmsg' in config.LOG:
-            access_log.info("SRV: Got msg >{}< from {}:{}"
-                            .format(com_helpers.cmd_to_text(msg.command), peer_ip, peer_port))
+        if self.verbose and "srvmsg" in config.LOG:
+            access_log.info(
+                "SRV: Got msg >{}< from {}:{}".format(
+                    com_helpers.cmd_to_text(msg.command), peer_ip, peer_port
+                )
+            )
         full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
         while self.node.state in [HNState.NEWROUND]:
             # Do not run incoming actions while in new round computation
@@ -231,23 +276,39 @@ class HnServer(TCPServer):
             #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
             # TODO: rights management
             if msg.command == commands_pb2.Command.status:
-                self.node.my_status['instance']['localtime'] = time.time()
+                self.node.my_status["instance"]["localtime"] = time.time()
                 status = json.dumps(self.node.my_status)
-                del self.node.my_status['instance']['localtime']
-                await async_send_string(commands_pb2.Command.status, status, stream, full_peer)
+                del self.node.my_status["instance"]["localtime"]
+                await async_send_string(
+                    commands_pb2.Command.status, status, stream, full_peer
+                )
 
             elif msg.command == commands_pb2.Command.getround:
                 round_status = json.dumps(await self.node.round_status())
-                await async_send_string(commands_pb2.Command.getround, round_status, stream, full_peer)
+                await async_send_string(
+                    commands_pb2.Command.getround, round_status, stream, full_peer
+                )
 
-            elif msg.command == commands_pb2.Command.gethypernodes and peer_ip in config.ALLOW_QUERIES_FROM:
+            elif (
+                msg.command == commands_pb2.Command.gethypernodes
+                and peer_ip in config.ALLOW_QUERIES_FROM
+            ):
                 hypernodes = await self.node.get_hypernodes(msg.string_value)
-                await async_send_string(commands_pb2.Command.gethypernodes, json.dumps(hypernodes),
-                                        stream, full_peer)
+                await async_send_string(
+                    commands_pb2.Command.gethypernodes,
+                    json.dumps(hypernodes),
+                    stream,
+                    full_peer,
+                )
 
             elif msg.command == commands_pb2.Command.getheights:
                 heights = await self.node.get_heights()
-                await async_send_string(commands_pb2.Command.getheights, json.dumps(heights), stream, full_peer)
+                await async_send_string(
+                    commands_pb2.Command.getheights,
+                    json.dumps(heights),
+                    stream,
+                    full_peer,
+                )
 
             elif msg.command == commands_pb2.Command.tx:
                 # We got one or more tx from a peer. This is NOT as part of the mempool sync, but as a way to inject
@@ -257,50 +318,82 @@ class HnServer(TCPServer):
                     await self.node.digest_txs(msg.tx_values, full_peer)
                     await async_send_void(commands_pb2.Command.ok, stream, full_peer)
                 except Exception as e:
-                    app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                    app_log.warning(
+                        "SRV: Error {} digesting tx from {}:{}".format(
+                            e, peer_ip, peer_port
+                        )
+                    )
                     await async_send_void(commands_pb2.Command.ko, stream, full_peer)
 
             elif msg.command == commands_pb2.Command.mempool:
                 if peer_ip not in self.node.registered_ips:
-                    access_log.warning("Got mempool from {} but not a registered ip".format(peer_ip))
+                    access_log.warning(
+                        "Got mempool from {} but not a registered ip".format(peer_ip)
+                    )
                     # just don't digest?
                 else:
                     # peer mempool extract
                     try:
                         await self.node.digest_txs(msg.tx_values, full_peer)
                     except Exception as e:
-                        app_log.warning("SRV: Error {} digesting tx from {}:{}".format(e, peer_ip, peer_port))
+                        app_log.warning(
+                            "SRV: Error {} digesting tx from {}:{}".format(
+                                e, peer_ip, peer_port
+                            )
+                        )
                 # Use clients stats to get real since - beware of one shot clients, send full (int_value=1)
                 # sys.exit()
-                stats = self.node.inbound[full_peer]['stats']
+                stats = self.node.inbound[full_peer]["stats"]
                 last = int(stats[com_helpers.STATS_LASTMPL]) if len(stats) else 0
                 txs = await self.mempool.async_since(last)
-                self.node.inbound[full_peer]['stats'][com_helpers.STATS_LASTMPL] = time.time()
+                self.node.inbound[full_peer]["stats"][
+                    com_helpers.STATS_LASTMPL
+                ] = time.time()
                 # Filter out the tx we got from the peer
                 # app_log.info("{} txs before filtering".format(len(txs)))
                 peer_txids = [tx.txid for tx in msg.tx_values]
                 txs = [tx for tx in txs if tx.txid not in peer_txids]
                 # app_log.info("{} txs after filtering".format(len(txs)))
-                if 'mempool' in config.LOG:
-                    if self.verbose and 'txdigest' in config.LOG:
-                        app_log.info("SRV Sending back txs {} to {}, ts={}".format([tx.to_json() for tx in txs], full_peer, last))
+                if "mempool" in config.LOG:
+                    if self.verbose and "txdigest" in config.LOG:
+                        app_log.info(
+                            "SRV Sending back txs {} to {}, ts={}".format(
+                                [tx.to_json() for tx in txs], full_peer, last
+                            )
+                        )
                     else:
-                        app_log.info("SRV Sending back {} txs to {}, ts={}".format(len(txs), full_peer, last))
+                        app_log.info(
+                            "SRV Sending back {} txs to {}, ts={}".format(
+                                len(txs), full_peer, last
+                            )
+                        )
                 # This is a list of PosMessage objects
-                await async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
+                await async_send_txs(
+                    commands_pb2.Command.mempool, txs, stream, full_peer
+                )
 
             elif msg.command == commands_pb2.Command.height:
                 if peer_ip in self.node.registered_ips:
-                    await self.node.digest_height(msg.height_value, full_peer, server=True)
+                    await self.node.digest_height(
+                        msg.height_value, full_peer, server=True
+                    )
                 else:
                     # just don't digest
-                    access_log.warning("Got Height request from {} but not a registered ip.".format(peer_ip))
+                    access_log.warning(
+                        "Got Height request from {} but not a registered ip.".format(
+                            peer_ip
+                        )
+                    )
                 height = await self.node.poschain.async_height()
-                await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
+                await async_send_height(
+                    commands_pb2.Command.height, height, stream, full_peer
+                )
 
             elif msg.command == commands_pb2.Command.blockinfo:
                 height = await self.node.poschain.async_blockinfo(msg.int32_value)
-                await async_send_height(commands_pb2.Command.blockinfo, height, stream, full_peer)
+                await async_send_height(
+                    commands_pb2.Command.blockinfo, height, stream, full_peer
+                )
 
             elif msg.command == commands_pb2.Command.blocksync:
                 blocks = await self.node.poschain.async_blocksync(msg.int32_value)
@@ -328,17 +421,23 @@ class HnServer(TCPServer):
 
             elif msg.command == commands_pb2.Command.update:
                 if not config.AUTO_UPDATE:
-                    access_log.warning("Got Update from {} but not allowed by config.".format(peer_ip))
+                    access_log.warning(
+                        "Got Update from {} but not allowed by config.".format(peer_ip)
+                    )
                     return
                 if peer_ip not in config.ALLOW_UPDATES_FROM:
-                    access_log.warning("Got Update from {} but not an allowed ip.".format(peer_ip))
+                    access_log.warning(
+                        "Got Update from {} but not an allowed ip.".format(peer_ip)
+                    )
                     return
                 await self.update(msg.string_value, stream, full_peer)
 
             else:
                 # if self.verbose:
                 #    app_log.warning("SRV unknown message {}, closing.".format(com_helpers.cmd_to_text(msg.command)))
-                raise ValueError("Unknown message {}".format(com_helpers.cmd_to_text(msg.command)))
+                raise ValueError(
+                    "Unknown message {}".format(com_helpers.cmd_to_text(msg.command))
+                )
 
         except ValueError as e:
             app_log.warning("SRV: Error {} for peer {}.".format(e, full_peer))
@@ -348,7 +447,7 @@ class HnServer(TCPServer):
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
     async def update(self, url, stream, peer_ip):
@@ -360,16 +459,20 @@ class HnServer(TCPServer):
         :param stream:
         :param peer_ip:
         """
-        app_log.info('Checking version from {}'.format(url))
-        version_url = url + 'version.txt'
+        app_log.info("Checking version from {}".format(url))
+        version_url = url + "version.txt"
         try:
             version = requests.get(version_url).text.strip()
-            if not version or 'html' in version:
+            if not version or "html" in version:
                 app_log.warning("Version info not found")
                 return
             # compare to our version
             if LooseVersion(__version__) < LooseVersion(version):
-                app_log.info("Newer {} version than our {}, updating.".format(version, __version__))
+                app_log.info(
+                    "Newer {} version than our {}, updating.".format(
+                        version, __version__
+                    )
+                )
                 # fetch archive and extract
                 poshelpers.update_source(url + "hypernode.tar.gz", app_log)
                 # FR: bootstrap db on condition or other message ?
@@ -387,14 +490,16 @@ class HnServer(TCPServer):
                 # Just close, the cronjob will do a clean relaunch
                 self.node.stop()
             else:
-                msg = "Keeping our {} version vs distant {}".format(__version__, version)
+                msg = "Keeping our {} version vs distant {}".format(
+                    __version__, version
+                )
                 app_log.info(msg)
                 await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
         except Exception as e:
             app_log.error("Error {} updating from {}".format(e, url))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
 
 """
@@ -406,6 +511,7 @@ class HNState(Enum):
     """
     Current State of the HN
     """
+
     START = 0
     SYNCING = 1
     TESTING = 2
@@ -425,6 +531,7 @@ class HNState(Enum):
 
 class Poshn:
     """The PoS Hypernode object"""
+
     # There is only one instance of this class per node.
     # List of client routines
     # Each item (key=ip) is [active, last_active, sent_msg, sent_bytes, recv_msg, recv_bytes]
@@ -432,8 +539,20 @@ class Poshn:
     # list of inbound server connections
     inbound = {}
 
-    def __init__(self, ip, port, address='', peers=None, verbose=False, outip='127.0.0.1', interface='',
-                 wallet="poswallet.json", datadir="data", suffix='', version=''):
+    def __init__(
+        self,
+        ip,
+        port,
+        address="",
+        peers=None,
+        verbose=False,
+        outip="127.0.0.1",
+        interface="",
+        wallet="poswallet.json",
+        datadir="data",
+        suffix="",
+        version="",
+    ):
         """
         TODO
 
@@ -486,37 +605,53 @@ class Poshn:
         self.being_tested = False
         self.not_reg = False  # Suppose we are reg by default
         # From whom are we digesting mempool?
-        self.mempool_digesting = ''
+        self.mempool_digesting = ""
         try:
             self.init_log()
             self.check_os()
             poscrypto.load_keys(wallet)
             self.address = poscrypto.ADDRESS
             # Try to bootstrap if empty
-            if not os.path.isfile("{}/poc_pos_chain.db".format(datadir)) or not os.path.isfile("{}/hndb.db".format(datadir)):
-                app_log.warning('No chain found, Bootstrapping.')
+            if not os.path.isfile(
+                "{}/poc_pos_chain.db".format(datadir)
+            ) or not os.path.isfile("{}/hndb.db".format(datadir)):
+                app_log.warning("No chain found, Bootstrapping.")
                 if not poshelpers.bootstrap(datadir):
-                    app_log.warning('Bootstrap failed, will catch slowly over the net.')
+                    app_log.warning("Bootstrap failed, will catch slowly over the net.")
                     time.sleep(10)
             # Make sure node version is ok and node plugin runs.
             self.check_node()
             self.check_pow_status()
             # Time sensitive props
-            self.mempool = posmempool.SqliteMempool(verbose=verbose, app_log=app_log, db_path=datadir+'/', ram=True)
-            self.poschain = poschain.SqlitePosChain(verbose=verbose, app_log=app_log,
-                                                    db_path=datadir+'/', mempool=self.mempool)
+            self.mempool = posmempool.SqliteMempool(
+                verbose=verbose, app_log=app_log, db_path=datadir + "/", ram=True
+            )
+            self.poschain = poschain.SqlitePosChain(
+                verbose=verbose,
+                app_log=app_log,
+                db_path=datadir + "/",
+                mempool=self.mempool,
+            )
             self.powchain = PowInterface(app_log=app_log)
-            self.hn_db = hn_db.SqliteHNDB(verbose=verbose, app_log=app_log, db_path=datadir+'/')
+            self.hn_db = hn_db.SqliteHNDB(
+                verbose=verbose, app_log=app_log, db_path=datadir + "/"
+            )
             loop = asyncio.get_event_loop()
             loop.run_until_complete(self.powchain.wait_synced())
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
             if not self.powchain.regs:
-                app_log.error('No registered HN found, closing. Try restarting.')
+                app_log.error("No registered HN found, closing. Try restarting.")
                 sys.exit()
-            self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
-            self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
-            app_log.info('Status: At launch, {} registered HN, among which {} are active'.format(len(self.powchain.regs), len(self.active_regs)))
+            self.active_regs = [
+                items for items in self.powchain.regs.values() if items["active"]
+            ]
+            self.registered_ips = [items["ip"] for items in self.powchain.regs.values()]
+            app_log.info(
+                "Status: At launch, {} registered HN, among which {} are active".format(
+                    len(self.powchain.regs), len(self.active_regs)
+                )
+            )
             self.is_delegate = False
             self.round = -1
             self.sir = -1
@@ -526,7 +661,7 @@ class Poshn:
             self.forged = False
             #
             self.last_height = 0
-            self.previous_hash = ''
+            self.previous_hash = ""
             self.last_round = 0
             self.last_sir = 0
             self.connected_count = 0
@@ -545,7 +680,7 @@ class Poshn:
             app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
     def init_log(self):
         """
@@ -560,7 +695,7 @@ class Poshn:
         logfile = os.path.abspath("logs/pos_app{}.log".format(self.suffix))
         # Rotate log after reaching 512K, keep 5 old copies.
         rotate_handler = ConcurrentRotatingFileHandler(logfile, "a", 512 * 1024, 5)
-        formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         rotate_handler.setFormatter(formatter)
         app_log.addHandler(rotate_handler)
         #
@@ -568,11 +703,14 @@ class Poshn:
         tornado.log.enable_pretty_logging()
         logfile2 = os.path.abspath("logs/pos_access{}.log".format(self.suffix))
         rotate_handler2 = ConcurrentRotatingFileHandler(logfile2, "a", 512 * 1024, 5)
-        formatter2 = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+        formatter2 = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
-        app_log.info("PoS HN {} Starting on ip address '{}:{}', data dir '{}' suffix {}."
-                     .format(__version__, self.ip, self.port, self.datadir, self.suffix))
+        app_log.info(
+            "PoS HN {} Starting on ip address '{}:{}', data dir '{}' suffix {}.".format(
+                __version__, self.ip, self.port, self.datadir, self.suffix
+            )
+        )
         if not os.path.isdir(self.datadir):
             os.makedirs(self.datadir)
 
@@ -585,20 +723,36 @@ class Poshn:
                 app_log.error("Too small ulimit, please tune your system.")
                 sys.exit()
             if limit[0] < 65000:
-                app_log.warning("ulimit shows non optimum value, consider tuning your system.")
+                app_log.warning(
+                    "ulimit shows non optimum value, consider tuning your system."
+                )
         else:
-            app_log.error("Non Posix system, requirements are not satisfied. Use at your own risks.")
+            app_log.error(
+                "Non Posix system, requirements are not satisfied. Use at your own risks."
+            )
 
     def check_node(self):
         # TODO: dup code with hn_check, factorize in helpers.
-        node_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'node.py'))
+        node_filename = path.abspath(
+            config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "node.py")
+        )
         node_version = None
         for line in open(node_filename):
             if "VERSION" in line:
-                node_version = line.split("=")[-1].split('#')[0].replace("'", '').replace('"', '').strip()
+                node_version = (
+                    line.split("=")[-1]
+                    .split("#")[0]
+                    .replace("'", "")
+                    .replace('"', "")
+                    .strip()
+                )
                 break
         ok = LooseVersion(node_version) >= LooseVersion(config.REQUIRED_NODE_VERSION)
-        app_log.info("Companion node Version {}, required {}, {}".format(node_version, config.REQUIRED_NODE_VERSION, ok))
+        app_log.info(
+            "Companion node Version {}, required {}, {}".format(
+                node_version, config.REQUIRED_NODE_VERSION, ok
+            )
+        )
         if not ok:
             app_log.error("Insufficient companion node version")
             # kill outdated nodes
@@ -613,14 +767,21 @@ class Poshn:
         # TODO: dup code with hn_check, factorize in helpers.
         # FR: rule of 3: 3 times we do that hack to get a filename, use a helper.
         status_filename = path.abspath(
-            config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'powstatus.json'))
+            config.POW_LEDGER_DB.replace("static/", "").replace(
+                "ledger.db", "powstatus.json"
+            )
+        )
         ok = False
         while not ok:
             if not path.isfile(status_filename):
-                app_log.warning("No powstatus.json. Make sure the node runs. Waiting 30 sec")
+                app_log.warning(
+                    "No powstatus.json. Make sure the node runs. Waiting 30 sec"
+                )
                 time.sleep(30)
             elif os.path.getmtime(status_filename) < time.time() - 6 * 60:
-                app_log.warning("powstatus.json seems too old. Make sure the node runs. Waiting 30 sec.")
+                app_log.warning(
+                    "powstatus.json seems too old. Make sure the node runs. Waiting 30 sec."
+                )
                 time.sleep(30)
             else:
                 app_log.info("powstatus.json ok.")
@@ -635,7 +796,7 @@ class Poshn:
         :param port:
         :param properties:
         """
-        ip = '{}:{}'.format(ip, port)
+        ip = "{}:{}".format(ip, port)
         with self.inbound_lock:
             self.inbound[ip] = properties
 
@@ -648,7 +809,7 @@ class Poshn:
         """
         try:
             with self.inbound_lock:
-                ip = '{}:{}'.format(ip, port)
+                ip = "{}:{}".format(ip, port)
                 del self.inbound[ip]
         except KeyError:
             pass
@@ -656,7 +817,7 @@ class Poshn:
             app_log.error(">> remove_inbound")
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
     def update_inbound(self, ip, port, properties):
         """
@@ -666,7 +827,7 @@ class Poshn:
         :param port:
         :param properties:
         """
-        ip = '{}:{}'.format(ip, port)
+        ip = "{}:{}".format(ip, port)
         with self.inbound_lock:
             self.inbound[ip] = properties
 
@@ -710,7 +871,9 @@ class Poshn:
             full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
             if self.interface:
                 # If we specified a custom interface, we want to force listen on the associated ip.
-                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5, source_ip=self.outip)
+                stream = await TCPClient().connect(
+                    peer_ip, peer_port, timeout=5, source_ip=self.outip
+                )
             else:
                 stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
@@ -719,7 +882,9 @@ class Poshn:
         except StreamClosedError:
             return None
         except Exception as e:
-            app_log.warning("Error '{}' sending test block to {}:{}".format(e, peer_ip, peer_port))
+            app_log.warning(
+                "Error '{}' sending test block to {}:{}".format(e, peer_ip, peer_port)
+            )
         finally:
             try:
                 if stream:
@@ -743,7 +908,7 @@ class Poshn:
         protocmd = commands_pb2.Command()
         protocmd.Clear()
         protocmd.command = commands_pb2.Command.test
-        #tx_values[0].txid, tx_values[0].block_height, tx_values[0].pubkey
+        # tx_values[0].txid, tx_values[0].block_height, tx_values[0].pubkey
         tx = protocmd.tx_values.add()
         tx.timestamp, tx.sender, tx.recipient = int(time.time()), test[0], test[1]
         tx.txid, tx.block_height, tx.pubkey = b"", 0, b""
@@ -753,15 +918,15 @@ class Poshn:
         # get ip, port from address
         peer = await self.hn_db.hn_from_address(test[1], self.round)
         # TODO: deal with NONE result
-        future = self.do_test_peer(protocmd, peer['ip'], peer['port'])
+        future = self.do_test_peer(protocmd, peer["ip"], peer["port"])
         # send block
         try:
             result = await asyncio.wait_for(future, 30)
         except asyncio.TimeoutError as e:
-            app_log.warning('Test Timeout')
+            app_log.warning("Test Timeout")
             result = None
         except Exception as e:
-            app_log.warning('Test Timeout')
+            app_log.warning("Test Timeout")
             result = None
         if result:
             app_log.warning("Good test from {}".format(test[1]))
@@ -784,16 +949,24 @@ class Poshn:
         # Initialise round/sir data
         await self.refresh_last_block()
         await self.check_round()
-        await self._new_tx(recipient=self.address, what=202, params='START', value=self.round)
+        await self._new_tx(
+            recipient=self.address, what=202, params="START", value=self.round
+        )
         while not config.STOP_EVENT.is_set():
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()
-                if self.state == HNState.SYNCING and self.forger == poscrypto.ADDRESS and not self.forged:
+                if (
+                    self.state == HNState.SYNCING
+                    and self.forger == poscrypto.ADDRESS
+                    and not self.forged
+                ):
                     await self.change_state_to(HNState.STRONG_CONSENSUS)
 
-                if self.state in (HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS) and \
-                        self.forger != poscrypto.ADDRESS:
+                if (
+                    self.state in (HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS)
+                    and self.forger != poscrypto.ADDRESS
+                ):
                     # We did not reach consensus in time, and we passed our turn.
                     app_log.warning("Too late to forge, back to Sync")
                     await self.change_state_to(HNState.SYNCING)
@@ -824,8 +997,11 @@ class Poshn:
                 """
 
                 # If we should sync, but we are late compared to the net, then go in to "catching up state"
-                if self.state == HNState.SYNCING and self.net_height \
-                        and self.net_height['round'] > self.poschain.height_status.round:
+                if (
+                    self.state == HNState.SYNCING
+                    and self.net_height
+                    and self.net_height["round"] > self.poschain.height_status.round
+                ):
                     app_log.warning("We are late, catching up!")
                     # FR: set time to trigger CATCHING_UP_CONNECT2
                     await self.change_state_to(HNState.CATCHING_UP_CONNECT1)
@@ -833,7 +1009,7 @@ class Poshn:
                     # on connect2 phase, we add random peers other than our round peers to get enough
                     await self.change_state_to(HNState.CATCHING_UP_ELECT)
                     # FR: more magic here to be sure we got a good one - here, just pick one from the top chain.
-                    self.sync_from = random.choice(self.net_height['peers'])
+                    self.sync_from = random.choice(self.net_height["peers"])
                     app_log.warning("Sync From {}".format(self.sync_from))
                     await self.change_state_to(HNState.CATCHING_UP_PRESYNC)
                 if self.state == HNState.CATCHING_UP_PRESYNC:
@@ -842,16 +1018,22 @@ class Poshn:
                         io_loop = IOLoop.instance()
                         with self.clients_lock:
                             # first index is active or not
-                            self.clients[self.sync_from] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
-                        ip, port = self.sync_from.split(':')
-                        io_loop.spawn_callback(self.client_worker, ('N/A', ip, port, 1))
+                            self.clients[self.sync_from] = {
+                                "stats": [False, 0, 0, 0, 0, 0, 0, 0, 0]
+                            }
+                        ip, port = self.sync_from.split(":")
+                        io_loop.spawn_callback(self.client_worker, ("N/A", ip, port, 1))
                     # FR: add some timeout so we can retry another one if this one fails.
                     # FR: The given worker will be responsible for changing state on ok or failed status
 
                 if self.state == HNState.STRONG_CONSENSUS:
-                    if ((self.consensus_pc > config.MIN_FORGE_CONSENSUS) or \
-                            (len(self.peers_status) == 1 and self.consensus_pc > config.MIN_FORGE_CONSENSUS_LOW)) \
-                            and (not config.DO_NOT_FORGE):
+                    if (
+                        (self.consensus_pc > config.MIN_FORGE_CONSENSUS)
+                        or (
+                            len(self.peers_status) == 1
+                            and self.consensus_pc > config.MIN_FORGE_CONSENSUS_LOW
+                        )
+                    ) and (not config.DO_NOT_FORGE):
                         mempool_status = await self.mempool.status()
                         if mempool_status["NB"] >= config.REQUIRED_MESSAGES_PER_BLOCK:
                             # Make sure we are at least 15 sec after round start, to let other nodes be synced.
@@ -867,12 +1049,21 @@ class Poshn:
                                     app_log.info("My slot, but too soon to forge now.")
                         else:
                             if self.verbose:
-                                app_log.info("My slot, but too few tx in mempool to forge now.")
+                                app_log.info(
+                                    "My slot, but too few tx in mempool to forge now."
+                                )
                     else:
                         if self.verbose:
-                            app_log.info("My slot, but too low a consensus to forge now.")
+                            app_log.info(
+                                "My slot, but too low a consensus to forge now."
+                            )
 
-                if self.state == HNState.SYNCING and self.net_height and len(self.tests_to_run) and not self.testing:
+                if (
+                    self.state == HNState.SYNCING
+                    and self.net_height
+                    and len(self.tests_to_run)
+                    and not self.testing
+                ):
                     # time to run a test!
                     self.testing = True
                     try:
@@ -897,7 +1088,9 @@ class Poshn:
                                 io_loop = IOLoop.instance()
                                 with self.clients_lock:
                                     # first index is active or not
-                                    self.clients[full_peer] = {'stats': [False, 0, 0, 0, 0, 0, 0, 0, 0]}
+                                    self.clients[full_peer] = {
+                                        "stats": [False, 0, 0, 0, 0, 0, 0, 0, 0]
+                                    }
                                 io_loop.spawn_callback(self.client_worker, peer)
                 # FR: variable sleep time depending on the elapsed loop time - or use timeout?
                 await asyncio.sleep(config.WAIT)
@@ -907,7 +1100,9 @@ class Poshn:
                 app_log.error("Error in manager {}".format(e))
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                app_log.error(
+                    "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                )
         if self.verbose:
             app_log.info("Closed HN Manager")
 
@@ -931,8 +1126,8 @@ class Poshn:
             peers_status = {}
             our_status = await self.poschain.async_height()
             our_status = our_status.to_dict(as_hex=True)
-            our_status['count'] = 1
-            our_status['peers'] = []
+            our_status["count"] = 1
+            our_status["peers"] = []
             if self.verbose:
                 print("Our status", our_status)
             # peers_status = {'WE': our_status}
@@ -946,59 +1141,92 @@ class Poshn:
                                   'forgers': 4, 'forgers_round': 3}
                 """
                 try:
-                    if peer['height_status']['block_hash'] in peers_status:
-                        peers_status[peer['height_status']['block_hash']]['count'] += 1
-                        peers_status[peer['height_status']['block_hash']]['peers'].append(ip)
+                    if peer["height_status"]["block_hash"] in peers_status:
+                        peers_status[peer["height_status"]["block_hash"]]["count"] += 1
+                        peers_status[peer["height_status"]["block_hash"]][
+                            "peers"
+                        ].append(ip)
                     else:
-                        if peer['height_status']['block_hash'] in ['466cbd256fc248fd87f9aadedd8469afc8b4efa2']:
-                            app_log.warning('Peer {} banned hash {}'.format(ip, peer['height_status']['block_hash']))
+                        if peer["height_status"]["block_hash"] in [
+                            "466cbd256fc248fd87f9aadedd8469afc8b4efa2"
+                        ]:
+                            app_log.warning(
+                                "Peer {} banned hash {}".format(
+                                    ip, peer["height_status"]["block_hash"]
+                                )
+                            )
                         else:
-                            peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
-                            peers_status[peer['height_status']['block_hash']]['count'] = 1
-                            peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
-                    if poshelpers.same_height(peer['height_status'], our_status):
+                            peers_status[peer["height_status"]["block_hash"]] = peer[
+                                "height_status"
+                            ].copy()
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "count"
+                            ] = 1
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "peers"
+                            ] = [ip]
+                    if poshelpers.same_height(peer["height_status"], our_status):
                         if self.verbose:
-                            app_log.info('Peer {} agrees'.format(ip))
+                            app_log.info("Peer {} agrees".format(ip))
                         # TODO: only count if in our common.POC_HYPER_NODES_LIST list?
                         nb += 1
                     else:
                         if self.verbose:
-                            app_log.warning('Peer {} disagrees'.format(ip))
+                            app_log.warning("Peer {} disagrees".format(ip))
                 except:
                     pass
             for ip, peer in self.inbound.items():
                 if ip not in self.clients:
                     try:
-                        if peer['height_status']['block_hash'] in peers_status:
-                            peers_status[peer['height_status']['block_hash']]['count'] += 1
-                            peers_status[peer['height_status']['block_hash']]['peers'].append(ip)
+                        if peer["height_status"]["block_hash"] in peers_status:
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "count"
+                            ] += 1
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "peers"
+                            ].append(ip)
                         else:
-                            peers_status[peer['height_status']['block_hash']] = peer['height_status'].copy()
-                            peers_status[peer['height_status']['block_hash']]['count'] = 1
-                            peers_status[peer['height_status']['block_hash']]['peers'] = [ip]
-                        if poshelpers.same_height(peer['height_status'], our_status):
+                            peers_status[peer["height_status"]["block_hash"]] = peer[
+                                "height_status"
+                            ].copy()
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "count"
+                            ] = 1
+                            peers_status[peer["height_status"]["block_hash"]][
+                                "peers"
+                            ] = [ip]
+                        if poshelpers.same_height(peer["height_status"], our_status):
                             nb += 1
                             if self.verbose:
-                                app_log.info('Peer {} agrees'.format(ip))
+                                app_log.info("Peer {} agrees".format(ip))
                         else:
                             if self.verbose:
-                                app_log.warning('Peer {} disagrees'.format(ip))
+                                app_log.warning("Peer {} disagrees".format(ip))
                     except:
                         pass
             total = len(self.all_peers)
             pc = round(nb * 100 / total)
-            app_log.info('Status: {} Peers do agree with us, {}%'.format(nb, pc))
+            app_log.info("Status: {} Peers do agree with us, {}%".format(nb, pc))
             peers_status = peers_status.values()
-            peers_status = sorted(peers_status,
-                                  key=itemgetter('forgers', 'uniques', 'round', 'height', 'forgers_round',
-                                                 'uniques_round', 'block_hash'),
-                                  reverse=True)
+            peers_status = sorted(
+                peers_status,
+                key=itemgetter(
+                    "forgers",
+                    "uniques",
+                    "round",
+                    "height",
+                    "forgers_round",
+                    "uniques_round",
+                    "block_hash",
+                ),
+                reverse=True,
+            )
             # TEMP
-            app_log.info('Status: {} observable chain(s)'.format(len(peers_status)))
+            app_log.info("Status: {} observable chain(s)".format(len(peers_status)))
             if self.verbose:
-                print('> sorted peers status')
+                print("> sorted peers status")
                 for h in peers_status:
-                    print(' ', h)
+                    print(" ", h)
 
             self.peers_status = peers_status
             self.consensus_nb = nb
@@ -1008,7 +1236,7 @@ class Poshn:
             app_log.error("_consensus: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
 
         try:
@@ -1019,18 +1247,29 @@ class Poshn:
                 self.net_height = peers_status[0]
                 if poshelpers.first_height_is_better(self.net_height, our_status):
                     if self.net_height["round"] == our_status["round"]:
-                        best_peers = self.net_height['peers']
-                        app_log.warning('There is a better chain for our round on the net: "{}"'
-                                        .format(','.join(best_peers)))
-                        if self.state in [HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS, HNState.SYNCING]:
-                            app_log.info('State {} force round sync and check'.format(self.state))
+                        best_peers = self.net_height["peers"]
+                        app_log.warning(
+                            'There is a better chain for our round on the net: "{}"'.format(
+                                ",".join(best_peers)
+                            )
+                        )
+                        if self.state in [
+                            HNState.STRONG_CONSENSUS,
+                            HNState.MINIMAL_CONSENSUS,
+                            HNState.SYNCING,
+                        ]:
+                            app_log.info(
+                                "State {} force round sync and check".format(self.state)
+                            )
                             await self._round_sync(our_status["round"], self.net_height)
                         else:
-                            app_log.warning('State is {}, ignoring for now.'.format(self.state))
+                            app_log.warning(
+                                "State is {}, ignoring for now.".format(self.state)
+                            )
             else:
                 self.net_height = None
         except Exception as e:
-            app_log.error('Consensus error {}'.format(e))
+            app_log.error("Consensus error {}".format(e))
             self.net_height = None
         return pc
 
@@ -1039,20 +1278,24 @@ class Poshn:
         Return dict of known peers heights.
         """
         try:
-            heights = {key: value['height_status'] for key, value in self.clients.items() if 'height_status' in value}
+            heights = {
+                key: value["height_status"]
+                for key, value in self.clients.items()
+                if "height_status" in value
+            }
             # add inbound
             # TEMP
             print(">> in", self.inbound)
             for key, value in self.inbound.items():
                 if key not in heights:
-                    if 'height_status' in value:
-                        heights[key] = value['height_status']
+                    if "height_status" in value:
+                        heights[key] = value["height_status"]
             return heights
         except Exception as e:
             app_log.error('get_heights error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
 
     async def get_hypernodes(self, param):
@@ -1070,47 +1313,74 @@ class Poshn:
         """
         if not param:
             return self.all_peers
-        if param == '1':
-            full = '1'
+        if param == "1":
+            full = "1"
             start_round = self.round
             end_round = self.round
-        elif param == '2':
-            full = '2'
+        elif param == "2":
+            full = "2"
             start_round = 0
             end_round = self.round
         else:
-            full, start_round, end_round = map(str.strip, param.split(','))
-        app_log.info("Registered Hypernodes, full {}, round {} to {}".format(full, start_round, end_round))
-        if full == '2':
+            full, start_round, end_round = map(str.strip, param.split(","))
+        app_log.info(
+            "Registered Hypernodes, full {}, round {} to {}".format(
+                full, start_round, end_round
+            )
+        )
+        if full == "2":
             # We should remove from this list the ones that were inactive the round before.
             active_hns = await self.poschain.async_active_hns(int(end_round) - 1)
             all_peers = [item[0] for item in self.all_peers]
             inactive_hns = set(all_peers) - set(active_hns)
-            hypernodes = await self.powchain.load_hn_pow(int(end_round), datadir=self.datadir, inactive_last_round=inactive_hns)
+            hypernodes = await self.powchain.load_hn_pow(
+                int(end_round), datadir=self.datadir, inactive_last_round=inactive_hns
+            )
             return hypernodes
 
         # Get all HN who were valid for at least a round
         # from local DB and powchain.regs: show also inactive
         # TODO: these are only the HNs still reg for latest round, we should maybe be more cool
-        hypernodes = {item[0]: {"ip":item[1], "port":item[2], "weight": item[3], "registrar": item[4],
-                                "recipient": item[5], "kpis":{}}
-                      for item in self.all_peers}
-        if full == '1':
-            app_log.info("Computing HN KPIs for Round {} to {}".format(start_round, end_round))
+        hypernodes = {
+            item[0]: {
+                "ip": item[1],
+                "port": item[2],
+                "weight": item[3],
+                "registrar": item[4],
+                "recipient": item[5],
+                "kpis": {},
+            }
+            for item in self.all_peers
+        }
+        if full == "1":
+            app_log.info(
+                "Computing HN KPIs for Round {} to {}".format(start_round, end_round)
+            )
             # Find all the HN who sent a tx (or forged a block) for those rounds, and update their props
-            actives = await self.poschain.async_active_hns_details(start_round, end_round)
+            actives = await self.poschain.async_active_hns_details(
+                start_round, end_round
+            )
             # Avoiding dict comprehension here since more will come later on.
             for hypernode in hypernodes:
                 # TODO: success: ok tests. errors: ko tests. warnings: strange behavior logued
                 # (needs confirmation by several peers)
                 # rounds : # of rounds with activity, sources : # of tx for the period
-                hypernodes[hypernode]['kpis'] = {"success": 0, "errors": 0, "failed_pings": 0, "ok_pings": 0,
-                                                 "warnings": 0, "rounds": 0, "sources": 0}
+                hypernodes[hypernode]["kpis"] = {
+                    "success": 0,
+                    "errors": 0,
+                    "failed_pings": 0,
+                    "ok_pings": 0,
+                    "warnings": 0,
+                    "rounds": 0,
+                    "sources": 0,
+                }
                 if hypernode in actives:
-                    hypernodes[hypernode]['kpis'] = {key: value for key, value in actives[hypernode].items()}
-                    hypernodes[hypernode]['kpis']["active"] = True
+                    hypernodes[hypernode]["kpis"] = {
+                        key: value for key, value in actives[hypernode].items()
+                    }
+                    hypernodes[hypernode]["kpis"]["active"] = True
                 else:
-                    hypernodes[hypernode]['kpis']["active"] = False
+                    hypernodes[hypernode]["kpis"]["active"] = False
 
             # forgers = await self.poschain.async_forger_hns(start_round, end_round)
 
@@ -1130,14 +1400,16 @@ class Poshn:
         self.saved_state = self.state
         await self.change_state_to(HNState.ROUND_SYNC)
         # pick a peer - if sync fails, we will try another random one next time
-        peer = random.choice(promised_height['peers'])
+        peer = random.choice(promised_height["peers"])
         try:
             # Get the whole round data from that peer - We suppose it fits in memory
             the_blocks = await self._get_round_blocks(peer, a_round)
             if not the_blocks:
                 raise ValueError("Did not get blocks from {}".format(peer))
             # check the data fits and count sources/forgers
-            simulated_target = await self.poschain.check_round(a_round, the_blocks, fast_check=True)
+            simulated_target = await self.poschain.check_round(
+                a_round, the_blocks, fast_check=True
+            )
             # print("expected", promised_height)
             # print("simulated", simulated_target)
             # Check it matches the target,
@@ -1147,7 +1419,11 @@ class Poshn:
                 [E 180815 09:09:42 poshn:905] detail <class 'AttributeError'> poshn.py 880
                 """
                 if self.verbose:
-                    app_log.info('Distant Round {} Data from {} fits expectations.'.format(a_round, peer))
+                    app_log.info(
+                        "Distant Round {} Data from {} fits expectations.".format(
+                            a_round, peer
+                        )
+                    )
                 # Delete the round to replace
                 await self.poschain.delete_round(a_round)
                 await self.poschain.status()
@@ -1157,12 +1433,26 @@ class Poshn:
                 await self.status(log=False)
                 # get PoS address from peer (it's a ip:0port string)
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
-                await self._new_tx(hn['address'], what=200, params='R.SYNC:{}'.format(peer), value=a_round)
+                await self._new_tx(
+                    hn["address"],
+                    what=200,
+                    params="R.SYNC:{}".format(peer),
+                    value=a_round,
+                )
             else:
-                app_log.warning('Distant Round {} Data from {} fails its promise.'.format(a_round, peer))
+                app_log.warning(
+                    "Distant Round {} Data from {} fails its promise.".format(
+                        a_round, peer
+                    )
+                )
                 # get PoS address from peer (it's a ip:0port string)
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
-                await self._new_tx(hn['address'], what=101, params='P.FAIL:{}'.format(peer), value=a_round)
+                await self._new_tx(
+                    hn["address"],
+                    what=101,
+                    params="P.FAIL:{}".format(peer),
+                    value=a_round,
+                )
                 # FR: Add to buffer instead of sending right away (avoid tx spam)
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
@@ -1170,13 +1460,13 @@ class Poshn:
             app_log.error('_round_sync error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
         finally:
             # Set previous state again
             await self.change_state_to(self.saved_state)
             return res
 
-    async def _new_tx(self, recipient='', what=0, params='', value=0):
+    async def _new_tx(self, recipient="", what=0, params="", value=0):
         """
         Insert a new TX (message) in the local mempool
 
@@ -1186,7 +1476,9 @@ class Poshn:
         :param value:
         :return:
         """
-        tx = posblock.PosMessage().from_values(recipient=recipient, what=what, params=params, value=value)
+        tx = posblock.PosMessage().from_values(
+            recipient=recipient, what=what, params=params, value=value
+        )
         # from_values(self, timestamp=0, sender='', recipient='', what=0, params='', value=0, pubkey=None):
         try:
             tx.sign()
@@ -1196,7 +1488,7 @@ class Poshn:
             app_log.error('_new_tx error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
     async def _get_round_blocks(self, peer, a_round):
         """
@@ -1210,20 +1502,26 @@ class Poshn:
             # FR: Do we have a stream to this peer? if yes, use it instead of creating a new one ?
             # means add to self.clients
             if self.verbose:
-                app_log.info('get_round_blocks({}, {})'.format(peer, a_round))
-            ip, port = peer.split(':')
+                app_log.info("get_round_blocks({}, {})".format(peer, a_round))
+            ip, port = peer.split(":")
             stream = await self._get_peer_stream(ip, int(port), temp=True)
             # request the info
             if stream:
-                await com_helpers.async_send_int32(commands_pb2.Command.roundblocks, a_round, stream, peer)
+                await com_helpers.async_send_int32(
+                    commands_pb2.Command.roundblocks, a_round, stream, peer
+                )
                 blocks = await com_helpers.async_receive(stream, peer)
                 try:
                     stream.close()
                 except Exception as e:
-                    app_log.error('_get_round_blocks error closing stream "{}"'.format(e))
+                    app_log.error(
+                        '_get_round_blocks error closing stream "{}"'.format(e)
+                    )
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                    app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                    app_log.error(
+                        "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                    )
                 return blocks
             else:
                 app_log.warning("Couldn't get temp stream from {}'.format(peer))")
@@ -1232,7 +1530,7 @@ class Poshn:
             app_log.error('_get_round_blocks error "{}"'.format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             return None
 
     async def refresh_last_block(self):
@@ -1241,8 +1539,11 @@ class Poshn:
         Update the inner properties.
         """
         last_block = await self.poschain.last_block()
-        self.last_height, self.previous_hash = last_block['height'], last_block['block_hash']
-        self.last_round, self.last_sir = last_block['round'], last_block['sir']
+        self.last_height, self.previous_hash = (
+            last_block["height"],
+            last_block["block_hash"],
+        )
+        self.last_round, self.last_sir = last_block["round"], last_block["sir"]
 
     async def digest_txs(self, txs, peer_ip):
         """
@@ -1258,20 +1559,24 @@ class Poshn:
         if not len(txs):
             return
         if len(txs) > 200:
-            if self.verbose and 'mempool' in config.LOG:
-                app_log.info("Too many ({}) txs to sync from {}, ignoring ".format(len(txs), peer_ip))
+            if self.verbose and "mempool" in config.LOG:
+                app_log.info(
+                    "Too many ({}) txs to sync from {}, ignoring ".format(
+                        len(txs), peer_ip
+                    )
+                )
             return
         if peer_ip == self.mempool_digesting:
-            if self.verbose and 'mempool' in config.LOG:
+            if self.verbose and "mempool" in config.LOG:
                 app_log.info("Ignoring redundant sync from {}".format(peer_ip))
             return
         while self.mempool_digesting:
-            if self.verbose and 'mempool' in config.LOG:
+            if self.verbose and "mempool" in config.LOG:
                 app_log.info("Waiting to sync {} txs from {}".format(len(txs), peer_ip))
             await asyncio.sleep(config.WAIT)
         try:
             self.mempool_digesting = peer_ip
-            if self.verbose and 'mempool' in config.LOG:
+            if self.verbose and "mempool" in config.LOG:
                 app_log.info("Got {} tx(s) from {}".format(len(txs), peer_ip))
             nb = 0
             total = 0
@@ -1285,7 +1590,7 @@ class Poshn:
         except Exception as e:
             app_log.warning("Error {} digesting tx".format(e))
         finally:
-            self.mempool_digesting = ''
+            self.mempool_digesting = ""
 
     async def digest_height(self, height_proto, full_peer, server=False):
         """
@@ -1298,10 +1603,10 @@ class Poshn:
         try:
             height = posblock.PosHeight().from_proto(height_proto)
             if server:
-                self.inbound[full_peer]['height_status'] = height.to_dict(as_hex=True)
+                self.inbound[full_peer]["height_status"] = height.to_dict(as_hex=True)
             else:
                 # Client
-                self.clients[full_peer]['height_status'] = height.to_dict(as_hex=True)
+                self.clients[full_peer]["height_status"] = height.to_dict(as_hex=True)
         except KeyError as e:
             app_log.error("Key Error {} digest_height".format(e))
         except Exception as e:
@@ -1323,12 +1628,16 @@ class Poshn:
             full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
             # FR: Are context managers possible here? would lighten the finally step
             if self.interface:
-                stream = await TCPClient().connect(peer_ip, peer_port, timeout=5, source_ip=self.outip)
+                stream = await TCPClient().connect(
+                    peer_ip, peer_port, timeout=5, source_ip=self.outip
+                )
             else:
                 stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
             await async_send_block(proto_block, stream, full_peer)
         except Exception as e:
-            app_log.warning("Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port))
+            app_log.warning(
+                "Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port)
+            )
         finally:
             if stream:
                 stream.close()
@@ -1345,11 +1654,21 @@ class Poshn:
             if not self.forger == poscrypto.ADDRESS:
                 # Should never pass here.
                 raise ValueError("We are not the forger for current round!!!")
-            block_dict = {"height": self.last_height + 1, "round": self.round, "sir": self.sir,
-                          "timestamp": int(time.time()), "previous_hash": self.previous_hash,
-                          "forger": self.address, 'received_by': ''}
+            block_dict = {
+                "height": self.last_height + 1,
+                "round": self.round,
+                "sir": self.sir,
+                "timestamp": int(time.time()),
+                "previous_hash": self.previous_hash,
+                "forger": self.address,
+                "received_by": "",
+            }
             if self.verbose:
-                app_log.info("Forging block {} Round {} SIR {}".format(self.last_height + 1, self.round, self.sir))
+                app_log.info(
+                    "Forging block {} Round {} SIR {}".format(
+                        self.last_height + 1, self.round, self.sir
+                    )
+                )
             block = posblock.PosBlock().from_dict(block_dict)
             # txs are native objects
             block.txs = await self.mempool.async_all(self.last_height + 1)
@@ -1366,7 +1685,9 @@ class Poshn:
             # FR: Shall we pass that one through "digest" to make sure?
             # await self.poschain._insert_block(block)
             block = block.to_proto()
-            await self.poschain.digest_block(block, from_miner=True, relaxed_checks=True)
+            await self.poschain.digest_block(
+                block, from_miner=True, relaxed_checks=True
+            )
             await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
             if self.verbose:
@@ -1374,9 +1695,11 @@ class Poshn:
             app_log.info("Block Forged, I will send it")
             self.forged_count += 1
             # build the list of jurors to send to. Exclude ourselves.
-            to_send = [self.post_block(block, peer[1], peer[2])
-                       for peer in self.all_peers
-                       if not (peer[1] == self.outip and int(peer[2]) == self.port)]
+            to_send = [
+                self.post_block(block, peer[1], peer[2])
+                for peer in self.all_peers
+                if not (peer[1] == self.outip and int(peer[2]) == self.port)
+            ]
             try:
                 await asyncio.wait(to_send, timeout=30)
             except Exception as e:
@@ -1421,18 +1744,28 @@ class Poshn:
                 access_log.info("Initiating client connection to {}".format(full_peer))
             # ip_port = "{}:{}".format(peer[1], peer[2])
             if self.interface:
-                stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT, source_ip=self.outip)
+                stream = await TCPClient().connect(
+                    ip, port, timeout=LTIMEOUT, source_ip=self.outip
+                )
             else:
                 stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
             # connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(temp=temp),
-                                                stream, full_peer)
+            await com_helpers.async_send_string(
+                commands_pb2.Command.hello,
+                self.hello_string(temp=temp),
+                stream,
+                full_peer,
+            )
             msg = await com_helpers.async_receive(stream, full_peer)
             if self.verbose:
-                access_log.info("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
+                access_log.info(
+                    "Client got {}".format(com_helpers.cmd_to_text(msg.command))
+                )
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                access_log.info("Client got Hello {} from {}".format(msg.string_value, full_peer))
+                access_log.info(
+                    "Client got Hello {} from {}".format(msg.string_value, full_peer)
+                )
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Client got Ko {}".format(msg.string_value))
@@ -1440,13 +1773,17 @@ class Poshn:
             # now we can enter a long term relationship with this node.
             return stream
         except tornado.iostream.StreamClosedError as e:
-            if self.verbose and 'connections' in config.LOG:
-                app_log.info("Connection lost to {} because {}. No retry.".format(full_peer, e))
+            if self.verbose and "connections" in config.LOG:
+                app_log.info(
+                    "Connection lost to {} because {}. No retry.".format(full_peer, e)
+                )
         except Exception as e:
-            app_log.error("Connection lost to {} because {}. No Retry.".format(full_peer, e))
+            app_log.error(
+                "Connection lost to {} because {}. No Retry.".format(full_peer, e)
+            )
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
     async def client_worker(self, peer):
         """
@@ -1459,64 +1796,98 @@ class Poshn:
         stream = None
         retry = True
         try:
-            if self.verbose and 'connections' in config.LOG:
+            if self.verbose and "connections" in config.LOG:
                 access_log.info("Initiating client co-routine for {}".format(full_peer))
             # ip_port = "{}:{}".format(peer[1], peer[2])
             if self.interface:
-                stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT, source_ip=self.outip)
+                stream = await TCPClient().connect(
+                    peer[1], peer[2], timeout=LTIMEOUT, source_ip=self.outip
+                )
             else:
                 stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
             connect_time = time.time()
-            await com_helpers.async_send_string(commands_pb2.Command.hello, self.hello_string(), stream, full_peer)
+            await com_helpers.async_send_string(
+                commands_pb2.Command.hello, self.hello_string(), stream, full_peer
+            )
             msg = await com_helpers.async_receive(stream, full_peer)
-            if self.verbose and 'workermsg' in config.LOG:
-                access_log.info("Worker got {}".format(com_helpers.cmd_to_text(msg.command)))
+            if self.verbose and "workermsg" in config.LOG:
+                access_log.info(
+                    "Worker got {}".format(com_helpers.cmd_to_text(msg.command))
+                )
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                access_log.info("Worker got Hello {} from {}".format(msg.string_value, full_peer))
-                self.clients[full_peer]['hello'] = msg.string_value
+                access_log.info(
+                    "Worker got Hello {} from {}".format(msg.string_value, full_peer)
+                )
+                self.clients[full_peer]["hello"] = msg.string_value
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))
                 return
             # now we can enter a long term relationship with this node.
             with self.clients_lock:
                 # Set connected status
-                self.clients[full_peer]['stats'][com_helpers.STATS_ACTIVEP] = True
-                self.clients[full_peer]['stats'][com_helpers.STATS_COSINCE] = connect_time
+                self.clients[full_peer]["stats"][com_helpers.STATS_ACTIVEP] = True
+                self.clients[full_peer]["stats"][
+                    com_helpers.STATS_COSINCE
+                ] = connect_time
             while not config.STOP_EVENT.is_set():
                 if peer not in self.connect_to and self.state in [HNState.SYNCING]:
                     retry = False
                     raise ValueError("Closing for this round")
-                if self.state in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC) \
-                        and self.sync_from == full_peer:
+                if (
+                    self.state
+                    in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC)
+                    and self.sync_from == full_peer
+                ):
                     # Faster sync
                     app_log.info(">> Entering presync with {}".format(full_peer))
                     await asyncio.sleep(config.SHORT_WAIT)
                     if self.state == HNState.CATCHING_UP_PRESYNC:
                         # Here, we check if our last block matches the peer's one.
                         # If not, we rollback one block at a time until we agree.
-                        await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
-                                                           self.poschain.height_status.height, stream, full_peer)
+                        await com_helpers.async_send_int32(
+                            commands_pb2.Command.blockinfo,
+                            self.poschain.height_status.height,
+                            stream,
+                            full_peer,
+                        )
                         msg = await com_helpers.async_receive(stream, full_peer)
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
                         if self.verbose:  # FR: to remove later on
                             if self.poschain.height_status:
-                                print('self', self.poschain.height_status.to_dict(as_hex=True))
-                            print('peer', info.to_dict(as_hex=True))
-                        if self.poschain.height_status.block_hash == info.block_hash \
-                                and self.poschain.height_status.round == info.round:
+                                print(
+                                    "self",
+                                    self.poschain.height_status.to_dict(as_hex=True),
+                                )
+                            print("peer", info.to_dict(as_hex=True))
+                        if (
+                            self.poschain.height_status.block_hash == info.block_hash
+                            and self.poschain.height_status.round == info.round
+                        ):
                             # we are ok, move to next state
                             await self.change_state_to(HNState.CATCHING_UP_SYNC)
-                            app_log.info(">> Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(full_peer))
+                            app_log.info(
+                                ">> Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(
+                                    full_peer
+                                )
+                            )
                         else:
                             app_log.info(">> Block mismatch, will rollback")
                             # FR: find the common ancestor faster via height/hash list
-                            while self.poschain.height_status.block_hash != info.block_hash:
+                            while (
+                                self.poschain.height_status.block_hash
+                                != info.block_hash
+                            ):
                                 # TODO: limit possible rollback to a few heights, like 1 or 2 rounds worth of blocks.
                                 if self.verbose:  # FR: remove later on
-                                    print('self', self.poschain.height_status.to_dict(as_hex=True))
-                                    print('peer', info.to_dict(as_hex=True))
+                                    print(
+                                        "self",
+                                        self.poschain.height_status.to_dict(
+                                            as_hex=True
+                                        ),
+                                    )
+                                    print("peer", info.to_dict(as_hex=True))
                                 if self.poschain.height_status.height == 0:
                                     app_log.warning(">> Won't rollback block 0")
                                     # TODO: temp ban (store on disk)
@@ -1526,14 +1897,21 @@ class Poshn:
                                     # close
                                     return
                                 await self.poschain.rollback()
-                                await com_helpers.async_send_int32(commands_pb2.Command.blockinfo,
-                                                                   self.poschain.height_status.height, stream,
-                                                                   full_peer)
+                                await com_helpers.async_send_int32(
+                                    commands_pb2.Command.blockinfo,
+                                    self.poschain.height_status.height,
+                                    stream,
+                                    full_peer,
+                                )
                                 msg = await com_helpers.async_receive(stream, full_peer)
                                 #  TODO: check message is blockinfo
                                 info = posblock.PosHeight().from_proto(msg.height_value)
                                 # await asyncio.sleep(5)
-                            app_log.info(">> Should have rolled back to {} level.".format(full_peer))
+                            app_log.info(
+                                ">> Should have rolled back to {} level.".format(
+                                    full_peer
+                                )
+                            )
                             # config.STOP_EVENT.set()
                             # sys.exit()
 
@@ -1543,40 +1921,76 @@ class Poshn:
                         failed = False
                         # warning: we use a property that can be None instead of the method.
                         if self.net_height:
-                            while self.net_height['height'] > self.poschain.height_status.height:
+                            while (
+                                self.net_height["height"]
+                                > self.poschain.height_status.height
+                            ):
                                 await com_helpers.async_send_int32(
-                                    commands_pb2.Command.blocksync, self.poschain.height_status.height + 1,
-                                    stream, full_peer)
+                                    commands_pb2.Command.blocksync,
+                                    self.poschain.height_status.height + 1,
+                                    stream,
+                                    full_peer,
+                                )
                                 # TODO: Add some timeout not to be stuck if the peer does not answer.
                                 # TODO: or at least, go out of this sync mode if the sync peer closes.
                                 msg = await com_helpers.async_receive(stream, full_peer)
                                 if not msg.block_value:
-                                    app_log.info("No more blocks from {}".format(full_peer))
+                                    app_log.info(
+                                        "No more blocks from {}".format(full_peer)
+                                    )
                                     # Exit or we are stuck
                                     break
                                 else:
                                     blocks_count = 0
                                     for block in msg.block_value:
-                                        if await self.poschain.digest_block(block, from_miner=False):
+                                        if await self.poschain.digest_block(
+                                            block, from_miner=False
+                                        ):
                                             blocks_count += 1
                                         else:
                                             break  # no need to go on
-                                    app_log.info("Saved {}/{} blocks from {}".format(blocks_count, len(msg.block_value), full_peer))
+                                    app_log.info(
+                                        "Saved {}/{} blocks from {}".format(
+                                            blocks_count,
+                                            len(msg.block_value),
+                                            full_peer,
+                                        )
+                                    )
                                     await self.poschain.async_commit()  # Should not be necessary
                                     if not blocks_count:
-                                        app_log.error("Error while inserting block from {}".format(full_peer))
+                                        app_log.error(
+                                            "Error while inserting block from {}".format(
+                                                full_peer
+                                            )
+                                        )
                                         failed = True
                                         break
-                                    if blocks_count <  len(msg.block_value):
-                                        app_log.error("Error while inserting block from {}".format(full_peer))
+                                    if blocks_count < len(msg.block_value):
+                                        app_log.error(
+                                            "Error while inserting block from {}".format(
+                                                full_peer
+                                            )
+                                        )
                                         failed = True
                                         break
                         hn = await self.hn_db.hn_from_peer(full_peer, self.round)
                         if failed:
-                            await self._new_tx(hn['address'], what=101, params='C.FAIL:{}'.format(full_peer), value=self.round)
-                            app_log.warning(">> Net Synced failed via {}".format(full_peer))
+                            await self._new_tx(
+                                hn["address"],
+                                what=101,
+                                params="C.FAIL:{}".format(full_peer),
+                                value=self.round,
+                            )
+                            app_log.warning(
+                                ">> Net Synced failed via {}".format(full_peer)
+                            )
                         else:
-                            await self._new_tx(hn['address'], what=200, params='C.SYNC:{}'.format(full_peer), value=self.round)
+                            await self._new_tx(
+                                hn["address"],
+                                what=200,
+                                params="C.SYNC:{}".format(full_peer),
+                                value=self.round,
+                            )
                             app_log.info(">> Net Synced via {}".format(full_peer))
 
                         # Trigger re-eval of peers and such (do that as blocks come?)
@@ -1586,8 +2000,12 @@ class Poshn:
                 else:
                     await asyncio.sleep(config.WAIT)
                     now = time.time()
-                    if self.state not in (HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS,
-                                          HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC):
+                    if self.state not in (
+                        HNState.STRONG_CONSENSUS,
+                        HNState.MINIMAL_CONSENSUS,
+                        HNState.CATCHING_UP_PRESYNC,
+                        HNState.CATCHING_UP_SYNC,
+                    ):
                         # If we are trying to reach consensus, don't ask for mempool sync so often.
                         # Peers may send anyway.
                         height_delay = 10
@@ -1596,43 +2014,65 @@ class Poshn:
                         # Not looking for consensus, but send our height every now and then to stay sync
                         height_delay = 30
                         mempool_delay = 20
-                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] < now - mempool_delay:
+                    if (
+                        self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL]
+                        < now - mempool_delay
+                    ):
                         # Send our new tx from mempool if any, will get the new from peers.
                         if await self.mempool.tx_count():
                             #  Just don't waste bandwith if our mempool is empty.
                             await self._exchange_mempool(stream, full_peer)
-                    if self.state not in (HNState.CATCHING_UP_PRESYNC, HNState.CATCHING_UP_SYNC):
-                        if self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] < now - height_delay:
+                    if self.state not in (
+                        HNState.CATCHING_UP_PRESYNC,
+                        HNState.CATCHING_UP_SYNC,
+                    ):
+                        if (
+                            self.clients[full_peer]["stats"][com_helpers.STATS_LASTHGT]
+                            < now - height_delay
+                        ):
                             # Time to send our last block info to the peer, he will answer back with his
                             await self._exchange_height(stream, full_peer)
 
                     # Only send ping if time is due.
-                    if self.clients[full_peer]['stats'][com_helpers.STATS_LASTACT] < now - config.PING_DELAY:
+                    if (
+                        self.clients[full_peer]["stats"][com_helpers.STATS_LASTACT]
+                        < now - config.PING_DELAY
+                    ):
                         if self.verbose:
                             app_log.info("Sending ping to {}".format(full_peer))
                         # keeps connection active, or raise error if connection lost
-                        await com_helpers.async_send_void(commands_pb2.Command.ping, stream, full_peer)
+                        await com_helpers.async_send_void(
+                            commands_pb2.Command.ping, stream, full_peer
+                        )
             retry = False
             raise ValueError("Closing")
         except tornado.iostream.StreamClosedError as e:
-            if self.verbose and 'connections' in config.LOG:
+            if self.verbose and "connections" in config.LOG:
                 if retry:
-                    app_log.warning("Connection lost to {} because {}. Retry in {} sec."
-                                    .format(peer[1], e, config.PEER_RETRY_SECONDS))
+                    app_log.warning(
+                        "Connection lost to {} because {}. Retry in {} sec.".format(
+                            peer[1], e, config.PEER_RETRY_SECONDS
+                        )
+                    )
                 else:
-                    app_log.warning("Connection lost to {} because {}. No Retry."
-                                    .format(peer[1], e))
+                    app_log.warning(
+                        "Connection lost to {} because {}. No Retry.".format(peer[1], e)
+                    )
                     return
         except Exception as e:
             if retry:
-                app_log.error("Connection lost to {} because {}. Retry in {} sec."
-                              .format(peer[1], e, config.PEER_RETRY_SECONDS))
+                app_log.error(
+                    "Connection lost to {} because {}. Retry in {} sec.".format(
+                        peer[1], e, config.PEER_RETRY_SECONDS
+                    )
+                )
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+                app_log.error(
+                    "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                )
             else:
-                app_log.error("Connection lost to {} because {}."
-                              .format(peer[1], e))
+                app_log.error("Connection lost to {} because {}.".format(peer[1], e))
                 return
             try:
                 stream.close()
@@ -1661,10 +2101,10 @@ class Poshn:
         :param full_peer:
         """
         # FR: do not send if our height did not change since the last time. Will spare net resources.
-        if self.verbose and 'workermsg' in config.LOG:
+        if self.verbose and "workermsg" in config.LOG:
             app_log.info("Sending height to {}".format(full_peer))
         height = await self.poschain.async_height()
-        self.clients[full_peer]['stats'][com_helpers.STATS_LASTHGT] = time.time()
+        self.clients[full_peer]["stats"][com_helpers.STATS_LASTHGT] = time.time()
         await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
         # Peer will answer with its height
         # FR: have some watchdog to close connection if peer does not answer after a while (but does not disconnect)
@@ -1683,12 +2123,18 @@ class Poshn:
         :param stream:
         :param full_peer:
         """
-        last = int(self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL])
+        last = int(self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL])
         txs = await self.mempool.async_since(last)
-        if self.verbose and 'mempool' in config.LOG:
-            app_log.info("Worker sending {} txs from mempool to {}, ts={}".format(len(txs), full_peer, last))
-        self.clients[full_peer]['stats'][com_helpers.STATS_LASTMPL] = time.time()
-        await com_helpers.async_send_txs(commands_pb2.Command.mempool, txs, stream, full_peer)
+        if self.verbose and "mempool" in config.LOG:
+            app_log.info(
+                "Worker sending {} txs from mempool to {}, ts={}".format(
+                    len(txs), full_peer, last
+                )
+            )
+        self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL] = time.time()
+        await com_helpers.async_send_txs(
+            commands_pb2.Command.mempool, txs, stream, full_peer
+        )
         # Peer will answer with its mempool
         msg = await com_helpers.async_receive(stream, full_peer)
         if msg.command != commands_pb2.Command.mempool:
@@ -1713,7 +2159,7 @@ class Poshn:
                 # Don't count the same peer twice
                 if who not in self.inbound:
                     # Only count the ones we are effectively connected to
-                    if client['stats'][com_helpers.STATS_ACTIVEP]:
+                    if client["stats"][com_helpers.STATS_ACTIVEP]:
                         clients_count += 1
             self.connected_count = inbound_count + clients_count
             # update our view of the network state
@@ -1722,7 +2168,7 @@ class Poshn:
             app_log.error("_update_network: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
     async def check_round(self):
@@ -1741,7 +2187,9 @@ class Poshn:
                 self.forged = False
                 # Update all sir related info
                 if self.verbose:
-                    app_log.info(">> New Slot {} in Round {}".format(self.sir, self.round))
+                    app_log.info(
+                        ">> New Slot {} in Round {}".format(self.sir, self.round)
+                    )
                 self.tests_to_run = []
                 self.tests_to_answer = []
                 if self.round != self.previous_round:
@@ -1762,45 +2210,88 @@ class Poshn:
                     self.no_test_sent = 0
                     # Update the HN list - First query the inactive HN for just finished round.
                     all_hns = set([peer[0] for peer in self.all_peers])
-                    active_hns = set(await self.poschain.async_active_hns(self.round - 1))
+                    active_hns = set(
+                        await self.poschain.async_active_hns(self.round - 1)
+                    )
                     inactive_hns = all_hns - active_hns
                     # Fail safe to avoid disabling everyone on edge cases or attack scenarios
                     if len(active_hns) < config.MIN_ACTIVE_HNS:
                         # Also covers for recovering if previous round had no block because of low consensus.
                         inactive_hns = []
-                        app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
-                    await self.powchain.load_hn_pow(datadir=self.datadir, inactive_last_round=list(inactive_hns), a_round=self.round)
+                        app_log.warning(
+                            "Ignoring inactive HNs since there are not enough active ones."
+                        )
+                    await self.powchain.load_hn_pow(
+                        datadir=self.datadir,
+                        inactive_last_round=list(inactive_hns),
+                        a_round=self.round,
+                    )
                     if not self.powchain.regs:
                         self.stop()
-                    self.active_regs = [items for items in self.powchain.regs.values() if items['active']]
+                    self.active_regs = [
+                        items
+                        for items in self.powchain.regs.values()
+                        if items["active"]
+                    ]
                     if self.verbose:
-                        app_log.info('Status: {} registered HN, among which {} are active'
-                                     .format(len(self.powchain.regs), len(self.active_regs)))
+                        app_log.info(
+                            "Status: {} registered HN, among which {} are active".format(
+                                len(self.powchain.regs), len(self.active_regs)
+                            )
+                        )
                     # Now save these infos in the hn db
-                    await self.hn_db.clear_rounds_before(self.round - 2)  # keep 2 old rounds for what it costs.
+                    await self.hn_db.clear_rounds_before(
+                        self.round - 2
+                    )  # keep 2 old rounds for what it costs.
                     await self.hn_db.save_hn_from_regs(self.powchain.regs, self.round)
 
                     # FR: Should be some refactoring to do in all these mess of various structures.
                     # Recreate self.peers.
                     # list of ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0")
                     # for address, items in self.powchain.regs.items():
-                    self.active_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
-                                  for address, items in self.powchain.regs.items()
-                                  if items['active']]
-                    self.all_peers = [(items['pos'], items['ip'], items['port'], items['weight'], address, items['reward'])
-                                      for address, items in self.powchain.regs.items()]
-                    self.registered_ips = [items['ip'] for items in self.powchain.regs.values()]
+                    self.active_peers = [
+                        (
+                            items["pos"],
+                            items["ip"],
+                            items["port"],
+                            items["weight"],
+                            address,
+                            items["reward"],
+                        )
+                        for address, items in self.powchain.regs.items()
+                        if items["active"]
+                    ]
+                    self.all_peers = [
+                        (
+                            items["pos"],
+                            items["ip"],
+                            items["port"],
+                            items["weight"],
+                            address,
+                            items["reward"],
+                        )
+                        for address, items in self.powchain.regs.items()
+                    ]
+                    self.registered_ips = [
+                        items["ip"] for items in self.powchain.regs.values()
+                    ]
                     self.current_round_start = int(time.time())
                     self.previous_round = self.round
                     # We try to connect to inactive peers anyway, or they have less chances of coming back.
-                    self.connect_to = await determine.get_connect_to(self.all_peers, self.round, self.address)
+                    self.connect_to = await determine.get_connect_to(
+                        self.all_peers, self.round, self.address
+                    )
                     # but tickets are only for previously active
                     tickets = await determine.hn_list_to_tickets(self.active_peers)
-                    self.slots = await determine.tickets_to_jurors(tickets, self.previous_hash)
+                    self.slots = await determine.tickets_to_jurors(
+                        tickets, self.previous_hash
+                    )
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
                     # We also test inactive peers, or it would be biased against good nodes.
-                    self.test_slots = await determine.hn_list_to_test_slots(self.all_peers, self.slots)
+                    self.test_slots = await determine.hn_list_to_test_slots(
+                        self.all_peers, self.slots
+                    )
                     # Are we to play this round?
                     self.no_test_this_round = True
                     for a_slot_info in self.test_slots:
@@ -1809,9 +2300,12 @@ class Poshn:
                                 # we have at least one test
                                 self.no_test_this_round = False
                                 break
-                    if self.verbose and 'determine' in config.LOG:
-                        app_log.info("Tests Slots {} - No test this round={}"
-                                     .format(json.dumps(self.test_slots), self.no_test_this_round))
+                    if self.verbose and "determine" in config.LOG:
+                        app_log.info(
+                            "Tests Slots {} - No test this round={}".format(
+                                json.dumps(self.test_slots), self.no_test_this_round
+                            )
+                        )
                     if self.no_test_this_round:
                         app_log.warning("No test this round {}".format(self.round))
                     # TODO: save this round info to db
@@ -1822,12 +2316,30 @@ class Poshn:
                 # We changed SIR, change tests for slots
                 self.previous_sir = self.sir
                 if self.sir < len(self.test_slots):
-                    self.tests_to_run = [test for test in self.test_slots[self.sir] if test[0] == self.address]
-                    self.tests_to_answer = [[test for test in self.test_slots[self.sir] if test[1] == self.address]]
+                    self.tests_to_run = [
+                        test
+                        for test in self.test_slots[self.sir]
+                        if test[0] == self.address
+                    ]
+                    self.tests_to_answer = [
+                        [
+                            test
+                            for test in self.test_slots[self.sir]
+                            if test[1] == self.address
+                        ]
+                    ]
 
                 if self.verbose:
-                    app_log.info("Tests to run slot {}: {}".format(self.sir, json.dumps(self.tests_to_run)))
-                    app_log.info("Tests to answer slot {}: {}".format(self.sir, json.dumps(self.tests_to_answer)))
+                    app_log.info(
+                        "Tests to run slot {}: {}".format(
+                            self.sir, json.dumps(self.tests_to_run)
+                        )
+                    )
+                    app_log.info(
+                        "Tests to answer slot {}: {}".format(
+                            self.sir, json.dumps(self.tests_to_answer)
+                        )
+                    )
 
                 if self.sir < len(self.slots):
                     self.forger = self.slots[self.sir][0]
@@ -1839,14 +2351,34 @@ class Poshn:
                 # purge old tx
                 await self.mempool.async_purge()
 
-                if self.no_test_this_round and (self.sir == 0) and (self.no_test_sent == 0):
+                if (
+                    self.no_test_this_round
+                    and (self.sir == 0)
+                    and (self.no_test_sent == 0)
+                ):
                     await asyncio.sleep(5)
                     # FR: param is optional, all could go into 'what' to spare bandwith
                     self.no_test_sent += 1
-                    await self._new_tx(recipient=self.address, what=201, params='NO_TEST:1', value=self.round)
-                if  self.no_test_this_round and (self.sir == config.MAX_ROUND_SLOTS + config.END_ROUND_SLOTS - 1) and (self.no_test_sent == 1):
+                    await self._new_tx(
+                        recipient=self.address,
+                        what=201,
+                        params="NO_TEST:1",
+                        value=self.round,
+                    )
+                if (
+                    self.no_test_this_round
+                    and (
+                        self.sir == config.MAX_ROUND_SLOTS + config.END_ROUND_SLOTS - 1
+                    )
+                    and (self.no_test_sent == 1)
+                ):
                     self.no_test_sent += 1
-                    await self._new_tx(recipient=self.address, what=201, params='NO_TEST:2', value=self.round)
+                    await self._new_tx(
+                        recipient=self.address,
+                        what=201,
+                        params="NO_TEST:2",
+                        value=self.round,
+                    )
                     # self.run_test(self.address, self.address, 0 )
 
     def serve(self):
@@ -1873,7 +2405,11 @@ class Poshn:
             server.bind(self.port, backlog=128, address=self.ip, reuse_port=REUSE_PORT)
             server.start(1)  # Forks multiple sub-processes
             if self.verbose:
-                app_log.info("Starting server on tcp://localhost:{} , reuse_port={}".format(self.port, REUSE_PORT))
+                app_log.info(
+                    "Starting server on tcp://localhost:{} , reuse_port={}".format(
+                        self.port, REUSE_PORT
+                    )
+                )
             io_loop = IOLoop.instance()
             io_loop.spawn_callback(self.manager)
             self.connect()
@@ -1912,17 +2448,23 @@ class Poshn:
             txs = []
             for tx in mem_txs:
                 if await self.poschain.tx_exists(tx):
-                    if 'txdigest' in config.LOG:
-                        app_log.info("Tx {} in our chain, removing from mempool".format(tx))
+                    if "txdigest" in config.LOG:
+                        app_log.info(
+                            "Tx {} in our chain, removing from mempool".format(tx)
+                        )
                     txs.append(tx)
             if len(txs):
                 await self.mempool.async_del_txids(txs)
-                app_log.info("removed {} tx(s) from mempool, were in our chain already.".format(len(txs)))
+                app_log.info(
+                    "removed {} tx(s) from mempool, were in our chain already.".format(
+                        len(txs)
+                    )
+                )
         except Exception as e:
             app_log.error("Coherence Check: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
     async def round_status(self) -> dict:
@@ -1931,11 +2473,16 @@ class Poshn:
 
         :return: Round Status info
         """
-        status = {'start': self.current_round_start, 'previous': self.previous_round, 'connect_to': self.connect_to,
-                  'slots': self.slots, 'test_slots': self.test_slots}
+        status = {
+            "start": self.current_round_start,
+            "previous": self.previous_round,
+            "connect_to": self.connect_to,
+            "slots": self.slots,
+            "test_slots": self.test_slots,
+        }
         return status
 
-    async def status(self, log: bool=True) -> dict:
+    async def status(self, log: bool = True) -> dict:
         """
         Async. Assemble and store the node status as a dict.
 
@@ -1948,40 +2495,62 @@ class Poshn:
             of = len(self.process.open_files())
             fd = self.process.num_fds()
             co = len(self.process.connections(kind="tcp4"))
-            extra['open_files'], extra['connections'], extra['num_fd'] = of, co, fd
-            app_log.info("Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}"
-                         " - Forged {} since start.".
-                         format(of, co, fd, len(self.inbound), len(self.clients), self.forged_count))
-
+            extra["open_files"], extra["connections"], extra["num_fd"] = of, co, fd
+            app_log.info(
+                "Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}"
+                " - Forged {} since start.".format(
+                    of, co, fd, len(self.inbound), len(self.clients), self.forged_count
+                )
+            )
 
         # pow = {"node_version": get_pow_node_version()}
         pow = get_pow_status()
-        status = {'config':
-                      {'address': self.address, 'ip': self.ip, 'port': self.port, 'verbose': self.verbose, 'outip': self.outip},
-                  'instance':
-                      {"version": self.client_version, "hn_version": __version__, "statustime": int(time.time())},
-                  'chain': poschain_status,
-                  'mempool': mempool_status,
-                  'peers': {'connected_count': self.connected_count,
-                            'outbound': list(self.clients.keys()),
-                            'inbound': list(self.inbound.keys()),
-                            'net_height': self.net_height
-                  },
-                  'state': {'state': self.state.name,
-                            'round': self.round,
-                            'sir': self.sir,
-                            'forger': self.forger},
-                  'extra': extra, "pow": pow}
+        status = {
+            "config": {
+                "address": self.address,
+                "ip": self.ip,
+                "port": self.port,
+                "verbose": self.verbose,
+                "outip": self.outip,
+            },
+            "instance": {
+                "version": self.client_version,
+                "hn_version": __version__,
+                "statustime": int(time.time()),
+            },
+            "chain": poschain_status,
+            "mempool": mempool_status,
+            "peers": {
+                "connected_count": self.connected_count,
+                "outbound": list(self.clients.keys()),
+                "inbound": list(self.inbound.keys()),
+                "net_height": self.net_height,
+            },
+            "state": {
+                "state": self.state.name,
+                "round": self.round,
+                "sir": self.sir,
+                "forger": self.forger,
+            },
+            "extra": extra,
+            "pow": pow,
+        }
         # 'peers': self.peers
         if self.address not in [peer[0] for peer in self.all_peers]:
             self.not_reg = True
-            app_log.warning("Status: This Hypernode is not registered nor activated yet.")
+            app_log.warning(
+                "Status: This Hypernode is not registered nor activated yet."
+            )
         else:
             self.not_reg = False
         if log:
             app_log.info("Status: {}".format(json.dumps(status)))
-        if 'connections' in config.LOG:
+        if "connections" in config.LOG:
             for con in self.process.connections(kind="tcp4"):
-                app_log.info("!C local {} rem {} state {}".format(con.laddr, con.raddr, con.status))
+                app_log.info(
+                    "!C local {} rem {} state {}".format(
+                        con.laddr, con.raddr, con.status
+                    )
+                )
         self.my_status = status
         return self.my_status

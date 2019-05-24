@@ -20,31 +20,48 @@ import sys
 import time
 
 # custom modules
-sys.path.append('../modules')
+sys.path.append("../modules")
 import com_helpers
 import config
 from poshn import Poshn
 from poschain import SqlitePosChain
 import poscrypto
 import poshelpers
+
 # import pow_interface
 
-__version__ = '0.0.57'
+__version__ = "0.0.58"
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Bismuth HyperNode')
-    parser.add_argument("-i", "--index", type=int, default = -1, help='Demo address index [0-4]')
-    parser.add_argument("-I", "--ip", type=str, default = '', help="IP to listen on ('ALL' for all interfaces)")
-    parser.add_argument("-N", "--interface", type=str, default="", help='Use a specific network interface')
-    parser.add_argument("-v", "--verbose", action="count", default=False, help='Be verbose.')
-    parser.add_argument("--action", type=str, default=None, help='Specific action. ')
+    parser = argparse.ArgumentParser(description="Bismuth HyperNode")
+    parser.add_argument(
+        "-i", "--index", type=int, default=-1, help="Demo address index [0-4]"
+    )
+    parser.add_argument(
+        "-I",
+        "--ip",
+        type=str,
+        default="",
+        help="IP to listen on ('ALL' for all interfaces)",
+    )
+    parser.add_argument(
+        "-N",
+        "--interface",
+        type=str,
+        default="",
+        help="Use a specific network interface",
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="count", default=False, help="Be verbose."
+    )
+    parser.add_argument("--action", type=str, default=None, help="Specific action. ")
     args = parser.parse_args()
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
         sys.exit()
     try:
-        if args.action == 'genesis':
+        if args.action == "genesis":
             # Displays genesis block info for db insert
             poscrypto.load_keys("hn_temp/mn0.json")
             pos_chain = SqlitePosChain(verbose=True)
@@ -77,18 +94,29 @@ if __name__ == "__main__":
                     config.POC_HYPER_NODES_LIST = config.POC_HYPER_NODES_LIST_0
                 ip = args.ip if args.ip else None
                 port = config.DEFAULT_PORT
-                suffix=''
-            if args.ip == 'ALL':
+                suffix = ""
+            if args.ip == "ALL":
                 ip = None
             peers = config.POC_HYPER_NODES_LIST
             if args.interface:
-                outip = subprocess.getoutput("curl --interface {} -4 -s ifconfig.co".format(args.interface))
+                outip = subprocess.getoutput(
+                    "curl --interface {} -4 -s ifconfig.co".format(args.interface)
+                )
             else:
                 outip = subprocess.getoutput("curl -4 -s ifconfig.co")
 
-            com_helpers.MY_NODE = Poshn(ip, port, peers=peers, verbose = args.verbose, outip=outip,
-                                        wallet=wallet_name, datadir=datadir, suffix=suffix, version=__version__,
-                                        interface=args.interface)
+            com_helpers.MY_NODE = Poshn(
+                ip,
+                port,
+                peers=peers,
+                verbose=args.verbose,
+                outip=outip,
+                wallet=wallet_name,
+                datadir=datadir,
+                suffix=suffix,
+                version=__version__,
+                interface=args.interface,
+            )
             com_helpers.MY_NODE.serve()
             # only ctrl-c will stop it
     except Exception as e:
