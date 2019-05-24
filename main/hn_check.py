@@ -29,6 +29,8 @@ import poscrypto
 
 __version__ = "0.0.7"
 
+ONE_GB = 1024 * 1024 * 1024
+
 
 def check_os(a_status):
     """
@@ -60,22 +62,22 @@ def check_os(a_status):
     # Available Ram
     mem = virtual_memory()
     a_status["ram"] = mem.total
-    a_status["ram_gb"] = mem.total /  1024 / 1024 / 1024
-    if mem.total < 2 * 1024 * 1024 * 1024: # 2GB
+    a_status["ram_gb"] = mem.total / ONE_GB
+    if mem.total < 1.9 * ONE_GB: # 2GB
         a_status["errors"].append(
             "Less than 2GB Physical Ram. Likely not to work. Setup a swap file and use at your own risks."
         )
         swap = swap_memory()
         a_status["errors"].append(
-            "Current swap file is {:.2f}Gb, {}% free".format(swap.total, swap.percent)
+            "Current swap file is {:.2f}Gb, {}% free".format(swap.total / ONE_GB, swap.percent)
         )
-    elif mem.total < 3.5 * 1024 * 1024 * 1024: # 4GB, with sdome margin
+    elif mem.total < 3.5 * ONE_GB: # 4GB, with sdome margin
         a_status["errors"].append(
             "Less than 4GB Physical Ram (official requirements). A swap file could prove useful. Use at your own risks."
         )
         swap = swap_memory()
         a_status["errors"].append(
-            "Current swap file is {:.2f}Gb, {}% free".format(swap.total, swap.percent)
+            "Current swap file is {:.2f}Gb, {}% free".format(swap.total / ONE_GB, swap.percent)
         )
 
 

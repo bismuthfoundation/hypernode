@@ -12,11 +12,12 @@ import tarfile
 from operator import itemgetter
 
 import requests
+from logging import getLogger
 
 import config
 import poscrypto
 
-__version__ = '0.0.5'
+__version__ = '0.0.7'
 
 
 # GENERIC HELPERS ##############################################################
@@ -30,6 +31,7 @@ def download_file(url: str, filename: str):
     :param filename:
     :return:
     """
+    app_log = getLogger("tornado.application")
     r = requests.get(url, stream=True)
     total_size = int(r.headers.get('content-length')) / 1024
     with open(filename, 'wb') as filename:
@@ -38,10 +40,10 @@ def download_file(url: str, filename: str):
             if chunk:
                 chunkno = chunkno + 1
                 if chunkno % 10000 == 0:  # every x chunks
-                    print("Downloaded {} %".format(int(100 * (chunkno / total_size))))
+                    app_log.info("Downloaded {} %".format(int(100 * (chunkno / total_size))))
                 filename.write(chunk)
                 filename.flush()
-        print("Downloaded 100 %")
+        app_log.info("Downloaded 100 %")
 
 
 def bootstrap(datadir):
