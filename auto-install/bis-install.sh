@@ -83,8 +83,8 @@ configure_firewall() {
 download_node() {
 	echo "Fetching Node"
 	cd
-    if [ -f ./4.2.7.tar.gz ]; then
-        rm 4.2.7.tar.gz
+    if [ -f ./v4.3.0.0-beta.2.tar.gz ]; then
+        rm v4.3.0.0-beta.2.tar.gz
 	fi
     wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.0-beta.2.tar.gz
     tar -zxf v4.3.0.0-beta.2.tar.gz
@@ -98,10 +98,10 @@ download_node() {
     if [ -f ./ledger.tar.gz ]; then
         rm ledger.tar.gz
 	fi
-    wget https://snapshots.s3.nl-ams.scw.cloud/ledger-1180000.tar.gz
-    tar -zxf ledger-1180000.tar.gz
+    wget https://snapshots.s3.nl-ams.scw.cloud/ledger-verified.tar.gz
+    tar -zxf ledger-verified.tar.gz
     # Make some room
-    rm ledger-1180000.tar.gz
+    rm ledger-verified.tar.gz
     echo "Getting node sentinel"
     cd /root/Bismuth
     wget https://gist.githubusercontent.com/EggPool/e7ad9baa2b32e4d7d3ba658a40b6d643/raw/934598c7ff815180b913d6549bd2d9688e016855/node_sentinel.py
