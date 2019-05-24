@@ -8,7 +8,7 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.4"
+VERSION="0.1.5"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -30,6 +30,10 @@ config_os() {
 	fi
 	if ! cat /etc/sysctl.conf | grep "fs.file-max = 100000"; then
 	    echo "fs.file-max = 100000" >> /etc/sysctl.conf
+	if ! cat /etc/sysctl.conf | grep "vm.swappiness = 10"; then
+	    echo "vm.swappiness = 10" >> /etc/sysctl.conf
+	if ! cat /etc/sysctl.conf | grep "vm.vfs_cache_pressure = 50"; then
+	    echo "vm.vfs_cache_pressure = 50" >> /etc/sysctl.conf
         sysctl -p
 	fi
 	echo 1 > /proc/sys/net/ipv4/tcp_low_latency
