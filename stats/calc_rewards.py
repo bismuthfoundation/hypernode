@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Calc and exports HN rewards for a week, from stats.
 """

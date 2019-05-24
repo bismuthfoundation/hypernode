@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Call send_nogui.py (edit not to require manual confirmation)
 for each address to pay.
