@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = '0.0.38'
+__version__ = "0.0.38"
 
 """
 User config - You can change these ones, but **See doc**
@@ -36,7 +36,15 @@ DUMP_INSERTS = False
 # Copy the ones you want in LOG
 LOG = []
 
-AVAILABLE_LOGS = ['determine', 'connections', 'mempool', 'srvmsg', 'workermsg',  'txdigest', 'timing']
+AVAILABLE_LOGS = [
+    "determine",
+    "connections",
+    "mempool",
+    "srvmsg",
+    "workermsg",
+    "txdigest",
+    "timing",
+]
 
 # Path to the Bismuth chain
 POW_LEDGER_DB = "../../Bismuth-master/static/ledger.db"
@@ -58,13 +66,48 @@ Here comes temp. PoC variables
 # The reference list of active Hypernodes for the round
 # address, ip, port, weight, bis_registrar, bis_recipient
 POC_HYPER_NODES_LIST_0 = [
-    ('BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne', '127.0.0.1', 6969, 1, "bis_addr_0", "bis_addr_0"),  # hn 0
-    ('BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH', '127.0.0.1', 6970, 2, "bis_addr_1", "bis_addr_1"),
-    ('B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC', '127.0.0.1', 6971, 1, "bis_addr_2", "bis_addr_2"),
-    ('BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV', '127.0.0.1', 6972, 1, "bis_addr_3", "bis_addr_3"),
-    ('BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD', '127.0.0.1', 6973, 1, "bis_addr_4", "bis_addr_3")
+    (
+        "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne",
+        "127.0.0.1",
+        6969,
+        1,
+        "bis_addr_0",
+        "bis_addr_0",
+    ),  # hn 0
+    (
+        "BHbbLpbTAVKrJ1XDLMM48Qa6xJuCGofCuH",
+        "127.0.0.1",
+        6970,
+        2,
+        "bis_addr_1",
+        "bis_addr_1",
+    ),
+    (
+        "B8stX39s5NBFx746ZX5dcqzpuUGjQPJViC",
+        "127.0.0.1",
+        6971,
+        1,
+        "bis_addr_2",
+        "bis_addr_2",
+    ),
+    (
+        "BMSMNNzB9qdDp1vudRZoge4BUZ1gCUC3CV",
+        "127.0.0.1",
+        6972,
+        1,
+        "bis_addr_3",
+        "bis_addr_3",
+    ),
+    (
+        "BNJp77d1BdoaQu9HEpGjKCsGcKqsxkJ7FD",
+        "127.0.0.1",
+        6973,
+        1,
+        "bis_addr_4",
+        "bis_addr_3",
+    )
     # on purpose, 3 and 4 have same recipient address
-    ]
+]
 
 POC_HYPER_NODES_LIST = []
 
@@ -85,28 +128,28 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 """
 
 # Wednesday Sept 12, 08:00 UTC + 1Day
-# TS = 1536739200 + 1day
+#  TS = 1536739200 + 1day
 # Round = 562 => 586
 # NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = '0.0.63'
+PLUGIN_VERSION = "0.0.64"
 
 # required minimal version of the node
-REQUIRED_NODE_VERSION = '4.2.7.0'
+REQUIRED_NODE_VERSION = "4.3.0.0"
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
-POSNET = 'posnet0002'
+POSNET = "posnet0002"
 # I messed up with previous config, why we still need to support posnet0001.
 # Will be gone with next update.
-POSNET_ALLOW = 'posnet0001;posnet0002;posnet0003'
+POSNET_ALLOW = "posnet0001;posnet0002;posnet0003"
 
 # Default hard coded url.
-BOOTSTRAP_URLS = ['http://bp12.eggpool.net/hn_bs.tar.gz']
+BOOTSTRAP_URLS = ["http://bp12.eggpool.net/hn_bs.tar.gz"]
 
 # Network Byte ID - 0x19 = Main PoS Net 'B' - 0x55 Test PoS Net 'b'
-NETWORK_ID = b'\x19'
+NETWORK_ID = b"\x19"
 # NETWORK_ID = b'\x55'
 
 # Default Hypernodes port
@@ -175,16 +218,16 @@ ORIGIN_OF_TIME = 1534716000  # Real Origin: August 20
 
 
 # Do not change these - Private contract controller.
-POS_CONTROL_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
-POW_CONTROL_ADDRESS = 'cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff'
+POS_CONTROL_ADDRESS = "BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn"
+POW_CONTROL_ADDRESS = "cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff"
 # Round time in seconds
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
 # Genesis block
-GENESIS_SEED = 'BIG_BANG_HASH'
-GENESIS_HASH = blake2b(GENESIS_SEED.encode('utf-8'), digest_size=20)
-GENESIS_ADDRESS = 'BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn'
-GENESIS_SIGNATURE = ''
+GENESIS_SEED = "BIG_BANG_HASH"
+GENESIS_HASH = blake2b(GENESIS_SEED.encode("utf-8"), digest_size=20)
+GENESIS_ADDRESS = "BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn"
+GENESIS_SIGNATURE = ""
 # TODO: check chain: verify that fits.
 
 
@@ -194,7 +237,7 @@ DEBUG VARS
 
 POW_DISTINCT_PROCESS = False
 PROCESS_TIMEOUT = 25
-POW_ALTERNATE_URL = ''
+POW_ALTERNATE_URL = ""
 
 """
 Global Variables
@@ -220,7 +263,7 @@ VARS = {
     "POW_ALTERNATE_URL": "str",
     "AUTO_UPDATE": "bool",
     "ALLOW_UPDATES_FROM": "str",
-    "ALLOW_QUERIES_FROM": "str"
+    "ALLOW_QUERIES_FROM": "str",
 }
 # These two have been removed from config - POSNET depends on code, not config, and POSNET_WALLOW comes from the PoW.
 # "POSNET": "str",
@@ -240,10 +283,9 @@ COLORED_VARS = {
     # "POW_DISTINCT_PROCESS": "bool",
     # "AUTO_UPDATE": "bool",
     "ALLOW_UPDATES_FROM": "str",
-
     "TESTS_PER_SLOT": "int",
     "PING_DELAY": "int",
-    "MIN_FORGE_CONSENSUS": "int"
+    "MIN_FORGE_CONSENSUS": "int",
 }
 
 
@@ -258,7 +300,7 @@ def get_left_right(line, var_list):
         right = float(right)
     elif param == "list":
         # Separator may be ; or ,
-        right = [str(item.strip()) for item in right.replace(';', ',').split(",")]
+        right = [str(item.strip()) for item in right.replace(";", ",").split(",")]
     elif param == "bool":
         if right.lower() in ["false", "0", "", "no"]:
             right = False
@@ -272,9 +314,9 @@ def get_left_right(line, var_list):
 
 def overload(file_name: str):
     for line in open(file_name):
-        if line and line[0] == '#':
+        if line and line[0] == "#":
             continue
-        if '=' in line:
+        if "=" in line:
             left, right = get_left_right(line, VARS)
             if left:
                 globals().update({left: right})
@@ -282,21 +324,22 @@ def overload(file_name: str):
 
 def update_colored():
     # Check colored from plugin - if exists - and overload again
-    colored_file_name = POW_LEDGER_DB.replace('static/ledger.db', 'colored.json')
+    colored_file_name = POW_LEDGER_DB.replace("static/ledger.db", "colored.json")
     if path.isfile(colored_file_name):
         with open(colored_file_name) as f:
             colored = json.load(f)
-            rainbow = colored.get('rainbow')
+            rainbow = colored.get("rainbow")
             for key_value in rainbow:
                 left, right = get_left_right(key_value, COLORED_VARS)
                 if left:
                     # print("Set {}={} from rainbow".format(left, right))
                     globals().update({left: right})
-            bootstrap = colored.get('bootstrap')
+            bootstrap = colored.get("bootstrap")
             if bootstrap:
-                globals().update({'BOOTSTRAP_URLS': bootstrap})
+                globals().update({"BOOTSTRAP_URLS": bootstrap})
 
-def load(prefix: str=''):
+
+def load(prefix: str = ""):
     """
     Overload info with config.default.txt and config.txt
     :return:
