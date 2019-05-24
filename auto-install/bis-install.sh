@@ -1,12 +1,12 @@
 #!/bin/bash
-# 2018 - Bismuth Foundation and NodeSupply
+# 2019 - Bismuth Foundation and NodeSupply
 # Distributed under the MIT software license, see http://www.opensource.org/licenses/mit-license.php.
 
 # Usage: bash ./bis-install.sh
-#
+# or one liner : wget https://raw.githubusercontent.com/bismuthfoundation/hypernode/master/auto-install/bis-install.sh|bash
 # Setup a regular Bismuth node and hypernode on a fresh Ubuntu 18 install.
 
-# ATTENTION: The anti-ddos part will disable http, https and dns ports.
+# BEWARE: The anti-ddos part will disable http, https and dns ports.
 
 VERSION="0.1.4"
 
