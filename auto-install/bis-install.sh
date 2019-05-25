@@ -8,7 +8,7 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.7"
+VERSION="0.1.8"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -83,12 +83,12 @@ configure_firewall() {
 download_node() {
 	echo "Fetching Node"
 	cd
-    if [ -f ./v4.3.0.0-beta.2.tar.gz ]; then
-        rm v4.3.0.0-beta.2.tar.gz
+    if [ -f ./v4.3.0.0-beta.5.tar.gz ]; then
+        rm v4.3.0.0-beta.5.tar.gz
 	fi
-    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.0-beta.4.tar.gz
-    tar -zxf v4.3.0.0-beta.4.tar.gz
-    mv Bismuth-4.3.0.0-beta.4 Bismuth
+    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.0-beta.5.tar.gz
+    tar -zxf v4.3.0.0-beta.5.tar.gz
+    mv Bismuth-4.3.0.0-beta.5 Bismuth
     cd Bismuth
     echo "Configuring node"    
     echo "ram=False" >> config_custom.txt
