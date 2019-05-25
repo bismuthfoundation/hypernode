@@ -6,7 +6,8 @@ User and admin utils for Bismuth HyperNodes.
 
 Automatic node update for standard HN setups, for 4.3.0.0 Fork.  
 To be run from the Bismuth node directory (should be ~/Bismuth or /root/bistmuth).  
-One liner once in the Bismuth dir: `curl https://github.com/bismuthfoundation/hypernode/raw/master/utils/hn_node_update.py|python3`
+One liner once in the Bismuth dir:  
+`curl https://github.com/bismuthfoundation/hypernode/raw/master/utils/hn_node_update.py|python3`
 
 ## gen_address.py
 
