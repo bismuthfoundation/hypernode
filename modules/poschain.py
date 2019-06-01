@@ -1276,7 +1276,7 @@ class SqlitePosChain(SqliteBase):
         h_min, h_max = await self.async_fetchone(
             SQL_MINMAXHEIGHT_OF_ROUNDS, (start_round, end_round)
         )
-
+        print("min, max", h_min, h_max)
         sources = await self.async_fetchall(SQL_ROUNDS_SOURCES_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
             if address in res:

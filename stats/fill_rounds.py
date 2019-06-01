@@ -96,10 +96,11 @@ if __name__ == "__main__":
         # This should be done on hn start, if some rounds are not filled up (old hns)
 
         # who was inactive last round?
-        active_hns = loop.run_until_complete(poschain.async_active_hns(round))  # sends back pos address
+        #active_hns = loop.run_until_complete(poschain.async_active_hns(round))  # sends back pos address
+        # print("actives", active_hns)
         # print(all_peers)
-        inactive_hns = set(all_peers) - set(active_hns)
-        # print("inactive", inactive_hns)
+        #inactive_hns = set(all_peers) - set(active_hns)
+        #print("inactive", inactive_hns)
         # Fail safe to avoid disabling everyone on edge cases or attack scenarios
         # This does not apply to stats collection. Inactive HNs have been inactive.
         """
@@ -108,12 +109,13 @@ if __name__ == "__main__":
             inactive_hns = []
             app_log.warning("Ignoring inactive HNs since there are not enough active ones.")
         """
-        # TEMP
-        # inactive_hns = []
+        #
+        inactive_hns = []
+        # No need to consider a HN inactive. if it was inactive that round, its metrics will tell anyway.
         res = loop.run_until_complete(pow.load_hn_pow(datadir='../main/data', a_round=int(round + 1), inactive_last_round=inactive_hns,
                                                   force_all=False, no_cache=True, ignore_config=True,
                                                   distinct_process=distinct, ip='', balance_check=True))
-        # print(json.dumps(res))
+        #print(json.dumps(res))
         """
         {"01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab": {"ip": "51.15.95.155", "port": "6969",
                                                                       "pos": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne",
