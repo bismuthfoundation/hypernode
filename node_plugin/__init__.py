@@ -226,32 +226,6 @@ def filter_rollback_ip(peer_ip):
     return peer_ip
 
 
-def timestamp_to_round_slot(ts=0):
-    """
-    Given a timestamp, returns the specific round and slot# that fits.
-
-    :param ts: timestamp to use. If 0, will use current time
-    :return: tuple (round, slot in round)
-    """
-    if ts == 0:
-        ts = time.time()
-    the_round = math.floor((ts - ORIGIN_OF_TIME) / ROUND_TIME_SEC)
-    round_start = ORIGIN_OF_TIME + the_round * ROUND_TIME_SEC
-    the_slot = math.floor((ts - round_start) / POS_SLOT_TIME_SEC)
-    return the_round, the_slot
-
-
-def round_to_timestamp(a_round):
-    """
-    Returns timestamp of the exact start of that round
-
-    :param a_round:
-    :return: int (timestamp)
-    """
-    round_ts = ORIGIN_OF_TIME + a_round * ROUND_TIME_SEC
-    return round_ts
-
-
 # TODO: add a decorator so that commands are only allowed from localhost, and are locked (one at a time)
 def HN_test(socket_handler):
     """Merely test the db connection"""
