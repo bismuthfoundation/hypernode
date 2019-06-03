@@ -116,12 +116,11 @@ if __name__ == "__main__":
         res = loop.run_until_complete(pow.load_hn_pow(datadir='../main/data', a_round=int(round + 1), inactive_last_round=inactive_hns,
                                                   force_all=False, no_cache=True, ignore_config=True,
                                                   distinct_process=distinct, ip='', balance_check=True))
-        """
-        if '36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169' in res:
-            print(json.dumps(res['36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169']))
+
+        if '014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c' in res:
+            print(json.dumps(res['014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c']))
         else:
-            print('no 36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169')
-        """
+            print('no 014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c')
 
         """
         {"01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab": {"ip": "51.15.95.155", "port": "6969",
