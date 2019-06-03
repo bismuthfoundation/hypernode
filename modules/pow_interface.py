@@ -68,6 +68,7 @@ def validate_pow_address(address: str):
     :param address:
     :return: True if address is valid, raise a ValueError exception if not.
     """
+    # TODO!: To evolve with more addresses
     if re.match('[abcdef0123456789]{56}', address):
         return True
     raise ValueError('Bis Address format error')
@@ -241,7 +242,7 @@ class PowInterface:
                                    ip: str='', balance_check: bool=False):
         """
         Load from async sqlite3 connection from the same process.
-        Been experienced an can hang the whole HN on busy nodes.
+        Been experienced and can hang the whole HN on busy nodes.
 
         :param a_round:
         :param datadir:
@@ -593,7 +594,7 @@ class PowInterface:
                 await self.load_hn_remote_url(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
                                                     force_all=force_all, ignore_config=ignore_config, ip=ip,
                                                     balance_check=balance_check, url=config.POW_ALTERNATE_URL)
-            if not self.regs:
+            if len(self.regs) <= 0:
                 if self.distinct_process:
                     await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
                                                         force_all=force_all, ignore_config=ignore_config, ip=ip,

@@ -111,11 +111,18 @@ if __name__ == "__main__":
         """
         #
         inactive_hns = []
+        pow.regs = {}  # reset previous regs
         # No need to consider a HN inactive. if it was inactive that round, its metrics will tell anyway.
         res = loop.run_until_complete(pow.load_hn_pow(datadir='../main/data', a_round=int(round + 1), inactive_last_round=inactive_hns,
                                                   force_all=False, no_cache=True, ignore_config=True,
                                                   distinct_process=distinct, ip='', balance_check=True))
-        #print(json.dumps(res))
+        """
+        if '36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169' in res:
+            print(json.dumps(res['36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169']))
+        else:
+            print('no 36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169')
+        """
+
         """
         {"01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab": {"ip": "51.15.95.155", "port": "6969",
                                                                       "pos": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne",
@@ -124,8 +131,6 @@ if __name__ == "__main__":
                                                                       "active": true}}
         """
         all_peers = [item['pos'] for item in res.values()]
-
-
 
         # todo: do only if not exists ?
         loop.run_until_complete(hn_db.save_hn_from_regs(res, round))

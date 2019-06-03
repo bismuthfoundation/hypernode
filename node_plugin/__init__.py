@@ -11,18 +11,25 @@ import json
 import math
 import os
 import sqlite3
+
 # import sys
 import time
 from ipwhois import IPWhois
 from warnings import filterwarnings
+from sys import exit
+
+# ledger_queries is part of bismuth - you can symlink in this dir for dev purposes and add it to "sources" in pycharm.
+from ledger_queries import LedgerQueries
+
 # from warnings import resetwarnings
 
 
-__version__ = '0.0.64'
+__version__ = "0.0.66"
 
 
 MANAGER = None
 
+VERBOSE = True  # False in production
 
 # Has to be sync with matching params from HN - Do not edit
 ORIGIN_OF_TIME = 1534716000  # Real Origin: August 20
@@ -32,13 +39,29 @@ MAX_ROUND_SLOTS = 19
 END_ROUND_SLOTS = 1
 ROUND_TIME_SEC = POS_SLOT_TIME_SEC * (MAX_ROUND_SLOTS + END_ROUND_SLOTS)
 
-SQL_BLOCK_HEIGHT_PRECEDING_TS = "SELECT max(block_height) FROM transactions WHERE timestamp <= ?"
+SQL_BLOCK_HEIGHT_PRECEDING_TS = (
+    "SELECT max(block_height) FROM transactions WHERE timestamp <= ?"
+)
 
-SQL_GET_COLOR_LIST = "SELECT openfield FROM transactions WHERE address = ? and operation = ? " \
-                     "ORDER BY block_height DESC LIMIT 1"
+SQL_GET_COLOR_LIST = (
+    "SELECT openfield FROM transactions WHERE address = ? and operation = ? "
+    "ORDER BY block_height DESC LIMIT 1"
+)
 
 COLORED = dict()
-COLORS = ['white', 'cloud', 'brown', 'bismuth', 'gray', 'blue', 'red', 'orange', 'black', 'rainbow', 'bootstrap']
+COLORS = [
+    "white",
+    "cloud",
+    "brown",
+    "bismuth",
+    "gray",
+    "blue",
+    "red",
+    "orange",
+    "black",
+    "rainbow",
+    "bootstrap",
+]
 """
 Some colors are just reserved, not used yet.
 white: whitelist for specific ips that could be catched by global blacklists
@@ -54,16 +77,20 @@ rainbow: no ip list, but some global config params that can be globally tuned wi
 bootstrap: urls of HN bootstrap file
 """
 
-POW_CONTROL_ADDRESS = 'cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff'
+POW_CONTROL_ADDRESS = "cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff"
 
 UPDATED = False
 
-HNROUNDS_DIR = 'hnrounds/'
-HNCOLORED = 'colored.json'
+HNROUNDS_DIR = "hnrounds/"
+HNCOLORED = "colored.json"
 
 # TODO: from config
-LEDGER_PATH = 'static/ledger.db'
+LEDGER_PATH = "static/ledger.db"
 
+
+# Convention is to have a prefix ending in _ , so prefix and subsequent commands are easily readable.
+# Take care not to overload an existing command
+PREFIX = "HN_"
 
 filterwarnings(action="ignore")
 
@@ -76,10 +103,13 @@ def init_colored():
         with sqlite3.connect(LEDGER_PATH, timeout=30) as db:
             try:
                 for color in COLORS:
-                    res = db.execute(SQL_GET_COLOR_LIST, (POW_CONTROL_ADDRESS, 'color:{}'.format(color)))
+                    res = db.execute(
+                        SQL_GET_COLOR_LIST,
+                        (POW_CONTROL_ADDRESS, "color:{}".format(color)),
+                    )
                     result = res.fetchone()
                     if result:
-                        result = result[0].strip().split(',')
+                        result = result[0].strip().split(",")
                     else:
                         result = []
                     COLORED[color] = result
@@ -87,23 +117,31 @@ def init_colored():
                 print(e)
     finally:
         # Failsafe if we can't read from chain
-        if 'cloud' not in COLORED:
-            COLORED['cloud'] = ["amazon"]
-        if 'white' not in COLORED:
-            COLORED['white'] = ["34.231.198.116", "18.184.255.105", "18.223.102.119", "13.58.108.209", "18.224.195.95", "18.225.1.235"]
-        with open(HNCOLORED, 'w') as f:
+        if "cloud" not in COLORED:
+            COLORED["cloud"] = ["amazon"]
+        if "white" not in COLORED:
+            COLORED["white"] = [
+                "34.231.198.116",
+                "18.184.255.105",
+                "18.223.102.119",
+                "13.58.108.209",
+                "18.224.195.95",
+                "18.225.1.235",
+            ]
+        with open(HNCOLORED, "w") as f:
             json.dump(COLORED, f)
 
 
 def action_init(params):
     global MANAGER
     global DESC
+    global DB
     try:
-        MANAGER = params['manager']
+        MANAGER = params["manager"]
         MANAGER.app_log.warning("Init Hypernode Plugin")
     except:
         pass
-    DESC = {'127.0.0.1': 'localhost'}
+    DESC = {"127.0.0.1": "localhost"}
     try:
         os.mkdir(HNROUNDS_DIR)
     except:
@@ -112,12 +150,18 @@ def action_init(params):
     init_colored()
     # sys.exit()
     try:
-        with open("ipresolv.json", 'r') as f:
+        with open("ipresolv.json", "r") as f:
             DESC = json.load(f)
     except:
         pass
-    if len(DESC) <1:
+    if len(DESC) < 1:
         DESC = json.loads(CACHE)
+
+
+def get_db():
+    # TODO: get from thread context or use queue messages
+    db = sqlite3.connect(LEDGER_PATH, timeout=10)
+    return db
 
 
 def filter_colored(colored):
@@ -131,16 +175,16 @@ def action_fullblock(full_block):
     Update colored list on new tw
     """
     global COLORED
-    for tx in full_block['transactions']:
+    for tx in full_block["transactions"]:
         if tx[3] == POW_CONTROL_ADDRESS:
             # This is ours
             operation = str(tx[10])
-            if operation.startswith('color:'):
+            if operation.startswith("color:"):
                 # and it's a color payload
-                _, color = operation.split(':')
-                items = tx[11].strip().split(',')
+                _, color = operation.split(":")
+                items = tx[11].strip().split(",")
                 COLORED[color] = items
-                with open(HNCOLORED, 'w') as f:
+                with open(HNCOLORED, "w") as f:
                     json.dump(COLORED, f)
 
 
@@ -153,7 +197,7 @@ def get_desc(ip):
         # filterwarnings(action="ignore")
         obj = IPWhois(ip)
         res = obj.lookup_whois()
-        desc = res.get('asn_description')
+        desc = res.get("asn_description")
         # resetwarnings()
         if desc:
             UPDATED = True
@@ -162,19 +206,23 @@ def get_desc(ip):
 
 
 def filter_peer_ip(peer_ip):
-    desc = get_desc(peer_ip['ip'])
+    desc = get_desc(peer_ip["ip"])
     if desc:
-        for cloud in COLORED['cloud']:
-            if cloud in desc and (peer_ip['ip'] not in COLORED['white']):
-                MANAGER.app_log.warning("Spam Filter: Blocked IP {}".format(peer_ip['ip']))
-                peer_ip['ip'] = 'banned'
+        for cloud in COLORED["cloud"]:
+            if cloud in desc and (peer_ip["ip"] not in COLORED["white"]):
+                MANAGER.app_log.warning(
+                    "Spam Filter: Blocked IP {}".format(peer_ip["ip"])
+                )
+                peer_ip["ip"] = "banned"
     return peer_ip
 
 
 def filter_rollback_ip(peer_ip):
-    if peer_ip['ip'] in COLORED['brown']:
-        MANAGER.app_log.warning("Spam Filter: No rollback from {}".format(peer_ip['ip']))
-        peer_ip['ip'] = 'no'
+    if peer_ip["ip"] in COLORED["brown"]:
+        MANAGER.app_log.warning(
+            "Spam Filter: No rollback from {}".format(peer_ip["ip"])
+        )
+        peer_ip["ip"] = "no"
     return peer_ip
 
 
@@ -204,22 +252,72 @@ def round_to_timestamp(a_round):
     return round_ts
 
 
-def test_ledger():
-    with sqlite3.connect(LEDGER_PATH, timeout=5) as db:
-        try:
-            res = db.execute("PRAGMA table_info(transactions)")
-            result = res.fetchall()
-            print(result)
-        except Exception as e:
-            print(e)
+# TODO: add a decorator so that commands are only allowed from localhost, and are locked (one at a time)
+def HN_test(socket_handler):
+    """Merely test the db connection"""
+    MANAGER.app_log.warning("Extra command HN_test")
+    try:
+        db = get_db()
+        res = db.execute("PRAGMA table_info(transactions)")
+        data = res.fetchall()
+        MANAGER.execute_filter_hook(
+            "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+        )
+    except Exception as e:
+        MANAGER.app_log.warning("HN_test exception {}".format(e))
+
+
+def HN_reg_check_weight(socket_handler, params):
+    # TODO: only allow for local host
+    # TODO: add cache - like 5 min - decorator for same params
+    MANAGER.app_log.warning(
+        "Extra command HN_reg_check_weight {}".format(",".join(params))
+    )
+    try:
+        db = get_db()
+        data = LedgerQueries.reg_check_weight(db, params[0], params[1])
+        MANAGER.execute_filter_hook(
+            "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+        )
+    except Exception as e:
+        MANAGER.app_log.warning("HN_reg_check_weight exception {}".format(e))
 
 
 def action_status(status):
     global UPDATED
     if UPDATED:
         # save new descriptions on status
-        with open("ipresolv.json", 'w') as f:
+        with open("ipresolv.json", "w") as f:
             json.dump(DESC, f)
         UPDATED = False
-    with open("powstatus.json", 'w') as f:
+    # Update powstatus for the HN to read (could be moved to a HN_ Command)
+    with open("powstatus.json", "w") as f:
         json.dump(status, f)
+
+
+def my_callback(command_name: str, socket_handler) -> None:
+    """The magic is here. This is the generic callback handler answering to the extra command"""
+    # This method could stay as this.
+    if VERBOSE:
+        MANAGER.app_log.warning("Got HN command {}".format(command_name))
+    if command_name in globals():
+        # this allow to transparently map commands to this module functions with no more code
+        globals()[command_name](socket_handler)
+
+    elif " " in command_name:
+        # An alternate way is to define commands with inline param(s) and a custom separator (here, a space)
+        command_name, *params = command_name.split(" ")
+        if command_name in globals():
+            globals()[command_name](socket_handler, params)
+    else:
+        MANAGER.app_log.warning("Undefined HN command {}".format(command_name))
+
+
+def filter_extra_commands_prefixes(prefix_dict: dict) -> dict:
+    """
+    This is the initial - required - setup step.
+    Easy peasy: just add our prefix(es) in the provided dict and send it back.
+    """
+    prefix_dict[PREFIX] = my_callback
+    # More prefixes could go here
+    return prefix_dict

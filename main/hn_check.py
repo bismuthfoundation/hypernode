@@ -100,7 +100,7 @@ def get_ip_provider(ip: str):
 def read_version_from_file(filename):
     for line in open(filename):
         if "__version__" in line:
-            return line.split("=")[-1].replace("'", "").strip()
+            return line.split("=")[-1].replace("'", "").replace("\"", "").strip()
     return None
 
 
