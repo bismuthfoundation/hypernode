@@ -86,13 +86,14 @@ download_node() {
     if [ -f ./v4.3.0.0-beta.6.tar.gz ]; then
         rm v4.3.0.0-beta.6.tar.gz
 	fi
-    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.0-beta.6.tar.gz
-    tar -zxf v4.3.0.0-beta.6.tar.gz
-    mv Bismuth-4.3.0.0-beta.6 Bismuth
+    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.1-beta.1.tar.gz
+    tar -zxf v4.3.0.1-beta.1.tar.gz
+    mv Bismuth-4.3.0.1-beta.1 Bismuth
     cd Bismuth
     echo "Configuring node"    
     echo "ram=False" >> config_custom.txt
     echo "full_ledger=True" >> config_custom.txt
+    echo "mempool_ram=False" >> config_custom.txt
     echo "Downloading bootstrap"
     cd static
     if [ -f ./ledger.tar.gz ]; then
