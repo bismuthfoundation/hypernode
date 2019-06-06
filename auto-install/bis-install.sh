@@ -8,7 +8,7 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.8"
+VERSION="0.1.9"
 
 create_swap() {
 	if [ -d /swapfile ]; then
