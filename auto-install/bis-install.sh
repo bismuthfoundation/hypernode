@@ -8,7 +8,7 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.9"
+VERSION="0.1.10"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -169,7 +169,7 @@ add_cron_jobs() {
 	fi
 	# Hypernode sentinel5
 	if ! crontab -l | grep "cron5.py"; then
-	  (crontab -l ; echo "* * * * */5 cd /root/hypernode/crontab;python3 cron5.py") | crontab -
+	  (crontab -l ; echo "*/5 * * * * cd /root/hypernode/crontab;python3 cron5.py") | crontab -
 	fi
 }
 
