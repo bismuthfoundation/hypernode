@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 39:
-`python3 convert.py --action=week --param=39`
+Week 40:
+`python3 convert.py --action=week --param=40`
 
 ```
-Week 39
+Week 40
 -------------
-TS   1559376000
-UTC  2019-06-01T08:00:00Z
-Round 6850
+TS   1559980800
+UTC  2019-06-08T08:00:00Z
+Round 7018
 Slot  0
-Last PoS Round 6849
-PoW Height 1193078
-Real TS 1559375994.6
-Next TS 1559376012.52
-Balance 8040.981175219
-Balance (int) 8040
+Last PoS Round 7017
+PoW Height 1202473
+Real TS 1559980728.41
+Next TS 1559980823.2
+Balance 11472.981175219
+Balance (int) 11472
 ```
 
 week.json (week 10):
@@ -123,6 +123,11 @@ Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, w
 Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.
 Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.
 
+Week 40
+Warning: PoW address 46d70c334c277b77ef5a2bb6e545ed0f6c33c9b4f412d6dec3bc3aba, weight 0 instead of 2 - removing from list.
+Warning: PoW address 419fab8e3a09b22b8ddb5e768527c4c871616d59040ebeeb7c26db71, weight -1 instead of 1 - removing from list.
+Warning: PoW address e1ed085e11ad4fc3d39e1e2d8525b28cb707dc76f637bb2951f0f14d, weight 0 instead of 1 - removing from list.
+Warning: PoW address c0c057f4c2d6ed6b1f50540b9a05a38398df0223b36c51b05fd2b509, weight 0 instead of 1 - removing from list.
 
 
 ## Fill_stats
@@ -140,7 +145,7 @@ Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to accou
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week39_per_reward_address.csv
+exported as rewards/week40_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week39_per_hn_address.csv
+exported as rewards/week40_per_hn_address.csv
