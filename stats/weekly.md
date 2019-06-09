@@ -91,43 +91,43 @@ Warning: PoW address da06e77a08f9b07e4a7f6a4788ab269d3df0e09c38d8fa64f321374e, w
 Week 21:  
 Warning: PoW address 5841e2d6473c8b2d1285bf07bf8893738a34fc240f80122bae36c81c, weight 0 instead of 3 - removing from list.
 
-Week23:
+Week23:  
 Warning: PoW address ea00b8991c6f76c2922f522c6d135df5dfcbe800e58cb78507c4caeb, weight 0 instead of 1 - removing from list.
 
-Week24 and 25
+Week24 and 25  
 Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.
 
-Week 26 and 27
-Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.
+Week 26 and 27  
+Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.  
 Warning: PoW address 6ab07aec4f68b3f4f1671da81f4cbe3287037e9041d3325fbdf5b46b, weight 0 instead of 1 - removing from list.
 
-Week 28
-Warning: PoW address 6191730b866836430df215651a2f97d4a3e8a526aacb95b27ebe3041, weight 2 instead of 3 - removing from list.
+Week 28  
+Warning: PoW address 6191730b866836430df215651a2f97d4a3e8a526aacb95b27ebe3041, weight 2 instead of 3 - removing from list.  
 Warning: PoW address e5e7452326fdd2bafbae55bc3acf32a635b4b9203d1bd56849393102, weight 0 instead of 3 - removing from list.
 
-Week 35
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.
+Week 35  
+Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.  
 Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 2 instead of 3 - removing from list.
 
-Week 36
-Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.
-Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.
-Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.
+Week 36  
+Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.  
+Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.  
+Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.  
 Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.
 
-Week 37
-Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight 0 instead of 1 - removing from list.
-Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.
-Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.
-Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.
+Week 37  
+Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.  
+Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight 0 instead of 1 - removing from list.  
+Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.  
 
-Week 40
-Warning: PoW address 46d70c334c277b77ef5a2bb6e545ed0f6c33c9b4f412d6dec3bc3aba, weight 0 instead of 2 - removing from list.
-Warning: PoW address 419fab8e3a09b22b8ddb5e768527c4c871616d59040ebeeb7c26db71, weight -1 instead of 1 - removing from list.
-Warning: PoW address e1ed085e11ad4fc3d39e1e2d8525b28cb707dc76f637bb2951f0f14d, weight 0 instead of 1 - removing from list.
-Warning: PoW address c0c057f4c2d6ed6b1f50540b9a05a38398df0223b36c51b05fd2b509, weight 0 instead of 1 - removing from list.
+Week 40  
+Warning: PoW address 46d70c334c277b77ef5a2bb6e545ed0f6c33c9b4f412d6dec3bc3aba, weight 0 instead of 2 - removing from list.  
+Warning: PoW address 419fab8e3a09b22b8ddb5e768527c4c871616d59040ebeeb7c26db71, weight -1 instead of 1 - removing from list.  
+Warning: PoW address e1ed085e11ad4fc3d39e1e2d8525b28cb707dc76f637bb2951f0f14d, weight 0 instead of 1 - removing from list.  
+Warning: PoW address c0c057f4c2d6ed6b1f50540b9a05a38398df0223b36c51b05fd2b509, weight 0 instead of 1 - removing from list.  
 
 
 ## Fill_stats
