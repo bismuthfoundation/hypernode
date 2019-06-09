@@ -88,6 +88,7 @@ if __name__ == "__main__":
         datas = json.load(f)
     previous_round = datas['last_pos_round'] - 168
     print("Last PoS round Week n-1 ", previous_round)
+    last_round = min(datas['last_pos_round']+1, last_round)
 
     for round in range(previous_round, last_round):
         # for round in range(200, 300):

@@ -15,6 +15,9 @@ import time
 from math import floor
 from os import path
 from tornado.httpclient import AsyncHTTPClient, HTTPError
+from base64 import b85encode
+from hashlib import md5
+from typing import Union
 
 # Our modules
 import config
@@ -25,43 +28,59 @@ from fakelog import FakeLog
 from sqlitebase import SqliteBase
 from determine import timestamp_to_round_slot
 
-__version__ = '0.1.8'
+__version__ = "0.1.9"
 
 
-SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = 'SELECT block_height FROM transactions WHERE timestamp <= ? ' \
-                                'ORDER BY block_height DESC limit 1'
+SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = (
+    "SELECT block_height FROM transactions WHERE timestamp <= ? "
+    "ORDER BY block_height DESC limit 1"
+)
 
-SQL_BLOCK_HEIGHT_PRECEDING_TS = 'SELECT max(block_height) FROM transactions WHERE timestamp <= ? AND reward > 0'
+SQL_BLOCK_HEIGHT_PRECEDING_TS = (
+    "SELECT max(block_height) FROM transactions WHERE timestamp <= ? AND reward > 0"
+)
 
-SQL_TS_OF_BLOCK = 'SELECT timestamp FROM transactions WHERE reward > 0 AND block_height = ?'
+SQL_TS_OF_BLOCK = (
+    "SELECT timestamp FROM transactions WHERE reward > 0 AND block_height = ?"
+)
 
-SQL_REGS_FROM_TO = "SELECT block_height, address, operation, openfield, timestamp FROM transactions " \
-                   "WHERE (operation='hypernode:register' OR operation='hypernode:unregister') " \
-                   "AND block_height >= ? AND block_height <= ? " \
-                   "ORDER BY block_height ASC"
+SQL_REGS_FROM_TO = (
+    "SELECT block_height, address, operation, openfield, timestamp FROM transactions "
+    "WHERE (operation='hypernode:register' OR operation='hypernode:unregister') "
+    "AND block_height >= ? AND block_height <= ? "
+    "ORDER BY block_height ASC"
+)
 
 SQL_QUICK_BALANCE_CREDITS = "SELECT sum(amount+reward) FROM transactions WHERE recipient = ? AND block_height <= ?"
 
-SQL_QUICK_BALANCE_DEBITS = "SELECT sum(amount+fee) FROM transactions WHERE address = ? AND block_height <= ?"
+SQL_QUICK_BALANCE_DEBITS = (
+    "SELECT sum(amount+fee) FROM transactions WHERE address = ? AND block_height <= ?"
+)
 
-SQL_QUICK_BALANCE_ALL = "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , " \
-                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b " \
-                        "WHERE address = ? AND block_height <= ?) " \
-                        "WHERE a.recipient = ? AND a.block_height <= ?"
+SQL_QUICK_BALANCE_ALL = (
+    "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , "
+    "(SELECT sum(b.amount+b.fee) as debit FROM transactions b "
+    "WHERE address = ? AND block_height <= ?) "
+    "WHERE a.recipient = ? AND a.block_height <= ?"
+)
 
-SQL_QUICK_BALANCE_ALL_MIRROR = "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , " \
-                        "(SELECT sum(b.amount+b.fee) as debit FROM transactions b " \
-                        "WHERE address = ? AND abs(block_height) <= ?) " \
-                        "WHERE a.recipient = ? AND abs(a.block_height) <= ?"
+SQL_QUICK_BALANCE_ALL_MIRROR = (
+    "SELECT sum(a.amount+a.reward)-debit FROM transactions as a , "
+    "(SELECT sum(b.amount+b.fee) as debit FROM transactions b "
+    "WHERE address = ? AND abs(block_height) <= ?) "
+    "WHERE a.recipient = ? AND abs(a.block_height) <= ?"
+)
 
-SQL_LAST_BLOCK_TS = "SELECT timestamp FROM transactions WHERE block_height = " \
-                    "(SELECT max(block_height) FROM transactions)"
+SQL_LAST_BLOCK_TS = (
+    "SELECT timestamp FROM transactions WHERE block_height = "
+    "(SELECT max(block_height) FROM transactions)"
+)
 
 
 # ================== Helpers ================
 
 
-def validate_pow_address(address: str):
+def validate_pow_address(address: str) -> Union[None, bool]:
     """
     Validate a bis (PoW address).
 
@@ -69,16 +88,44 @@ def validate_pow_address(address: str):
     :return: True if address is valid, raise a ValueError exception if not.
     """
     # TODO!: To evolve with more addresses
-    if re.match('[abcdef0123456789]{56}', address):
+    if re.match("[abcdef0123456789]{56}", address):
         return True
-    raise ValueError('Bis Address format error')
+    raise ValueError("Bis Address format error")
+
+
+def checksum(string: str) -> str:
+    """ Base 64 checksum of MD5. Used by bisurl"""
+    m = md5()
+    m.update(string.encode("utf-8"))
+    return b85encode(m.digest()).decode("utf-8")
+
+
+def create_bis_url(recipient: str, amount: str, operation: str, openfield: str) -> str:
+    """
+    Constructs a bis url from tx elements
+    """
+    # Only command supported so far.
+    command = "pay"
+    openfield_b85_encode = b85encode(openfield.encode("utf-8")).decode("utf-8")
+    operation_b85_encode = b85encode(operation.encode("utf-8")).decode("utf-8")
+    url_partial = "bis://{}/{}/{}/{}/{}/".format(
+        command, recipient, amount, operation_b85_encode, openfield_b85_encode
+    )
+    url_constructed = url_partial + checksum(url_partial)
+    return url_constructed
 
 
 def read_node_version_from_file(filename):
     for line in open(filename):
         if "VERSION" in line:
             # VERSION = "4.2.6"  # .03 - more hooks again
-            return line.split("=")[-1].split("#")[0].replace('"', '').replace("'", '').strip()
+            return (
+                line.split("=")[-1]
+                .split("#")[0]
+                .replace('"', "")
+                .replace("'", "")
+                .strip()
+            )
     return None
 
 
@@ -87,7 +134,9 @@ def get_pow_node_version():
     Returns PoW node version
     """
     # creates dir if need to be
-    node_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'node.py'))
+    node_filename = path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "node.py")
+    )
     node_version = read_node_version_from_file(node_filename)
     return node_version
 
@@ -96,9 +145,13 @@ def get_pow_status():
     """
     Returns full json status from pow node - Requires 0.0.62+ companion plugin
     """
-    status_filename = path.abspath(config.POW_LEDGER_DB.replace('static/', '').replace('ledger.db', 'powstatus.json'))
+    status_filename = path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace(
+            "ledger.db", "powstatus.json"
+        )
+    )
     try:
-        with open(status_filename, 'r') as f:
+        with open(status_filename, "r") as f:
             status = json.load(f)
         return status
     except Exception as e:
@@ -107,9 +160,11 @@ def get_pow_status():
 
 # ================== Classes ================
 
-class PowInterface:
 
-    def __init__(self, app_log=None, verbose: bool=None, distinct_process: bool=False):
+class PowInterface:
+    def __init__(
+        self, app_log=None, verbose: bool = None, distinct_process: bool = False
+    ):
         """
         Interface to the PoW chain.
 
@@ -128,7 +183,9 @@ class PowInterface:
         registered HN from PoW. Can be temp. wrong when updating. Calling object must keep a cached working version. 
         Indexed by pow address.
         """
-        self.pow_chain = SqlitePowChain(db_path=config.POW_LEDGER_DB, verbose=self.verbose, app_log=app_log)
+        self.pow_chain = SqlitePowChain(
+            db_path=config.POW_LEDGER_DB, verbose=self.verbose, app_log=app_log
+        )
 
     async def wait_synced(self):
         """
@@ -145,11 +202,17 @@ class PowInterface:
                 last_ts = -1
             delay_min = (time.time() - last_ts) / 60
             if self.verbose:
-                self.app_log.info("Last TS: {}, {:0.2f} min.".format(last_ts, delay_min))
+                self.app_log.info(
+                    "Last TS: {}, {:0.2f} min.".format(last_ts, delay_min)
+                )
             # Up to 15 min late is ok (rollback, hard block)
-            synced = (delay_min < 15 )
+            synced = delay_min < 15
             if not synced:
-                self.app_log.warning("Last block {:0.2f} mins in the past, waiting for PoW sync.".format(delay_min))
+                self.app_log.warning(
+                    "Last block {:0.2f} mins in the past, waiting for PoW sync.".format(
+                        delay_min
+                    )
+                )
                 await asyncio.sleep(30)
 
     async def reg_check_balance(self, address, height):
@@ -170,9 +233,11 @@ class PowInterface:
         # credits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_CREDITS, (address, height))
         # debits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_DEBITS, (address, height))
         # balance = credits[0] - debits[0]
-        res = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_ALL, (address, height, address, height))
+        res = await self.pow_chain.async_fetchone(
+            SQL_QUICK_BALANCE_ALL, (address, height, address, height)
+        )
         balance = res[0]
-        weight = math.floor(balance/10000)
+        weight = math.floor(balance / 10000)
         if weight > 3:
             weight = 3
         # print(credits[0], debits[0], balance, weight)
@@ -193,7 +258,9 @@ class PowInterface:
         # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
         # needs previous round boundaries. Can use an approx method to be faster.
 
-        res = self.pow_chain.fetchone(SQL_QUICK_BALANCE_ALL_MIRROR, (address, height, address, height))
+        res = self.pow_chain.fetchone(
+            SQL_QUICK_BALANCE_ALL_MIRROR, (address, height, address, height)
+        )
         balance = res[0]
         return balance
 
@@ -206,16 +273,16 @@ class PowInterface:
         :return: tuple (ip, port, pos, reward)
         """
         options = {}
-        if ',' in openfield:
+        if "," in openfield:
             # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
-            parts = openfield.split(',')
+            parts = openfield.split(",")
             openfield = parts.pop(0)
             for extra in parts:
-                key, value = extra.split('=')
+                key, value = extra.split("=")
                 options[key] = value
-        ip, port, pos = openfield.split(':')
-        reward = options['reward'] if 'reward' in options else address
-        source = options['source'] if 'source' in options else None
+        ip, port, pos = openfield.split(":")
+        reward = options["reward"] if "reward" in options else address
+        source = options["source"] if "source" in options else None
         if source and source != address:
             raise ValueError("Bad source address")
         return ip, port, pos, reward
@@ -227,19 +294,28 @@ class PowInterface:
         :param openfield: str
         :return: str
         """
-        if ',' in openfield:
+        if "," in openfield:
             # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
-            parts = openfield.split(',')
+            parts = openfield.split(",")
             parts.pop(0)
             for extra in parts:
-                key, value = extra.split('=')
-                if key == 'reason':
+                key, value = extra.split("=")
+                if key == "reason":
                     return value
-        return ''
+        return ""
 
-    async def load_hn_same_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                                   force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
-                                   ip: str='', balance_check: bool=False):
+    async def load_hn_same_process(
+        self,
+        a_round: int = 0,
+        datadir: str = "",
+        inactive_last_round=None,
+        force_all: bool = False,
+        no_cache: bool = False,
+        ignore_config: bool = False,
+        ip: str = "",
+        balance_check: bool = False,
+        collateral_dropped=None,
+    ):
         """
         Load from async sqlite3 connection from the same process.
         Been experienced and can hang the whole HN on busy nodes.
@@ -280,10 +356,10 @@ class PowInterface:
                 # load this checkpoint and go on since there.
                 # take latest checkpoint anyway, even if we wanted an older one? means we can't verify a posteriori
                 # unless we store per round in DB (do it)
-                with open(pow_cache_file_name, 'r') as f:
+                with open(pow_cache_file_name, "r") as f:
                     # Save before we filter out inactive
                     cache = json.load(f)
-                    self.regs = cache['HNs']
+                    self.regs = cache["HNs"]
                 checkpoint = 773800  # TODO: adjust from cache file
             else:
                 if self.verbose:
@@ -293,21 +369,32 @@ class PowInterface:
                 checkpoint = 773800  # No Hypernode tx earlier
 
             if self.verbose:
-                self.app_log.info("Parsing reg messages from {} to {}, {} inactive HNs."
-                                  .format(checkpoint + 1, height, len(inactive_last_round)))
+                self.app_log.info(
+                    "Parsing reg messages from {} to {}, {} inactive HNs.".format(
+                        checkpoint + 1, height, len(inactive_last_round)
+                    )
+                )
             if config.LOAD_HN_FROM_POW or force_all or ignore_config:
                 # TEMP
                 if self.verbose:
-                    self.app_log.info("Running {} {} {}".format(SQL_REGS_FROM_TO, checkpoint + 1, height))
+                    self.app_log.info(
+                        "Running {} {} {}".format(
+                            SQL_REGS_FROM_TO, checkpoint + 1, height
+                        )
+                    )
                 #  print("c1", time.time())
-                cursor = await self.pow_chain.async_fetchall(SQL_REGS_FROM_TO, (checkpoint + 1, height))
+                cursor = await self.pow_chain.async_fetchall(
+                    SQL_REGS_FROM_TO, (checkpoint + 1, height)
+                )
                 # print("c2", time.time())
             else:
                 if False:
                     # Temp DEV test
                     cursor = testvectors.POW_HN_CURSOR
                 else:
-                    self.regs = poshelpers.fake_hn_dict(inactive_last_round, self.app_log)
+                    self.regs = poshelpers.fake_hn_dict(
+                        inactive_last_round, self.app_log
+                    )
                     return self.regs
 
             # Temp
@@ -317,15 +404,23 @@ class PowInterface:
                 block_height, address, operation, openfield, timestamp = row
                 # TEMP
                 if self.verbose:
-                    self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
+                    self.app_log.info(
+                        "Row {}: {}, {}, {}".format(
+                            block_height, address, operation, openfield
+                        )
+                    )
                 valid = True
                 show = False
                 try:
                     if ip and "{}:".format(ip) in openfield:
                         show = True
-                        self.app_log.info("Row {}: {}, {}, {}".format(block_height, address, operation, openfield))
+                        self.app_log.info(
+                            "Row {}: {}, {}, {}".format(
+                                block_height, address, operation, openfield
+                            )
+                        )
                     hip, port, pos, reward = self.reg_extract(openfield, address)
-                    if operation == 'hypernode:register':
+                    if operation == "hypernode:register":
                         # There is a small hack here: the following tests seem to do nothing, but they DO
                         # raise an exception if there is a dup. Allow for single line faster test.
                         # since list comprehension is heavily optimized.
@@ -337,9 +432,9 @@ class PowInterface:
                         # invalid pos address
                         poscrypto.validate_address(pos)
                         # Dup ip?
-                        [1 / 0 for items in self.regs.values() if items['ip'] == hip]
+                        [1 / 0 for items in self.regs.values() if items["ip"] == hip]
                         # Dup pos address?
-                        [1 / 0 for items in self.regs.values() if items['pos'] == pos]
+                        [1 / 0 for items in self.regs.values() if items["pos"] == pos]
                         # Dup pow address?
                         if address in self.regs:
                             raise ValueError("Already an active registration")
@@ -353,8 +448,28 @@ class PowInterface:
                         # if config.COMPUTING_REWARD or a_round >= config.NEXT_HF_AT_ROUND:
                         if pos in inactive_last_round:
                             active = False
-                        self.regs[address] = dict(zip(['ip', 'port', 'pos', 'reward', 'weight', 'timestamp', 'active'],
-                                                      [str(hip), port, str(pos), str(reward), weight, timestamp, active]))
+                        self.regs[address] = dict(
+                            zip(
+                                [
+                                    "ip",
+                                    "port",
+                                    "pos",
+                                    "reward",
+                                    "weight",
+                                    "timestamp",
+                                    "active",
+                                ],
+                                [
+                                    str(hip),
+                                    port,
+                                    str(pos),
+                                    str(reward),
+                                    weight,
+                                    timestamp,
+                                    active,
+                                ],
+                            )
+                        )
                         if show:
                             self.app_log.info("Ok, Weight={}".format(weight))
                     else:
@@ -362,24 +477,33 @@ class PowInterface:
                         # It's an unreg
                         if address in self.regs:
                             # unreg from owner
-                            if (hip, port, pos) == (self.regs[address]['ip'], self.regs[address]['port'],
-                                                    self.regs[address]['pos']):
+                            if (hip, port, pos) == (
+                                self.regs[address]["ip"],
+                                self.regs[address]["port"],
+                                self.regs[address]["pos"],
+                            ):
                                 # same info
                                 del self.regs[address]
                             else:
                                 raise ValueError("Invalid unregistration params")
 
                         elif address == config.POW_CONTROL_ADDRESS:
-                            self.regs = {key: items for key, items in self.regs.items()
-                                         if (items['ip'], items['port'], items['pos']) != (hip, port, pos)}
+                            self.regs = {
+                                key: items
+                                for key, items in self.regs.items()
+                                if (items["ip"], items["port"], items["pos"])
+                                != (hip, port, pos)
+                            }
                             if show:
-                                self.app_log.warning("Unreg by controller, reason '{}'."
-                                                     .format(self.extract_reason(openfield)))
+                                self.app_log.warning(
+                                    "Unreg by controller, reason '{}'.".format(
+                                        self.extract_reason(openfield)
+                                    )
+                                )
                         else:
                             raise ValueError("Invalid un-registration sender")
                         if show:
                             self.app_log.info("Ok")
-
 
                 except (ValueError, ZeroDivisionError) as e:
                     # print(e)
@@ -400,7 +524,9 @@ class PowInterface:
                     self.app_log.warning("No PoW Valid HN.")
             if balance_check:
                 # recheck all balances
-                self.app_log.warning("Balance check required for PoW height {}".format(height))
+                self.app_log.warning(
+                    "Balance check required for PoW height {}".format(height)
+                )
                 bad_balance = []
                 for pow_address, detail in self.regs.items():
                     # print(pow_address, detail)
@@ -410,12 +536,27 @@ class PowInterface:
                      'timestamp': 1534711530.06, 'active': True}
                     """
                     weight = await self.reg_check_balance(pow_address, height)
-                    if weight < detail['weight']:
+                    if weight < detail["weight"]:
                         # Can be more, can't be less.
-                        self.app_log.warning("PoW address {}, weight {} instead of {} - removing from list.".format(pow_address, weight, detail['weight']))
+                        self.app_log.warning(
+                            "PoW address {}, weight {} instead of {} - removing from list.".format(
+                                pow_address, weight, detail["weight"]
+                            )
+                        )
+                        if type(collateral_dropped) == list:
+                            collateral_dropped.append(
+                                {
+                                    "pow": pow_address,
+                                    "ip": detail["ip"],
+                                    "port": detail["port"],
+                                    "pos": detail["pos"],
+                                    "weight": weight,
+                                    "registered_weight": detail["weight"],
+                                }
+                            )
                         # Remove from the list.
-                        #self.regs.pop(pow_address, None)
-                        self.regs[pow_address]['active'] = False
+                        # self.regs.pop(pow_address, None)
+                        self.regs[pow_address]["active"] = False
                         bad_balance.append(pow_address)
                 # now remove the balance cheaters
                 for pow_address in bad_balance:
@@ -425,7 +566,9 @@ class PowInterface:
             self.app_log.error("load_hn_same_process Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
             sys.exit()
 
     async def stream_subprocess(self, cmd, timeout=1):
@@ -435,8 +578,9 @@ class PowInterface:
         :param timeout:
         :return:
         """
-        process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE,
-                                                       stderr=asyncio.subprocess.PIPE)
+        process = await asyncio.create_subprocess_exec(
+            *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        )
         try:
             p = await asyncio.wait_for(process.wait(), timeout)
         except Exception:
@@ -444,18 +588,27 @@ class PowInterface:
         if not (p is None):
             if p == 0:
                 out = await process.stdout.read()
-                out = out.decode('utf8')
+                out = out.decode("utf8")
                 return out
             """
             print("p", p)  # return code (0 if ok)
             print("stdout:", (await process.stdout.read()).decode('utf8'))
             print("stderr:", (await process.stderr.read()).decode('utf8'))
             """
-        return 'false'
+        return "false"
 
-    async def load_hn_distinct_process(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                                       force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip='',
-                                       balance_check=False):
+    async def load_hn_distinct_process(
+        self,
+        a_round: int = 0,
+        datadir: str = "",
+        inactive_last_round=None,
+        force_all: bool = False,
+        no_cache: bool = False,
+        ignore_config: bool = False,
+        ip="",
+        balance_check=False,
+        collateral_dropped=None,
+    ):
         """
         Load from async sqlite3 connection from an external process with timeout.
 
@@ -469,12 +622,21 @@ class PowInterface:
         :param balance_check: Force balance check for all HN at the end of the call
         :return:
         """
+        if collateral_dropped:
+            print("collateral_dropped only valid for same process query")
         try:
-            extra= '-b' if balance_check else ''
+            extra = "-b" if balance_check else ""
             if ip:
-                cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py --ip={} {}".format(ip, extra)]
+                cmd = [
+                    config.PYTHON_EXECUTABLE,
+                    "hn_reg_feed.py --ip={} {}".format(ip, extra),
+                ]
                 if a_round > 0:
-                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {} --ip={} {}".format(a_round, ip, extra)]
+                    cmd = [
+                        config.PYTHON_EXECUTABLE,
+                        "hn_reg_feed.py",
+                        "-r {} --ip={} {}".format(a_round, ip, extra),
+                    ]
                 res = await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT)
                 print(res)
                 self.regs = {}
@@ -482,8 +644,14 @@ class PowInterface:
             else:
                 cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py"]
                 if a_round > 0:
-                    cmd = [config.PYTHON_EXECUTABLE, "hn_reg_feed.py", "-r {}".format(a_round)]
-                self.regs = json.loads(await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT))
+                    cmd = [
+                        config.PYTHON_EXECUTABLE,
+                        "hn_reg_feed.py",
+                        "-r {}".format(a_round),
+                    ]
+                self.regs = json.loads(
+                    await self.stream_subprocess(cmd, timeout=config.PROCESS_TIMEOUT)
+                )
             if self.verbose:
                 count = 0
                 if self.regs:
@@ -494,12 +662,23 @@ class PowInterface:
             self.app_log.error("load_hn_distinct_process Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
             sys.exit()
 
-    async def load_hn_remote_url(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                                       force_all: bool=False, no_cache: bool=False, ignore_config: bool=False, ip='',
-                                       balance_check=False, url=''):
+    async def load_hn_remote_url(
+        self,
+        a_round: int = 0,
+        datadir: str = "",
+        inactive_last_round=None,
+        force_all: bool = False,
+        no_cache: bool = False,
+        ignore_config: bool = False,
+        ip="",
+        balance_check=False,
+        url="",
+    ):
         """
         Load from an external url. Fallback for weak nodes that can't properly handle sqlite db sharing across processes.
 
@@ -527,10 +706,12 @@ class PowInterface:
             # self.app_log.info("load_hn_remote_url around {}".format(a_round))
             http_client = AsyncHTTPClient()
             try:
-                full_url = "{}{}/{}/{}.json".format(url, a_round[0], a_round[1], a_round)
+                full_url = "{}{}/{}/{}.json".format(
+                    url, a_round[0], a_round[1], a_round
+                )
                 self.app_log.info("load_hn_remote_url {}".format(full_url))
                 response = await http_client.fetch(full_url)
-                self.regs = json.loads(response.body.decode('utf-8'))
+                self.regs = json.loads(response.body.decode("utf-8"))
                 self.app_log.info("load_hn_remote_urlok")
             except HTTPError as e:
                 # HTTPError is raised for non-200 responses; the response
@@ -552,12 +733,24 @@ class PowInterface:
             self.app_log.error("load_hn_remote_url Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
             sys.exit()
 
-    async def load_hn_pow(self, a_round: int=0, datadir: str='', inactive_last_round=None,
-                          force_all: bool=False, no_cache: bool=False, ignore_config: bool=False,
-                          distinct_process=None, ip: str='', balance_check: bool=False):
+    async def load_hn_pow(
+        self,
+        a_round: int = 0,
+        datadir: str = "",
+        inactive_last_round=None,
+        force_all: bool = False,
+        no_cache: bool = False,
+        ignore_config: bool = False,
+        distinct_process=None,
+        ip: str = "",
+        balance_check: bool = False,
+        collateral_dropped=None,
+    ):
         """
         Async Get HN from the pow. Called at launch (a_round=0) then at each new round.
 
@@ -571,7 +764,7 @@ class PowInterface:
         :param ip:
         :param balance_check: Force balance check for all HN at the end of the call
         """
-        if ip == '':
+        if ip == "":
             ip = False
         # TODO: check it's not a round we have in our local DB first.
         # If we have, just return the one stored.
@@ -588,21 +781,44 @@ class PowInterface:
             # print("h1", time.time())
 
             # Here query one way or the other
-            if config.POW_ALTERNATE_URL != '':
-                self.app_log.info("Trying to load round {} from alternate URL".format(a_round))
+            if config.POW_ALTERNATE_URL != "":
+                self.app_log.info(
+                    "Trying to load round {} from alternate URL".format(a_round)
+                )
                 # TODO: try to load from url
-                await self.load_hn_remote_url(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                    force_all=force_all, ignore_config=ignore_config, ip=ip,
-                                                    balance_check=balance_check, url=config.POW_ALTERNATE_URL)
+                await self.load_hn_remote_url(
+                    a_round,
+                    inactive_last_round=inactive_last_round,
+                    datadir=datadir,
+                    force_all=force_all,
+                    ignore_config=ignore_config,
+                    ip=ip,
+                    balance_check=balance_check,
+                    url=config.POW_ALTERNATE_URL,
+                )
             if len(self.regs) <= 0:
                 if self.distinct_process:
-                    await self.load_hn_distinct_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                        force_all=force_all, ignore_config=ignore_config, ip=ip,
-                                                        balance_check=balance_check)
+                    await self.load_hn_distinct_process(
+                        a_round,
+                        inactive_last_round=inactive_last_round,
+                        datadir=datadir,
+                        force_all=force_all,
+                        ignore_config=ignore_config,
+                        ip=ip,
+                        balance_check=balance_check,
+                        collateral_dropped=collateral_dropped,
+                    )
                 else:
-                    await self.load_hn_same_process(a_round, inactive_last_round=inactive_last_round, datadir=datadir,
-                                                    force_all=force_all, ignore_config=ignore_config, ip=ip,
-                                                    balance_check=balance_check)
+                    await self.load_hn_same_process(
+                        a_round,
+                        inactive_last_round=inactive_last_round,
+                        datadir=datadir,
+                        force_all=force_all,
+                        ignore_config=ignore_config,
+                        ip=ip,
+                        balance_check=balance_check,
+                        collateral_dropped=collateral_dropped,
+                    )
 
             # Here we have self.regs
 
@@ -611,17 +827,21 @@ class PowInterface:
             # sys.exit()
 
             if False:  # not no_cache:
-                with open(pow_cache_file_name, 'w') as f:
+                with open(pow_cache_file_name, "w") as f:
                     # Save before we filter out inactive
-                    cache = {"height": height, "timestamp": int(time.time()), "HNs": self.regs}
+                    cache = {
+                        "height": height,
+                        "timestamp": int(time.time()),
+                        "HNs": self.regs,
+                    }
                     # TODO: Error Object of type 'TextIOWrapper' is not JSON serializable
                     # TODO test cache.
                     json.dump(f, cache)
             # Now, if round > 0, set active state depending on last round activity
             if self.regs:
                 for address, items in self.regs.items():
-                    if items['pos'] in inactive_last_round:
-                        self.regs[address]['active'] = False
+                    if items["pos"] in inactive_last_round:
+                        self.regs[address]["active"] = False
             if self.verbose:
                 if self.regs:
                     # self.app_log.info("PoW+PoS Valid HN :{}".format(json.dumps(self.regs)))
@@ -635,14 +855,17 @@ class PowInterface:
             self.app_log.error("load_hn_pow Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            self.app_log.error('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
             sys.exit()
 
 
 class SqlitePowChain(SqliteBase):
-
-    def __init__(self, verbose=False, db_path='data/', app_log=None):
-        SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='', app_log=app_log)
+    def __init__(self, verbose=False, db_path="data/", app_log=None):
+        SqliteBase.__init__(
+            self, verbose=verbose, db_path=db_path, db_name="", app_log=app_log
+        )
         # Sqlitebase converts path + db_name into db_path
         self.db = None
         self.check()
@@ -690,7 +913,9 @@ class SqlitePowChain(SqliteBase):
         :param a_timestamp:
         :return: block_height preceding the given TS
         """
-        height = await self.async_fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
+        height = await self.async_fetchone(
+            SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,)
+        )
         height = height[0]
         if self.verbose:
             self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
