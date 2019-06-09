@@ -83,8 +83,8 @@ configure_firewall() {
 download_node() {
 	echo "Fetching Node"
 	cd
-    if [ -f ./v4.3.0.0-beta.6.tar.gz ]; then
-        rm v4.3.0.0-beta.6.tar.gz
+    if [ -f ./v4.3.0.1-beta.1.tar.gz ]; then
+        rm v4.3.0.1-beta.1.tar.gz
 	fi
     wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.1-beta.1.tar.gz
     tar -zxf v4.3.0.1-beta.1.tar.gz
@@ -96,8 +96,8 @@ download_node() {
     echo "mempool_ram=False" >> config_custom.txt
     echo "Downloading bootstrap"
     cd static
-    if [ -f ./ledger.tar.gz ]; then
-        rm ledger.tar.gz
+    if [ -f ./ledger-verified.tar.gz ]; then
+        rm ledger-verified.tar.gz
 	fi
     wget https://snapshots.s3.nl-ams.scw.cloud/ledger-verified.tar.gz
     tar -zxf ledger-verified.tar.gz
