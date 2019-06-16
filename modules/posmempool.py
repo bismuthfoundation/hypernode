@@ -13,6 +13,7 @@ import time
 import os
 import sys
 import sqlite3
+
 # import asyncio
 # https://github.com/zeromake/aiosqlite3 - Tested https://github.com/jreese/aiosqlite without success.
 # Maybe also see https://github.com/aio-libs/aioodbc
@@ -26,7 +27,7 @@ import poscrypto
 from sqlitebase import SqliteBase
 
 
-__version__ = '0.0.43'
+__version__ = "0.0.43"
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -40,24 +41,35 @@ SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     pubkey       BLOB (64),\
     received     INTEGER\
 );"
+# TODO: add indices: timestamp, definitely. and why not sender, recipient, what as covering
 
-SQL_INSERT_TX = "INSERT OR IGNORE INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+SQL_INSERT_TX = (
+    "INSERT OR IGNORE INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+)
 
 # Purge old txs that may be stuck
-SQL_PURGE = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
+SQL_PURGE = (
+    "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
+)
 
 # Purge old txs that may be stuck
-SQL_PURGE_30 = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-30 minute')"
+SQL_PURGE_30 = (
+    "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-30 minute')"
+)
 
 
 # Purge old start txs from our address
 SQL_PURGE_START1 = "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour') AND sender=? AND recipient=? AND what=202"
 # Count our messages to alleviate if necessary
-SQL_COUNT_START_MESSAGES = "SELECT COUNT(txid) from pos_messages WHERE sender=? AND recipient=? AND what=202"
+SQL_COUNT_START_MESSAGES = (
+    "SELECT COUNT(txid) from pos_messages WHERE sender=? AND recipient=? AND what=202"
+)
 # Delete a random subset of our start messages not to spam and preserve some info still.
-SQL_PURGE_START2 = "DELETE FROM pos_messages WHERE txid in " \
-                   "(SELECT txid FROM pos_messages WHERE sender=? AND recipient=? AND what=202 " \
-                   "ORDER BY RANDOM() LIMIT ?)"
+SQL_PURGE_START2 = (
+    "DELETE FROM pos_messages WHERE txid in "
+    "(SELECT txid FROM pos_messages WHERE sender=? AND recipient=? AND what=202 "
+    "ORDER BY RANDOM() LIMIT ?)"
+)
 
 # Delete all transactions
 SQL_CLEAR = "DELETE FROM pos_messages"
@@ -66,8 +78,10 @@ SQL_SINCE = "SELECT * FROM pos_messages WHERE timestamp >= ? ORDER BY timestamp 
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
 
-SQL_STATUS = "SELECT COUNT(*) AS NB, COUNT(distinct sender) as SENDERS, count(distinct recipient) as RECIPIENTS " \
-             "FROM pos_messages"
+SQL_STATUS = (
+    "SELECT COUNT(*) AS NB, COUNT(distinct sender) as SENDERS, count(distinct recipient) as RECIPIENTS "
+    "FROM pos_messages"
+)
 
 SQL_COUNT = "SELECT COUNT(*) AS NB FROM pos_messages"
 
@@ -111,11 +125,11 @@ class Mempool:
         :param poschain:
         :return:
         """
-        if 'TX' == tx.__class__.__name__:
+        if "TX" == tx.__class__.__name__:
             # Protobuf, convert to object
             tx = posblock.PosMessage().from_proto(tx)
         # TODO: if list, convert also
-        if self.verbose and 'txdigest' in config.LOG:
+        if self.verbose and "txdigest" in config.LOG:
             self.app_log.info("Digesting {}".format(tx.to_json()))
         try:
 
@@ -185,12 +199,19 @@ class SqliteMempool(Mempool, SqliteBase):
     Sqlite storage backend.
     """
 
-    def __init__(self, verbose=False, db_path='./data/', app_log=None, ram=False):
+    def __init__(self, verbose=False, db_path="./data/", app_log=None, ram=False):
         if ram:
             # Allow for memory mempool: replaces boolean by schema definition
             ram = SQL_CREATE_MEMPOOL
         Mempool.__init__(self, verbose=verbose, app_log=app_log)
-        SqliteBase.__init__(self, verbose=verbose, db_path=db_path, db_name='posmempool.db', app_log=app_log, ram=ram)
+        SqliteBase.__init__(
+            self,
+            verbose=verbose,
+            db_path=db_path,
+            db_name="posmempool.db",
+            app_log=app_log,
+            ram=ram,
+        )
 
     # ========================= Generic DB Handling Methods ====================
 
@@ -271,10 +292,14 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         try:
             await self.async_execute(SQL_PURGE_START1, (address, address), commit=True)
-            how_many = await self.async_fetchone(SQL_COUNT_START_MESSAGES, (address, address))
+            how_many = await self.async_fetchone(
+                SQL_COUNT_START_MESSAGES, (address, address)
+            )
             how_many = how_many[0]
             # print("how many", how_many)
-            await self.async_execute(SQL_PURGE_START2, (address, address, how_many - 5), commit=True)
+            await self.async_execute(
+                SQL_PURGE_START2, (address, address, how_many - 5), commit=True
+            )
             await self.async_execute("VACUUM", commit=True)
         except Exception as e:
             self.app_log.error("async_purge_start: {}".format(e))
@@ -300,7 +325,7 @@ class SqliteMempool(Mempool, SqliteBase):
         :param date:
         :return: a list of posblock.PosMessage objects
         """
-        res = await self.async_fetchall(SQL_SINCE, (date, ))
+        res = await self.async_fetchall(SQL_SINCE, (date,))
         res = [posblock.PosMessage().from_list(tx) for tx in res]
         return res
 
@@ -319,7 +344,9 @@ class SqliteMempool(Mempool, SqliteBase):
 
         :return: list() of PosMessages instances
         """
-        res = await self.async_fetchall(SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS,))
+        res = await self.async_fetchall(
+            SQL_SINCE, (int(time.time()) - NOT_OLDER_THAN_SECONDS,)
+        )
         res = [posblock.PosMessage().from_list(tx) for tx in res]
         if block_height:
             # Set blockheight to be embedded in.
@@ -335,8 +362,12 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         exists = await self.async_fetchone(SQL_TXID_EXISTS, (txid,))
         if exists:
-            if 'txdigest' in config.LOG:
-                self.app_log.info("{}[...] already in our mempool".format(poscrypto.raw_to_hex(txid)[:16]))
+            if "txdigest" in config.LOG:
+                self.app_log.info(
+                    "{}[...] already in our mempool".format(
+                        poscrypto.raw_to_hex(txid)[:16]
+                    )
+                )
             return True
         return False
 
@@ -348,7 +379,7 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         try:
             res = await self.async_fetchall(SQL_LIST_TXIDS)
-            res = [tx['txid'] for tx in res]
+            res = [tx["txid"] for tx in res]
             return res
         except Exception as e:
             print(e)
@@ -389,7 +420,7 @@ class SqliteMempool(Mempool, SqliteBase):
         #
         # FR: Slice to cut in reasonable batches (like 100 to 500)
         params = ["X'" + poscrypto.raw_to_hex(txid) + "'" for txid in txids]
-        sql = SQL_REMOVE_TXID_IN + '(' + ', '.join(params) + ')'
+        sql = SQL_REMOVE_TXID_IN + "(" + ", ".join(params) + ")"
         # print(params)
         await self.async_execute(sql, commit=True)
         return True
@@ -403,6 +434,6 @@ class SqliteMempool(Mempool, SqliteBase):
         """
         #
         # FR: Slice to cut in reasonable batches (like 100 to 500)
-        sql = SQL_REMOVE_TXID_IN + '(' + ', '.join(hex_txids) + ')'
+        sql = SQL_REMOVE_TXID_IN + "(" + ", ".join(hex_txids) + ")"
         await self.async_execute(sql, commit=True)
         return True

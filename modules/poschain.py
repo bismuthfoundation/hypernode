@@ -40,10 +40,11 @@ SQL_TXS_FOR_HEIGHT = (
     "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
 )
 
-SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? ORDER BY timestamp DESC LIMIT 100"
+# sender and recipient indices would only really be useful for here
+SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? ORDER BY block_height, timestamp DESC LIMIT 100"
 SQL_TXS_FOR_ADDRESS_FROM_HEIGHT = (
     "SELECT * FROM pos_messages WHERE (sender = ? or recipient = ?) "
-    "AND block_height >= ? ORDER BY timestamp ASC LIMIT 100"
+    "AND block_height >= ? ORDER BY block_height, timestamp ASC LIMIT 100"
 )
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
@@ -54,9 +55,12 @@ SQL_TX_STATS_FOR_HEIGHT = (
     "WHERE block_height = ?"
 )
 
+# TODO: bench vs SELECT height, round, sir, block_hash FROM pos_chain WHERE height = (select max(height) from pos_chain) limit 1
+# to use covering index
 SQL_STATE_1 = (
     "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
 )  # FR: opt
+
 # TODO: duplicate round in pos_messages table to avoid these extra requests
 SQL_HEIGHT_OF_ROUND = (
     "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
@@ -76,8 +80,9 @@ SQL_STATE_3 = (
     "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
 )
 
-SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
-SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
+# TODO: these 2 requests are huge and slow down everything - missing indices.
+SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
+SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"  # Uses block_height index, not sender
 
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"

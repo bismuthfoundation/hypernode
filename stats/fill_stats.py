@@ -147,12 +147,13 @@ if __name__ == "__main__":
     loop.run_until_complete(hn_db.async_execute("DELETE FROM reward_stats WHERE 1", commit=True))
     loop.run_until_complete(hn_db.async_execute("VACUUM", commit=True))
 
+    # Why async here? faster with direct access.
     for round in range(START_ROUND, END_ROUND +1):
         print("Computing round {}".format(round))
         # get active HN for that round, from hypernodes table
 
         hns = loop.run_until_complete(hn_db.async_fetchall("SELECT address, weight, reward FROM hypernodes WHERE round = ? and active = 1", (round,)))
-        hns = {hn[0]:{'weight': hn[1], 'reward': hn[2]} for hn in hns}
+        hns = {hn[0]: {'weight': hn[1], 'reward': hn[2]} for hn in hns}
         # print(hns)
 
         details = loop.run_until_complete(poschain.async_active_hns_details(round))

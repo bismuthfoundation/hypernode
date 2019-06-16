@@ -1556,6 +1556,11 @@ class Poshn:
         # Takes some time digesting 100 tx. And can be digesting from several peers at the same time.
         # Hold digesting from a peer if we are already digesting from another one?
         # Also, can merge both from client and server side, same host!!!
+        if self.state not in (HNState.SYNCING, HNState.ROUND_SYNC, HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS):
+            # We are catching up or otherwise busy, do not digest txs?
+            # TODO: we will miss txs, since nodes will not resend them. Add a command to tell "send them all" when going into sync state.
+            app_log.info("Ignoring tx sync from {}".format(peer_ip))
+            return
         if not len(txs):
             return
         if len(txs) > 200:
@@ -1580,6 +1585,7 @@ class Poshn:
                 app_log.info("Got {} tx(s) from {}".format(len(txs), peer_ip))
             nb = 0
             total = 0
+            # TODO: batch-test and insert
             for tx in txs:
                 # Will raise if error digesting, return false if already present in mempool or chain
                 if await self.mempool.digest_tx(tx, poschain=self.poschain):
