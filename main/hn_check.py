@@ -7,7 +7,7 @@ Checks the wallet, config, and tells if an hn instance is running.
 import argparse
 import json
 import os
-import resource
+import psutil
 import subprocess
 import sys
 import time
@@ -37,7 +37,8 @@ def check_os(a_status):
     Dup from hn_client. FR: factorize
     """
     if os.name == "posix":
-        limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+        p = psutil.Process()
+        limit = p.rlimit(psutil.RLIMIT_NOFILE)
         a_status["flimit"] = limit
         if limit[0] < 1024:
             a_status["errors"].append(
@@ -233,7 +234,7 @@ if __name__ == "__main__":
     status["python_version"] = subprocess.getoutput(
         "{} --version".format(config.PYTHON_EXECUTABLE)
     )
-    status["pwd"] = subprocess.getoutput("pwd")
+    status["pwd"] = os.getcwd()
     if args.interface:
         status["external_ip"] = subprocess.getoutput(
             "curl --interface {} -4 -s ifconfig.co".format(args.interface)

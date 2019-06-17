@@ -12,7 +12,8 @@ import aioprocessing
 import asyncio
 
 # pip install ConcurrentLogHandler
-from cloghandler import ConcurrentRotatingFileHandler
+#from cloghandler import ConcurrentRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from distutils.version import LooseVersion
 from enum import Enum
 import json
@@ -22,7 +23,6 @@ import os
 from os import path
 import psutil
 import random
-import resource
 import sys
 import time
 
@@ -694,7 +694,7 @@ class Poshn:
         tornado.log.enable_pretty_logging()
         logfile = os.path.abspath("logs/pos_app{}.log".format(self.suffix))
         # Rotate log after reaching 512K, keep 5 old copies.
-        rotate_handler = ConcurrentRotatingFileHandler(logfile, "a", 512 * 1024, 5)
+        rotate_handler = RotatingFileHandler(logfile, "a", 512 * 1024, 5)
         formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         rotate_handler.setFormatter(formatter)
         app_log.addHandler(rotate_handler)
@@ -702,7 +702,7 @@ class Poshn:
         access_log = logging.getLogger("tornado.access")
         tornado.log.enable_pretty_logging()
         logfile2 = os.path.abspath("logs/pos_access{}.log".format(self.suffix))
-        rotate_handler2 = ConcurrentRotatingFileHandler(logfile2, "a", 512 * 1024, 5)
+        rotate_handler2 = RotatingFileHandler(logfile2, "a", 512 * 1024, 5)
         formatter2 = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
         rotate_handler2.setFormatter(formatter2)
         access_log.addHandler(rotate_handler2)
@@ -717,7 +717,7 @@ class Poshn:
     def check_os(self):
         if os.name == "posix":
             self.process = psutil.Process()
-            limit = resource.getrlimit(resource.RLIMIT_NOFILE)
+            limit = self.process.rlimit(psutil.RLIMIT_NOFILE)
             app_log.info("OS File limits {}, {}".format(limit[0], limit[1]))
             if limit[0] < 1024:
                 app_log.error("Too small ulimit, please tune your system.")
