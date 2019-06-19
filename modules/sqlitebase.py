@@ -285,6 +285,9 @@ class SqliteBase:
         finally:
             duration = time.time() - start
             if SLOW_QUERIES_LOG and duration > SLOW_TRIGGER:
+                if " VALUES(X" in sql:
+                    # INSERT INTO pos_messages (txid, block_height, timestamp, sender, recipient, what, params, value, pubkey, received) VALUES  (X'09aa456
+                    sql = str[:132] + ' ...'
                 self.slowlog(sql + "  " + str(param), duration)
             self.xlog("Done", req)
 

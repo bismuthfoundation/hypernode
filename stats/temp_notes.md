@@ -62,4 +62,14 @@ EXPLAIN QUERY PLAN SELECT * FROM pos_messages WHERE block_height IN (SELECT heig
 posmempool.db : DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-30 minute')
 
 
+EXPLAIN QUERY PLAN SELECT height FROM pos_chain WHERE round = 7200 ORDER BY height ASC LIMIT 1
+without round index (but unique constraint round, sir)
+0	0	0	SEARCH TABLE pos_chain USING COVERING INDEX sqlite_autoindex_pos_chain_1 (round=?)
+0	0	0	USE TEMP B-TREE FOR ORDER BY
+with round index
+0	0	0	SEARCH TABLE pos_chain USING COVERING INDEX round (round=?)
+=> bench
+
+
+
 TODO also: factorize/index pubkey
