@@ -673,7 +673,7 @@ class SqlitePosChain(SqliteBase):
         :return:
         """
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
-        # print(block)
+        print("last block", block)
         # self.block_height = block['height']
         self.block = block
         return block

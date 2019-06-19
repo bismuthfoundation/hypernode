@@ -179,7 +179,6 @@ class PosMessage:
                 "'"+self.recipient+"'", str(self.what), "'"+self.params+"'", str(self.value), "X'"+poscrypto.raw_to_hex(self.pubkey)+"'",
                 str(self.received)]
 
-
     def add_to_proto(self, protocmd):
         """
         Adds the tx into the given protobuf command (not in a block).
