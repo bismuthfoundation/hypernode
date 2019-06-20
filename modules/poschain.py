@@ -277,6 +277,12 @@ SQL_INSERT_GENESIS = """INSERT INTO pos_chain (
 
                     """
 
+# Dict of index name: create sql
+SQL_INDICES = {"round": "CREATE INDEX round ON pos_chain (round)",
+               "height_ts": "CREATE INDEX height_ts ON pos_messages (block_height, timestamp)",
+               "recipient": "CREATE INDEX recipient ON pos_messages (recipient)",
+               "sender": "CREATE INDEX sender ON pos_messages (sender)"}
+
 
 class SqlitePosChain(SqliteBase):
     def __init__(self, verbose=False, db_path="data/", app_log=None, mempool=None):
@@ -374,7 +380,12 @@ class SqlitePosChain(SqliteBase):
                 self.commit()
                 if self.app_log:
                     self.app_log.info("Status: Recreated poschain database")
-
+            # check and add missing indices
+            for name, sql_add_index in SQL_INDICES.items():
+                if not self.index_exists(name):
+                    self.execute(sql_add_index)
+                    self.commit()
+                    self.app_log.info("Status: Added {} index".format(name))
             # Now test data
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:

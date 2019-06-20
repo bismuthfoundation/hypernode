@@ -10,6 +10,7 @@ import os
 import sqlite3
 import sys
 import time
+import traceback
 from pathlib import Path
 
 import aiosqlite3
@@ -18,14 +19,14 @@ import com_helpers
 
 # from fakelog import FakeLog
 
-__version__ = "0.0.30"
+__version__ = "0.0.31"
 
 
 XLOG = False  # "./logs/xlogs.log"
 # XLOG = "./logs/xlogs.log"
 
 SLOW_QUERIES_LOG = "./logs/slow.log"
-SLOW_TRIGGER = 1.0  # seconds for slow query
+SLOW_TRIGGER = 5.0  # seconds for slow query
 
 
 class SqliteBase:
@@ -95,6 +96,16 @@ class SqliteBase:
         :return:
         """
         self.app_log.info("Virtual Method {} Check".format(self.db_name))
+
+    def index_exists(self, index_name: str) -> bool:
+        """
+        Tells whether that index exists
+        :param index_name:
+        :return:
+        """
+        self.cursor.execute("PRAGMA index_info('{}')".format(index_name))
+        res = len(self.cursor.fetchall())
+        return res > 0
 
     def execute(
         self,
@@ -178,6 +189,10 @@ class SqliteBase:
         """
         self.req += 1
         req = self.req
+        if False:  # self.db_name == "posmempool.db":
+            print(sql)
+            for line in traceback.format_stack():
+                print(line.strip())
         self.xlog("execute {}".format(sql), req)
         start = time.time()
         try:
@@ -192,7 +207,7 @@ class SqliteBase:
                     # open
                     if self.verbose:
                         self.app_log.info(
-                            "Opening async {} {} db".format(self.db_path, self.db_name)
+                            "Opening async {} {} db - Ram {}".format(self.db_path, self.db_name, self.ram)
                         )
                     if self.ram:
                         self.async_db = await aiosqlite3.connect(
@@ -203,10 +218,16 @@ class SqliteBase:
                         )
                         await self.async_db.execute('pragma journal_mode=wal')
                         # Since we create in ram, the db is empty, so we recreate it here
-                        cursor = await self.async_db.execute(self.ram)
+                        if type(self.ram) == str:
+                            self.ram = [self.ram]
+                        for the_sql in self.ram:
+                            cursor = await self.async_db.execute(the_sql)
+                            # print(the_sql, "ok")
                         await self.async_commit()
                         await cursor.close()
                     else:
+                        if self.db_name == "posmempool.db":
+                            print("path open")
                         self.async_db = await aiosqlite3.connect(
                             self.db_path,
                             loop=asyncio.get_event_loop(),
@@ -222,27 +243,21 @@ class SqliteBase:
                     # self.async_db.execute("PRAGMA synchronous=OFF")  # Not so much faster
                 except Exception as e:
                     self.app_log.warning("async_execute {}: {}".format(self.db_name, e))
+                    """
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+                    """
+
             # Try count so we can die if we lock
             max_tries = 10
             while max_tries:
                 try:
-                    # FR: Do we have to create a new cursor? Why not use async_db directly?
-                    # cursor = await self.async_db.cursor()
                     if many:
                         # await cursor.executemany(sql, param)
                         cursor = await self.async_db.executemany(sql, param)
                     elif param:
-                        """
-                        if 'ledger' in self.db_path:
-                            self.app_log.info("async_execute 1")
-                        # BUG: Blocks here !?
-                        """
                         cursor = await self.async_db.execute(sql, param)
-                        """
-                        if 'ledger' in self.db_path:
-                            self.app_log.info("async_execute 2")
-                        """
-
                     else:
                         cursor = await self.async_db.execute(sql)
                     break
@@ -317,7 +332,7 @@ class SqliteBase:
         Async. Safe commit
         """
         self.xlog("commit")
-        max_tries = 10
+        max_tries = 1
         while max_tries:
             try:
                 await self.async_db.commit()
@@ -326,11 +341,13 @@ class SqliteBase:
                 self.app_log.warning(
                     "Database {} retry reason: {}".format(self.db_name, e)
                 )
-                asyncio.sleep(0.1)
+                # asyncio.sleep(0.1)
             max_tries -= 1
+        """
         if not max_tries:
             self.app_log.error("Too many retries")
             com_helpers.MY_NODE.stop()
+        """
         self.xlog("commit end")
 
     async def async_fetchone(

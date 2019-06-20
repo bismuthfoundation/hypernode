@@ -90,6 +90,8 @@ SQL_REMOVE_TXID = "DELETE FROM pos_messages where txid = ?"
 
 SQL_REMOVE_TXID_IN = "DELETE FROM pos_messages where txid IN "
 
+SQL_ADD_INDEX = "CREATE INDEX timestamp ON pos_messages (timestamp)"
+
 # How old a transaction can be to be embedded in a block ? Don't pick too large a delta T
 NOT_OLDER_THAN_SECONDS = 60 * 30 * 1000
 
@@ -202,7 +204,7 @@ class SqliteMempool(Mempool, SqliteBase):
     def __init__(self, verbose=False, db_path="./data/", app_log=None, ram=False):
         if ram:
             # Allow for memory mempool: replaces boolean by schema definition
-            ram = SQL_CREATE_MEMPOOL
+            ram = [SQL_CREATE_MEMPOOL, SQL_ADD_INDEX]
         Mempool.__init__(self, verbose=verbose, app_log=app_log)
         SqliteBase.__init__(
             self,
@@ -248,11 +250,21 @@ class SqliteMempool(Mempool, SqliteBase):
             self.db.text_factory = str
             self.cursor = self.db.cursor()
             self.execute(SQL_CREATE_MEMPOOL)
+            print("index 1")
+            self.execute(SQL_ADD_INDEX)
             self.commit()
             self.app_log.info("Status: Recreated mempool file")
+        else:
+            # existing disk mempool, check index
+            if not self.index_exists("timestamp"):
+                print("index 2")
+                self.execute(SQL_ADD_INDEX)
+                self.commit()
+                self.app_log.info("Status: Added mempool index")
         self.db.close()
         self.db = None
         self.cursor = None
+        self.app_log.info("Mempool Check End")
 
     # ========================= Real useful Methods ====================
 
