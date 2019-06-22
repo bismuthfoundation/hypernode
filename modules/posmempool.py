@@ -224,11 +224,11 @@ class SqliteMempool(Mempool, SqliteBase):
         :return:
         """
         self.app_log.info("Mempool Check")
+        # TODO: if RAM Mode: ignore
         if not os.path.isfile(self.db_path):
             res = -1
         else:
             # Test DB
-            # TODO: RAM Mode
             self.db = sqlite3.connect(self.db_path, timeout=1)
             self.db.text_factory = str
             self.cursor = self.db.cursor()

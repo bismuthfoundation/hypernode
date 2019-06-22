@@ -22,7 +22,7 @@ import com_helpers
 __version__ = "0.0.31"
 
 
-XLOG = False  # "./logs/xlogs.log"
+XLOG = False
 # XLOG = "./logs/xlogs.log"
 
 SLOW_QUERIES_LOG = "./logs/slow.log"
@@ -73,9 +73,9 @@ class SqliteBase:
 
     def xlog(self, info: str, req: int = 0) -> None:
         try:
-            if XLOG:
+            if XLOG and self.db_name == "posmempool.db":
                 with open(XLOG, "a+") as f:
-                    f.write(str(time.time()) + " : " + str(req) + " : " + self.db_name+ " : " + info + "\n")
+                    f.write(str(time.time()) + " : " + str(req) + " : " + self.db_name + " : " + info + "\n")
         except Exception as e:
             print(e)
 
@@ -203,6 +203,7 @@ class SqliteBase:
                 # self.app_log.info("async_execute {}".format(self.async_db))
             """
             if not self.async_db:
+                self.xlog("create dbh")
                 try:
                     # open
                     if self.verbose:
@@ -210,6 +211,7 @@ class SqliteBase:
                             "Opening async {} {} db - Ram {}".format(self.db_path, self.db_name, self.ram)
                         )
                     if self.ram:
+                        self.xlog("ram mode")
                         self.async_db = await aiosqlite3.connect(
                             "file:temp?mode=memory",
                             loop=asyncio.get_event_loop(),
@@ -221,10 +223,10 @@ class SqliteBase:
                         if type(self.ram) == str:
                             self.ram = [self.ram]
                         for the_sql in self.ram:
-                            cursor = await self.async_db.execute(the_sql)
+                            await self.async_db.execute(the_sql)
+                            self.xlog("did {}".format(the_sql))
                             # print(the_sql, "ok")
                         await self.async_commit()
-                        await cursor.close()
                     else:
                         if self.db_name == "posmempool.db":
                             print("path open")
@@ -265,6 +267,18 @@ class SqliteBase:
                     # 'UNIQUE constraint failed'
                     raise
                 except Exception as e:
+                    self.xlog("Exception retry {}: {}".format(max_tries, e))
+                    if str(e) == "not an error":
+                        self.app_log.warning(
+                            "Database {} query: {} {}, Exception NAE '{}'".format(
+                                self.db_name, sql, param, e
+                            )
+                        )
+                        test = await self.async_db.execute(".schema")
+                        res = await test.fetchall()
+                        print(list(res))
+                        self.xlog("schema {}".format(str(list(res))))
+
                     self.app_log.warning(
                         "Database {} query: {} {}, retry because {}".format(
                             self.db_name, sql, param, e

@@ -99,6 +99,11 @@ SQL_HEIGHT_BLOCK = "SELECT * FROM pos_chain WHERE height = ? LIMIT 1"
 SQL_ROLLBACK_BLOCKS = "DELETE FROM pos_chain WHERE height >= ?"
 SQL_ROLLBACK_BLOCKS_TXS = "DELETE FROM pos_messages WHERE block_height >= ?"
 
+SQL_DELETE_BLOCK = "DELETE FROM pos_chain WHERE height = ?"
+SQL_DELETE_BLOCK_TXS = "DELETE FROM pos_messages WHERE block_height = ?"
+
+SQL_COUNT_TX_FOR_HEIGHT = "SELECT COUNT(*) FROM pos_messages WHERE block_height = ?"
+
 SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = (
     "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
 )
@@ -750,6 +755,8 @@ class SqlitePosChain(SqliteBase):
                     )
                 )
             # print(values)
+            # Make sure there are no tx left from something else
+            await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,))
             for batch in str_txs:
                 # TODO: there is some mess here, some batches do not go through.
                 values = SQL_INSERT_INTO_VALUES + ",".join(batch)
@@ -770,7 +777,20 @@ class SqlitePosChain(SqliteBase):
                     time.time() - start_time
                 )
             )
+        # Double check we have the right number of stored txs
+        saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
+        if saved[0] != block.msg_count:
+            # We did not save all we wanted to.
+            self.app_log.error("Error while saving block {}: only {}/{} saved txns".format(block.height, saved[0], block.msg_count))
+            # Delete leftover
+            await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,), commit=True)
+            # Delete the block also
+            await self.async_execute(SQL_DELETE_BLOCK, (block.height,), commit=True)
+            return False
+
         # Then the block and commit
+        # First remove it in case it exists.
+        await self.async_execute(SQL_DELETE_BLOCK, (block.height,))
         await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
         if "timing" in config.LOG:
             self.app_log.warning(
