@@ -20,6 +20,7 @@ import hn_db
 import json
 import poschain
 from os import path
+from hashlib import sha256
 
 
 __version__ = '0.0.4'
@@ -164,6 +165,8 @@ if __name__ == "__main__":
         #hn = loop.run_until_complete(hn_db.async_fetchall("SELECT address, weight FROM hypernodes WHERE active=1 AND round= ?", (round,)))
         # print(hn)
         # print(details)
+        hash = sha256(str(details).encode('utf-8')).hexdigest()
+        print(hash)
         for pos, detail in details.items():
             #print(pos, detail)
             # TODO: probably would be significantly faster by building a single request and inserting in a single TX.

@@ -87,9 +87,13 @@ if __name__ == "__main__":
     with open('week.json', 'r') as f:
         datas = json.load(f)
     previous_round = datas['last_pos_round'] - 168
-    last_round = min(datas['last_pos_round'] + 1, last_round)
+    if last_round <= datas['last_pos_round']:
+        print("Error: Last round is {}, should be strictly more than {}".format(last_round, datas['last_pos_round']))
+        sys.exit()
+    last_round = datas['last_pos_round'] + 1
     print("Last PoS round Week n-1 ", previous_round)
     print("Last PoS round Week n ", last_round)
+
 
     for round in range(previous_round, last_round):
         # for round in range(200, 300):

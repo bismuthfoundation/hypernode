@@ -14,3 +14,8 @@ This will tell if any HN cheated on its balance (balance dropped below the regis
 
 Saves via hn_db.save_hn_from_regs, round by round
 
+ok until then.
+
+`time python3 fill_stats.py`  
+
+
