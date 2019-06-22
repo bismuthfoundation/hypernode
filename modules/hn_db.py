@@ -4,6 +4,7 @@ An object interfacing the Hypernodes SqliteDB.
 
 import os
 import sqlite3
+from hashlib import sha256
 
 # Our modules
 import poshelpers
@@ -185,7 +186,6 @@ class SqliteHNDB(SqliteBase):
         hn = await self.async_fetchone(SQL_HN_FROM_POW_ADDR, (address, ), as_dict=True)
         return hn
 
-
     async def hn_from_peer(self, peer: str, a_round: int):
         """
         Async. Return a dict with all info from local hn db
@@ -216,5 +216,6 @@ class SqliteHNDB(SqliteBase):
                                     str(value['timestamp']), str(0), poshelpers.bool_to_dbstr(value['active'])]) + ") "
                   for registrar, value in regs.items()]
         if len(values):
-            values = SQL_INSERT_HN_VALUES + ",".join(values)
-            await self.async_execute(values, commit=True)
+            values2 = SQL_INSERT_HN_VALUES + ",".join(values)
+            await self.async_execute(values2, commit=True)
+        return len(values), sha256(str(values).encode('utf-8')).hexdigest()

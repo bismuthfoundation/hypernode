@@ -87,8 +87,9 @@ if __name__ == "__main__":
     with open('week.json', 'r') as f:
         datas = json.load(f)
     previous_round = datas['last_pos_round'] - 168
+    last_round = min(datas['last_pos_round'] + 1, last_round)
     print("Last PoS round Week n-1 ", previous_round)
-    last_round = min(datas['last_pos_round']+1, last_round)
+    print("Last PoS round Week n ", last_round)
 
     for round in range(previous_round, last_round):
         # for round in range(200, 300):
@@ -118,11 +119,11 @@ if __name__ == "__main__":
                                                   force_all=False, no_cache=True, ignore_config=True,
                                                   distinct_process=distinct, ip='', balance_check=True))
 
-        if '014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c' in res:
+        """if '014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c' in res:
             print(json.dumps(res['014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c']))
         else:
             print('no 014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c')
-
+        """
         """
         {"01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab": {"ip": "51.15.95.155", "port": "6969",
                                                                       "pos": "BLYkQwGZmwjsh7DY6HmuNBpTbqoRqX14ne",
@@ -133,6 +134,6 @@ if __name__ == "__main__":
         all_peers = [item['pos'] for item in res.values()]
 
         # todo: do only if not exists ?
-        loop.run_until_complete(hn_db.save_hn_from_regs(res, round))
-
+        count, hash = loop.run_until_complete(hn_db.save_hn_from_regs(res, round))
+        print(count, hash)
         # time.sleep(2)
