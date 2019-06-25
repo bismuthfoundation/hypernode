@@ -8,7 +8,7 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.10"
+VERSION="0.1.11"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -54,7 +54,7 @@ install_dependencies() {
 	# apt update -y
 	# This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
-    apt install ufw unzip ntpdate python3-pip sqlite3 build-essential python3-dev -y
+    apt install screen ufw unzip ntpdate python3-pip sqlite3 build-essential python3-dev -y
 	# ntpdate ntp.ubuntu.com
 	# apt install ntp -y
 }
