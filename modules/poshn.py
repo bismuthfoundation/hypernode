@@ -52,11 +52,12 @@ import poshelpers
 from pow_interface import PowInterface
 from pow_interface import get_pow_node_version
 from pow_interface import get_pow_status
+from eventloopdelaymonitor import EventLoopDelayMonitor
 
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = "0.0.98g"
+__version__ = "0.0.98h"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -952,6 +953,7 @@ class Poshn:
         await self._new_tx(
             recipient=self.address, what=202, params="START", value=self.round
         )
+        next_status = time.time() + 30  # Force first status to be short after start.
         while not config.STOP_EVENT.is_set():
             try:
                 # updates our current view of the peers we are connected to and net global status/consensus
@@ -1072,8 +1074,11 @@ class Poshn:
                     finally:
                         self.testing = False
 
-                # FR: Maybe don't display each time
-                await self.status(log=True)
+                # Do not display every round, cpu intensive
+                if time.time() > next_status:
+                    print("loop status")
+                    await self.status(log=True)
+                    next_status = time.time() + config.STATUS_EVERY
                 if self.connecting:
                     # TODO: if we are looking for consensus, then we will connect to
                     # every juror, not just our round peers, then disconnect once block submitted
@@ -1113,8 +1118,12 @@ class Poshn:
         :param new_state:
         """
         self.state = new_state
+        """
         if self.verbose:
+            # too heavy, do not do it.
+            print("change state status")
             await self.status(log=True)
+        """
 
     async def _consensus(self):
         """
@@ -1227,6 +1236,11 @@ class Poshn:
                 print("> sorted peers status")
                 for h in peers_status:
                     print(" ", h)
+            try:
+                with open("chains.json", 'w') as fp:
+                    json.dump(peers_status, fp, indent=2)
+            except:
+                app_log.info("Error {} saving chains.json".format(e))
 
             self.peers_status = peers_status
             self.consensus_nb = nb
@@ -1426,10 +1440,14 @@ class Poshn:
                     )
                 # Delete the round to replace
                 await self.poschain.delete_round(a_round)
+                # Force status update
+                print("round sync 1 status")
                 await self.poschain.status()
                 # digest the blocks
                 for block in the_blocks.block_value:
                     await self.poschain.digest_block(block, from_miner=False)
+                # Force update again at end of sync.
+                print("round sync 2 status")
                 await self.status(log=False)
                 # get PoS address from peer (it's a ip:0port string)
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
@@ -2395,7 +2413,9 @@ class Poshn:
         loop = asyncio.get_event_loop()
         if config.DEBUG:
             loop.set_debug(True)
+
         if self.verbose:
+            print("Initial status")
             loop.run_until_complete(self.status(log=True))
         try:
             loop.run_until_complete(self.init_check())
@@ -2418,6 +2438,8 @@ class Poshn:
                 )
             io_loop = IOLoop.instance()
             io_loop.spawn_callback(self.manager)
+            if self.verbose:
+                EventLoopDelayMonitor(interval=1, loop=io_loop, logger=app_log)
             self.connect()
             try:
                 io_loop.start()
@@ -2508,7 +2530,12 @@ class Poshn:
                     of, co, fd, len(self.inbound), len(self.clients), self.forged_count
                 )
             )
-
+        pending_tasks = [task._coro for task in asyncio.Task.all_tasks() if not task.done()]
+        pending_tasks_names = [getattr(coro, '__qualname__', getattr(coro, '__name__', type(coro).__name__)) for coro in pending_tasks]
+        # print(pending_tasks_names)  # TODO: group by coro name
+        tasks_detail = {task: pending_tasks_names.count(task) for task in set(pending_tasks_names)}
+        # print([*map(asyncio.Task.print_stack, asyncio.Task.all_tasks())])
+        # print(frequency)
         # pow = {"node_version": get_pow_node_version()}
         pow = get_pow_status()
         status = {
@@ -2538,9 +2565,12 @@ class Poshn:
                 "sir": self.sir,
                 "forger": self.forger,
             },
+            "tasks": {"total": len(pending_tasks), "detail": tasks_detail},
             "extra": extra,
             "pow": pow,
         }
+        if self.process:
+            status["PID"] = self.process.pid
         # 'peers': self.peers
         if self.address not in [peer[0] for peer in self.all_peers]:
             self.not_reg = True
@@ -2559,4 +2589,9 @@ class Poshn:
                     )
                 )
         self.my_status = status
+        try:
+            with open("posstatus.json", "w") as fp:
+                json.dump(status, fp, indent=2)
+        except:
+            app_log.warning("Error {} saving pos status".format(e))
         return self.my_status

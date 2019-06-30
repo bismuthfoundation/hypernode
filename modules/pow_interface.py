@@ -403,12 +403,14 @@ class PowInterface:
             for row in cursor:
                 block_height, address, operation, openfield, timestamp = row
                 # TEMP
+                """
                 if self.verbose:
                     self.app_log.info(
                         "Row {}: {}, {}, {}".format(
                             block_height, address, operation, openfield
                         )
                     )
+                """
                 valid = True
                 show = False
                 try:
@@ -511,11 +513,10 @@ class PowInterface:
                     if show:
                         self.app_log.warning("Ko: {}".format(e))
                     pass
+                """
                 if self.verbose:
-                    """self.app_log.info("{} msg {} from {} : {}. ({})".format(
-                        valid, operation, address, openfield, block_height))
-                    """
                     self.app_log.info("{}".format(valid))
+                """
             if self.verbose:
                 # self.app_log.info("{} PoW Valid HN :{}".format(len(self.regs), json.dumps(self.regs)))
                 if self.regs:

@@ -27,7 +27,7 @@ PYTHON_EXECUTABLE=python3
 # =========================================================================================================
 
 # Use a distinct process to query PoW chain?
-POW_DISTINCT_PROCESS=True
+POW_DISTINCT_PROCESS=False
 
 
 # =========================================================================================================
@@ -38,13 +38,16 @@ POW_DISTINCT_PROCESS=True
 
 
 # How many peers at most to try to connect to?
-MAX_CONNECT_TO=25
+MAX_CONNECT_TO=40
 
 # How many blocks - at most - to send in a single message when syncing catching up nodes
 BLOCK_SYNC_COUNT=20
 
 # How long to wait in the main client loop
 WAIT=10
+
+# How long between status reports - status are intensive to build, 30 sec min, 5 min max (300 sec) - 1 min default.
+STATUS_EVERY=30
 
 # Wait time when catching up, to speed things up.
 SHORT_WAIT=0.001

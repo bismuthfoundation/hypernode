@@ -9,7 +9,7 @@ import json
 from hashlib import blake2b
 from os import path
 
-__version__ = "0.0.38"
+__version__ = "0.0.39"
 
 """
 User config - You can change these ones, but **See doc**
@@ -156,7 +156,7 @@ NETWORK_ID = b"\x19"
 DEFAULT_PORT = 6969
 
 # How many peers at most to try to connect to?
-MAX_CONNECT_TO = 25
+MAX_CONNECT_TO = 40
 
 # If too few HNs are marked as active, ignore inactive ones.
 MIN_ACTIVE_HNS = 10
@@ -167,6 +167,9 @@ BLOCK_SYNC_COUNT = 20
 
 # How long to wait in the main client loop
 WAIT = 10
+
+# How long between status reports - status are intensive to build, 30 sec min, 5 min max (300 sec) - 1 min default.
+STATUS_EVERY = 60
 
 # Wait time when catching up, to speed things up.
 SHORT_WAIT = 0.001
@@ -192,7 +195,7 @@ MAX_ROUND_SLOTS = 19  # Real world. 19+1 = 20 , 3x20 = 60 (round time)
 
 # To be adjusted depending on connectivity and HNs number.
 MIN_FORGE_CONSENSUS = 18
-MIN_FORGE_CONSENSUS_LOW = 12
+MIN_FORGE_CONSENSUS_LOW = 11
 
 # How many block times to wait at the end of a round to reach consensus?
 END_ROUND_SLOTS = 1
@@ -256,6 +259,7 @@ VARS = {
     "MAX_CONNECT_TO": "int",
     "BLOCK_SYNC_COUNT": "int",
     "WAIT": "int",
+    "STATUS_EVERY": "int",
     "SHORT_WAIT": "float",
     "PEER_RETRY_SECONDS": "int",
     "PYTHON_EXECUTABLE": "str",
