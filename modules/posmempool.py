@@ -52,6 +52,12 @@ SQL_PURGE = (
     "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
 )
 
+# For benchmarks
+SQL_PURGE_TEST = (
+    "DELETE FROM pos_messages WHERE timestamp <= ?"
+)
+
+
 # Purge old txs that may be stuck
 SQL_PURGE_30 = (
     "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-30 minute')"
@@ -74,6 +80,7 @@ SQL_PURGE_START2 = (
 # Delete all transactions
 SQL_CLEAR = "DELETE FROM pos_messages"
 
+# TODO: check, should be received - depends on context, timestamp or received depending on the usage
 SQL_SINCE = "SELECT * FROM pos_messages WHERE timestamp >= ? ORDER BY timestamp ASC"
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
@@ -86,7 +93,8 @@ SQL_STATUS = (
 SQL_COUNT = "SELECT COUNT(*) AS NB FROM pos_messages"
 
 SQL_LIST_TXIDS = "SELECT txid FROM pos_messages"
-SQL_REMOVE_TXID = "DELETE FROM pos_messages where txid = ?"
+
+SQL_REMOVE_TXID = "DELETE FROM pos_messages where txid = ?"  # Deprecated
 
 SQL_REMOVE_TXID_IN = "DELETE FROM pos_messages where txid IN "
 
@@ -122,6 +130,7 @@ class Mempool:
         Async. Check validity of the transaction and insert if mempool if ok.
         TODO: 2 steps when getting batch: first checks, then a single insert
         FR: We could also keep just the txids in a ram dict to filter out faster. (no need if ram mempool)
+        (deprecated with use of naivemempool)
 
         :param tx:
         :param poschain:
@@ -136,9 +145,11 @@ class Mempool:
         try:
 
             if await self.tx_exists(tx.txid):
-                # TODO: useless since we have an index, we can raise or ignore commit if exists.
+                # Could seem useless since we have an index, we can raise or ignore commit if exists.
+                # Kept for alternative impl. without an index.
                 return False
             if poschain:
+                # This is costly, but we have to verify. Do it only if it was not found in mempool.
                 if await poschain.tx_exists(tx.txid):
                     return False
             # Validity checks, will raise
@@ -146,7 +157,8 @@ class Mempool:
 
             # TODO: batch, so we can do a global commit?
             await self._insert_tx(tx)
-            # TODO: also add the pubkey in index if present.
+            # No commit needed, but batch could help for NaiveMempool (single call vs multiple await)
+            # TODO: FR: also add the pubkey in index if present.
             # returns the native tx object
             return tx
         except Exception as e:
@@ -297,6 +309,12 @@ class SqliteMempool(Mempool, SqliteBase):
         Async. Purge old txs
         """
         await self.async_execute(SQL_PURGE, commit=True)
+
+    async def async_purge_test(self, ts_limit:int):
+        """
+        Async. Purge old txs
+        """
+        await self.async_execute(SQL_PURGE_TEST, (ts_limit,), commit=True)
 
     async def async_purge_start(self, address):
         """

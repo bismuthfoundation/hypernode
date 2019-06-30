@@ -32,6 +32,7 @@ from tornado.ioloop import IOLoop
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
+from tornado.util import TimeoutError
 from tornado.tcpclient import TCPClient
 from tornado.tcpserver import TCPServer
 import tornado.log
@@ -53,11 +54,12 @@ from pow_interface import PowInterface
 from pow_interface import get_pow_node_version
 from pow_interface import get_pow_status
 from eventloopdelaymonitor import EventLoopDelayMonitor
+from naivemempool import NaiveMempool
 
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = "0.0.98h"
+__version__ = "0.0.98i"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -624,9 +626,12 @@ class Poshn:
             self.check_node()
             self.check_pow_status()
             # Time sensitive props
+            """
             self.mempool = posmempool.SqliteMempool(
                 verbose=verbose, app_log=app_log, db_path=datadir + "/", ram=True
             )
+            """
+            self.mempool = NaiveMempool(verbose=verbose, app_log=app_log)
             self.poschain = poschain.SqlitePosChain(
                 verbose=verbose,
                 app_log=app_log,
@@ -1239,7 +1244,7 @@ class Poshn:
             try:
                 with open("chains.json", 'w') as fp:
                     json.dump(peers_status, fp, indent=2)
-            except:
+            except Exception as e:
                 app_log.info("Error {} saving chains.json".format(e))
 
             self.peers_status = peers_status
@@ -2070,7 +2075,7 @@ class Poshn:
                         )
             retry = False
             raise ValueError("Closing")
-        except tornado.iostream.StreamClosedError as e:
+        except (tornado.iostream.StreamClosedError, tornado.util.TimeoutError) as e:
             if self.verbose and "connections" in config.LOG:
                 if retry:
                     app_log.warning(
@@ -2468,6 +2473,7 @@ class Poshn:
 
         """
         app_log.info("Initial mempool coherence check")
+        # TODO: This is not needed since it's not persistent atm.
         try:
             # Now test coherence and mempool
             await self.mempool.async_purge()
@@ -2592,6 +2598,6 @@ class Poshn:
         try:
             with open("posstatus.json", "w") as fp:
                 json.dump(status, fp, indent=2)
-        except:
+        except Exception as e:
             app_log.warning("Error {} saving pos status".format(e))
         return self.my_status

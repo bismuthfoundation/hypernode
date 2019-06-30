@@ -86,13 +86,16 @@ class PosMessage:
         self.received = int(time.time())
         return self
 
-    def from_list(self, tx_list):
+    def from_list(self, tx_list, as_hex: bool=False):
         """
         Convert from list to object format.
 
         :param tx_list: list()
         :return: a PosMessage instance
         """
+        if as_hex:
+            tx_list[0] = poscrypto.hex_to_raw(tx_list[0])  # txid
+            tx_list[8] = poscrypto.hex_to_raw(tx_list[8])  # pubkey
         self.txid, self.block_height, self.timestamp, self.sender, self.recipient, self.what, self.params, self.value, \
             self.pubkey, self.received = tx_list
         return self

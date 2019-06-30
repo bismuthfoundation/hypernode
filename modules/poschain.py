@@ -714,6 +714,7 @@ class SqlitePosChain(SqliteBase):
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
+        bin_txids = []
         start_time = time.time()
         # this is now an array of array. batch store the txs.
         str_txs = []
@@ -729,6 +730,7 @@ class SqlitePosChain(SqliteBase):
                 tx.block_height = block.height
             temp = tx.to_str_list()
             tx_ids.append(temp[0])
+            bin_txids.append(tx.txid)
 
             batch.append(" (" + ", ".join(temp) + ") ")
             batch_count += 1
@@ -769,8 +771,12 @@ class SqlitePosChain(SqliteBase):
                 )
             )
         # batch delete from mempool
+        """
         if len(tx_ids) and self.mempool:
             await self.mempool.async_del_hex_txids(tx_ids)
+        """
+        if len(bin_txids) and self.mempool:
+            await self.mempool.async_del_txids(bin_txids)
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after mempool del: {} sec".format(
