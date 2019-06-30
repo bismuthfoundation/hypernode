@@ -22,8 +22,8 @@ import com_helpers
 __version__ = "0.0.31"
 
 
-# XLOG = False
-XLOG = "./logs/xlogs.log"
+XLOG = False
+# XLOG = "./logs/xlogs.log"
 
 SLOW_QUERIES_LOG = "./logs/slow.log"
 SLOW_TRIGGER = 5.0  # seconds for slow query
