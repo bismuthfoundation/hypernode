@@ -59,7 +59,7 @@ from naivemempool import NaiveMempool
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 
-__version__ = "0.0.98j"
+__version__ = "0.0.98k"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -961,8 +961,10 @@ class Poshn:
         next_status = time.time() + 30  # Force first status to be short after start.
         while not config.STOP_EVENT.is_set():
             try:
+                app_log.warning("loop 1")
                 # updates our current view of the peers we are connected to and net global status/consensus
-                await self._update_network()
+                await self._update_network()  # some runs showed quite some time in here for chain swaps.
+                app_log.warning("loop 2")
                 if (
                     self.state == HNState.SYNCING
                     and self.forger == poscrypto.ADDRESS
@@ -1078,7 +1080,7 @@ class Poshn:
                         await self.run_test_peer(test)
                     finally:
                         self.testing = False
-
+                app_log.warning("loop 3")
                 # Do not display every round, cpu intensive
                 if time.time() > next_status:
                     print("loop status")
@@ -1104,6 +1106,7 @@ class Poshn:
                                 io_loop.spawn_callback(self.client_worker, peer)
                 # FR: variable sleep time depending on the elapsed loop time - or use timeout?
                 await asyncio.sleep(config.WAIT)
+                app_log.warning("loop CR")
                 await self.check_round()
 
             except Exception as e:
@@ -1211,11 +1214,17 @@ class Poshn:
                             ] = [ip]
                         if poshelpers.same_height(peer["height_status"], our_status):
                             nb += 1
+                            """
+                            # Add to debug instead
                             if self.verbose:
                                 app_log.info("Peer {} agrees".format(ip))
+                            """
                         else:
+                            pass
+                            """
                             if self.verbose:
                                 app_log.warning("Peer {} disagrees".format(ip))
+                            """
                     except:
                         pass
             total = len(self.all_peers)
@@ -1280,6 +1289,7 @@ class Poshn:
                             app_log.info(
                                 "State {} force round sync and check".format(self.state)
                             )
+                            # TODO: can be lenghty or stuck. add timeout.
                             await self._round_sync(our_status["round"], self.net_height)
                         else:
                             app_log.warning(
@@ -1420,8 +1430,13 @@ class Poshn:
         await self.change_state_to(HNState.ROUND_SYNC)
         # pick a peer - if sync fails, we will try another random one next time
         peer = random.choice(promised_height["peers"])
+        if self.verbose:
+            app_log.info("_round_sync, {} peers".format(len(promised_height["peers"])))
         try:
             # Get the whole round data from that peer - We suppose it fits in memory
+            if self.verbose:
+                app_log.info("_get_round_blocks({}, {})".format(peer, a_round))
+            # TODO: could need a timeout there
             the_blocks = await self._get_round_blocks(peer, a_round)
             if not the_blocks:
                 raise ValueError("Did not get blocks from {}".format(peer))
@@ -1444,15 +1459,19 @@ class Poshn:
                         )
                     )
                 # Delete the round to replace
+                if self.verbose:
+                    app_log.info("delete_round({})".format(a_round))
                 await self.poschain.delete_round(a_round)
                 # Force status update
-                print("round sync 1 status")
+                if self.verbose:
+                    app_log.info("round sync 1 status")
                 await self.poschain.status()
                 # digest the blocks
                 for block in the_blocks.block_value:
                     await self.poschain.digest_block(block, from_miner=False)
                 # Force update again at end of sync.
-                print("round sync 2 status")
+                if self.verbose:
+                    app_log.info("round sync 2 status")
                 await self.status(log=False)
                 # get PoS address from peer (it's a ip:0port string)
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
@@ -2443,8 +2462,10 @@ class Poshn:
                 )
             io_loop = IOLoop.instance()
             io_loop.spawn_callback(self.manager)
+            """
             if self.verbose:
                 EventLoopDelayMonitor(interval=1, loop=io_loop, logger=app_log)
+            """
             self.connect()
             try:
                 io_loop.start()

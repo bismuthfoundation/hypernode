@@ -216,6 +216,7 @@ class SqliteBase:
                             "file:temp?mode=memory",
                             loop=asyncio.get_event_loop(),
                             isolation_level="",  # None would turn auto commit
+                            check_same_thread=False,
                             uri=True,
                         )
                         await self.async_db.execute('pragma journal_mode=wal')
