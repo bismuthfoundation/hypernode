@@ -128,7 +128,8 @@ class NaiveMempool(Mempool):
 
         :return: status as dict()
         """
-        return {"count": len(self._dict)}
+        # key "NB" is important, ued by poshn.
+        return {"NB": len(self._dict)}
 
     async def tx_count(self):
         """
