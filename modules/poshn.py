@@ -8,36 +8,36 @@ Note:
     FR: will go into TODO: as TODO: is cleared.
 """
 
-import aioprocessing
-import asyncio
-
-# pip install ConcurrentLogHandler
-from cloghandler import ConcurrentRotatingFileHandler
-from distutils.version import LooseVersion
-from enum import Enum
 import json
 import logging
-from operator import itemgetter
 import os
-from os import path
-import psutil
 import random
 import resource
+import socket
 import sys
-import time
+from asyncio import get_event_loop, TimeoutError, wait_for, Task
+from asyncio import sleep as async_sleep
+from asyncio import wait as asyncio_wait
+from distutils.version import LooseVersion
+from enum import Enum
+from operator import itemgetter
+from os import path
+from time import time
 
+import aioprocessing
+import psutil
+import requests
+import tornado.log
+# pip install ConcurrentLogHandler
+from cloghandler import ConcurrentRotatingFileHandler
 # Tornado
 from tornado.ioloop import IOLoop
-
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
-from tornado.util import TimeoutError
 from tornado.tcpclient import TCPClient
 from tornado.tcpserver import TCPServer
-import tornado.log
-import requests
-import socket
+from tornado.util import TimeoutError
 
 # Our modules
 import com_helpers
@@ -45,21 +45,17 @@ import commands_pb2
 import config
 import determine
 import hn_db
-import poschain
-import posmempool
 import posblock
+import poschain
 import poscrypto
 import poshelpers
-from pow_interface import PowInterface
-from pow_interface import get_pow_node_version
-from pow_interface import get_pow_status
-from eventloopdelaymonitor import EventLoopDelayMonitor
-from naivemempool import NaiveMempool
-
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
+from naivemempool import NaiveMempool
+from pow_interface import PowInterface
+from pow_interface import get_pow_status
 
-__version__ = "0.0.98k"
+__version__ = "0.0.98l"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -155,7 +151,7 @@ class HnServer(TCPServer):
             elif msg.command == commands_pb2.Command.block:
                 while self.node.state in [HNState.NEWROUND]:
                     # Do not run block processing while in new round computation
-                    await asyncio.sleep(1)
+                    await async_sleep(1)
                 # block sending does not require hello
                 access_log.info("SRV: Got forged block from {}".format(peer_ip))
                 if peer_ip not in self.node.registered_ips:
@@ -199,7 +195,7 @@ class HnServer(TCPServer):
                     msg.tx_values[0].sender,
                     203,
                     msg.tx_values[0].params,
-                    int(time.time()),
+                    int(time()),
                 )
                 await async_send_block(msg, stream, peer_ip)
                 return
@@ -272,14 +268,14 @@ class HnServer(TCPServer):
         full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
         while self.node.state in [HNState.NEWROUND]:
             # Do not run incoming actions while in new round computation
-            await asyncio.sleep(1)
+            await async_sleep(1)
         try:
             # Don't do a thing.
             # if msg.command == commands_pb2.Command.ping:
             #    await com_helpers.async_send(commands_pb2.Command.ok, stream, peer_ip)
             # TODO: rights management
             if msg.command == commands_pb2.Command.status:
-                self.node.my_status["instance"]["localtime"] = time.time()
+                self.node.my_status["instance"]["localtime"] = time()
                 status = json.dumps(self.node.my_status)
                 del self.node.my_status["instance"]["localtime"]
                 await async_send_string(
@@ -351,7 +347,7 @@ class HnServer(TCPServer):
                 txs = await self.mempool.async_since(last)
                 self.node.inbound[full_peer]["stats"][
                     com_helpers.STATS_LASTMPL
-                ] = time.time()
+                ] = time()
                 # Filter out the tx we got from the peer
                 # app_log.info("{} txs before filtering".format(len(txs)))
                 peer_txids = [tx.txid for tx in msg.tx_values]
@@ -642,7 +638,7 @@ class Poshn:
             self.hn_db = hn_db.SqliteHNDB(
                 verbose=verbose, app_log=app_log, db_path=datadir + "/"
             )
-            loop = asyncio.get_event_loop()
+            loop = get_event_loop()
             loop.run_until_complete(self.powchain.wait_synced())
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
@@ -784,7 +780,7 @@ class Poshn:
                     "No powstatus.json. Make sure the node runs. Waiting 30 sec"
                 )
                 time.sleep(30)
-            elif os.path.getmtime(status_filename) < time.time() - 6 * 60:
+            elif os.path.getmtime(status_filename) < time() - 6 * 60:
                 app_log.warning(
                     "powstatus.json seems too old. Make sure the node runs. Waiting 30 sec."
                 )
@@ -844,12 +840,12 @@ class Poshn:
         global app_log
         app_log.info("Trying to close nicely...")
         config.STOP_EVENT.set()
-        loop = asyncio.get_event_loop()
+        loop = get_event_loop()
         loop.create_task(self.poschain.async_commit())
         loop.create_task(self.poschain.async_close())
         loop.create_task(self.mempool.async_close())
         loop.create_task(self.hn_db.async_close())
-        loop.create_task(asyncio.sleep(2))
+        loop.create_task(async_sleep(2))
         # wait for potential threads to finish
         try:
             pass
@@ -916,7 +912,7 @@ class Poshn:
         protocmd.command = commands_pb2.Command.test
         # tx_values[0].txid, tx_values[0].block_height, tx_values[0].pubkey
         tx = protocmd.tx_values.add()
-        tx.timestamp, tx.sender, tx.recipient = int(time.time()), test[0], test[1]
+        tx.timestamp, tx.sender, tx.recipient = int(time()), test[0], test[1]
         tx.txid, tx.block_height, tx.pubkey = b"", 0, b""
         # 202 = A tests B - 203 = B reports being tested by A - 204 = failed test
         tx.what, tx.params, tx.value = 202, "TEST:{}".format(test[2]), 0
@@ -927,8 +923,8 @@ class Poshn:
         future = self.do_test_peer(protocmd, peer["ip"], peer["port"])
         # send block
         try:
-            result = await asyncio.wait_for(future, 30)
-        except asyncio.TimeoutError as e:
+            result = await wait_for(future, 30)
+        except TimeoutError as e:
             app_log.warning("Test Timeout")
             result = None
         except Exception as e:
@@ -958,7 +954,7 @@ class Poshn:
         await self._new_tx(
             recipient=self.address, what=202, params="START", value=self.round
         )
-        next_status = time.time() + 30  # Force first status to be short after start.
+        next_status = time() + 30  # Force first status to be short after start.
         while not config.STOP_EVENT.is_set():
             try:
                 app_log.warning("loop 1")
@@ -1046,11 +1042,11 @@ class Poshn:
                         mempool_status = await self.mempool.status()
                         if mempool_status["NB"] >= config.REQUIRED_MESSAGES_PER_BLOCK:
                             # Make sure we are at least 15 sec after round start, to let other nodes be synced.
-                            if time.time() - self.current_round_start > 15:
+                            if time() - self.current_round_start > 15:
                                 await self.change_state_to(HNState.FORGING)
                                 # Forge will send also
                                 await self.forge()
-                                # await asyncio.sleep(10)
+                                # await async_sleep(10)
                                 self.forged = True
                                 await self.change_state_to(HNState.SYNCING)
                             else:
@@ -1082,10 +1078,10 @@ class Poshn:
                         self.testing = False
                 app_log.warning("loop 3")
                 # Do not display every round, cpu intensive
-                if time.time() > next_status:
+                if time() > next_status:
                     print("loop status")
                     await self.status(log=True)
-                    next_status = time.time() + config.STATUS_EVERY
+                    next_status = time() + config.STATUS_EVERY
                 if self.connecting:
                     # TODO: if we are looking for consensus, then we will connect to
                     # every juror, not just our round peers, then disconnect once block submitted
@@ -1105,7 +1101,7 @@ class Poshn:
                                     }
                                 io_loop.spawn_callback(self.client_worker, peer)
                 # FR: variable sleep time depending on the elapsed loop time - or use timeout?
-                await asyncio.sleep(config.WAIT)
+                await async_sleep(config.WAIT)
                 app_log.warning("loop CR")
                 await self.check_round()
 
@@ -1436,14 +1432,18 @@ class Poshn:
             # Get the whole round data from that peer - We suppose it fits in memory
             if self.verbose:
                 app_log.info("_get_round_blocks({}, {})".format(peer, a_round))
-            # TODO: could need a timeout there
-            the_blocks = await self._get_round_blocks(peer, a_round)
+            # needs a timeout there
+            start = time()
+            the_blocks = await wait_for(self._get_round_blocks(peer, a_round), timeout=60)
             if not the_blocks:
                 raise ValueError("Did not get blocks from {}".format(peer))
+            else:
+                if self.verbose:
+                    app_log.info("_get_round_blocks done in {:0.2f} sec.".format(time() - start))
             # check the data fits and count sources/forgers
-            simulated_target = await self.poschain.check_round(
+            simulated_target = await wait_for(self.poschain.check_round(
                 a_round, the_blocks, fast_check=True
-            )
+            ), timeout = 200)
             # print("expected", promised_height)
             # print("simulated", simulated_target)
             # Check it matches the target,
@@ -1496,6 +1496,8 @@ class Poshn:
                     value=a_round,
                 )
                 # FR: Add to buffer instead of sending right away (avoid tx spam)
+        except TimeoutError:
+            app_log.warning("_round_sync timeout")
         except ValueError as e:  # innocuous error, will retry.
             app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
@@ -1543,8 +1545,10 @@ class Poshn:
         try:
             # FR: Do we have a stream to this peer? if yes, use it instead of creating a new one ?
             # means add to self.clients
-            if self.verbose:
+            """
+            if self.verbose:  # already loggued 1 level above.
                 app_log.info("get_round_blocks({}, {})".format(peer, a_round))
+            """
             ip, port = peer.split(":")
             stream = await self._get_peer_stream(ip, int(port), temp=True)
             # request the info
@@ -1620,7 +1624,7 @@ class Poshn:
         while self.mempool_digesting:
             if self.verbose and "mempool" in config.LOG:
                 app_log.info("Waiting to sync {} txs from {}".format(len(txs), peer_ip))
-            await asyncio.sleep(config.WAIT)
+            await async_sleep(config.WAIT)
         try:
             self.mempool_digesting = peer_ip
             if self.verbose and "mempool" in config.LOG:
@@ -1706,7 +1710,7 @@ class Poshn:
                 "height": self.last_height + 1,
                 "round": self.round,
                 "sir": self.sir,
-                "timestamp": int(time.time()),
+                "timestamp": int(time()),
                 "previous_hash": self.previous_hash,
                 "forger": self.address,
                 "received_by": "",
@@ -1749,7 +1753,7 @@ class Poshn:
                 if not (peer[1] == self.outip and int(peer[2]) == self.port)
             ]
             try:
-                await asyncio.wait(to_send, timeout=30)
+                await asyncio_wait(to_send, timeout=45)
             except Exception as e:
                 app_log.error("Timeout sending block: {}".format(e))
             # print(block.__str__())
@@ -1797,7 +1801,7 @@ class Poshn:
                 )
             else:
                 stream = await TCPClient().connect(ip, port, timeout=LTIMEOUT)
-            # connect_time = time.time()
+            # connect_time = time()
             await com_helpers.async_send_string(
                 commands_pb2.Command.hello,
                 self.hello_string(temp=temp),
@@ -1853,7 +1857,7 @@ class Poshn:
                 )
             else:
                 stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
-            connect_time = time.time()
+            connect_time = time()
             await com_helpers.async_send_string(
                 commands_pb2.Command.hello, self.hello_string(), stream, full_peer
             )
@@ -1889,7 +1893,7 @@ class Poshn:
                 ):
                     # Faster sync
                     app_log.info(">> Entering presync with {}".format(full_peer))
-                    await asyncio.sleep(config.SHORT_WAIT)
+                    await async_sleep(config.SHORT_WAIT)
                     if self.state == HNState.CATCHING_UP_PRESYNC:
                         # Here, we check if our last block matches the peer's one.
                         # If not, we rollback one block at a time until we agree.
@@ -1954,7 +1958,7 @@ class Poshn:
                                 msg = await com_helpers.async_receive(stream, full_peer)
                                 #  TODO: check message is blockinfo
                                 info = posblock.PosHeight().from_proto(msg.height_value)
-                                # await asyncio.sleep(5)
+                                # await async_sleep(5)
                             app_log.info(
                                 ">> Should have rolled back to {} level.".format(
                                     full_peer
@@ -2046,8 +2050,8 @@ class Poshn:
                         await self.check_round()
                         await self.change_state_to(HNState.SYNCING)
                 else:
-                    await asyncio.sleep(config.WAIT)
-                    now = time.time()
+                    await async_sleep(config.WAIT)
+                    now = time()
                     if self.state not in (
                         HNState.STRONG_CONSENSUS,
                         HNState.MINIMAL_CONSENSUS,
@@ -2127,7 +2131,7 @@ class Poshn:
             except:
                 pass
             #  Wait here so we don't retry immediately
-            await asyncio.sleep(config.PEER_RETRY_SECONDS)
+            await async_sleep(config.PEER_RETRY_SECONDS)
         finally:
             if stream:
                 try:
@@ -2152,7 +2156,7 @@ class Poshn:
         if self.verbose and "workermsg" in config.LOG:
             app_log.info("Sending height to {}".format(full_peer))
         height = await self.poschain.async_height()
-        self.clients[full_peer]["stats"][com_helpers.STATS_LASTHGT] = time.time()
+        self.clients[full_peer]["stats"][com_helpers.STATS_LASTHGT] = time()
         await async_send_height(commands_pb2.Command.height, height, stream, full_peer)
         # Peer will answer with its height
         # FR: have some watchdog to close connection if peer does not answer after a while (but does not disconnect)
@@ -2179,7 +2183,7 @@ class Poshn:
                     len(txs), full_peer, last
                 )
             )
-        self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL] = time.time()
+        self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL] = time()
         await com_helpers.async_send_txs(
             commands_pb2.Command.mempool, txs, stream, full_peer
         )
@@ -2225,10 +2229,10 @@ class Poshn:
         Always called from the manager co-routine only.
         Should not be called too often (1-10sec should be plenty)
         """
-        self.round, self.sir = determine.timestamp_to_round_slot(time.time())
+        self.round, self.sir = determine.timestamp_to_round_slot(time())
         while self.state in [HNState.NEWROUND]:
             # do not re-enter if new round ongoing
-            await asyncio.sleep(1)
+            await async_sleep(1)
         if (self.sir != self.previous_sir) or (self.round != self.previous_round):
             with self.round_lock:
                 # If we forged the last block, forget.
@@ -2243,7 +2247,7 @@ class Poshn:
                 if self.round != self.previous_round:
                     await self.change_state_to(HNState.NEWROUND)
                     # let it sink
-                    await asyncio.sleep(0.2)
+                    await async_sleep(0.2)
                     # Make sure the PoW node is working and synced.
                     await self.powchain.wait_synced()
                     # Update all round related info, we get here only once at the beginning of a new round
@@ -2323,7 +2327,7 @@ class Poshn:
                     self.registered_ips = [
                         items["ip"] for items in self.powchain.regs.values()
                     ]
-                    self.current_round_start = int(time.time())
+                    self.current_round_start = int(time())
                     self.previous_round = self.round
                     # We try to connect to inactive peers anyway, or they have less chances of coming back.
                     self.connect_to = await determine.get_connect_to(
@@ -2404,7 +2408,7 @@ class Poshn:
                     and (self.sir == 0)
                     and (self.no_test_sent == 0)
                 ):
-                    await asyncio.sleep(5)
+                    await async_sleep(5)
                     # FR: param is optional, all could go into 'what' to spare bandwith
                     self.no_test_sent += 1
                     await self._new_tx(
@@ -2434,7 +2438,7 @@ class Poshn:
         Run the Tornado socket server.
         Once we called that, the calling thread is stopped until the server closes.
         """
-        loop = asyncio.get_event_loop()
+        loop = get_event_loop()
         if config.DEBUG:
             loop.set_debug(True)
 
@@ -2471,7 +2475,7 @@ class Poshn:
                 io_loop.start()
             except KeyboardInterrupt:
                 config.STOP_EVENT.set()
-                loop = asyncio.get_event_loop()
+                loop = get_event_loop()
                 loop.run_until_complete(self.mempool.async_close())
                 io_loop.stop()
                 app_log.info("Serve: exited cleanly")
@@ -2557,7 +2561,7 @@ class Poshn:
                     of, co, fd, len(self.inbound), len(self.clients), self.forged_count
                 )
             )
-        pending_tasks = [task._coro for task in asyncio.Task.all_tasks() if not task.done()]
+        pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
         pending_tasks_names = [getattr(coro, '__qualname__', getattr(coro, '__name__', type(coro).__name__)) for coro in pending_tasks]
         # print(pending_tasks_names)  # TODO: group by coro name
         tasks_detail = {task: pending_tasks_names.count(task) for task in set(pending_tasks_names)}
@@ -2576,7 +2580,7 @@ class Poshn:
             "instance": {
                 "version": self.client_version,
                 "hn_version": __version__,
-                "statustime": int(time.time()),
+                "statustime": int(time()),
             },
             "chain": poschain_status,
             "mempool": mempool_status,

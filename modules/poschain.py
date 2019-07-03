@@ -4,22 +4,27 @@ A Safe thread/process object interfacing the PoS chain
 
 # import threading
 import os
-import sys
-import json
-import time
 import sqlite3
+import sys
+import time
+from asyncio import get_event_loop, wait_for, CancelledError
+from random import choice
 
-# import asyncio
+from tornado.iostream import StreamClosedError
+from tornado.tcpclient import TCPClient
 
+import com_helpers
+import commands_pb2
 # Our modules
 import config
 import poscrypto
-import com_helpers
-import commands_pb2
+import poshelpers
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = "0.1.4"
+# import asyncio
+
+__version__ = "0.1.5"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -308,6 +313,111 @@ class SqlitePosChain(SqliteBase):
             app_log=app_log,
         )
 
+    def missing_blocks(self) -> set:
+        """
+        Not in async mode yet. id the missing or corrupted block so we can fix them.
+        returns a set of heights
+        """
+        missings = set()
+        sql = "SELECT MAX(height) FROM pos_chain"
+        res = self.execute(sql)
+        height = res.fetchone()[0]
+        sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
+        sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
+        for height in range(height - 1):
+            # get txn count from header
+            res = self.execute(sql1, (height,))
+            temp = res.fetchone()
+            if temp is None:
+                missings.add(height)
+                # print("Height {} is None".format(height))
+            msg_count1 = temp[0] if temp else 0
+            # get txn count from pos_messages
+            res = self.execute(sql2, (height,))
+            temp = res.fetchone()
+            msg_count2 = temp[0] if temp else 0
+            if msg_count1 != msg_count2:
+                # print("{}: {} - {}".format(height, msg_count1, msg_count2))
+                missings.add(height)
+        return missings
+
+    def check_block_hash(self, block: PosBlock) -> bool:
+        raw = block.to_raw()
+        msg_count = len(block.txs)
+        # set removes duplicates.
+        block.uniques_sources = len(set([tx.sender for tx in block.txs]))
+        # TODO: verify sig signature = poscrypto.sign(raw, verify=True)
+        block_hash = poscrypto.blake(raw).digest()
+        if msg_count != block.msg_count:
+            print("Bad Txn count")
+            return False
+        return block_hash == block.block_hash
+
+    async def get_block_again(self, block_height: int) -> bool:
+        """Try to get the missing or corrupted local blocks from other reference peers."""
+        if block_height == 76171:
+            # TODO: special processing TBD
+            return True
+        previous_block = PosBlock()
+        sql = "SELECT * FROM pos_chain WHERE height=?"
+        res = self.execute(sql, (block_height -1,))
+        previous = dict(res.fetchone())
+        previous_block.from_dict(previous)
+        # print(previous)
+        peers = ("192.99.248.44", "91.121.87.99", "192.99.34.19")
+        peer = choice(peers)
+        try:
+            stream = await TCPClient().connect(peer, 6969, timeout=45)
+            hello_string = poshelpers.hello_string(port=6969, address=poscrypto.ADDRESS)
+            full_peer = "{}:{}".format(peer, 6969)
+            await com_helpers.async_send_string(
+                commands_pb2.Command.hello,
+                hello_string,
+                stream,
+                full_peer,
+            )
+            msg = await com_helpers.async_receive(stream, full_peer, timeout=45)
+            print(
+                "Client got {}".format(com_helpers.cmd_to_text(msg.command))
+            )
+            if msg.command == commands_pb2.Command.hello:
+                # decompose posnet/address and check.
+                print(
+                    "Client got Hello {} from {}".format(msg.string_value, full_peer)
+                )
+                # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
+            if msg.command == commands_pb2.Command.ko:
+                print("Client got Ko {}".format(msg.string_value))
+                return False
+            # now we can enter a long term relationship with this node.
+            await com_helpers.async_send_int32(
+                commands_pb2.Command.getblock,
+                block_height,
+                stream,
+                full_peer,
+            )
+            msg = await com_helpers.async_receive(stream, full_peer, timeout=45)
+            block = PosBlock()
+            block.from_proto(msg.block_value[0])
+            # print(block.to_dict(as_hex=True))
+            if block_height == 76171:  # Broken block
+                ok = True
+            else:
+                ok = self.check_block_hash(block)
+            if not ok:
+                print("Block {} KO".format(block_height))
+                return False
+            if block.previous_hash != previous_block.block_hash:
+                print("Block {} does not fit previous block".format(block_height))
+                return False
+            # Ok, insert
+            self.insert_block(block)
+            return True
+
+        except StreamClosedError as e:
+            print(e)
+            return False
+
     def check(self):
         """
         Checks and creates db. This is not async yet, so we close afterward.
@@ -418,6 +528,14 @@ class SqlitePosChain(SqliteBase):
                         )
                     )
                     # sys.exit()
+            missing_blocks = self.missing_blocks()
+            print("Missing1:", missing_blocks)
+            loop = get_event_loop()
+            for block_height in list(missing_blocks):
+                loop.run_until_complete(self.get_block_again(block_height))
+            self.app_log.warning("Fixed corrupted blocks")
+            missing_blocks = self.missing_blocks()
+            print("Missing2:", missing_blocks)
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -602,6 +720,8 @@ class SqlitePosChain(SqliteBase):
         """
         try:
             start_time = time.time()
+            if self.verbose:
+                self.app_log.info("check_round start {:0.2f}".format(time.time()))
             # Get the last block of the a-round -1 round from our chain
             height = await self.async_fetchone(
                 SQL_LAST_HEIGHT_BEFORE_ROUND, (a_round,), as_dict=True
@@ -623,6 +743,8 @@ class SqlitePosChain(SqliteBase):
             ref_hash = ref_height.block_hash
             end_block = None
             for block in blocks.block_value:
+                if self.verbose:
+                    self.app_log.info("check_round block {} : {:0.2f}".format(block.height, time.time()))
                 # Good height?
                 if block.height != ref_blockheight + 1:
                     self.app_log.warning(
@@ -673,6 +795,9 @@ class SqlitePosChain(SqliteBase):
                 )
             # return Simulated height.
             return ref_height.to_dict(as_hex=True)
+        except CancelledError:
+            self.app_log.error("check_round Cancelled")
+            return False
         except Exception as e:
             self.app_log.error("check_round Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -1325,6 +1450,7 @@ class SqlitePosChain(SqliteBase):
                 res[address]["sources"] = sources
             else:
                 res[address] = {"sources": sources, "forged": 0}
+        # This means only nodes who sent at least a transaction for the round will be evaluated.
 
         sources = await self.async_fetchall(SQL_ROUNDS_START_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():

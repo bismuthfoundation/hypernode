@@ -155,7 +155,8 @@ if __name__ == "__main__":
 
         hns = loop.run_until_complete(hn_db.async_fetchall("SELECT address, weight, reward FROM hypernodes WHERE round = ? and active = 1", (round,)))
         hns = {hn[0]: {'weight': hn[1], 'reward': hn[2]} for hn in hns}
-        # print(hns)
+        # print(hns.keys())
+        # sys.exit()
 
         details = loop.run_until_complete(poschain.async_active_hns_details(round))
         """
@@ -165,6 +166,15 @@ if __name__ == "__main__":
         #hn = loop.run_until_complete(hn_db.async_fetchall("SELECT address, weight FROM hypernodes WHERE active=1 AND round= ?", (round,)))
         # print(hn)
         # print(details)
+        # print(details['B7j7rjsZvwtC2uVx6D9hREjSyBiSb7QSMS'])
+        # sys.exit()
+        print("{} hns {} details".format(len(hns), len(details)))
+        """
+        for pos_addr in hns:
+            if pos_addr not in details:
+                print("{} was active but has no stats?".format(pos_addr))
+        sys.exit()
+        """
         hash = sha256(str(details).encode('utf-8')).hexdigest()
         print(hash)
         for pos, detail in details.items():
