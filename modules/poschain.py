@@ -321,10 +321,10 @@ class SqlitePosChain(SqliteBase):
         missings = set()
         sql = "SELECT MAX(height) FROM pos_chain"
         res = self.execute(sql)
-        height = res.fetchone()[0]
+        max_height = res.fetchone()[0]
         sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
         sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
-        for height in range(height - 1):
+        for height in range(max_height - 1):
             # get txn count from header
             res = self.execute(sql1, (height,))
             temp = res.fetchone()

@@ -23,6 +23,7 @@ from enum import Enum
 from operator import itemgetter
 from os import path
 from time import time
+from hashlib import sha256
 
 import aioprocessing
 import psutil
@@ -576,6 +577,7 @@ class Poshn:
         self.all_peers = peers
         self.registered_ips = []
         self.active_peers = list(peers)
+        self.round_meta = {}  # control hashes for current round info, to be embedded in status.
         self.verbose = verbose
         self.server_thread = None
         self.server = None
@@ -2271,7 +2273,12 @@ class Poshn:
                     active_hns = set(
                         await self.poschain.async_active_hns(self.round - 1)
                     )
+                    self.round_meta['round'], self.round_meta['sir'] = self.round, self.sir
+                    self.round_meta['all_hns_count'] = len(all_hns)
+                    self.round_meta['all_hns_hash'] = sha256(str(all_hns).encode('utf-8')).hexdigest()
                     inactive_hns = all_hns - active_hns
+                    self.round_meta['inactive_hns_count'] = len(inactive_hns)
+                    self.round_meta['inactive_hns_hash'] = sha256(str(inactive_hns).encode('utf-8')).hexdigest()
                     # Fail safe to avoid disabling everyone on edge cases or attack scenarios
                     if len(active_hns) < config.MIN_ACTIVE_HNS:
                         # Also covers for recovering if previous round had no block because of low consensus.
@@ -2297,6 +2304,9 @@ class Poshn:
                                 len(self.powchain.regs), len(self.active_regs)
                             )
                         )
+                    self.round_meta['powchain_regs'] = sha256(str(self.powchain.regs).encode('utf-8')).hexdigest()
+                    self.round_meta['active_regs'] = sha256(str(self.active_regs).encode('utf-8')).hexdigest()
+
                     # Now save these infos in the hn db
                     await self.hn_db.clear_rounds_before(
                         self.round - 2
@@ -2346,6 +2356,8 @@ class Poshn:
                     )
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
+                    self.round_meta['slots'] = sha256(str(self.slots).encode('utf-8')).hexdigest()
+
                     # We also test inactive peers, or it would be biased against good nodes.
                     self.test_slots = await determine.hn_list_to_test_slots(
                         self.all_peers, self.slots
@@ -2604,6 +2616,7 @@ class Poshn:
             },
             "tasks": {"total": len(pending_tasks), "detail": tasks_detail},
             "extra": extra,
+            "meta": self.round_meta,
             "pow": pow,
         }
         if self.process:
