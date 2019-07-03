@@ -6,7 +6,7 @@ A Safe thread/process object interfacing the PoS chain
 import os
 import sqlite3
 import sys
-import time
+from time import time
 from asyncio import get_event_loop, wait_for, CancelledError
 from random import choice
 
@@ -639,6 +639,7 @@ class SqlitePosChain(SqliteBase):
             if self.inserting_block:
                 self.app_log.warning("Digestion of block {} aborted".format(block_from))
                 return
+            start = time()
             # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
             # print(">> dictblock", block.to_dict())
@@ -692,7 +693,7 @@ class SqlitePosChain(SqliteBase):
             # see also tx checks from mempool. Maybe lighter
             self.inserting_block = True
             await self._insert_block(block)
-            self.app_log.warning("Digested block {}".format(block.height))
+            self.app_log.warning("Digested block {} in {:0.2f} sec.".format(block.height, time() - start))
             return True
         except Exception as e:
             self.app_log.error("digest_block Error {}".format(e))
@@ -705,13 +706,13 @@ class SqlitePosChain(SqliteBase):
         finally:
             self.inserting_block = False
 
-    async def check_round(self, a_round, blocks, fast_check=True):
+    async def check_round(self, a_round: int, blocks: commands_pb2.Command, fast_check: bool=True):
         """
         Given a round number and all blocks for this round, checks that these blocks are valid candidates.
         Does not modify the chain, can be used on existing current round to check validity alternate chains.
 
         :param a_round:
-        :param blocks: a PosBlock object
+        :param blocks: a protobuf
         :param fast_check:
         :return: a height dict, containing the simulated final state of the chain, or False if blocks are not valid.
 
@@ -719,9 +720,9 @@ class SqlitePosChain(SqliteBase):
         'uniques': 4, 'uniques_round': 0, 'forgers': 4, 'forgers_round': 1, 'count': 0, 'peers': []'``
         """
         try:
-            start_time = time.time()
+            start_time = time()
             if self.verbose:
-                self.app_log.info("check_round start {:0.2f}".format(time.time()))
+                self.app_log.info("check_round start {:0.2f}".format(time()))
             # Get the last block of the a-round -1 round from our chain
             height = await self.async_fetchone(
                 SQL_LAST_HEIGHT_BEFORE_ROUND, (a_round,), as_dict=True
@@ -744,7 +745,7 @@ class SqlitePosChain(SqliteBase):
             end_block = None
             for block in blocks.block_value:
                 if self.verbose:
-                    self.app_log.info("check_round block {} : {:0.2f}".format(block.height, time.time()))
+                    self.app_log.info("check_round block {} : {:0.2f}".format(block.height, time()))
                 # Good height?
                 if block.height != ref_blockheight + 1:
                     self.app_log.warning(
@@ -791,7 +792,7 @@ class SqlitePosChain(SqliteBase):
             # print(">> final_height", ref_height.to_dict(as_hex=True))
             if self.verbose:
                 self.app_log.info(
-                    "check_round done in {}s.".format(time.time() - start_time)
+                    "check_round done in {}s.".format(time() - start_time)
                 )
             # return Simulated height.
             return ref_height.to_dict(as_hex=True)
@@ -840,7 +841,7 @@ class SqlitePosChain(SqliteBase):
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
         bin_txids = []
-        start_time = time.time()
+        start_time = time()
         # this is now an array of array. batch store the txs.
         str_txs = []
         batch = []
@@ -878,7 +879,7 @@ class SqlitePosChain(SqliteBase):
             if "timing" in config.LOG:
                 self.app_log.warning(
                     "TIMING: poschain create sql for {} txs : {} sec".format(
-                        len(tx_ids), time.time() - start_time
+                        len(tx_ids), time() - start_time
                     )
                 )
             # print(values)
@@ -892,7 +893,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert {} tx: {} sec".format(
-                    len(tx_ids), time.time() - start_time
+                    len(tx_ids), time() - start_time
                 )
             )
         # batch delete from mempool
@@ -905,7 +906,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after mempool del: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         # Double check we have the right number of stored txs
@@ -926,7 +927,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after block: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         self._invalidate()
@@ -936,7 +937,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after recalc status: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         return True
@@ -951,7 +952,7 @@ class SqlitePosChain(SqliteBase):
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
         tx_ids = []
-        start_time = time.time()
+        start_time = time()
         params = []
         for tx in block.txs:
             if tx.block_height != block.height:
@@ -976,7 +977,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain create sql for {} txs : {} sec".format(
-                    len(tx_ids), time.time() - start_time
+                    len(tx_ids), time() - start_time
                 )
             )
 
@@ -984,7 +985,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert {} tx: {} sec".format(
-                    len(tx_ids), time.time() - start_time
+                    len(tx_ids), time() - start_time
                 )
             )
         # batch delete from mempool
@@ -993,7 +994,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after mempool del: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         # Then the block and commit
@@ -1001,7 +1002,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after block: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         self._invalidate()
@@ -1011,7 +1012,7 @@ class SqlitePosChain(SqliteBase):
         if "timing" in config.LOG:
             self.app_log.warning(
                 "TIMING: poschain _insert after recalc status: {} sec".format(
-                    time.time() - start_time
+                    time() - start_time
                 )
             )
         return True

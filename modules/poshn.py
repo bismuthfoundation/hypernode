@@ -1179,13 +1179,19 @@ class Poshn:
                                 "peers"
                             ] = [ip]
                     if poshelpers.same_height(peer["height_status"], our_status):
+                        # TODO: only if more verbose or debug.
+                        """
                         if self.verbose:
                             app_log.info("Peer {} agrees".format(ip))
+                        """
                         # TODO: only count if in our common.POC_HYPER_NODES_LIST list?
                         nb += 1
                     else:
+                        pass
+                        """
                         if self.verbose:
                             app_log.warning("Peer {} disagrees".format(ip))
+                        """
                 except:
                     pass
             for ip, peer in self.inbound.items():
