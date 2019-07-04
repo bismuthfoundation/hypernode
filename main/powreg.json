@@ -1,0 +1,2303 @@
+{
+  "round": 7644,
+  "inactive_last_round": [
+    "BEtmzhEB4wKo7Jy78oKySLxvpp8PmbeMmd",
+    "B8vaqe84FrJwriGjp337TostcpeybghSgG",
+    "B6SdVvLytJ4UETLS7zoLGBWQR9kbCN7bPE",
+    "BSZM7PcWevqhG5T3PfF94PdcWeW6hH3DUk",
+    "BMUkrrKkm1QoMac9U93VQStCHsMa7HsfDD",
+    "BJtTtHDm3MehTcTbrqqQ5ojvHYs73M7ZK5",
+    "BK6SuUsvFuAa4XGBqPkT98NgrqM92CvQUd",
+    "BEAkoACywWpLE8ny1Vw5vJx48L8BxGpZHR",
+    "BBP5bKAegcJy8oXS7vW71xE1Ys5YUJR6Br",
+    "BBwuvshEVeP8Z7tGQ3xDTcpFLU31owieXq",
+    "BCt5fxpeevGesmGG59nTHvcJhLpnBM1CMP",
+    "BP8HLGKU4pLhNTPwon1PDhGyTdc1tHbvcf",
+    "BJCzBhghk5K4ZbCNjMyRRoDG2vNKwNeqmZ",
+    "BLNgoBQYDoWwwfgNKWwoV1U2PeEKwQvPRo",
+    "BQSh4xmqsGx7wQvLohDMS7Y1GtEdLRo9yt",
+    "BK3t4p37Ei2JD4ysVxZxfveRko7CYr5wp6",
+    "B7EcmF36kBPSwufKRDBoeEKFdR6d1W8U49",
+    "BFfQ5oH3MpicwBAVJifG1RBvFHdy5XznxB",
+    "BNrHrqT2SKNwyKvrbMdYrZRitfKmKzK3g5",
+    "BM2uLeAbsyBscDenPmDpUjBBKr3gJiE8W6",
+    "B4k96TcagvvAKiMGBmf3XfLWz2nR8wRozv",
+    "BDytusaSEGfYk8Z3rv4mY3TTAtYKufTdns",
+    "B4YYNtdznqRXiYXDsGWqjPgu4AzL3EhvmY",
+    "BCodcDCmRuKeZGaZRYm6TUFZDDPZohigQX",
+    "B7FEHZRqH4h1QnY1o7yPeErPu7Jh7Yg9Q6",
+    "BQTqJQFne7HQwUng9EJYezzBcB8vi3PH61",
+    "B6GWxYSHd2hLx4Y6H68c7Dd4PFn1ogKJSq",
+    "BGPNV4zNwNVmCT4u7rz8bymohqsaT6mX1S",
+    "BKwAqFwVyEo2anBLxWG7vv4uaiZAKeKXf1",
+    "B8dkUS7yLF7X9K1EzbQvs9C4d7XYGVypnM",
+    "BSStfuoLELeodhXzsZn1jZBwx4QaT6zw5W",
+    "BCLxPQyGkYcZmXZL1neHRyp4RJrw7GfYkT",
+    "B6N3Xru8V5WKw9VnBZ9bwyaFS5yrSWiE9x",
+    "BScmLe9xHMScUEfCHoqwQMUj9Xt38ndmLW",
+    "B596tThSfSiio9Pf5HAoPgNyYAWoTrSkqv",
+    "BAdYyvqj3wBqdgnXn11F7Ttecfsk6QNLBt",
+    "BSGe2d7yRDp561oQ9GcTZqtoPdqiuegukc",
+    "BEZ8hRvdXHbHfr9ezSFNBEQDCKpXNh9Z3g",
+    "BFZJZKHfZsVhbyjh8tnEiyTNrsxqqd4ii9",
+    "BJTenjtv5gnE5UWD8SdDUaW5D8SewRQL1S",
+    "B7j7rjsZvwtC2uVx6D9hREjSyBiSb7QSMS",
+    "BBX85xVCJeQTQNSUsyBidGXfdfGizGFbNd",
+    "BTn6QCDoo9zKH7L4DtyTFWTTPZS9Tz47T4",
+    "BGZFoo1g8r4jRPcLKSfwxpLvq5yPfDyzyX",
+    "BEQVTjVJmVkGLM82qsu54xEDNzpCc75Mcf",
+    "BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn",
+    "BBQRN9yyePfeixcSPjWLX3aFkfRusznSX7",
+    "B9VCb8ek73Qo5tAqKBVhuogpFkv7w5mEeA",
+    "B99VMAEviqbhiQQJySNQteVPhCmejP27x9",
+    "BDFLLceo5saAvqNCgVFXH6uWNbpJSv7nPW",
+    "B4vg7ZkiJGpaeePQPCPPiQmAdMTnqmjCnP",
+    "B4uvPw5xXCUC6L3wVQs16MenY2zKUywfks",
+    "BSrrvpz767xF1K6E47MfR4qbNJF9Rggmoy",
+    "BT5yZea4WnrjuWRy28gNdRCTw3aN6tDVSJ",
+    "B5ivBe621WwfahhZFGnDNY72o9gcbmzkE1",
+    "BBETSngrLWC3Be8A8JrTnX7W4VSbUg4XSH",
+    "BKmw4XH86Cmu6kRTFNXEcmnpLeEasppiXB",
+    "BQrXCqK3Cdkxn2uvi59DD7gGkXNyJLmekt",
+    "BKYLz5KiZKCunN568PZ1bzAZRKq4bzBNA4",
+    "BFg7F9LnY8xVuMt7d3KQQALR3nriKpSCq9",
+    "B6MR7eXc4oCZKuV2U9ojaAq4S9Wa2Byqwx",
+    "BREZG6QJhffKRV31scZZFFZ2eW2iTbkYta",
+    "BP7eWNsrBtwbMkW6wTYxvYzZT9gDctB81q",
+    "BDdJijJCHBi1CYS9MfnQ8fzrfBDTsgdUV3",
+    "BLdGWiR9euZFn1onb6bYFaJuMfGiUZZik7",
+    "BRtKKmHDNayyLYvYyAPmbyrCGqyqfCA58X",
+    "BRmZbjNc137J2h2B3GG19efZCp54jthRyG",
+    "B9KREwCVX78R7iSa8uMmRkyHfWH526E3ww",
+    "BEm3ckjKC5Y64eiM4eAs4CT8qnJxrheFX3",
+    "BFiZdDsUM32YpjTfu77L3iuYZxKYTGUNDm",
+    "BFFK1XLSqmgwebCCeFLbMYUunRyankHKDH",
+    "BMApWyFuYUaD84K6LjH9Y7Mb7tWPp8HDJu",
+    "BGN5kQR2HbepxUPWCbshKd8VitRFBAjjpY",
+    "B9SorDbXemD7UCA6Zmkeev5XuvAMkwj8YU",
+    "B78FfpjRGQuvjcejpxWdv4vMRemh5KsPgD",
+    "B7CsuQpWvJM3iiFSuyK2X3fvokkB52f1UZ",
+    "B83G1phtHxneLc9DWxxF4Dr6y9ZiiDwTYe",
+    "B4ptTqmQmGvNqwTsAFHQxoFrM7rpAAjwcR",
+    "B8m2XuWV2cqggsh32b4eT9aic3k6Rd6X76",
+    "BA6jw1eByodLCHah2u43v9tQNwesHGHqNS",
+    "BLBq7GSfMDnrP6iFNTumjtsWUK9NnGc9vC",
+    "BEx4kWBCm2YmrsatoGahs6XiSuUjmK5s56",
+    "BG4MoR54rpbSQ6JQbYrRgueNo7Axg2zCo6",
+    "BG8XsQvHDfVKkop3SWnT2TugEdWo8JQ8Ed",
+    "BRWCMZ5k2LQwxcw3TEwNSc4g3AEd6rCN7D",
+    "BAti5hLA3YGAxvVDen7NRGkHCyghxGpeMU",
+    "BJhYSHbYrq7utoGZe6qxukRwautZqGsAsF",
+    "BDvcgj9fStY4g1QaQ3a8mRyAKhSBMM9PhP",
+    "B4vrm3ZuJqoEYEWSbaD2HVuBNNVEunEziA",
+    "BG58Wjb4MAgYsSXwbzXLdk5d6HDZxmsRQD",
+    "BNC7iPnYb4qwxMQkjF7S2ZnSst2hknGMQX",
+    "BMcRKfMykLi4nMCN2k26965WqvqzK1wCW4",
+    "B9tyd5kUninvuBsQKvsMLiVskLV2mp5tL9",
+    "B9R8rdvuBG1TuJh6jvYKLeDV535sWqNhWZ",
+    "BAoJf7q5KZdj5UeD2iVCqBuxXjozc4rpjb",
+    "B8dC3Z8VWjjNmQaYbuEgbYXAjs17Z6BoEK",
+    "BDx5XPF12hGpitQX8evVFYb2kaz6UPtZUJ",
+    "BAUj3hEnC7txhkSa51ofs3Wr9bCB3AdANu",
+    "BJ3tjtrLVLdBdmqL8qFX8WbseZkfwa1Vsf",
+    "BMebqhzXmiNEtz9x1E9ap2rE8CwBnr8fAu",
+    "BS4P1cezDzSDWDorA6B7TXH2yZgLQqYYyi",
+    "BNH17SfzFbzpkMRJcoBJK1beERFLKCoebu",
+    "BE4oojgTjiS8ZPsh4rwkAm89qSVJcX4Yce",
+    "BErMunXWVgMe8P2NJkVg4SsuuTcGMPWmNa",
+    "BT7Hejxwwm1H2wzqWv8ekgtFd1nJ3LSxsb",
+    "BCj7Djer2FreZnG5zuZqe17m32DXTa4g9f",
+    "BBg8dR7crWYEyXW6ZP4XLiEVtCyfdWjtrJ",
+    "BLo4rKjmmLDWKifHEphyqH5VRXkiK5bE5p",
+    "BEVJswSZFug1xCconWKjb6suWYDYMZtU8P",
+    "BKiBm1B8tH2HUTq4CEkakmgV2CVUXhYpvB",
+    "BPW9dhpwNXMjeo3LkUwmW3QZUcHDUKmqRw",
+    "BG4w8cNg3QYAFWyASi4TdVbscn1wpwg7UD",
+    "BRBTeiiwbNveBFnHZhjTGT9DerMSVknKC1",
+    "B5tCLApfMBBTrQ8VhhNgZDiBckF8S8naRY",
+    "BEJKHPZ4HBLi7kPVhbQFUaEQofFuGNGZcJ",
+    "BNmMXZDaAwLd4RcBszcdoBw7qJjfq15gaK",
+    "BD8w4gsktuhebAwnTt5pr4VB6dDH8LeRJr",
+    "BEhZZZgat4hTy2Nmo9bmCkkaNAGR2VLuqX"
+  ],
+  "regs": {
+    "01cfe422b2f1b672b0dbc0e0fe2614f59cfaf9d26459bae089e76aab": {
+      "ip": "51.15.95.155",
+      "port": "6969",
+      "pos": "BKzh8BbxQUpADbiMyWCL9rVSkat66ynMkV",
+      "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
+      "weight": 3,
+      "timestamp": 1534785533.14,
+      "active": true
+    },
+    "3ace9eb477c29d63b21d799cd6e235a4048590395c59d6a8b4300817": {
+      "ip": "51.15.228.170",
+      "port": "6969",
+      "pos": "BJTenjtv5gnE5UWD8SdDUaW5D8SewRQL1S",
+      "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
+      "weight": 3,
+      "timestamp": 1534790267.51,
+      "active": false
+    },
+    "1ce6db528fca8349a3319b016a8587d8d38721f22e2fba81964ef3e2": {
+      "ip": "163.172.222.163",
+      "port": "6969",
+      "pos": "BEwkhJRaC33zch53QdFnT8JnWm9HoY3Qiv",
+      "reward": "437d06abe09945a57ae8aa70c3eba791f8414071a2dc7228064aac33",
+      "weight": 3,
+      "timestamp": 1534791060.08,
+      "active": true
+    },
+    "bd256c482e8b64979d5d96f7d25a68cb3a0925957bf884d431c07d31": {
+      "ip": "163.172.143.181",
+      "port": "6969",
+      "pos": "BPkAq2fqkUtZLfAfuwhW9Z9cpYrKvkxifo",
+      "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
+      "weight": 3,
+      "timestamp": 1534792187.18,
+      "active": true
+    },
+    "52da1d3d491107841e31073a196c2df2ed4e2b16e904f21b3d629f3b": {
+      "ip": "163.172.161.7",
+      "port": "6969",
+      "pos": "BDAzxHYgFyFDT66PJYR1wNe9VQXdkj96hg",
+      "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
+      "weight": 3,
+      "timestamp": 1535141351.46,
+      "active": true
+    },
+    "fabc968bca676a63bd03fc5928665c96e6b9a61ba56252ee7148b917": {
+      "ip": "51.15.225.223",
+      "port": "6969",
+      "pos": "BExyp7weXyq4GsSPdFGmM2cfZ4G7puHzce",
+      "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
+      "weight": 3,
+      "timestamp": 1535187038.86,
+      "active": true
+    },
+    "7d5c2999f9a2e44c23e7b2b73b4c0edae308e9d39482bf44da481edc": {
+      "ip": "194.19.235.82",
+      "port": "6969",
+      "pos": "BN9ZkA7L7nujC5fpfwtwMBwia3UdBbPqZT",
+      "reward": "7d5c2999f9a2e44c23e7b2b73b4c0edae308e9d39482bf44da481edc",
+      "weight": 1,
+      "timestamp": 1535318770.55,
+      "active": true
+    },
+    "60f98bda0238815643f0a985a111208f26e77edd228c2405ef245dc5": {
+      "ip": "162.213.123.200",
+      "port": "6969",
+      "pos": "BGUvGCHg5hvhXoYn31mdESB4ikiKbroSWc",
+      "reward": "b4593d94613a5b696ae710e256c9b16d07348260424e6e6d0a742189",
+      "weight": 1,
+      "timestamp": 1535561759.37,
+      "active": true
+    },
+    "02ef97bffc092e16b84c0bfb648a9500cc334e4d905971a1b624c379": {
+      "ip": "163.172.166.207",
+      "port": "6969",
+      "pos": "BRmZbjNc137J2h2B3GG19efZCp54jthRyG",
+      "reward": "beb6a6c706a87d84df3c03cc9a9d85b1df3bf027d1c21e18e2dce69d",
+      "weight": 3,
+      "timestamp": 1535562313.55,
+      "active": false
+    },
+    "302f686014f655ad5146cad8aa2c1d628c8b4ecfe083850d82e768d4": {
+      "ip": "51.15.211.92",
+      "port": "6969",
+      "pos": "BGneQ1bhTZsn2SFmYSbq8USzfCFLHakMf4",
+      "reward": "b7745756c4cb08d88fc046eea343a9976e284e0afb1aef79e86ccf93",
+      "weight": 3,
+      "timestamp": 1535566166.42,
+      "active": true
+    },
+    "c54825a7d28b9577b78bfe10ae5b4c06d95123611a1e89e10d96eaf3": {
+      "ip": "89.25.168.21",
+      "port": "6969",
+      "pos": "BMebqhzXmiNEtz9x1E9ap2rE8CwBnr8fAu",
+      "reward": "c50fb7c1b763c2bff1daf1d678941ba8e61066a1feba27660a120033",
+      "weight": 3,
+      "timestamp": 1535566913.6,
+      "active": false
+    },
+    "fe6c23eae26ef3113b452faa73ea31d86c1eb0a7254ea9cb57e2db10": {
+      "ip": "109.92.6.40",
+      "port": "6969",
+      "pos": "BPHiM8CbjZt483vAVpER2mPF9LZ6oVVrGp",
+      "reward": "081956610f5ae10a7090131fcc1aacf44335fd94a3d65a12cb56857d",
+      "weight": 1,
+      "timestamp": 1535573929.35,
+      "active": true
+    },
+    "870527d6dbf70a6d08463224397c5c5bffa103afb4751784172057f0": {
+      "ip": "40.115.66.20",
+      "port": "6969",
+      "pos": "BG8XsQvHDfVKkop3SWnT2TugEdWo8JQ8Ed",
+      "reward": "bff81e2217763267f45f75eb71dab2a81bac2b692cfb5bec15ea916c",
+      "weight": 3,
+      "timestamp": 1535576376.31,
+      "active": false
+    },
+    "e9aa9decc30e969678be62ea3a8762b9aef906e0362d2d3e691ce3c7": {
+      "ip": "185.144.100.58",
+      "port": "6969",
+      "pos": "BEx4kWBCm2YmrsatoGahs6XiSuUjmK5s56",
+      "reward": "29d39df70bb8d635120c4e82e3907c79a1aa4420e271ad32b5258eb7",
+      "weight": 3,
+      "timestamp": 1535577562.47,
+      "active": false
+    },
+    "44ba9acf1e4252b40e920742f0e0d5cd7913f192635d96bfc036e47d": {
+      "ip": "50.3.86.104",
+      "port": "6969",
+      "pos": "BSZM7PcWevqhG5T3PfF94PdcWeW6hH3DUk",
+      "reward": "29d39df70bb8d635120c4e82e3907c79a1aa4420e271ad32b5258eb7",
+      "weight": 2,
+      "timestamp": 1535578577.22,
+      "active": false
+    },
+    "56f66ddd2eb190792f95c7cca6e2e3effe46d8b0bafa2aa3e9294010": {
+      "ip": "142.93.93.4",
+      "port": "6969",
+      "pos": "BEhZZZgat4hTy2Nmo9bmCkkaNAGR2VLuqX",
+      "reward": "8342c1610de5d7aa026ca7ae6d21bd99b1b3a4654701751891f08742",
+      "weight": 1,
+      "timestamp": 1535594138.89,
+      "active": false
+    },
+    "0d56829adaef9903e2ef1e2dbc03e8987829b8bf9a1247c301da0090": {
+      "ip": "209.250.238.142",
+      "port": "6969",
+      "pos": "BDytusaSEGfYk8Z3rv4mY3TTAtYKufTdns",
+      "reward": "7ba036e8b1dac158de667821997334291c7a050e12a450462055a781",
+      "weight": 3,
+      "timestamp": 1535596272.42,
+      "active": false
+    },
+    "d4d69ddce86794a325e307b7bcc8fd78f7aa4a6076dc76011300a5f8": {
+      "ip": "178.62.68.118",
+      "port": "6969",
+      "pos": "BLsyShfiQSqhaF3SDFejkCw9VT17ALgzWt",
+      "reward": "6046ea9846b9812ee1540e06da3e2950437a49ed9ddd623fdb7c6dc7",
+      "weight": 2,
+      "timestamp": 1535606606.99,
+      "active": true
+    },
+    "065319eddb749bc2ee0d12d7abb1325c16565554621f50f59d5c5b28": {
+      "ip": "45.77.6.146",
+      "port": "6969",
+      "pos": "BTjPVXf37jWDM3LrYztWbv3ZaoCyyrAw4y",
+      "reward": "a1502b3ce6412e87c131cb7bbd55064f7110d0107504c32437899321",
+      "weight": 1,
+      "timestamp": 1535612164.06,
+      "active": true
+    },
+    "e30026ad9a9c9060e661fab691555c5f6144b9180a59ed099731c24a": {
+      "ip": "54.39.144.62",
+      "port": "6969",
+      "pos": "B4YYNtdznqRXiYXDsGWqjPgu4AzL3EhvmY",
+      "reward": "53ad22a29dde5aa7cfffb828a6d214e292315b36c41aeed4dfbffc6b",
+      "weight": 1,
+      "timestamp": 1535613347.49,
+      "active": false
+    },
+    "db7fa72bbe786752edad73018fe05f3314e1994a1399902c40b2c773": {
+      "ip": "192.99.34.19",
+      "port": "6969",
+      "pos": "BT5yZea4WnrjuWRy28gNdRCTw3aN6tDVSJ",
+      "reward": "5615f818693f67c5f24c6cbb7f03600fc5c82f59607ecc678839c275",
+      "weight": 3,
+      "timestamp": 1535624085.98,
+      "active": false
+    },
+    "7c189c8a10f86436e55ef2c70a25e234329931df3612ca12b1573062": {
+      "ip": "142.93.243.200",
+      "port": "6969",
+      "pos": "BM2uLeAbsyBscDenPmDpUjBBKr3gJiE8W6",
+      "reward": "a5e9a30f9dfd7758f2bb5d51dda998de108a76d002551865e79cb53f",
+      "weight": 1,
+      "timestamp": 1535642449.87,
+      "active": false
+    },
+    "cfb4f72f91376c1d1f3c540583330154a9d351016f789dab4f206199": {
+      "ip": "62.112.10.156",
+      "port": "6969",
+      "pos": "B9tyd5kUninvuBsQKvsMLiVskLV2mp5tL9",
+      "reward": "da505dbbc7dfe2c1097c6fea30d703fef6103fc26741f91aefd32ed4",
+      "weight": 3,
+      "timestamp": 1535652769.37,
+      "active": false
+    },
+    "0abcb99486dc0a9cb616bbadab8b04e8d13f0146325bf80a8a859815": {
+      "ip": "80.240.18.114",
+      "port": "6969",
+      "pos": "BJgKaavYN1FTcNAdTmgRPiaRA2wWpJAQAv",
+      "reward": "0abcb99486dc0a9cb616bbadab8b04e8d13f0146325bf80a8a859815",
+      "weight": 3,
+      "timestamp": 1535655760.6,
+      "active": true
+    },
+    "117f61d550e14d075988cbe7a7ca6289e0f3d8d3aa3a051636ec67fe": {
+      "ip": "51.15.234.210",
+      "port": "6969",
+      "pos": "BLheYRpm5MtU149JvGEuLaPAEQppmqHYFZ",
+      "reward": "dcdfb8405f3e403cb4e46eb86c95c3364ffa827811b4ef45d6b5ab39",
+      "weight": 3,
+      "timestamp": 1535657931.99,
+      "active": true
+    },
+    "a5c51c73b7b97fdfd97b0b86a3f809d09102249007b292e4fc67230a": {
+      "ip": "24.134.1.89",
+      "port": "6969",
+      "pos": "B596tThSfSiio9Pf5HAoPgNyYAWoTrSkqv",
+      "reward": "7def3db17a766d48c7966fde06f60b7f2b910f2fddf2c3910c95c35e",
+      "weight": 3,
+      "timestamp": 1535671744.93,
+      "active": false
+    },
+    "67122597f2918316c6ea326c7531e774678ea4d7fdf58edfd3925946": {
+      "ip": "209.250.237.31",
+      "port": "6969",
+      "pos": "BBX85xVCJeQTQNSUsyBidGXfdfGizGFbNd",
+      "reward": "4fc1159e4c6645e64ad293317182ea31235885d9c1e1dd1761fa90c1",
+      "weight": 3,
+      "timestamp": 1535702612.04,
+      "active": false
+    },
+    "3568feaef017e395e9a854fb4f13dd389d8bb55b3afdcad3c8790e48": {
+      "ip": "217.69.10.27",
+      "port": "6969",
+      "pos": "BEJKHPZ4HBLi7kPVhbQFUaEQofFuGNGZcJ",
+      "reward": "4fc1159e4c6645e64ad293317182ea31235885d9c1e1dd1761fa90c1",
+      "weight": 3,
+      "timestamp": 1535720125.3,
+      "active": false
+    },
+    "f44e1adb0d5407d4ae483b13a587bb66eccb7bb9850c57a695903f1e": {
+      "ip": "45.77.178.35",
+      "port": "6969",
+      "pos": "BNmMXZDaAwLd4RcBszcdoBw7qJjfq15gaK",
+      "reward": "f44e1adb0d5407d4ae483b13a587bb66eccb7bb9850c57a695903f1e",
+      "weight": 1,
+      "timestamp": 1535724138.36,
+      "active": false
+    },
+    "65e69d0f943e75a3094482067e45cda4102f773875c084c26430ce1a": {
+      "ip": "192.99.248.47",
+      "port": "6969",
+      "pos": "B6zwYk2iuv9oAM7gAhcoyJYkuoJyPKFhBz",
+      "reward": "1cdb71bd71efa771b6a6c82d6206a35ca12c3b128fe3ae9cb0183aaf",
+      "weight": 3,
+      "timestamp": 1535725851.46,
+      "active": true
+    },
+    "42e6d3ac7b906f875fe10e550b1771dbd5b8356ea19de29675e4b232": {
+      "ip": "192.99.248.46",
+      "port": "6969",
+      "pos": "BR2ojQNDw17R5rtLH6NnsKu95EGDqYoRQM",
+      "reward": "a6e8b8cc5fb4d6aed794b71288e50ea16f0580df7b71d91671309b4a",
+      "weight": 3,
+      "timestamp": 1535729478.8,
+      "active": true
+    },
+    "9b730f35ff026cdc6ddf084ac39fae2ab66857e6d220857a0483b76a": {
+      "ip": "80.240.26.221",
+      "port": "6969",
+      "pos": "BDGyneQJpNk4QCznrxqcKe84EaK7ckhmuY",
+      "reward": "af06338fdbfc53574b7c81c96f01e5a29396edc75b08845cc4e38ca1",
+      "weight": 2,
+      "timestamp": 1535731395.17,
+      "active": true
+    },
+    "08875dcb92c7c4747460cd7c4af773ae4b2e08a7f9b0cd4a6ec6c3eb": {
+      "ip": "192.99.248.44",
+      "port": "6969",
+      "pos": "BAEnumsEQP5GnpmLcXSc4ifUdXFBwnjv3T",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535736791.4,
+      "active": true
+    },
+    "1af8f10f2ab8564953992a98c13364369569910c65be7f2c2a2bc442": {
+      "ip": "107.191.39.23",
+      "port": "6969",
+      "pos": "B9eFPmCEf6bvaznuKhSxRAuCsBj748bE5k",
+      "reward": "9ec32b96da619834b39dedbc481de3c8579a1d17155b5f56df306719",
+      "weight": 3,
+      "timestamp": 1535736955.95,
+      "active": true
+    },
+    "8a3e0d2d3eb34b29e5a9c22564b9d9012c0ffb1c67b164a33a5c9a34": {
+      "ip": "45.76.15.224",
+      "port": "6969",
+      "pos": "BE4oojgTjiS8ZPsh4rwkAm89qSVJcX4Yce",
+      "reward": "9ec32b96da619834b39dedbc481de3c8579a1d17155b5f56df306719",
+      "weight": 3,
+      "timestamp": 1535741231.58,
+      "active": false
+    },
+    "1df67f53550e408574295aef40a7e579c38d4c38f8ad2a429e8470d6": {
+      "ip": "208.167.245.204",
+      "port": "6969",
+      "pos": "BNC7iPnYb4qwxMQkjF7S2ZnSst2hknGMQX",
+      "reward": "9ec32b96da619834b39dedbc481de3c8579a1d17155b5f56df306719",
+      "weight": 3,
+      "timestamp": 1535741335.67,
+      "active": false
+    },
+    "18ce5411637a3bd837e3ed13fe4bc56406674171520ee85cbab80fc0": {
+      "ip": "209.246.143.198",
+      "port": "6969",
+      "pos": "BEQVTjVJmVkGLM82qsu54xEDNzpCc75Mcf",
+      "reward": "d43bff3d6412712e072bf853112ff7b924d472188232169d1dc65fc2",
+      "weight": 2,
+      "timestamp": 1535741881.23,
+      "active": false
+    },
+    "85d74c77e31c00b0ebd75c8a63b23ded0d7e7cff2b884f80b44612b2": {
+      "ip": "149.28.122.54",
+      "port": "6969",
+      "pos": "B6N3Xru8V5WKw9VnBZ9bwyaFS5yrSWiE9x",
+      "reward": "e1e075c9efce5e64752d425630114114589bdf2728198bb3f820b744",
+      "weight": 1,
+      "timestamp": 1535743450.56,
+      "active": false
+    },
+    "2d6428606af8aea06deb41e4f8378b9b5f883f287777e1faae67c4e3": {
+      "ip": "109.236.83.141",
+      "port": "6969",
+      "pos": "BL7hQ1aUhxHgWvEHNqs9fBbmFZ9LHLBdSd",
+      "reward": "e31488ec1a2283014a3b6973501f7b1d51ed298bf08f994051ad1f22",
+      "weight": 3,
+      "timestamp": 1535744655.23,
+      "active": true
+    },
+    "175a01ae07f53546f2988f369b4e3f72e4e4af5c03a8b764993f515e": {
+      "ip": "140.82.11.77",
+      "port": "6969",
+      "pos": "BFMuZaPHNuScb2UtR4A7ASzQBHPEn5Ddhj",
+      "reward": "eb1eb8cf2bcb41bd682022ed58795d05110ae9efddbca867bc090ee2",
+      "weight": 3,
+      "timestamp": 1535745608.92,
+      "active": true
+    },
+    "867760cb012351ebd431577ad4aa2b6c288f7acf881a6ce1a71f6a08": {
+      "ip": "144.217.31.138",
+      "port": "6969",
+      "pos": "BFg7F9LnY8xVuMt7d3KQQALR3nriKpSCq9",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535794369.33,
+      "active": false
+    },
+    "1256debe89a4728769004efe1a40f4f922a17fc6130ed257b8b083a9": {
+      "ip": "144.217.31.139",
+      "port": "6969",
+      "pos": "B9d9LDHESe6YiYRL6nWDaYAfXfB9x47QMR",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535794409.83,
+      "active": true
+    },
+    "d16aaeb18ab99c9343deb53dd4c18481ba6ce366ca83fb37feeea224": {
+      "ip": "192.99.79.176",
+      "port": "6969",
+      "pos": "BMCAQs2Nv3vKeXyNJAK2HotvEZmJHcHtQo",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535794987.54,
+      "active": true
+    },
+    "380872b801f5fb29654447fd563a5c9d2bd2ce8036ebd04ae9574c33": {
+      "ip": "192.99.79.177",
+      "port": "6969",
+      "pos": "B6iJsTwSrs4WerP6XQMBZABTErARnDgD6K",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535795018.22,
+      "active": true
+    },
+    "51d4dc90ede12233f5b927e65eae4cd9b1e8eb50c0c5604204a42f68": {
+      "ip": "192.99.79.178",
+      "port": "6969",
+      "pos": "B4yfKKW2gTvnvTKYqet5prGRk39kncxXKZ",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535795038.49,
+      "active": true
+    },
+    "22b5a7bfe07e66331f8d3d2cf3f0513c8f36c67f3bc8525f2b5bbc6c": {
+      "ip": "192.99.79.179",
+      "port": "6969",
+      "pos": "BAjyXk3xthnkSg62oBexHrbiNDTfBTnHcd",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535795149.82,
+      "active": false
+    },
+    "f5cdaf364cd448ca90ca8bbc636af25f019cc2ad21c04cc007eeaea7": {
+      "ip": "66.70.206.64",
+      "port": "6969",
+      "pos": "BMnh5v9aCcJDQ6JicdR5dQwnAFYFSuKDQC",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535795655.73,
+      "active": true
+    },
+    "b8f9c24b39810d5ace3c11b665d8500304bb1e23f893b59bb8312ebd": {
+      "ip": "66.70.206.65",
+      "port": "6969",
+      "pos": "BHCHHuMsCgXJZ6dXMs9za6m4GHKHC9qWgk",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535795686.08,
+      "active": true
+    },
+    "f1ad6283cb708aa5c50537c9329992241df502c34f30dec27ffea68c": {
+      "ip": "192.99.248.45",
+      "port": "6969",
+      "pos": "BNjxA9m8agSq7n8vHMvz8oHbNYRXULEyqG",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1535796882.63,
+      "active": true
+    },
+    "3703518b080fc56b783a15cb6fe5452d8acb4c6a5958b8a2d50e25fb": {
+      "ip": "159.69.4.64",
+      "port": "6969",
+      "pos": "BEAkoACywWpLE8ny1Vw5vJx48L8BxGpZHR",
+      "reward": "39ae07d65e5bfd939b8ae652ccf5caa0e23088073d82a97c65bba47c",
+      "weight": 3,
+      "timestamp": 1535797577.08,
+      "active": false
+    },
+    "fa86e0a454116070474c4d9302d18d5edb34b2c4c4158e92a599366a": {
+      "ip": "159.69.147.56",
+      "port": "6969",
+      "pos": "BDx5XPF12hGpitQX8evVFYb2kaz6UPtZUJ",
+      "reward": "39ae07d65e5bfd939b8ae652ccf5caa0e23088073d82a97c65bba47c",
+      "weight": 3,
+      "timestamp": 1535801686.28,
+      "active": false
+    },
+    "893e171e0919aa1d2e7b3e1a598f681bf17f1bc11c47d4423896b528": {
+      "ip": "217.163.23.242",
+      "port": "6969",
+      "pos": "B7oiHLH9SgWuiyNyb7grzTTdYeeUVPcBxH",
+      "reward": "8006b0561bcf664b5380eee2d9a5534cd470459fa0337fbe3437d758",
+      "weight": 1,
+      "timestamp": 1535803587.16,
+      "active": true
+    },
+    "5e47f571c6c084f37ed727455d54f0c7f3fca8eb0b795aec72e1e9a4": {
+      "ip": "108.61.199.171",
+      "port": "6969",
+      "pos": "BQTqJQFne7HQwUng9EJYezzBcB8vi3PH61",
+      "reward": "5e47f571c6c084f37ed727455d54f0c7f3fca8eb0b795aec72e1e9a4",
+      "weight": 2,
+      "timestamp": 1535810289.2,
+      "active": false
+    },
+    "f1432502952ba35d18eb9bb51952bd49498ea62dfa861acc0bc9c30d": {
+      "ip": "149.28.46.106",
+      "port": "6969",
+      "pos": "B83G1phtHxneLc9DWxxF4Dr6y9ZiiDwTYe",
+      "reward": "1c2be3e80e3208cb1ab279c6883bcda2ba809c9e0bda0e3d65e96e3c",
+      "weight": 1,
+      "timestamp": 1535815127.25,
+      "active": false
+    },
+    "de0f0df362bda9c5d1e517f3cde811de856929d6868508ceff758d6c": {
+      "ip": "159.69.147.101",
+      "port": "6969",
+      "pos": "BCj7Djer2FreZnG5zuZqe17m32DXTa4g9f",
+      "reward": "5d3ea2553b317843ba6cf7ec12f9a74fbc41762ec55d9746a74a87db",
+      "weight": 2,
+      "timestamp": 1535826206.74,
+      "active": false
+    },
+    "d9ebd0337f9caf0575d7423e812e0b15a99f0b18f9328f817402c7bb": {
+      "ip": "159.69.147.100",
+      "port": "6969",
+      "pos": "B5tCLApfMBBTrQ8VhhNgZDiBckF8S8naRY",
+      "reward": "5d3ea2553b317843ba6cf7ec12f9a74fbc41762ec55d9746a74a87db",
+      "weight": 3,
+      "timestamp": 1535828545.62,
+      "active": false
+    },
+    "645ce206924e84fa1e3a15afdedc4b6efc979fbf79eb57f8e65f708c": {
+      "ip": "159.69.147.99",
+      "port": "6969",
+      "pos": "BPW9dhpwNXMjeo3LkUwmW3QZUcHDUKmqRw",
+      "reward": "5d3ea2553b317843ba6cf7ec12f9a74fbc41762ec55d9746a74a87db",
+      "weight": 3,
+      "timestamp": 1535830035.49,
+      "active": false
+    },
+    "2b63a62a0f655fc50a79baf95b25373560202e95032a281e4b7824c3": {
+      "ip": "149.28.120.120",
+      "port": "6969",
+      "pos": "BKmw4XH86Cmu6kRTFNXEcmnpLeEasppiXB",
+      "reward": "2dd81fbf1f1a8215b2c8897f3b0912f0aee643542cfe2286d962fc60",
+      "weight": 1,
+      "timestamp": 1535863579.38,
+      "active": false
+    },
+    "d8b6cac68c85fa3f79e96e5fc5dfa9c18f7e70792a57685ccf8e7d15": {
+      "ip": "159.69.12.98",
+      "port": "6969",
+      "pos": "BJhYSHbYrq7utoGZe6qxukRwautZqGsAsF",
+      "reward": "39ae07d65e5bfd939b8ae652ccf5caa0e23088073d82a97c65bba47c",
+      "weight": 2,
+      "timestamp": 1535898381.25,
+      "active": false
+    },
+    "0510f82deb1adfbe44bc54e4ae44c3504b1a37b2ab94be3685b64ddb": {
+      "ip": "95.179.153.13",
+      "port": "6969",
+      "pos": "BG4MoR54rpbSQ6JQbYrRgueNo7Axg2zCo6",
+      "reward": "0907732ca5666fc7f4a8a3361c600a39a84a4ca3618a43b469341a7b",
+      "weight": 2,
+      "timestamp": 1535902250.1,
+      "active": false
+    },
+    "5e8426ccdd5cc3fba1f2047f88c9aead68e73aaabcaf23fec74b80a4": {
+      "ip": "81.169.153.71",
+      "port": "6969",
+      "pos": "BAUj3hEnC7txhkSa51ofs3Wr9bCB3AdANu",
+      "reward": "a269451155ce19a7b99cd7934eebf457fbac4731d1a3c41d620d98be",
+      "weight": 3,
+      "timestamp": 1535927279.3,
+      "active": false
+    },
+    "5ccd5e79a6077793a75bc5668b28273ea4bbeca10f38313b61c2f222": {
+      "ip": "149.28.245.191",
+      "port": "6969",
+      "pos": "BK6SuUsvFuAa4XGBqPkT98NgrqM92CvQUd",
+      "reward": "39fa40d7d5c129c81d048e5a56a80da5603fd0174c8a8eb8299bd632",
+      "weight": 1,
+      "timestamp": 1535957308.05,
+      "active": false
+    },
+    "6c2b2c026f7b927e0a66696ce20b4f3280f2d5b66d97be859d742898": {
+      "ip": "18.184.255.105",
+      "port": "6969",
+      "pos": "BJPEe51cr4QeU9j7yz8AfheczEXhUvtLR7",
+      "reward": "6bda1727daf6bb10792fb8bd7c72f423fbad8a26cfd70277dbcb9b41",
+      "weight": 1,
+      "timestamp": 1535961088.63,
+      "active": true
+    },
+    "9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da": {
+      "ip": "149.28.181.100",
+      "port": "6969",
+      "pos": "BNrHrqT2SKNwyKvrbMdYrZRitfKmKzK3g5",
+      "reward": "0d9d0e0237eaba8dc2db61e3368787f77fd50cd37bdec880aa352e39",
+      "weight": 1,
+      "timestamp": 1535973724.03,
+      "active": false
+    },
+    "a4b196c49577ea56614d2fe185c4236d45c2e083352fee6c8d3ce2de": {
+      "ip": "217.23.4.201",
+      "port": "6969",
+      "pos": "B9UYaGJJmfT2CNnQE2cAPyAKrkHsxbGP27",
+      "reward": "1e270dd6ecfbea07c760ae4b9b6b70f6cf75ae8ad4336a8e6d3a21d0",
+      "weight": 3,
+      "timestamp": 1536000319.33,
+      "active": true
+    },
+    "527aa59d58e6aec0e2f02871385a1ca5d050ca544708d78a807cf946": {
+      "ip": "144.217.31.136",
+      "port": "6969",
+      "pos": "BTLsLdSYc9z56shrapYyooc7bPg6KStgfT",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1536049968.38,
+      "active": true
+    },
+    "0bf461aeed5b62836b21450e9af8554406dc0d80d8c4d9ae0a0089e0": {
+      "ip": "149.28.53.219",
+      "port": "6969",
+      "pos": "BNomLKWnj19NN2LXH1YToeG78R5JTShuo8",
+      "reward": "aa3d7e1d59d81abf3632c161d1f3ec04ed9b9d4594f5ada91fae571c",
+      "weight": 1,
+      "timestamp": 1536201254.16,
+      "active": true
+    },
+    "5ffe16db7d040b84463b4f276275d696bfbade4331b1d294401913ed": {
+      "ip": "144.217.31.137",
+      "port": "6969",
+      "pos": "B58PW71CKf3iufu5rpRGTf8byKL1FmhXUo",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1536220211.72,
+      "active": true
+    },
+    "449e3714c5819c449db716267988b1fb747d2e37d240ef7ce8b0bd24": {
+      "ip": "45.32.115.135",
+      "port": "6969",
+      "pos": "BQrXCqK3Cdkxn2uvi59DD7gGkXNyJLmekt",
+      "reward": "449e3714c5819c449db716267988b1fb747d2e37d240ef7ce8b0bd24",
+      "weight": 3,
+      "timestamp": 1536257261.54,
+      "active": false
+    },
+    "3b13e6916cafb2787be375725e8c8fe87f5e3381b5e6ffd3c31091e9": {
+      "ip": "108.61.166.237",
+      "port": "6969",
+      "pos": "B4vg7ZkiJGpaeePQPCPPiQmAdMTnqmjCnP",
+      "reward": "797bbe01efbaccb41e9acf4f377e1d8a1656fdda36c7cb1a162aa095",
+      "weight": 1,
+      "timestamp": 1536270711.21,
+      "active": false
+    },
+    "3a3ce4220e7fb1748426b8b3b292e0e9b69193484e1c6d5c79b39942": {
+      "ip": "159.69.155.211",
+      "port": "6969",
+      "pos": "BRtKKmHDNayyLYvYyAPmbyrCGqyqfCA58X",
+      "reward": "3a3ce4220e7fb1748426b8b3b292e0e9b69193484e1c6d5c79b39942",
+      "weight": 3,
+      "timestamp": 1536283862.17,
+      "active": false
+    },
+    "82e103cdf9954246844b8a7a0c887347ba67d4f61886bf347da3b10a": {
+      "ip": "149.28.162.236",
+      "port": "6969",
+      "pos": "BC9WuK444oHCGUqP9jkCwKMUGxQCQqqdWp",
+      "reward": "7595dee85c82d51df1e6b327fde46d1c99aaa3d54b778a7ae17fe179",
+      "weight": 1,
+      "timestamp": 1536297080.7,
+      "active": true
+    },
+    "7d5922143c3ffe80026eba995a6f50625739ad544c009a04c73f047c": {
+      "ip": "217.23.14.6",
+      "port": "6969",
+      "pos": "BT7Hejxwwm1H2wzqWv8ekgtFd1nJ3LSxsb",
+      "reward": "2e892da8f6af3187c349a03358598f77b84384f9131dca82ddaeff1e",
+      "weight": 3,
+      "timestamp": 1536350079.19,
+      "active": false
+    },
+    "b4bf64c8d69156639d9fa8c84b515bd3336868bd5a2f97db30690df4": {
+      "ip": "66.70.206.66",
+      "port": "6969",
+      "pos": "BJSrG6qiCUtyES89Va6Ee8YFPybfUVy4MH",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1536396021.26,
+      "active": true
+    },
+    "3c199a046abafc6e0eab41e094ad0399fe56382ab4be09da900c8cb5": {
+      "ip": "45.32.17.36",
+      "port": "6969",
+      "pos": "B8D5TUce4eVVUnGNdacLAxqxNaB3BAKn8L",
+      "reward": "65d569cce3ff9964ab5f4be91ffb2a11f7d7c9c16793a204aed7fda2",
+      "weight": 3,
+      "timestamp": 1536448134.67,
+      "active": true
+    },
+    "f421a411c476ac04568fb5e7c51fec06e06dfa128bd30848ae71b70a": {
+      "ip": "35.237.184.166",
+      "port": "6969",
+      "pos": "B7CsuQpWvJM3iiFSuyK2X3fvokkB52f1UZ",
+      "reward": "7f208a1368b9b3283a62a47f0055c960b88387ec6b8cfd781dfd2217",
+      "weight": 3,
+      "timestamp": 1536772099.29,
+      "active": false
+    },
+    "3591b3d42ccf4ff6f29f21ca2f4edf530e767aaa522eb2fbf63ac218": {
+      "ip": "91.121.87.99",
+      "port": "6969",
+      "pos": "BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn",
+      "reward": "139c039e283b36f1871aa7509e31cf318a2b59ec51d2293a5a04a85f",
+      "weight": 3,
+      "timestamp": 1537028450.59,
+      "active": false
+    },
+    "c119b582477a5b1ae026ad3e66cd82fcb5e6abc119b9f6d84a102570": {
+      "ip": "109.236.82.102",
+      "port": "6969",
+      "pos": "BKzC7Hc9fAmQn4ZE2nX3dGbvafH52fzTUD",
+      "reward": "78d902f69f76b40948c2a6998de48c316dfde58df7d19fd63aaed261",
+      "weight": 3,
+      "timestamp": 1537028349.05,
+      "active": true
+    },
+    "eeaf5073ba5bf9f1ec2933988bbf253b25aa790c753cfa5acf0e0a7b": {
+      "ip": "188.165.199.153",
+      "port": "6969",
+      "pos": "BCLxPQyGkYcZmXZL1neHRyp4RJrw7GfYkT",
+      "reward": "76a5ac702856a627f99a2e192c121e83fcad7f05beecad685ff88c67",
+      "weight": 3,
+      "timestamp": 1537028782.18,
+      "active": false
+    },
+    "fefb575972cd8fdb086e2300b51f727bb0cbfc33282f1542e19a8f1d": {
+      "ip": "207.180.203.132",
+      "port": "6969",
+      "pos": "BBQRN9yyePfeixcSPjWLX3aFkfRusznSX7",
+      "reward": "fefb575972cd8fdb086e2300b51f727bb0cbfc33282f1542e19a8f1d",
+      "weight": 3,
+      "timestamp": 1537048269,
+      "active": false
+    },
+    "c374b40e3f60fed2dd3a8004f4caf4e2fc60e203d3fcab088ad0e6df": {
+      "ip": "108.61.90.91",
+      "port": "6969",
+      "pos": "BFprVYUQGH5ZU6eeR4MboSzp6ivLrBA4kQ",
+      "reward": "faa3fdbffc24728acc7ba5f0ba84d411ae9e8dde7cf3c9858994fcbb",
+      "weight": 1,
+      "timestamp": 1537237868.11,
+      "active": true
+    },
+    "a033eb6fdfcbc0dea51c8131f7b72525fa3aedefd1c200b3d55db9ad": {
+      "ip": "180.68.191.77",
+      "port": "6969",
+      "pos": "BNuA9Fuu7UDat8mtvQtsJ5zH3rrLAB2yzm",
+      "reward": "65d569cce3ff9964ab5f4be91ffb2a11f7d7c9c16793a204aed7fda2",
+      "weight": 3,
+      "timestamp": 1537375905.18,
+      "active": true
+    },
+    "fd024338b26d474baefc5c5caec420ff3f9fd1a4535a723281d84ee0": {
+      "ip": "95.179.153.68",
+      "port": "6969",
+      "pos": "B9SorDbXemD7UCA6Zmkeev5XuvAMkwj8YU",
+      "reward": "cc401fd0af3421ab03268d26fa526dded6549e59543d6a84432dc153",
+      "weight": 1,
+      "timestamp": 1538031274.57,
+      "active": false
+    },
+    "66cb1c2d2a982015e763db915c2bb4bee32b7d77687c9a9806c26d88": {
+      "ip": "66.70.206.67",
+      "port": "6969",
+      "pos": "BNH17SfzFbzpkMRJcoBJK1beERFLKCoebu",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1538034480.51,
+      "active": false
+    },
+    "d588e025050dcaed277dea61d11d61eaf0176f82b6b858d877c90dbd": {
+      "ip": "95.179.182.171",
+      "port": "6969",
+      "pos": "BCt5fxpeevGesmGG59nTHvcJhLpnBM1CMP",
+      "reward": "4fc1159e4c6645e64ad293317182ea31235885d9c1e1dd1761fa90c1",
+      "weight": 2,
+      "timestamp": 1538140654.64,
+      "active": false
+    },
+    "1f5484b4d650b7cf1c7a661fd5e27c3d97be463ca2f828cdded65b1c": {
+      "ip": "172.104.146.230",
+      "port": "6969",
+      "pos": "BBwuvshEVeP8Z7tGQ3xDTcpFLU31owieXq",
+      "reward": "72963d1c5d92a60bab64d2885e4300d8388d1f2bfd4eb8678461f3ca",
+      "weight": 3,
+      "timestamp": 1538207961.61,
+      "active": false
+    },
+    "dd1d4373334464385b651b0a301034243588ee222384771a306d02af": {
+      "ip": "178.32.96.27",
+      "port": "6969",
+      "pos": "B4uvPw5xXCUC6L3wVQs16MenY2zKUywfks",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1538296876.04,
+      "active": false
+    },
+    "8fe36ad966aa5a6b05bf8acfadb3f18586f7321c26371df05db8daff": {
+      "ip": "188.165.135.126",
+      "port": "6969",
+      "pos": "B4fznBC9MR1A9qqEkX6LRVQGEW164jQmAw",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1538298251.19,
+      "active": true
+    },
+    "1514d645cdd8014f7eba078272cb529bc64a40cd99d4d9a18d83fa81": {
+      "ip": "94.23.148.37",
+      "port": "6969",
+      "pos": "BLsHxUaMSrkyn1Zgz3cLokvXujejaaFmSd",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1538300048.5,
+      "active": true
+    },
+    "dadc6f52ad57bdac0488f8deccab5a5085feac6fd236b7ac5dd6966d": {
+      "ip": "87.98.246.48",
+      "port": "6969",
+      "pos": "B5ivBe621WwfahhZFGnDNY72o9gcbmzkE1",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1538300764.98,
+      "active": false
+    },
+    "991ad7c8549e7c0f786726fddb4adb7383c747a51c655a1f8d2798ac": {
+      "ip": "188.165.20.211",
+      "port": "6969",
+      "pos": "BCodcDCmRuKeZGaZRYm6TUFZDDPZohigQX",
+      "reward": "991ad7c8549e7c0f786726fddb4adb7383c747a51c655a1f8d2798ac",
+      "weight": 1,
+      "timestamp": 1538380018.55,
+      "active": false
+    },
+    "27f6fc4609a49968b0ca742cf02ef82f256aaeea7d2faae71d2de064": {
+      "ip": "40.115.66.72",
+      "port": "6969",
+      "pos": "BAti5hLA3YGAxvVDen7NRGkHCyghxGpeMU",
+      "reward": "bff81e2217763267f45f75eb71dab2a81bac2b692cfb5bec15ea916c",
+      "weight": 3,
+      "timestamp": 1538532980.07,
+      "active": false
+    },
+    "da857e60f755d7ea8a9c2cc03bdb70a7725c42717b5a841232744577": {
+      "ip": "40.115.65.119",
+      "port": "6969",
+      "pos": "B7FEHZRqH4h1QnY1o7yPeErPu7Jh7Yg9Q6",
+      "reward": "bff81e2217763267f45f75eb71dab2a81bac2b692cfb5bec15ea916c",
+      "weight": 3,
+      "timestamp": 1538534879.83,
+      "active": false
+    },
+    "8d547715d239fe04316adc35d4d0945a197d8b86dc719a86dcfaa618": {
+      "ip": "89.40.0.254",
+      "port": "6969",
+      "pos": "BREZG6QJhffKRV31scZZFFZ2eW2iTbkYta",
+      "reward": "72ce955e8f77a7e9f260659d16940f1f3b0403b35622dbbce5de90d5",
+      "weight": 3,
+      "timestamp": 1538585721.91,
+      "active": false
+    },
+    "503dfd08f802a3f03562a4e2adc53f00cdc32319bed51e5d4a035c23": {
+      "ip": "172.104.139.59",
+      "port": "6969",
+      "pos": "B6MR7eXc4oCZKuV2U9ojaAq4S9Wa2Byqwx",
+      "reward": "72963d1c5d92a60bab64d2885e4300d8388d1f2bfd4eb8678461f3ca",
+      "weight": 3,
+      "timestamp": 1538757327.16,
+      "active": false
+    },
+    "ea11ecd1a1bd3fa74fb90f27db06a802c361b1ad6275d386bed26d2e": {
+      "ip": "139.59.64.203",
+      "port": "6969",
+      "pos": "B4k96TcagvvAKiMGBmf3XfLWz2nR8wRozv",
+      "reward": "b920c5607e44a0ebd7ca4c6143007e56ff483bbd987775385d3bddef",
+      "weight": 3,
+      "timestamp": 1538828624.36,
+      "active": false
+    },
+    "809a58bfd52ca0f8befdeb46a334c37a8ad60fc5153aeefe0f8d63d5": {
+      "ip": "94.23.120.129",
+      "port": "6969",
+      "pos": "BRMo7h2wYnA2R2RdBFihJr2k8CAkdUAxsS",
+      "reward": "809a58bfd52ca0f8befdeb46a334c37a8ad60fc5153aeefe0f8d63d5",
+      "weight": 1,
+      "timestamp": 1538862150.71,
+      "active": true
+    },
+    "5633db9f22fd804d3e73aa0dd5380161444b653b6fb1adf633ed3f10": {
+      "ip": "159.89.161.163",
+      "port": "6969",
+      "pos": "B9VCb8ek73Qo5tAqKBVhuogpFkv7w5mEeA",
+      "reward": "b920c5607e44a0ebd7ca4c6143007e56ff483bbd987775385d3bddef",
+      "weight": 3,
+      "timestamp": 1538914796.88,
+      "active": false
+    },
+    "f6f5f3b4a1119e781a7c94603ace8734d31e7eab6529d7a8d506a06c": {
+      "ip": "178.32.142.251",
+      "port": "6969",
+      "pos": "BCBkK8K3ZQzBy7dgqXcqiJDaeQSsxdrGuB",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1539158654.87,
+      "active": true
+    },
+    "a6a32c9880574f8f2ca6de08e348547eb856a61ee6fd46ab19fb94e0": {
+      "ip": "46.105.55.13",
+      "port": "6969",
+      "pos": "BC9ENzAf1TsDaNCLfRsMPdZyv6YqMeAijP",
+      "reward": "d2f59465568c120a9203f9bd6ba2169b21478f4e7cb713f61eaa1ea0",
+      "weight": 1,
+      "timestamp": 1539630025.28,
+      "active": true
+    },
+    "98855f9b7054f4763a2a754976b26bf2d504105402743cb706c79961": {
+      "ip": "95.179.143.63",
+      "port": "6969",
+      "pos": "BScmLe9xHMScUEfCHoqwQMUj9Xt38ndmLW",
+      "reward": "46fa2d2f7a8ed7221aa292e36e2c0bfdc6e53e0a4bd65e34694dc94b",
+      "weight": 1,
+      "timestamp": 1539812726.56,
+      "active": false
+    },
+    "1525994bfd12be2a6a0e8ee80460d57ed3fa9638e589437c93754c81": {
+      "ip": "149.28.243.215",
+      "port": "6969",
+      "pos": "BGUfjuPQ3JvfLiKfCqEL7GvRDWoYvJeYkz",
+      "reward": "1f115e642055b06806b52545466cbcc0bc540362bfb46cd313762499",
+      "weight": 1,
+      "timestamp": 1539823276.36,
+      "active": true
+    },
+    "1e5c33f16b6cdd47eb3460ecfa1f17859aa1beac34152766ba6cb937": {
+      "ip": "89.39.104.21",
+      "port": "6969",
+      "pos": "BB39XHUPAhVcZH9gjgkVP7bbVoDtjxnk1s",
+      "reward": "0733cc064f971f6b8136af36a94e2426f2d4ebcc4f57232d0ddf63c3",
+      "weight": 3,
+      "timestamp": 1539981632.28,
+      "active": true
+    },
+    "a8219e34ef35721d92a7e0ce54586169f56fb27939170d6e2258e599": {
+      "ip": "45.76.236.66",
+      "port": "6969",
+      "pos": "BP7eWNsrBtwbMkW6wTYxvYzZT9gDctB81q",
+      "reward": "67abca9a82a734bb2f84b373d7b330df445a189c6b975b80a1b8c4a3",
+      "weight": 2,
+      "timestamp": 1540159118.6,
+      "active": false
+    },
+    "d47a5f37159a837274bfaf01e51fe5609742ba0690fb32629582833f": {
+      "ip": "80.85.85.244",
+      "port": "6969",
+      "pos": "BLBq7GSfMDnrP6iFNTumjtsWUK9NnGc9vC",
+      "reward": "1520370d7f2651ee8a6763b6631f2b3d34a0ee139064a874b84c5dbf",
+      "weight": 3,
+      "timestamp": 1540288585.47,
+      "active": false
+    },
+    "18a191afe0cb399753c25a1f39dbcd11df4d2c8a628aeb55064bd8fd": {
+      "ip": "51.15.239.97",
+      "port": "6969",
+      "pos": "B6LkihQaJtwRWSc4yUk974Qjt8u1UHHCiv",
+      "reward": "36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169",
+      "weight": 3,
+      "timestamp": 1540319406.93,
+      "active": false
+    },
+    "8e5a86002bd2e0c4c2cc29c808f51a9e8b2442c25f72a1cfe8f17f3b": {
+      "ip": "63.142.251.133",
+      "port": "6969",
+      "pos": "BLdGWiR9euZFn1onb6bYFaJuMfGiUZZik7",
+      "reward": "eaed41a8107323d32a62bd93efc2094394f9c7260e81b9336d61c546",
+      "weight": 3,
+      "timestamp": 1540590826.13,
+      "active": false
+    },
+    "12dbc20ba8d46d541041340d6a3393ac1ae5679b4c85f2d270080c1a": {
+      "ip": "167.179.73.191",
+      "port": "6969",
+      "pos": "BEVJswSZFug1xCconWKjb6suWYDYMZtU8P",
+      "reward": "cad464c9823d3211ffcaa201a7c2eccd6b0a73b63531d9bebe062544",
+      "weight": 3,
+      "timestamp": 1541237391.9,
+      "active": false
+    },
+    "be426ec5d42e5e7a3744cf92c650cfec53c1bea7809b9243028de915": {
+      "ip": "51.68.127.185",
+      "port": "6969",
+      "pos": "BSGe2d7yRDp561oQ9GcTZqtoPdqiuegukc",
+      "reward": "7b8d0ad482630599ee17dcc1f69f041ea37c94ccfe31b1b4fbe7daa5",
+      "weight": 2,
+      "timestamp": 1541333328.34,
+      "active": false
+    },
+    "c3d28e4b8a5d730bb12cc9c7811bd7ad295959d02a4dbb71c9aa4e25": {
+      "ip": "149.28.114.248",
+      "port": "6969",
+      "pos": "BFiZdDsUM32YpjTfu77L3iuYZxKYTGUNDm",
+      "reward": "868fb84114a14b48dbae70181999cc6df7bca45e0d8ac119d2cfe875",
+      "weight": 3,
+      "timestamp": 1541546359.42,
+      "active": false
+    },
+    "4cdb1927fdef8006c6e34fdfb7c130830bf64b967375adb2ef06f369": {
+      "ip": "46.105.55.75",
+      "port": "6969",
+      "pos": "B5xa99ZYcbAFtJNMiZNheefv1MTKN5Dv63",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1541689459.17,
+      "active": true
+    },
+    "2a0cf63dbf083f1c1f64c0c690893a5e6c98e3959b4a68df8c285625": {
+      "ip": "207.180.222.97",
+      "port": "6969",
+      "pos": "B7EcmF36kBPSwufKRDBoeEKFdR6d1W8U49",
+      "reward": "2a0cf63dbf083f1c1f64c0c690893a5e6c98e3959b4a68df8c285625",
+      "weight": 2,
+      "timestamp": 1542205932.33,
+      "active": false
+    },
+    "abe5c4278429e3cb115b0b5b9d4969457e8ca2e40a8a7ba6a4a285ea": {
+      "ip": "45.76.218.188",
+      "port": "6969",
+      "pos": "BNV4YZsZPkoW1ipoQUFASrEEFY8Y6ecKzg",
+      "reward": "b04e04bc40a91b4d891e8f05564b0d839dc8b4e45ee32852d36125f7",
+      "weight": 3,
+      "timestamp": 1542296815.76,
+      "active": true
+    },
+    "2b13739f5f7fca78b88878cae95eb36a52d112817ea6bec77df8ac02": {
+      "ip": "45.63.122.126",
+      "port": "6969",
+      "pos": "BFZJZKHfZsVhbyjh8tnEiyTNrsxqqd4ii9",
+      "reward": "cad464c9823d3211ffcaa201a7c2eccd6b0a73b63531d9bebe062544",
+      "weight": 3,
+      "timestamp": 1542332671.5,
+      "active": false
+    },
+    "924ea146d21f35dbb22dff14374472d51335d4916cb45d4c8da2bb67": {
+      "ip": "51.15.125.175",
+      "port": "6969",
+      "pos": "BEm3ckjKC5Y64eiM4eAs4CT8qnJxrheFX3",
+      "reward": "c14cc3a18cd5fcca6ddf21e53bab5d0250e90f19b6d9443027aa83c2",
+      "weight": 2,
+      "timestamp": 1542558435.26,
+      "active": false
+    },
+    "6348828d011f88f3665bedffb45ed2ccbe60685e946347ef9c326e90": {
+      "ip": "207.246.101.70",
+      "port": "6969",
+      "pos": "BLiDjwdj55wznnVPAifDHCyYRZcw61RDPf",
+      "reward": "65d569cce3ff9964ab5f4be91ffb2a11f7d7c9c16793a204aed7fda2",
+      "weight": 3,
+      "timestamp": 1542883357.77,
+      "active": true
+    },
+    "cd7ea0f059cd3d0d662e0d05ff013d254d7e436e252c947ced4df008": {
+      "ip": "51.15.206.195",
+      "port": "6969",
+      "pos": "BN8m2YfEFFtGdFUQzPLvizGKzhUwohT98L",
+      "reward": "36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169",
+      "weight": 3,
+      "timestamp": 1543067482.53,
+      "active": false
+    },
+    "07056f2c11e1071e8b1f99efc7100518caef5425221ccf88735b0b53": {
+      "ip": "46.171.63.219",
+      "port": "6969",
+      "pos": "BBSMkkP8Xq4qPd4yYnsUqsT914hmih3eQw",
+      "reward": "c50fb7c1b763c2bff1daf1d678941ba8e61066a1feba27660a120033",
+      "weight": 3,
+      "timestamp": 1543156534.86,
+      "active": true
+    },
+    "af56538290f4d006654bc4c0bc4f05f6259fe665487c15df28206b5d": {
+      "ip": "104.248.233.235",
+      "port": "6969",
+      "pos": "BBP5bKAegcJy8oXS7vW71xE1Ys5YUJR6Br",
+      "reward": "7c0540565037e245335dcaf8145e82b41633cb818886161ad964b48a",
+      "weight": 1,
+      "timestamp": 1543382708.42,
+      "active": false
+    },
+    "b8b5ec8ed1dd33025e8da33d56be9e35422e5bd15a1e5187d4f8e327": {
+      "ip": "87.98.165.14",
+      "port": "6969",
+      "pos": "B6WSd1VSq8o3GuT76FD7V5YeFnJQukSUye",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1543419728.84,
+      "active": true
+    },
+    "898661e6b45768075d02163f77462ad5dfd7aac0f0cb02b4586eb029": {
+      "ip": "91.121.217.17",
+      "port": "6969",
+      "pos": "B8vaqe84FrJwriGjp337TostcpeybghSgG",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1544087383.12,
+      "active": false
+    },
+    "7af71e2fde66c49fe90f08347f0e82a94ee42d15905e4cd2b769d582": {
+      "ip": "188.165.45.239",
+      "port": "6969",
+      "pos": "B8FPNzLHesvmXaYo2ReHegHNYHUMHV6Vwu",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1544288957.72,
+      "active": true
+    },
+    "804487b385e2b31175b3976f65c468d753d11e94cfbf15b9ce600d66": {
+      "ip": "139.180.220.253",
+      "port": "6969",
+      "pos": "BJ3tjtrLVLdBdmqL8qFX8WbseZkfwa1Vsf",
+      "reward": "46c73b2dcdff71ed9b80f355e061d7da81cd36dfec175651de454ca5",
+      "weight": 1,
+      "timestamp": 1544410030.24,
+      "active": false
+    },
+    "f438216c183d6e38d0725aa536d7a68a9f333a66392537d9b7f098a5": {
+      "ip": "198.27.102.167",
+      "port": "6969",
+      "pos": "B9fRwdYtAZqpU6EMKDbjaojUfQwskJoTJQ",
+      "reward": "51a6008ddb538484b9844662dbe21d7dcd2ca7e30e0b931d6b54e1ca",
+      "weight": 3,
+      "timestamp": 1544497001.83,
+      "active": true
+    },
+    "f0accf861209a84ab07c1b5aa014e759b3e16f2f9e85776171f3e0cb": {
+      "ip": "51.68.190.246",
+      "port": "6969",
+      "pos": "B7j7rjsZvwtC2uVx6D9hREjSyBiSb7QSMS",
+      "reward": "f0accf861209a84ab07c1b5aa014e759b3e16f2f9e85776171f3e0cb",
+      "weight": 3,
+      "timestamp": 1544523151.4,
+      "active": false
+    },
+    "f9f36f509a5a96eae2970faf9b0174a2c7677b5ff19cf8baf7dcf5cf": {
+      "ip": "149.202.55.245",
+      "port": "6969",
+      "pos": "BAoJf7q5KZdj5UeD2iVCqBuxXjozc4rpjb",
+      "reward": "d8a78ca65cd7e149c58ad91953425ee4375c254df84cd7d80da4be49",
+      "weight": 1,
+      "timestamp": 1544875255.28,
+      "active": false
+    },
+    "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2": {
+      "ip": "91.121.216.89",
+      "port": "6969",
+      "pos": "B6cL7CsV1S3PvAKqGqsGaxuH6PR42EeNXU",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1545346769.1,
+      "active": true
+    },
+    "c1f5ca2761fc8ae72989ca59288840543997ebd18f43ea85e700eb8f": {
+      "ip": "68.183.75.115",
+      "port": "6969",
+      "pos": "BEtmzhEB4wKo7Jy78oKySLxvpp8PmbeMmd",
+      "reward": "c1f5ca2761fc8ae72989ca59288840543997ebd18f43ea85e700eb8f",
+      "weight": 1,
+      "timestamp": 1546016543.42,
+      "active": false
+    },
+    "9f5a8f080854b061f892379fd4e12c8abc4332784cd796c1387eb1e0": {
+      "ip": "95.216.190.50",
+      "port": "6969",
+      "pos": "B8dkUS7yLF7X9K1EzbQvs9C4d7XYGVypnM",
+      "reward": "3a3ce4220e7fb1748426b8b3b292e0e9b69193484e1c6d5c79b39942",
+      "weight": 3,
+      "timestamp": 1546813494.88,
+      "active": false
+    },
+    "a459b9415f4b909b3ca28b6ce2eaba6401224943e822a04ae1736258": {
+      "ip": "198.46.179.198",
+      "port": "6969",
+      "pos": "BRSGSJ7R1L4qUiEjrfa45i3z87jNfuWgmU",
+      "reward": "6044c6f883edc967bdaaf925cc6ec2d16ec3c65e76ad52f2e58b8f98",
+      "weight": 3,
+      "timestamp": 1546844517.14,
+      "active": true
+    },
+    "b032432f43b6a75a6a62f6b0ac5855a0fc122b1050559eb50d342cf9": {
+      "ip": "87.98.242.216",
+      "port": "6969",
+      "pos": "BSStfuoLELeodhXzsZn1jZBwx4QaT6zw5W",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1547246555.3,
+      "active": false
+    },
+    "63d0b95d82a523fd59e768c4c259005b19f18db9b46129b4330b77d9": {
+      "ip": "207.148.71.53",
+      "port": "6969",
+      "pos": "BD8w4gsktuhebAwnTt5pr4VB6dDH8LeRJr",
+      "reward": "cad464c9823d3211ffcaa201a7c2eccd6b0a73b63531d9bebe062544",
+      "weight": 3,
+      "timestamp": 1547263502.95,
+      "active": false
+    },
+    "563a256cc30e5882fde17edff3b6d5e2d20a91a71fb11f7eaa3fa6f4": {
+      "ip": "13.56.125.144",
+      "port": "6969",
+      "pos": "B8CW2NLNLatzhbfPUtUhwwWmWxBLzX23G3",
+      "reward": "a7f25e0804a8ec6c5d8ac53e807e9f89a402d26373dcca274cda19b1",
+      "weight": 1,
+      "timestamp": 1548086896.7,
+      "active": true
+    },
+    "aaabc1e5a1eb263efc85c516e3ee1535e1f2ae06a3f7f9385ee17760": {
+      "ip": "91.134.127.105",
+      "port": "6969",
+      "pos": "B9QYYQSV836pvLX9x9R2iYFnb3kxkh92iy",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1548603632.29,
+      "active": true
+    },
+    "6b91dccc7b2f42bb01424675bb831deefc465cf7dc05d8f8471cc5bf": {
+      "ip": "167.86.72.140",
+      "port": "6969",
+      "pos": "BFFK1XLSqmgwebCCeFLbMYUunRyankHKDH",
+      "reward": "6b91dccc7b2f42bb01424675bb831deefc465cf7dc05d8f8471cc5bf",
+      "weight": 3,
+      "timestamp": 1548960168.69,
+      "active": false
+    },
+    "825cff1cb0599788a336f30518943080dc9f9fb7f2e9ed42c50e0324": {
+      "ip": "173.249.57.141",
+      "port": "6969",
+      "pos": "B8CZKj2DRcd2TBsfCvoTCRGeFb2HdqDUCQ",
+      "reward": "08b66e85dd8f61c44ff46efa14c2b2daac269d74b28b010b804981e1",
+      "weight": 1,
+      "timestamp": 1549644277.72,
+      "active": true
+    },
+    "ec791eb9cd1b1c4d4b2f04cac5d7acb8ba6397ce503c7284882c60d4": {
+      "ip": "149.28.188.158",
+      "port": "6969",
+      "pos": "BDvcgj9fStY4g1QaQ3a8mRyAKhSBMM9PhP",
+      "reward": "ec791eb9cd1b1c4d4b2f04cac5d7acb8ba6397ce503c7284882c60d4",
+      "weight": 3,
+      "timestamp": 1551310811.19,
+      "active": false
+    },
+    "57736590c5a519bb03a8404d8d02fca60389983bbc41fb1b18b4a6ea": {
+      "ip": "51.15.46.218",
+      "port": "6969",
+      "pos": "B8dC3Z8VWjjNmQaYbuEgbYXAjs17Z6BoEK",
+      "reward": "3a1e965266f7c11ff1467408f9e38c1b8d503420499c58a694b6695b",
+      "weight": 2,
+      "timestamp": 1551401840.66,
+      "active": false
+    },
+    "49c3f8ffb12ed45fda83b3df41f9babbe8a86b76023391908a1c3682": {
+      "ip": "94.23.149.124",
+      "port": "6969",
+      "pos": "BL7zvkydYoxEvAB39SY4bygLwiUjEnMffZ",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1552127920.08,
+      "active": true
+    },
+    "8d571a1297c3c8304a432821ed59074eff2d3314e955919a7721a42c": {
+      "ip": "89.212.138.231",
+      "port": "6969",
+      "pos": "BSrrvpz767xF1K6E47MfR4qbNJF9Rggmoy",
+      "reward": "2e8fbe3119115f19a8a09bc73809b928b589c024d4054b255d8a51ec",
+      "weight": 3,
+      "timestamp": 1552338035.63,
+      "active": false
+    },
+    "8ac5eba37d8e4dd2530bfb78ad70a6f855d3cda708c8c6d98704fe33": {
+      "ip": "178.32.101.17",
+      "port": "6969",
+      "pos": "BCUdJcA68CfEr4pL2MTuiQTCyrxFKQndMv",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1552731186.53,
+      "active": true
+    },
+    "7c90e9de3ca408c9e5be374962a61a4f3c73b4a958443db20947040c": {
+      "ip": "95.216.198.235",
+      "port": "6969",
+      "pos": "BBg8dR7crWYEyXW6ZP4XLiEVtCyfdWjtrJ",
+      "reward": "b7b535dc35d62b5adc0b7e1f302b0f737018f3a1aa8ed3bedf2bb248",
+      "weight": 3,
+      "timestamp": 1552768255.36,
+      "active": false
+    },
+    "eec86c3a830b32bd426420142cd28672f0d7f90c8c387949ec986ae8": {
+      "ip": "142.93.166.102",
+      "port": "6969",
+      "pos": "BQ3tjdtC3oMpkTuVByX6bJbp9QZKWLF5Be",
+      "reward": "611ee71f45c38666fa9602af6ddd059ef16fee6ece0c6863d491b0b6",
+      "weight": 1,
+      "timestamp": 1553768855.37,
+      "active": true
+    },
+    "5df1ea5856a3c12bdd8bad2e9294286b24d0934ccde7c0415e1ad650": {
+      "ip": "178.32.201.138",
+      "port": "6969",
+      "pos": "B9iB2wiUCwFdypncFstjV9kPoruzsF9BoX",
+      "reward": "21469f889f1725a1682b80fe6f76ed59caf5d3f8c1111edc7680caf2",
+      "weight": 3,
+      "timestamp": 1554327017.46,
+      "active": true
+    },
+    "3c083963dc6f43c604a110ca04d2f8af42545a686de6dfc3617fdde7": {
+      "ip": "147.135.239.138",
+      "port": "6969",
+      "pos": "B6eLa2AkAS7ZjXhiu6rp4j49vEn6Zym5hG",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1554561572.35,
+      "active": true
+    },
+    "c50fb7c1b763c2bff1daf1d678941ba8e61066a1feba27660a120033": {
+      "ip": "185.242.127.61",
+      "port": "6969",
+      "pos": "BP8HLGKU4pLhNTPwon1PDhGyTdc1tHbvcf",
+      "reward": "c50fb7c1b763c2bff1daf1d678941ba8e61066a1feba27660a120033",
+      "weight": 3,
+      "timestamp": 1554581026.4,
+      "active": false
+    },
+    "0b73d94ccfd933cddb770d2add14a41340779da21b60d7f7f66c8ba5": {
+      "ip": "104.238.173.26",
+      "port": "6969",
+      "pos": "BLo4rKjmmLDWKifHEphyqH5VRXkiK5bE5p",
+      "reward": "7c1d75b291bf38b02a6143ff13c3928e99a89418875028aab75672ca",
+      "weight": 3,
+      "timestamp": 1554787800.62,
+      "active": false
+    },
+    "9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8": {
+      "ip": "95.216.199.109",
+      "port": "6969",
+      "pos": "B6SdVvLytJ4UETLS7zoLGBWQR9kbCN7bPE",
+      "reward": "9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8",
+      "weight": 3,
+      "timestamp": 1554807069.7,
+      "active": false
+    },
+    "de6c23a7f0d6db98c6f0ccbc9602ee3a71b0543c1fbcea7746debec1": {
+      "ip": "194.135.84.132",
+      "port": "6969",
+      "pos": "BMcRKfMykLi4nMCN2k26965WqvqzK1wCW4",
+      "reward": "de6c23a7f0d6db98c6f0ccbc9602ee3a71b0543c1fbcea7746debec1",
+      "weight": 0,
+      "timestamp": 1555359294.5,
+      "active": false
+    },
+    "ecf667adadf3af8f70c2091d9285d93e3ac5ad4e9c71b28d74e7c707": {
+      "ip": "209.250.237.229",
+      "port": "6969",
+      "pos": "BJtTtHDm3MehTcTbrqqQ5ojvHYs73M7ZK5",
+      "reward": "ca88fa4206698ccab9e365707b5dae06cf41f4c9293398295ff4ae4e",
+      "weight": 3,
+      "timestamp": 1555526710.33,
+      "active": false
+    },
+    "a152c277477ff8cd1545292e31925810b8abb812b1a913c698db57a7": {
+      "ip": "167.179.105.197",
+      "port": "6969",
+      "pos": "BM4hNyf5ZPL61oXkBLDfWNsPPKiUoFb7w6",
+      "reward": "caf583fb715f6b7944d8d16fdd824c2e93dc56996170c5bf3fc973aa",
+      "weight": 1,
+      "timestamp": 1555720107.97,
+      "active": true
+    },
+    "2242469153f1f1c4be7b5e540a9268c14cf187bd8315b446b2c782f4": {
+      "ip": "18.202.33.159",
+      "port": "6969",
+      "pos": "B9KREwCVX78R7iSa8uMmRkyHfWH526E3ww",
+      "reward": "905981109c6f4542a5b8c2973ad124fde2dfdf02a2e2271536c96ecc",
+      "weight": 1,
+      "timestamp": 1556206223.79,
+      "active": false
+    },
+    "be8355d581e7ba5775fc970bb60fee831a47ddc4ef92a28d07027adf": {
+      "ip": "213.32.50.238",
+      "port": "6969",
+      "pos": "BDdJijJCHBi1CYS9MfnQ8fzrfBDTsgdUV3",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 2,
+      "timestamp": 1556553862.71,
+      "active": false
+    },
+    "d7cff4f85346294186994e29faafb5fc7dc3aa01a19a979383de820f": {
+      "ip": "46.105.170.153",
+      "port": "6969",
+      "pos": "B9vMRhtXdgDP17PpAUcPRTqtE6m7nCWcrc",
+      "reward": "8cb5c5c54f616f49df2e1f9f0e8bd5412c4c199d511cd214642a1367",
+      "weight": 1,
+      "timestamp": 1556625511.89,
+      "active": true
+    },
+    "d42edda007353f187ec4f2559411c84fc1e67610568b28b6072dae68": {
+      "ip": "149.28.17.181",
+      "port": "6969",
+      "pos": "BQgtkQ28x1TB17uSSF8P3yM1tQbLmNWXLG",
+      "reward": "d42edda007353f187ec4f2559411c84fc1e67610568b28b6072dae68",
+      "weight": 2,
+      "timestamp": 1556630169.46,
+      "active": true
+    },
+    "8b36b4c41430d13f53295309866d80d5fa26aa83cda5421db51e416e": {
+      "ip": "116.203.144.45",
+      "port": "6969",
+      "pos": "B6xoqYhUHLYS74UhSokz6MQ9G4PR9fzXzM",
+      "reward": "cfb5cf13bb1f17cdfb9de0a5a78825065057e268853da145d888ca90",
+      "weight": 1,
+      "timestamp": 1556676699.52,
+      "active": true
+    },
+    "8bd3e1dbe966e4d7c067e9aad257b2e3dfd7444736aba8d84cbbb73a": {
+      "ip": "167.86.84.242",
+      "port": "6969",
+      "pos": "BL5p1btLYwXaMYmbgtZbmyPkFuF2yBM4UU",
+      "reward": "40d4401ff00a6a311e9672c11b806613da4d4fe36627b9d5770a5d1b",
+      "weight": 3,
+      "timestamp": 1557867067.8,
+      "active": true
+    },
+    "4e93a3551b2198b358b623fdbf4b65da35367d836d4e65ce0b7f2c63": {
+      "ip": "207.148.0.65",
+      "port": "6969",
+      "pos": "BKwAqFwVyEo2anBLxWG7vv4uaiZAKeKXf1",
+      "reward": "67abca9a82a734bb2f84b373d7b330df445a189c6b975b80a1b8c4a3",
+      "weight": 3,
+      "timestamp": 1558155346.9,
+      "active": false
+    },
+    "c71ebc1109b610bdd442b2b8d8dbcefe92922353fc5bde4327bedcf1": {
+      "ip": "51.77.27.221",
+      "port": "6969",
+      "pos": "BTn6QCDoo9zKH7L4DtyTFWTTPZS9Tz47T4",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1558179560.44,
+      "active": false
+    },
+    "3daa7cb20e7c0af52cbf43ed7505474f320ed0c5bdadb7d69e7e7d5d": {
+      "ip": "212.24.111.139",
+      "port": "6969",
+      "pos": "BGfg78f46eJQi3q9RqEB4HMst1iSKmMXSM",
+      "reward": "ff552f11b3543de4587bd957e5f4b3e3c84772cd342b15d38baaf1f3",
+      "weight": 2,
+      "timestamp": 1558202958.77,
+      "active": true
+    },
+    "27d1176553d19d28126d5af6020bbcbf98402a2c6dbd61b36f2ebc0c": {
+      "ip": "157.230.108.221",
+      "port": "6969",
+      "pos": "BDFLLceo5saAvqNCgVFXH6uWNbpJSv7nPW",
+      "reward": "9200f766fd9d5952bd1cc38755015fd805de65686e3233190529a273",
+      "weight": 1,
+      "timestamp": 1558331088.99,
+      "active": false
+    },
+    "82ac6b778ac48da686736819e0dc06c739332e5c5903b3167b64e5de": {
+      "ip": "167.179.93.20",
+      "port": "6969",
+      "pos": "BBETSngrLWC3Be8A8JrTnX7W4VSbUg4XSH",
+      "reward": "82ac6b778ac48da686736819e0dc06c739332e5c5903b3167b64e5de",
+      "weight": 1,
+      "timestamp": 1558340724.2,
+      "active": false
+    },
+    "980f8c00a4711838fb9002db0846012892cae8548c67a1d2d40e0ec0": {
+      "ip": "149.28.52.243",
+      "port": "6969",
+      "pos": "BTcBvXEx6FjN7W3anYaZ2Qy45UBpeSduvy",
+      "reward": "980f8c00a4711838fb9002db0846012892cae8548c67a1d2d40e0ec0",
+      "weight": 3,
+      "timestamp": 1558355562.34,
+      "active": true
+    },
+    "674ec5fa9e0474100836b1a854f1c04d93ae0edd045e4559f1877d82": {
+      "ip": "185.244.130.128",
+      "port": "6969",
+      "pos": "BQTunq8FZCtHFf8sMyUsvzKsn3fAeVUGr8",
+      "reward": "e91b864b98fcaba034a8e9f63a21b23b96ec74fa38ce2154c1e0ac25",
+      "weight": 3,
+      "timestamp": 1558548400.88,
+      "active": true
+    },
+    "4b1a0476ced360ff390dde816860f5ebfd06ae81cb2a3ef19af9b43e": {
+      "ip": "5.135.24.201",
+      "port": "6969",
+      "pos": "B9DcaTwzzKCHovEMsPKibSqq6APcWJzaHu",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1558796954.37,
+      "active": true
+    },
+    "e7cafb25c34de2a0a2ab2758ad2164bcfe67ab8b23a76f69854596a6": {
+      "ip": "206.189.217.196",
+      "port": "6969",
+      "pos": "BDuBkpowzXsS67Kev1LtQeTvEu7W3JYwnA",
+      "reward": "d244e6e190969bae099cf994bd8d5d1cbfeb1e741092ad48313404b4",
+      "weight": 1,
+      "timestamp": 1558798667.4,
+      "active": true
+    },
+    "8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd": {
+      "ip": "198.54.123.177",
+      "port": "6969",
+      "pos": "BS4P1cezDzSDWDorA6B7TXH2yZgLQqYYyi",
+      "reward": "75a45c9b5729abf3cdcc781ca59b2e65b1ef740fdcdcf753b994a560",
+      "weight": 3,
+      "timestamp": 1558867235.05,
+      "active": false
+    },
+    "36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169": {
+      "ip": "51.15.96.93",
+      "port": "6969",
+      "pos": "BJKo6TPcAxcMapn8mKpgkPNU5u8nqsVGnK",
+      "reward": "36c59c7780546179d7f80729e1ccc3932260b849bc519b2120074169",
+      "weight": 3,
+      "timestamp": 1558950138.49,
+      "active": false
+    },
+    "727dc68d941dad9e824dfe940237ecf46accaf5cbf7c9216ef02a705": {
+      "ip": "185.244.129.72",
+      "port": "6969",
+      "pos": "BMApWyFuYUaD84K6LjH9Y7Mb7tWPp8HDJu",
+      "reward": "e91b864b98fcaba034a8e9f63a21b23b96ec74fa38ce2154c1e0ac25",
+      "weight": 3,
+      "timestamp": 1559103375.46,
+      "active": false
+    },
+    "833eb45609829767a63919abcde45db0e3fb5129ffacca1c17bbd13f": {
+      "ip": "116.203.45.9",
+      "port": "6969",
+      "pos": "BJCzBhghk5K4ZbCNjMyRRoDG2vNKwNeqmZ",
+      "reward": "cb106fc75f56b06d11f80486dc09a34ee0b362daa11eec40bdb1e46a",
+      "weight": 1,
+      "timestamp": 1559388875.29,
+      "active": false
+    },
+    "3b4152271b9d93e0a4c4a43ab524c227eeb1073c3067bafb7ca89d42": {
+      "ip": "207.246.81.227",
+      "port": "6969",
+      "pos": "BPgtPqXr7crBApYtN7RMq5WyQg67WehL5X",
+      "reward": "9d9fc3f689fbf3bb0e5b2c9dd8e1bbd004c6bc7641ebbd3a548a33be",
+      "weight": 3,
+      "timestamp": 1559431443.9,
+      "active": true
+    },
+    "c94e8ea0a8f8a6470f1fee796427a21a883cfd38955d4b8171faf4f6": {
+      "ip": "45.77.14.30",
+      "port": "6969",
+      "pos": "B8m2XuWV2cqggsh32b4eT9aic3k6Rd6X76",
+      "reward": "40e3c0978d05b13caa55e714d80951a8d88ea8a0cd45ce165c589ba1",
+      "weight": 2,
+      "timestamp": 1559452871.48,
+      "active": false
+    },
+    "a50e4ff9ebd2bf4d843f4797d8ee6de43db9445c6b9fbf9ada169ca9": {
+      "ip": "149.28.193.89",
+      "port": "6969",
+      "pos": "B4a5AFPusnSqqmk8jV4gPFvg6Uhvy1sScy",
+      "reward": "a2ec2e48dbb09c7c503a9c9db0b850b0dcb58749eb3289bb25d8cb74",
+      "weight": 1,
+      "timestamp": 1559595494.23,
+      "active": true
+    },
+    "65d569cce3ff9964ab5f4be91ffb2a11f7d7c9c16793a204aed7fda2": {
+      "ip": "58.121.245.217",
+      "port": "6969",
+      "pos": "BLaoiiJL8CESQSukhW71pQSob1Gy9wx9jg",
+      "reward": "65d569cce3ff9964ab5f4be91ffb2a11f7d7c9c16793a204aed7fda2",
+      "weight": 3,
+      "timestamp": 1559748750.62,
+      "active": true
+    },
+    "f521300930e753b8938f8f9848c14c525558bad10b4a27846b4d4e22": {
+      "ip": "68.183.119.181",
+      "port": "6969",
+      "pos": "BMUkrrKkm1QoMac9U93VQStCHsMa7HsfDD",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1559831170.7,
+      "active": false
+    },
+    "b2b9802bc5f589a8c0638034df546814dbe48132d9ee54ae48da8934": {
+      "ip": "45.77.57.246",
+      "port": "6969",
+      "pos": "BK3t4p37Ei2JD4ysVxZxfveRko7CYr5wp6",
+      "reward": "d3d2b04d797ce1e775f580aa68bea073bd7c46636513babfda9cfd46",
+      "weight": 1,
+      "timestamp": 1559917705.87,
+      "active": false
+    },
+    "905dff2233842c886f600a4777348e5df85c36211d1c86f39cd26e03": {
+      "ip": "134.209.174.73",
+      "port": "6969",
+      "pos": "BEZ8hRvdXHbHfr9ezSFNBEQDCKpXNh9Z3g",
+      "reward": "2fd86133997a6768ce3afe8f409559d505e4bfea5d5d7657d9e7f3dd",
+      "weight": 3,
+      "timestamp": 1559927989.91,
+      "active": false
+    },
+    "6cc70ef88a1aa0209ebdc0d3cbd2a371471cb7fd5b57e28ee46af113": {
+      "ip": "176.31.197.133",
+      "port": "6969",
+      "pos": "BA6jw1eByodLCHah2u43v9tQNwesHGHqNS",
+      "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
+      "weight": 3,
+      "timestamp": 1559991575.9,
+      "active": false
+    },
+    "a46d23951ebdeaa87ee97e5e23d8d6de93e220e4a739ecab7c1a3fa7": {
+      "ip": "142.93.60.241",
+      "port": "6969",
+      "pos": "B78FfpjRGQuvjcejpxWdv4vMRemh5KsPgD",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560019734.66,
+      "active": false
+    },
+    "6d064a93ad0c570bdff008fed5728299e5ffb553f888d32098edd69c": {
+      "ip": "157.230.104.197",
+      "port": "6969",
+      "pos": "BRBTeiiwbNveBFnHZhjTGT9DerMSVknKC1",
+      "reward": "522bd1e21e0cf2709b7cddb824ed7179feb00c2b5c75f11b536950cf",
+      "weight": 1,
+      "timestamp": 1560052318.12,
+      "active": false
+    },
+    "1cd0044afbcaa2b9c86685af61505ba91923d41765e007bb12cc2e1a": {
+      "ip": "139.59.91.47",
+      "port": "6969",
+      "pos": "BLekoQt4TRCRoJZEsWcCoCtKw92Dok9ys9",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560072176.12,
+      "active": true
+    },
+    "2aeb40e6e8bad304da0b8c412b7d32395b2bbe2428a175700746e4cc": {
+      "ip": "139.180.199.99",
+      "port": "6969",
+      "pos": "BAE8SBKWRWnitYBnNSCYjpXo7QW6aSyUi4",
+      "reward": "b04e04bc40a91b4d891e8f05564b0d839dc8b4e45ee32852d36125f7",
+      "weight": 3,
+      "timestamp": 1560080681.44,
+      "active": true
+    },
+    "fbebf4b529a3f1e9d25b4d8edc45639717572c5a82a0b1fb22a1c678": {
+      "ip": "139.59.25.152",
+      "port": "6969",
+      "pos": "BDPkygUYSFDvyn1zSBTcf4fC9i1kCM9gV4",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560089472.24,
+      "active": true
+    },
+    "16267c43ad19c17f8b6a55808a46f398d21b208110fc1f93e65b172f": {
+      "ip": "178.128.222.221",
+      "port": "6969",
+      "pos": "BRmw6Mgv9ky5L2EusePKBLWokqpL2kLbne",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560089827.29,
+      "active": true
+    },
+    "de8c49349ec559c310b6e762dee07431f049eebdb5a3f5ace74818dd": {
+      "ip": "159.89.123.247",
+      "port": "6969",
+      "pos": "BRWCMZ5k2LQwxcw3TEwNSc4g3AEd6rCN7D",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560089961.14,
+      "active": false
+    },
+    "93613b67f36ebf40e2acae5b4afa5d63af8cf0cabe40d580aafae60f": {
+      "ip": "188.166.118.218",
+      "port": "6969",
+      "pos": "BRyFAeanrYpGCGRG2pdFqM4BcSGK8vKTLb",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560090099.43,
+      "active": true
+    },
+    "03d37fa5780e3103ffadd7d4883831ed9b7fb89e9555d98122da0dff": {
+      "ip": "159.89.10.229",
+      "port": "6969",
+      "pos": "B9YTEn3TXjBxX2ZKN2ABV2F4S4JX8k39JS",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560090328.4,
+      "active": true
+    },
+    "77c1c1fc7fee9e46b34831330c7f49a942427bf3a07141d2484e62ae": {
+      "ip": "104.248.73.153",
+      "port": "6969",
+      "pos": "BFpEoBRJDPMSLk4Xzg68x16zmUXJdJg66r",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1560090357.17,
+      "active": true
+    },
+    "1a416bc8d96bf7263161f9f2c032daae5abbb5b8f8958920ed694dd8": {
+      "ip": "45.32.49.12",
+      "port": "6969",
+      "pos": "B51G4b9E7qk21EJRYDVVaimbtvfrT4Lrds",
+      "reward": "b04e04bc40a91b4d891e8f05564b0d839dc8b4e45ee32852d36125f7",
+      "weight": 3,
+      "timestamp": 1560090926.48,
+      "active": true
+    },
+    "b7d255403385a4b5f8c8d2666503d8722054ddb95f752a522c3b0803": {
+      "ip": "211.59.146.229",
+      "port": "6969",
+      "pos": "BH1RNLmM6vLxsUBSvpVaGjqEudSeR8gjBi",
+      "reward": "b7d255403385a4b5f8c8d2666503d8722054ddb95f752a522c3b0803",
+      "weight": 2,
+      "timestamp": 1560098468.21,
+      "active": true
+    },
+    "37c55348434dcdbf2b9e564db5b913d8c182cb66d0626799f124e618": {
+      "ip": "104.248.56.196",
+      "port": "6969",
+      "pos": "BR8jZPZ8AxZUQJzHBk1bbwB8zQ9yQy5gzy",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560119422.59,
+      "active": true
+    },
+    "5bb05ca2acdcb5c8de9a2f65fe54bc79a7a0e65be3b9ceb1bf324c58": {
+      "ip": "204.48.18.50",
+      "port": "6969",
+      "pos": "BBMubfYQoFAp7Tm8qVhw6sPzW7EsG7RBM8",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560124069.56,
+      "active": true
+    },
+    "dcdc5c3f53adb4f52b0b63ceb10643f6a8d9ce970f8f5f269a6eb0e4": {
+      "ip": "178.128.147.250",
+      "port": "6969",
+      "pos": "BDh5AiYKxs6yEtJRh6QjERzuJTNXeYx58n",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560124203.1,
+      "active": true
+    },
+    "af1b412752215b30ba81bcc4b6b690db00ca845ae9694d5ac0c6dbdb": {
+      "ip": "142.93.6.91",
+      "port": "6969",
+      "pos": "BLNgoBQYDoWwwfgNKWwoV1U2PeEKwQvPRo",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560124311.71,
+      "active": false
+    },
+    "1acd9a9f7a045b9fc8a73e138ff7717b791bdd35efb0659342dfeff9": {
+      "ip": "142.93.117.139",
+      "port": "6969",
+      "pos": "BS3W8dxLLdPwLTB21amWVb5h7U5QYEpwbu",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560124467.05,
+      "active": true
+    },
+    "3a34bb9d2e4298ac0702941c57a3e5733900c8d9e5b7993dbae0dce0": {
+      "ip": "142.93.201.200",
+      "port": "6969",
+      "pos": "BPU4CuKbRyYPGEsFiVwbCeJ6vU9riA1Uhi",
+      "reward": "c5956cf2ada13588834ad6e662c6503e982a02515022f038aacf5024",
+      "weight": 3,
+      "timestamp": 1560125376.55,
+      "active": true
+    },
+    "e77de143922e2eff290de87fcc7a966dcf62f44a36aebb12c8f900b4": {
+      "ip": "85.94.178.144",
+      "port": "6969",
+      "pos": "BDQyujAMRezKJK9jPQ7XxKGBToodo8V9Lv",
+      "reward": "37334d21888b28108b1d52479603018e8f72b0cb762e54d016a6f297",
+      "weight": 3,
+      "timestamp": 1560161777.17,
+      "active": true
+    },
+    "91e641c118ca20ec4e5d05963c73cdf036e66b533538a1a5833df113": {
+      "ip": "89.25.168.83",
+      "port": "6969",
+      "pos": "BFfQ5oH3MpicwBAVJifG1RBvFHdy5XznxB",
+      "reward": "91e641c118ca20ec4e5d05963c73cdf036e66b533538a1a5833df113",
+      "weight": 1,
+      "timestamp": 1560255091.33,
+      "active": false
+    },
+    "d2a5bc9f3ba1b2eb66a98ca0262cb8a5785e5048cdcfed26c73c8924": {
+      "ip": "136.144.221.6",
+      "port": "6969",
+      "pos": "BJ2Bu4A99bXoxc6zYxr9rtHnxqweoHoCyT",
+      "reward": "2e008722ee36cbab11c3ced3bafe11762a0ffc67058660324f156438",
+      "weight": 1,
+      "timestamp": 1560259680.91,
+      "active": true
+    },
+    "2f55a176a7e6ddaa0cd244228a0d873d58da76832e30de2de633b0fa": {
+      "ip": "95.216.177.5",
+      "port": "6969",
+      "pos": "BTGoqe3Fp4zL3FgemUjAoSpnoLPHLM3d2t",
+      "reward": "8a78988f11ba7ab48fe68d9892d7b94d15f446838318be855a8e953b",
+      "weight": 2,
+      "timestamp": 1560280256.2,
+      "active": true
+    },
+    "0d118ea7f4fa03f93f11ccc4825dfb13e4310c04d12fea8eac2ce715": {
+      "ip": "198.245.62.30",
+      "port": "6969",
+      "pos": "B4nBNx229LknU9LJNtX2QV25yqZRw3SAGT",
+      "reward": "1cdb71bd71efa771b6a6c82d6206a35ca12c3b128fe3ae9cb0183aaf",
+      "weight": 3,
+      "timestamp": 1560328999.9,
+      "active": true
+    },
+    "87636ab2e725efd684fe1968c3c0782e79fb314c49e6ab401957a700": {
+      "ip": "51.38.211.8",
+      "port": "6969",
+      "pos": "B4ptTqmQmGvNqwTsAFHQxoFrM7rpAAjwcR",
+      "reward": "0a2df6c7ee23224296e5bc0fad73d3b4e6aca048672e7891200c25ba",
+      "weight": 2,
+      "timestamp": 1560356933.74,
+      "active": false
+    },
+    "20d5546f80818f3868d736a37e26fc0318b9651de296e0ef4ea706c1": {
+      "ip": "128.199.62.76",
+      "port": "6969",
+      "pos": "BBeK9gwZAhFx6UkWLn8FV8Jf1R1bVMWAko",
+      "reward": "20d5546f80818f3868d736a37e26fc0318b9651de296e0ef4ea706c1",
+      "weight": 1,
+      "timestamp": 1560381683.09,
+      "active": true
+    },
+    "79f3c088e448a5b80fb4ab6d1667fda7b45a1ba3f21c0634a7ce3dba": {
+      "ip": "8.9.11.195",
+      "port": "6969",
+      "pos": "BGN5kQR2HbepxUPWCbshKd8VitRFBAjjpY",
+      "reward": "9d9fc3f689fbf3bb0e5b2c9dd8e1bbd004c6bc7641ebbd3a548a33be",
+      "weight": 3,
+      "timestamp": 1560500420.51,
+      "active": false
+    },
+    "bfc237fc1cca0aed09438b8c87cc6311402eab942179a115d8647ae7": {
+      "ip": "193.37.214.35",
+      "port": "6969",
+      "pos": "BJTfportixW5BuYTufhNYfkJi1FJcbZpYz",
+      "reward": "9aa6a17e5f4f07bfff1ea3e5ed4cbdeaf29e4f6c985061aa3f8e6f9a",
+      "weight": 3,
+      "timestamp": 1560522292.93,
+      "active": true
+    },
+    "37d5b264986b09394746485e53fdb87bafebd316fc34069e0e96b92c": {
+      "ip": "91.241.32.110",
+      "port": "6969",
+      "pos": "BQSh4xmqsGx7wQvLohDMS7Y1GtEdLRo9yt",
+      "reward": "37d5b264986b09394746485e53fdb87bafebd316fc34069e0e96b92c",
+      "weight": 3,
+      "timestamp": 1560547232.77,
+      "active": false
+    },
+    "30bff062bc5cd277d2d2d4e203b8eaf159b179210f992573af91b67d": {
+      "ip": "144.202.75.13",
+      "port": "6969",
+      "pos": "B9PDWzy4HrjBfF59uX5vBo3vjsfLBo5tTp",
+      "reward": "63d873516e862502119f46c0a39c5fe0d735ac74dce91aea671bf218",
+      "weight": 3,
+      "timestamp": 1560650610.56,
+      "active": true
+    },
+    "9b2cf63335a7cf67f095a51104dce03c5bcf3f18588623a63d67a11c": {
+      "ip": "149.28.36.182",
+      "port": "6969",
+      "pos": "BB4yvzfxoX3c6uZ6E7vXV9dRt2v4iYGxg1",
+      "reward": "76f1d3a477df4ca057962d585493fcadf147349dd3ef9a089b1620b1",
+      "weight": 3,
+      "timestamp": 1560652477.39,
+      "active": true
+    },
+    "861b525e33947fb2302b728c1b9512938ac7043c3113c2e6fa176ec4": {
+      "ip": "144.202.49.76",
+      "port": "6969",
+      "pos": "B9yQEAFtE8nYht6wdPTPg98pmA1YbJMBca",
+      "reward": "2cc7c00f66357dfdae0156b9ddc65ff51b0403854c5b85ae910287e8",
+      "weight": 3,
+      "timestamp": 1560652811.54,
+      "active": true
+    },
+    "6a144d1bdc04709d41f6d85a38c5a20fa711749d2a3bede54a848bf7": {
+      "ip": "45.32.85.239",
+      "port": "6969",
+      "pos": "B8E7mou272C8NhgHVhsNnz1H3JRip8xR1Q",
+      "reward": "7ed6930d8f34399cda932f2c0fe0b7ed6cbac1e4df34dfdcf4095fb9",
+      "weight": 3,
+      "timestamp": 1560653208.18,
+      "active": true
+    },
+    "90a924b489f6f8a94017c9ad3488506352def52d3576497e4f3b9a6e": {
+      "ip": "45.63.35.248",
+      "port": "6969",
+      "pos": "BErMunXWVgMe8P2NJkVg4SsuuTcGMPWmNa",
+      "reward": "87bcab6317220dd64f135d8e4ac2c663532b52e377d57ab846c5dbe1",
+      "weight": 3,
+      "timestamp": 1560658517.09,
+      "active": false
+    },
+    "23a8199566c7bd418e0d8531d937545e68e2db78674fce68a886d34f": {
+      "ip": "155.138.206.10",
+      "port": "6969",
+      "pos": "B86ozEvVqde99Kf2gRP3CJnJxAR313iqQJ",
+      "reward": "495564361e1234d1f5b7d01cc5bf581a837bf563b6997eb0a541d1a4",
+      "weight": 3,
+      "timestamp": 1560658806.28,
+      "active": true
+    },
+    "24a71fc4a31cd95bbb8e95b1d185491c79bba207961168cfc0946194": {
+      "ip": "45.76.7.204",
+      "port": "6969",
+      "pos": "BJSoaKg4SbHztjojeP67vMDJnJU6na3iCH",
+      "reward": "67e5900781350ba56efcdf06eb61ced5673bb8e3599fdd81a14172f4",
+      "weight": 3,
+      "timestamp": 1560658951.87,
+      "active": true
+    },
+    "be7c151eab50142ab30ff29da83d917b4495179a3f0384d04414bb16": {
+      "ip": "149.28.123.215",
+      "port": "6969",
+      "pos": "BJUUrjkhoLqCLb9yCqdhXFSoqZaaVaz9x9",
+      "reward": "9b656ab70349bd9fb06eed05e3d09cce8b442e07a4b88a3b5f36b71f",
+      "weight": 3,
+      "timestamp": 1560659051.77,
+      "active": true
+    },
+    "eae88c011a155b9b7edca6092eca5d986aa2bd08c5e936d170cf245b": {
+      "ip": "144.202.76.37",
+      "port": "6969",
+      "pos": "BJs5HpoNMgcFpSUskcrRAbhyiHN1XAWiQi",
+      "reward": "b35b774f222e4c965b66914af2a4023f0c85c3528b9049d629691b74",
+      "weight": 3,
+      "timestamp": 1560659081.1,
+      "active": true
+    },
+    "7ee4dbe6c350a731d59c942aeb20911b2526706606140b8cdf1b3b06": {
+      "ip": "149.28.106.204",
+      "port": "6969",
+      "pos": "BG4w8cNg3QYAFWyASi4TdVbscn1wpwg7UD",
+      "reward": "b901bcb011b674527e4ca0dd327a14e5e2cbdaca72956b3e35dfcf44",
+      "weight": 3,
+      "timestamp": 1560659423.79,
+      "active": false
+    },
+    "952f2f5a9d82fddd2c2dff54cb652879fb882638d9770bf0b08a1d4b": {
+      "ip": "149.28.11.199",
+      "port": "6969",
+      "pos": "B99VMAEviqbhiQQJySNQteVPhCmejP27x9",
+      "reward": "431be72264b0af617ceff39ca201f627b0b7dca7d1dfa41c90bfc4cc",
+      "weight": 3,
+      "timestamp": 1560659530.89,
+      "active": false
+    },
+    "1343ed6746289322273d85ceca49128b23ffbf6d4c870c04a103b933": {
+      "ip": "104.248.219.233",
+      "port": "6969",
+      "pos": "BGQGfzbx2qW2b6xEG745Ww9X1GLvWTQB1s",
+      "reward": "2fd86133997a6768ce3afe8f409559d505e4bfea5d5d7657d9e7f3dd",
+      "weight": 1,
+      "timestamp": 1560821364.41,
+      "active": true
+    },
+    "f61cd144852d280e1aa3b66a7120d39c655ca6c21244693b1fd0dc34": {
+      "ip": "95.179.238.102",
+      "port": "6969",
+      "pos": "BP2TVJZESXAd3MqzC1QDUPLvbUPdLz8tSg",
+      "reward": "cad9c3ef890cc24759e5955de7974c074033e3fcfb25c115edda4c37",
+      "weight": 1,
+      "timestamp": 1560967752.78,
+      "active": true
+    },
+    "797efd8ee0bbdaea68bbc92dd38c6de70662fa72ae641420dd490ffc": {
+      "ip": "149.28.22.40",
+      "port": "6969",
+      "pos": "BPoas2vdwyghyzEXEt482RDaG5VNWv5TBG",
+      "reward": "797efd8ee0bbdaea68bbc92dd38c6de70662fa72ae641420dd490ffc",
+      "weight": 1,
+      "timestamp": 1561112739.61,
+      "active": true
+    },
+    "f82ed723a9679a66095edb10478d3ebb900436f59792b56b07cdad7b": {
+      "ip": "139.180.198.189",
+      "port": "6969",
+      "pos": "BGZFoo1g8r4jRPcLKSfwxpLvq5yPfDyzyX",
+      "reward": "f82ed723a9679a66095edb10478d3ebb900436f59792b56b07cdad7b",
+      "weight": 1,
+      "timestamp": 1561131496.35,
+      "active": false
+    },
+    "e556274d92f6b3d035c6ae6e35e8620af8e0df9833d8040f51a22c04": {
+      "ip": "103.102.46.235",
+      "port": "6969",
+      "pos": "BKYLz5KiZKCunN568PZ1bzAZRKq4bzBNA4",
+      "reward": "33e46c081295cbdabee9a614b504617689a61194f2febc7e83033920",
+      "weight": 3,
+      "timestamp": 1561230692.06,
+      "active": false
+    },
+    "4a39fbb81625b80104226153d0e7bd006ba7cb946daf6b3a9d6a0c0d": {
+      "ip": "103.125.216.84",
+      "port": "6969",
+      "pos": "BAceTbn4bzbUdn4kujr2LsDS63cEyRuq3p",
+      "reward": "33e46c081295cbdabee9a614b504617689a61194f2febc7e83033920",
+      "weight": 3,
+      "timestamp": 1561231140.82,
+      "active": true
+    },
+    "65d19149e5e000bc0f85808b8ebc32117c9d2c9ec29ced8b93401d99": {
+      "ip": "89.25.168.84",
+      "port": "6969",
+      "pos": "B6GWxYSHd2hLx4Y6H68c7Dd4PFn1ogKJSq",
+      "reward": "c50fb7c1b763c2bff1daf1d678941ba8e61066a1feba27660a120033",
+      "weight": 2,
+      "timestamp": 1561275418.46,
+      "active": false
+    },
+    "c01499718c955379834b0e3d8a4af14b3e444395219a25926e4ffdd7": {
+      "ip": "96.30.198.4",
+      "port": "6969",
+      "pos": "BKiBm1B8tH2HUTq4CEkakmgV2CVUXhYpvB",
+      "reward": "8172883a37a5729438937bba68a229ea003b410b2cd7d1d069ff0ac7",
+      "weight": 1,
+      "timestamp": 1561306019.35,
+      "active": false
+    },
+    "17dabf2990a00a9fc1221db779c3a752113c8966b64537eb6b164937": {
+      "ip": "51.83.74.249",
+      "port": "6969",
+      "pos": "BGPNV4zNwNVmCT4u7rz8bymohqsaT6mX1S",
+      "reward": "fa5fde3b5288471efabd12c9e32cf6d763cad638c11bb5d3d6bd36ce",
+      "weight": 3,
+      "timestamp": 1561318722.35,
+      "active": false
+    },
+    "9fa7bd5bba29dd48362cd2f39bedc4f81be10b1646a14e5fff9b091d": {
+      "ip": "45.32.44.46",
+      "port": "6969",
+      "pos": "BEH2AqE9p9eBLkLFwB4qpvi4SsXXRYXr26",
+      "reward": "58a578c9010549ceebecbeef38c533fbb957f24ac4b26ed3f14ee1c6",
+      "weight": 3,
+      "timestamp": 1561424832.97,
+      "active": true
+    },
+    "90ce1ecab243e722a6981b603c443e87571499a9ca261e3bb2b87f8f": {
+      "ip": "167.86.92.93",
+      "port": "6969",
+      "pos": "B9i7ZDGsxuqUdGDc6v7TvVJrux2txLctqg",
+      "reward": "a5785d437e2c21ed013ed24ee26b1ad2efaf2c5ba1037513c9b1de09",
+      "weight": 1,
+      "timestamp": 1561491415.49,
+      "active": true
+    },
+    "9ab49f66492ebeb91397bd574e84658c7c3f88ab476bab61abac427c": {
+      "ip": "66.42.95.9",
+      "port": "6969",
+      "pos": "BRqN6LkVTG6pgEJM28X7cbBA9iLfcJqnHX",
+      "reward": "904057ad5b49a885c6fd77e058c3560c3a0b92f8a8b00acfbb4bd54d",
+      "weight": 3,
+      "timestamp": 1561572323.32,
+      "active": true
+    },
+    "74b07b11968849f0e7661a8d5bf638afb0526f8d7efdb8a13278d743": {
+      "ip": "155.138.223.40",
+      "port": "6969",
+      "pos": "BJeNJKABB86UycgggbWpPetpuDQt5aRvFC",
+      "reward": "58930d0fb870ba18b88c16d91d0f6fb851efdb1c9190e34fba985743",
+      "weight": 3,
+      "timestamp": 1561575897.56,
+      "active": true
+    },
+    "b7116d5e94dd09f1ca182e1d92761194fbc1c7262e37e0d8152375fd": {
+      "ip": "155.138.215.140",
+      "port": "6969",
+      "pos": "BNr3TkP26bDUb7rKcEWiYfrouZXzf3vYDm",
+      "reward": "db39d6c67694777c2e3b3571c0dbf5d33cb198681cdd171160ed2e66",
+      "weight": 3,
+      "timestamp": 1561577780.31,
+      "active": true
+    },
+    "9e295d7c47150a7e1a195a3e453b5af95650e3db1d5a581e13868eb5": {
+      "ip": "155.138.214.114",
+      "port": "6969",
+      "pos": "BCSbh2g8QD6L2zVbWzA3jZ95Rfuqa4ccLU",
+      "reward": "9e71f7bd9baf0061d8021e480757d3abf3ceb29b0cdda406711693d9",
+      "weight": 3,
+      "timestamp": 1561579078.94,
+      "active": true
+    },
+    "27c4b8eefbc8451e53c0cf30fb807813502227ba66b0019dc691a253": {
+      "ip": "155.138.217.51",
+      "port": "6969",
+      "pos": "BAdYyvqj3wBqdgnXn11F7Ttecfsk6QNLBt",
+      "reward": "4ddfd752b383518ddfa1fe8527af78952432cf062eae782a64508e1d",
+      "weight": 3,
+      "timestamp": 1561579294.69,
+      "active": false
+    },
+    "50e2ebb1375803ad5a319eeb94f907da5c78b9953b49ee8a669c8ddd": {
+      "ip": "103.102.45.239",
+      "port": "6969",
+      "pos": "B4vrm3ZuJqoEYEWSbaD2HVuBNNVEunEziA",
+      "reward": "33e46c081295cbdabee9a614b504617689a61194f2febc7e83033920",
+      "weight": 3,
+      "timestamp": 1561664003.71,
+      "active": false
+    },
+    "bd79b0831ef7c719d176a26d0ae73df9a62d07d62d2435dc1abfc883": {
+      "ip": "178.33.221.174",
+      "port": "6969",
+      "pos": "BT5i4FoAACAxHw6XDKB1dHwbkFByZF9Qfv",
+      "reward": "1cdb71bd71efa771b6a6c82d6206a35ca12c3b128fe3ae9cb0183aaf",
+      "weight": 3,
+      "timestamp": 1561834757.35,
+      "active": true
+    },
+    "6e0a45e8540e344301fda052101469258994873f9835297f3f055816": {
+      "ip": "67.205.145.98",
+      "port": "6969",
+      "pos": "BL4u9M6v4VMAypV3mDExPiHsdY32paSSzB",
+      "reward": "3a3ce4220e7fb1748426b8b3b292e0e9b69193484e1c6d5c79b39942",
+      "weight": 1,
+      "timestamp": 1561875837.96,
+      "active": true
+    },
+    "014f78b703d3a1dd92671ee81252b7a382dadfffad9d9a1a66f1184c": {
+      "ip": "79.184.148.8",
+      "port": "6969",
+      "pos": "BAmvvhhNVptRzW8mEhfeGh1oSKNWxbMKzw",
+      "reward": "8a92cbbb482843587e1ef46b4836ed2a916e25fc97889f6dc499a782",
+      "weight": 2,
+      "timestamp": 1561916736.24,
+      "active": true
+    },
+    "607b6ad544d7e8a0afbddcd494ea90ea8b943a8fa86a04a47d6fa607": {
+      "ip": "167.71.4.8",
+      "port": "6969",
+      "pos": "B9R8rdvuBG1TuJh6jvYKLeDV535sWqNhWZ",
+      "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
+      "weight": 3,
+      "timestamp": 1561947202.51,
+      "active": false
+    },
+    "3c4e412ea0e5d89b19b7d226912223fa870321494ba5b1444c404762": {
+      "ip": "178.62.13.181",
+      "port": "6969",
+      "pos": "BNNeG7GwcRVdxaCo1s7sjRoWr9ZzdjMN1n",
+      "reward": "51ee19251c9e79ed14aa117417224ea5073f6ab1a2a40ac36422b207",
+      "weight": 1,
+      "timestamp": 1561975686.44,
+      "active": true
+    },
+    "d9d8b6ed0f25c9d78faa02124e5a4c62e1a050805c8155f8f84dbfba": {
+      "ip": "164.68.100.82",
+      "port": "6969",
+      "pos": "BG58Wjb4MAgYsSXwbzXLdk5d6HDZxmsRQD",
+      "reward": "dc005e8a0aae7512f7105789e85d5f64954928676788283e510ccc42",
+      "weight": 1,
+      "timestamp": 1562002678.74,
+      "active": false
+    },
+    "e480811089c7e4c7e93ee67591053bb8317ccaff788caf3ef6fb8ce6": {
+      "ip": "175.206.48.231",
+      "port": "6969",
+      "pos": "BJLEV9FmpWHLWCH361aCtSGPs2jLMSAMKz",
+      "reward": "64f3f4ed81973a476e27d0b1136111e65a74755e11b426cb45eb648f",
+      "weight": 1,
+      "timestamp": 1562071765.11,
+      "active": true
+    },
+    "4a6df7ab7071f82717e1f63aee106eff858e624582dc4f0ad10a0470": {
+      "ip": "149.28.20.99",
+      "port": "6969",
+      "pos": "B9FzuqQWoauZqwhQbjbeNfY31Rqb4CoPp9",
+      "reward": "70892ee3ae8c0481447ac5affeb1c1eb78665f87b63df23d7957a905",
+      "weight": 2,
+      "timestamp": 1562113384.12,
+      "active": true
+    }
+  }
+}
