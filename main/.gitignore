@@ -3,4 +3,6 @@ poswallet.json
 posstatus.json
 chains.json
 check.json
+powreg.json
+slots.json
 config.txt

@@ -1,10 +1,12 @@
 {
-  "round": 7644,
+  "round": 7646,
   "inactive_last_round": [
     "BEtmzhEB4wKo7Jy78oKySLxvpp8PmbeMmd",
+    "BAEnumsEQP5GnpmLcXSc4ifUdXFBwnjv3T",
     "B8vaqe84FrJwriGjp337TostcpeybghSgG",
     "B6SdVvLytJ4UETLS7zoLGBWQR9kbCN7bPE",
     "BSZM7PcWevqhG5T3PfF94PdcWeW6hH3DUk",
+    "BL7hQ1aUhxHgWvEHNqs9fBbmFZ9LHLBdSd",
     "BMUkrrKkm1QoMac9U93VQStCHsMa7HsfDD",
     "BJtTtHDm3MehTcTbrqqQ5ojvHYs73M7ZK5",
     "BK6SuUsvFuAa4XGBqPkT98NgrqM92CvQUd",
@@ -12,10 +14,9 @@
     "BBP5bKAegcJy8oXS7vW71xE1Ys5YUJR6Br",
     "BBwuvshEVeP8Z7tGQ3xDTcpFLU31owieXq",
     "BCt5fxpeevGesmGG59nTHvcJhLpnBM1CMP",
-    "BP8HLGKU4pLhNTPwon1PDhGyTdc1tHbvcf",
     "BJCzBhghk5K4ZbCNjMyRRoDG2vNKwNeqmZ",
-    "BLNgoBQYDoWwwfgNKWwoV1U2PeEKwQvPRo",
     "BQSh4xmqsGx7wQvLohDMS7Y1GtEdLRo9yt",
+    "BDAzxHYgFyFDT66PJYR1wNe9VQXdkj96hg",
     "BK3t4p37Ei2JD4ysVxZxfveRko7CYr5wp6",
     "B7EcmF36kBPSwufKRDBoeEKFdR6d1W8U49",
     "BFfQ5oH3MpicwBAVJifG1RBvFHdy5XznxB",
@@ -24,18 +25,22 @@
     "B4k96TcagvvAKiMGBmf3XfLWz2nR8wRozv",
     "BDytusaSEGfYk8Z3rv4mY3TTAtYKufTdns",
     "B4YYNtdznqRXiYXDsGWqjPgu4AzL3EhvmY",
-    "BCodcDCmRuKeZGaZRYm6TUFZDDPZohigQX",
+    "BRyFAeanrYpGCGRG2pdFqM4BcSGK8vKTLb",
+    "BDGyneQJpNk4QCznrxqcKe84EaK7ckhmuY",
     "B7FEHZRqH4h1QnY1o7yPeErPu7Jh7Yg9Q6",
     "BQTqJQFne7HQwUng9EJYezzBcB8vi3PH61",
     "B6GWxYSHd2hLx4Y6H68c7Dd4PFn1ogKJSq",
     "BGPNV4zNwNVmCT4u7rz8bymohqsaT6mX1S",
-    "BKwAqFwVyEo2anBLxWG7vv4uaiZAKeKXf1",
     "B8dkUS7yLF7X9K1EzbQvs9C4d7XYGVypnM",
     "BSStfuoLELeodhXzsZn1jZBwx4QaT6zw5W",
     "BCLxPQyGkYcZmXZL1neHRyp4RJrw7GfYkT",
     "B6N3Xru8V5WKw9VnBZ9bwyaFS5yrSWiE9x",
+    "BJKo6TPcAxcMapn8mKpgkPNU5u8nqsVGnK",
     "BScmLe9xHMScUEfCHoqwQMUj9Xt38ndmLW",
+    "B9i7ZDGsxuqUdGDc6v7TvVJrux2txLctqg",
     "B596tThSfSiio9Pf5HAoPgNyYAWoTrSkqv",
+    "BAjyXk3xthnkSg62oBexHrbiNDTfBTnHcd",
+    "BQ3tjdtC3oMpkTuVByX6bJbp9QZKWLF5Be",
     "BAdYyvqj3wBqdgnXn11F7Ttecfsk6QNLBt",
     "BSGe2d7yRDp561oQ9GcTZqtoPdqiuegukc",
     "BEZ8hRvdXHbHfr9ezSFNBEQDCKpXNh9Z3g",
@@ -49,6 +54,7 @@
     "BKYnuT4Pt8xfZrSKrY3mUyf9Cd9qJmTgBn",
     "BBQRN9yyePfeixcSPjWLX3aFkfRusznSX7",
     "B9VCb8ek73Qo5tAqKBVhuogpFkv7w5mEeA",
+    "B7oiHLH9SgWuiyNyb7grzTTdYeeUVPcBxH",
     "B99VMAEviqbhiQQJySNQteVPhCmejP27x9",
     "BDFLLceo5saAvqNCgVFXH6uWNbpJSv7nPW",
     "B4vg7ZkiJGpaeePQPCPPiQmAdMTnqmjCnP",
@@ -63,11 +69,12 @@
     "BFg7F9LnY8xVuMt7d3KQQALR3nriKpSCq9",
     "B6MR7eXc4oCZKuV2U9ojaAq4S9Wa2Byqwx",
     "BREZG6QJhffKRV31scZZFFZ2eW2iTbkYta",
-    "BP7eWNsrBtwbMkW6wTYxvYzZT9gDctB81q",
     "BDdJijJCHBi1CYS9MfnQ8fzrfBDTsgdUV3",
+    "BFpEoBRJDPMSLk4Xzg68x16zmUXJdJg66r",
     "BLdGWiR9euZFn1onb6bYFaJuMfGiUZZik7",
     "BRtKKmHDNayyLYvYyAPmbyrCGqyqfCA58X",
     "BRmZbjNc137J2h2B3GG19efZCp54jthRyG",
+    "B9DcaTwzzKCHovEMsPKibSqq6APcWJzaHu",
     "B9KREwCVX78R7iSa8uMmRkyHfWH526E3ww",
     "BEm3ckjKC5Y64eiM4eAs4CT8qnJxrheFX3",
     "BFiZdDsUM32YpjTfu77L3iuYZxKYTGUNDm",
@@ -79,22 +86,20 @@
     "B7CsuQpWvJM3iiFSuyK2X3fvokkB52f1UZ",
     "B83G1phtHxneLc9DWxxF4Dr6y9ZiiDwTYe",
     "B4ptTqmQmGvNqwTsAFHQxoFrM7rpAAjwcR",
+    "BN8m2YfEFFtGdFUQzPLvizGKzhUwohT98L",
     "B8m2XuWV2cqggsh32b4eT9aic3k6Rd6X76",
-    "BA6jw1eByodLCHah2u43v9tQNwesHGHqNS",
     "BLBq7GSfMDnrP6iFNTumjtsWUK9NnGc9vC",
     "BEx4kWBCm2YmrsatoGahs6XiSuUjmK5s56",
+    "BA6jw1eByodLCHah2u43v9tQNwesHGHqNS",
     "BG4MoR54rpbSQ6JQbYrRgueNo7Axg2zCo6",
     "BG8XsQvHDfVKkop3SWnT2TugEdWo8JQ8Ed",
+    "B9QYYQSV836pvLX9x9R2iYFnb3kxkh92iy",
     "BRWCMZ5k2LQwxcw3TEwNSc4g3AEd6rCN7D",
     "BAti5hLA3YGAxvVDen7NRGkHCyghxGpeMU",
     "BJhYSHbYrq7utoGZe6qxukRwautZqGsAsF",
     "BDvcgj9fStY4g1QaQ3a8mRyAKhSBMM9PhP",
     "B4vrm3ZuJqoEYEWSbaD2HVuBNNVEunEziA",
-    "BG58Wjb4MAgYsSXwbzXLdk5d6HDZxmsRQD",
-    "BNC7iPnYb4qwxMQkjF7S2ZnSst2hknGMQX",
     "BMcRKfMykLi4nMCN2k26965WqvqzK1wCW4",
-    "B9tyd5kUninvuBsQKvsMLiVskLV2mp5tL9",
-    "B9R8rdvuBG1TuJh6jvYKLeDV535sWqNhWZ",
     "BAoJf7q5KZdj5UeD2iVCqBuxXjozc4rpjb",
     "B8dC3Z8VWjjNmQaYbuEgbYXAjs17Z6BoEK",
     "BDx5XPF12hGpitQX8evVFYb2kaz6UPtZUJ",
@@ -112,11 +117,11 @@
     "BEVJswSZFug1xCconWKjb6suWYDYMZtU8P",
     "BKiBm1B8tH2HUTq4CEkakmgV2CVUXhYpvB",
     "BPW9dhpwNXMjeo3LkUwmW3QZUcHDUKmqRw",
-    "BG4w8cNg3QYAFWyASi4TdVbscn1wpwg7UD",
     "BRBTeiiwbNveBFnHZhjTGT9DerMSVknKC1",
     "B5tCLApfMBBTrQ8VhhNgZDiBckF8S8naRY",
     "BEJKHPZ4HBLi7kPVhbQFUaEQofFuGNGZcJ",
     "BNmMXZDaAwLd4RcBszcdoBw7qJjfq15gaK",
+    "BNjxA9m8agSq7n8vHMvz8oHbNYRXULEyqG",
     "BD8w4gsktuhebAwnTt5pr4VB6dDH8LeRJr",
     "BEhZZZgat4hTy2Nmo9bmCkkaNAGR2VLuqX"
   ],
@@ -164,7 +169,7 @@
       "reward": "8f2d03c817c3d36a864c99a27f6b6179eb1898a631bc007a7e0ffa39",
       "weight": 3,
       "timestamp": 1535141351.46,
-      "active": true
+      "active": false
     },
     "fabc968bca676a63bd03fc5928665c96e6b9a61ba56252ee7148b917": {
       "ip": "51.15.225.223",
@@ -407,7 +412,7 @@
       "reward": "af06338fdbfc53574b7c81c96f01e5a29396edc75b08845cc4e38ca1",
       "weight": 2,
       "timestamp": 1535731395.17,
-      "active": true
+      "active": false
     },
     "08875dcb92c7c4747460cd7c4af773ae4b2e08a7f9b0cd4a6ec6c3eb": {
       "ip": "192.99.248.44",
@@ -416,7 +421,7 @@
       "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
       "weight": 3,
       "timestamp": 1535736791.4,
-      "active": true
+      "active": false
     },
     "1af8f10f2ab8564953992a98c13364369569910c65be7f2c2a2bc442": {
       "ip": "107.191.39.23",
@@ -470,7 +475,7 @@
       "reward": "e31488ec1a2283014a3b6973501f7b1d51ed298bf08f994051ad1f22",
       "weight": 3,
       "timestamp": 1535744655.23,
-      "active": true
+      "active": false
     },
     "175a01ae07f53546f2988f369b4e3f72e4e4af5c03a8b764993f515e": {
       "ip": "140.82.11.77",
@@ -560,7 +565,7 @@
       "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
       "weight": 3,
       "timestamp": 1535796882.63,
-      "active": true
+      "active": false
     },
     "3703518b080fc56b783a15cb6fe5452d8acb4c6a5958b8a2d50e25fb": {
       "ip": "159.69.4.64",
@@ -587,7 +592,7 @@
       "reward": "8006b0561bcf664b5380eee2d9a5534cd470459fa0337fbe3437d758",
       "weight": 1,
       "timestamp": 1535803587.16,
-      "active": true
+      "active": false
     },
     "5e47f571c6c084f37ed727455d54f0c7f3fca8eb0b795aec72e1e9a4": {
       "ip": "108.61.199.171",
@@ -1037,7 +1042,7 @@
       "reward": "1f115e642055b06806b52545466cbcc0bc540362bfb46cd313762499",
       "weight": 1,
       "timestamp": 1539823276.36,
-      "active": true
+      "active": false
     },
     "1e5c33f16b6cdd47eb3460ecfa1f17859aa1beac34152766ba6cb937": {
       "ip": "89.39.104.21",
@@ -1325,7 +1330,7 @@
       "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
       "weight": 3,
       "timestamp": 1548603632.29,
-      "active": true
+      "active": false
     },
     "6b91dccc7b2f42bb01424675bb831deefc465cf7dc05d8f8471cc5bf": {
       "ip": "167.86.72.140",
@@ -1406,7 +1411,7 @@
       "reward": "611ee71f45c38666fa9602af6ddd059ef16fee6ece0c6863d491b0b6",
       "weight": 1,
       "timestamp": 1553768855.37,
-      "active": true
+      "active": false
     },
     "5df1ea5856a3c12bdd8bad2e9294286b24d0934ccde7c0415e1ad650": {
       "ip": "178.32.201.138",
@@ -1604,7 +1609,7 @@
       "reward": "25125e9bb305fafd51ceb2858d355f77da99550b933ec0923cd156ff",
       "weight": 3,
       "timestamp": 1558796954.37,
-      "active": true
+      "active": false
     },
     "e7cafb25c34de2a0a2ab2758ad2164bcfe67ab8b23a76f69854596a6": {
       "ip": "206.189.217.196",
@@ -1793,7 +1798,7 @@
       "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
       "weight": 3,
       "timestamp": 1560090099.43,
-      "active": true
+      "active": false
     },
     "03d37fa5780e3103ffadd7d4883831ed9b7fb89e9555d98122da0dff": {
       "ip": "159.89.10.229",
@@ -1811,7 +1816,7 @@
       "reward": "455d58fabc17c64aa96854d60272aac044b8547632a7ba0e7545c2a6",
       "weight": 3,
       "timestamp": 1560090357.17,
-      "active": true
+      "active": false
     },
     "1a416bc8d96bf7263161f9f2c032daae5abbb5b8f8958920ed694dd8": {
       "ip": "45.32.49.12",
@@ -1919,7 +1924,7 @@
       "reward": "8a78988f11ba7ab48fe68d9892d7b94d15f446838318be855a8e953b",
       "weight": 2,
       "timestamp": 1560280256.2,
-      "active": true
+      "active": false
     },
     "0d118ea7f4fa03f93f11ccc4825dfb13e4310c04d12fea8eac2ce715": {
       "ip": "198.245.62.30",
@@ -2171,7 +2176,7 @@
       "reward": "a5785d437e2c21ed013ed24ee26b1ad2efaf2c5ba1037513c9b1de09",
       "weight": 1,
       "timestamp": 1561491415.49,
-      "active": true
+      "active": false
     },
     "9ab49f66492ebeb91397bd574e84658c7c3f88ab476bab61abac427c": {
       "ip": "66.42.95.9",
