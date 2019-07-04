@@ -353,19 +353,100 @@ class SqlitePosChain(SqliteBase):
             return False
         return block_hash == block.block_hash
 
+    def direct_insert_block(self, block):
+        """
+        Saves block object to file db - mostly copy from async code
+
+        :param block: a native PosBlock object
+        :return:
+        """
+        # Save the txs
+        # TODO: if error inserting block, delete the txs... transaction?
+        tx_ids = []
+        # this is now an array of array. batch store the txs.
+        str_txs = []
+        batch = []
+        batch_count = 0
+        if block.height in [76171]:
+            # Delete the existing block
+            sql1 = "DELETE from pos_messages WHERE block_height=?"
+            self.execute(sql1, (block.height,))
+            self.commit()
+        else:
+            for tx in block.txs:
+                if tx.block_height != block.height:
+                    print(
+                        "TX had bad height {} instead of {}, fixed. - TODO: do not digest?".format(
+                            tx.block_height, block.height
+                        )
+                    )
+                    return
+                    # tx.block_height = block.height
+                temp = tx.to_str_list()
+                if temp[0] in tx_ids:
+                    print(temp[0], "Double!!")
+                else:
+                    tx_ids.append(temp[0])
+                    batch.append(" (" + ", ".join(temp) + ") ")
+                    batch_count += 1
+                    if batch_count >= 100:
+                        str_txs.append(batch)
+                        batch_count = 0
+                        batch = []
+                # optimize push in a batch and do a single sql with all tx in a row
+                # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+            # print(tx_ids)
+            # Delete the existing block
+            sql1 = "DELETE from pos_messages WHERE block_height=?"
+            self.execute(sql1, (block.height,))
+            self.commit()
+            if len(batch):
+                str_txs.append(batch)
+            if len(tx_ids):
+                if block.uniques_sources < 2:
+                    print("block unique sources seems incorrect")
+                    return
+                # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
+                if block.msg_count != len(tx_ids):
+                    print("block msg_count seems incorrect")
+                    return
+                try:
+                    for batch in str_txs:
+                        # TODO: there is some mess here, some batches do not go through.
+                        values = SQL_INSERT_INTO_VALUES + ",".join(batch)
+                        self.execute(values)
+                        self.commit()
+                except Exception as e:
+                    print(e)
+                    return
+        sql2 = "DELETE from pos_chain WHERE height=?"
+        self.execute(sql2, (block.height,))
+        self.commit()
+        # Then the block and commit
+        self.execute(SQL_INSERT_BLOCK, block.to_db())
+        self.commit()
+        return True
+
     async def get_block_again(self, block_height: int) -> bool:
         """Try to get the missing or corrupted local blocks from other reference peers."""
         if block_height == 76171:
             # TODO: special processing TBD
             return True
-        previous_block = PosBlock()
-        sql = "SELECT * FROM pos_chain WHERE height=?"
-        res = self.execute(sql, (block_height -1,))
-        previous = dict(res.fetchone())
-        previous_block.from_dict(previous)
-        # print(previous)
-        peers = ("192.99.248.44", "91.121.87.99", "192.99.34.19")
-        peer = choice(peers)
+        try:
+            previous_block = PosBlock()
+            sql = "SELECT * FROM pos_chain WHERE height=?"
+            res = self.execute(sql, (block_height -1,))
+            previous = dict(res.fetchone())
+            previous_block.from_dict(previous)
+            # print(previous)
+            peers = ("192.99.248.44", "91.121.87.99", "192.99.34.19")
+            peer = choice(peers)
+        except Exception as e:
+            print("get_block_again: {}".format(str(e)))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+            raise
         try:
             stream = await TCPClient().connect(peer, 6969, timeout=45)
             hello_string = poshelpers.hello_string(port=6969, address=poscrypto.ADDRESS)
@@ -411,12 +492,18 @@ class SqlitePosChain(SqliteBase):
                 print("Block {} does not fit previous block".format(block_height))
                 return False
             # Ok, insert
-            self.insert_block(block)
+            self.direct_insert_block(block)
             return True
 
         except StreamClosedError as e:
             print(e)
             return False
+        except Exception as e:
+            print("get_block_again2: {}".format(str(e)))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+            # raise
 
     def check(self):
         """
@@ -437,6 +524,7 @@ class SqlitePosChain(SqliteBase):
                 res = 1
                 self.db = sqlite3.connect(self.db_path, timeout=1)
                 self.db.text_factory = str
+                self.db.row_factory = sqlite3.Row
                 self.cursor = self.db.cursor()
                 # check if db needs recreating
                 self.cursor.execute("PRAGMA table_info('addresses')")
@@ -528,10 +616,10 @@ class SqlitePosChain(SqliteBase):
                         )
                     )
                     # sys.exit()
-            missing_blocks = self.missing_blocks()
+            missing_blocks = list(self.missing_blocks())
             print("Missing1:", missing_blocks)
             loop = get_event_loop()
-            for block_height in list(missing_blocks):
+            for block_height in missing_blocks:
                 loop.run_until_complete(self.get_block_again(block_height))
             self.app_log.warning("Fixed corrupted blocks")
             missing_blocks = self.missing_blocks()
@@ -839,108 +927,117 @@ class SqlitePosChain(SqliteBase):
         """
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
-        tx_ids = []
-        bin_txids = []
-        start_time = time()
-        # this is now an array of array. batch store the txs.
-        str_txs = []
-        batch = []
-        batch_count = 0
-        for tx in block.txs:
-            if tx.block_height != block.height:
-                self.app_log.warning(
-                    "TX had bad height {} instead of {}, fixed. - TODO: do not digest?".format(
-                        tx.block_height, block.height
+        try:
+            tx_ids = []
+            bin_txids = []
+            start_time = time()
+            # this is now an array of array. batch store the txs.
+            str_txs = []
+            batch = []
+            batch_count = 0
+            for tx in block.txs:
+                if tx.block_height != block.height:
+                    self.app_log.warning(
+                        "TX had bad height {} instead of {}, fixed. - TODO: do not digest?".format(
+                            tx.block_height, block.height
+                        )
                     )
-                )
-                tx.block_height = block.height
-            temp = tx.to_str_list()
-            tx_ids.append(temp[0])
-            bin_txids.append(tx.txid)
+                    tx.block_height = block.height
+                temp = tx.to_str_list()
+                tx_ids.append(temp[0])
+                bin_txids.append(tx.txid)
 
-            batch.append(" (" + ", ".join(temp) + ") ")
-            batch_count += 1
-            if batch_count >= 100:
+                batch.append(" (" + ", ".join(temp) + ") ")
+                batch_count += 1
+                if batch_count >= 100:
+                    str_txs.append(batch)
+                    batch_count = 0
+                    batch = []
+                # optimize push in a batch and do a single sql with all tx in a row
+                # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
+            if len(batch):
                 str_txs.append(batch)
-                batch_count = 0
-                batch = []
-            # optimize push in a batch and do a single sql with all tx in a row
-            # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
-        if len(batch):
-            str_txs.append(batch)
-        if len(tx_ids):
+            if len(tx_ids):
 
-            if block.uniques_sources < 2:
-                self.app_log.error("block unique sources seems incorrect")
-            # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
-            if block.msg_count != len(tx_ids):
-                self.app_log.error("block msg_count seems incorrect")
+                if block.uniques_sources < 2:
+                    self.app_log.error("block unique sources seems incorrect")
+                # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
+                if block.msg_count != len(tx_ids):
+                    self.app_log.error("block msg_count seems incorrect")
+
+                if "timing" in config.LOG:
+                    self.app_log.warning(
+                        "TIMING: poschain create sql for {} txs : {} sec".format(
+                            len(tx_ids), time() - start_time
+                        )
+                    )
+                # print(values)
+                # Make sure there are no tx left from something else
+                await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,))
+                for batch in str_txs:
+                    # TODO: there is some mess here, some batches do not go through.
+                    values = SQL_INSERT_INTO_VALUES + ",".join(batch)
+                    await self.async_execute(values, commit=True)
 
             if "timing" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: poschain create sql for {} txs : {} sec".format(
+                    "TIMING: poschain _insert {} tx: {} sec".format(
                         len(tx_ids), time() - start_time
                     )
                 )
-            # print(values)
-            # Make sure there are no tx left from something else
-            await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,))
-            for batch in str_txs:
-                # TODO: there is some mess here, some batches do not go through.
-                values = SQL_INSERT_INTO_VALUES + ",".join(batch)
-                await self.async_execute(values, commit=True)
+            # batch delete from mempool
+            """
+            if len(tx_ids) and self.mempool:
+                await self.mempool.async_del_hex_txids(tx_ids)
+            """
+            if len(bin_txids) and self.mempool:
+                await self.mempool.async_del_txids(bin_txids)
+            if "timing" in config.LOG:
+                self.app_log.warning(
+                    "TIMING: poschain _insert after mempool del: {} sec".format(
+                        time() - start_time
+                    )
+                )
+            # Double check we have the right number of stored txs
+            saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
+            if saved[0] != block.msg_count:
+                # We did not save all we wanted to.
+                self.app_log.error("Error while saving block {}: only {}/{} saved txns".format(block.height, saved[0], block.msg_count))
+                # Delete leftover
+                await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,), commit=True)
+                # Delete the block also
+                await self.async_execute(SQL_DELETE_BLOCK, (block.height,), commit=True)
+                return False
 
-        if "timing" in config.LOG:
-            self.app_log.warning(
-                "TIMING: poschain _insert {} tx: {} sec".format(
-                    len(tx_ids), time() - start_time
+            # Then the block and commit
+            # First remove it in case it exists.
+            await self.async_execute(SQL_DELETE_BLOCK, (block.height,))
+            await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+            if "timing" in config.LOG:
+                self.app_log.warning(
+                    "TIMING: poschain _insert after block: {} sec".format(
+                        time() - start_time
+                    )
                 )
-            )
-        # batch delete from mempool
-        """
-        if len(tx_ids) and self.mempool:
-            await self.mempool.async_del_hex_txids(tx_ids)
-        """
-        if len(bin_txids) and self.mempool:
-            await self.mempool.async_del_txids(bin_txids)
-        if "timing" in config.LOG:
-            self.app_log.warning(
-                "TIMING: poschain _insert after mempool del: {} sec".format(
-                    time() - start_time
+            self._invalidate()
+            self.block = block.to_dict()
+            # force Recalc - could it be an incremental job ?
+            await self._height_status()
+            if "timing" in config.LOG:
+                self.app_log.warning(
+                    "TIMING: poschain _insert after recalc status: {} sec".format(
+                        time() - start_time
+                    )
                 )
+            return True
+        except Exception as e:
+            self.app_log.error("_insert_block Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
             )
-        # Double check we have the right number of stored txs
-        saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
-        if saved[0] != block.msg_count:
-            # We did not save all we wanted to.
-            self.app_log.error("Error while saving block {}: only {}/{} saved txns".format(block.height, saved[0], block.msg_count))
-            # Delete leftover
-            await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,), commit=True)
-            # Delete the block also
-            await self.async_execute(SQL_DELETE_BLOCK, (block.height,), commit=True)
-            return False
-
-        # Then the block and commit
-        # First remove it in case it exists.
-        await self.async_execute(SQL_DELETE_BLOCK, (block.height,))
-        await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
-        if "timing" in config.LOG:
-            self.app_log.warning(
-                "TIMING: poschain _insert after block: {} sec".format(
-                    time() - start_time
-                )
-            )
-        self._invalidate()
-        self.block = block.to_dict()
-        # force Recalc - could it be an incremental job ?
-        await self._height_status()
-        if "timing" in config.LOG:
-            self.app_log.warning(
-                "TIMING: poschain _insert after recalc status: {} sec".format(
-                    time() - start_time
-                )
-            )
-        return True
+            raise
 
     async def _insert_block_old(self, block):
         """

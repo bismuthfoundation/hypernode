@@ -56,7 +56,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.98l"
+__version__ = "0.0.98m"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -642,6 +642,9 @@ class Poshn:
             )
             loop = get_event_loop()
             loop.run_until_complete(self.powchain.wait_synced())
+
+            # that part is better handled as "initial round check"
+            """
             loop.run_until_complete(self.powchain.load_hn_pow(datadir=self.datadir))
             # print(self.powchain.regs)
             if not self.powchain.regs:
@@ -656,6 +659,7 @@ class Poshn:
                     len(self.powchain.regs), len(self.active_regs)
                 )
             )
+            """
             self.is_delegate = False
             self.round = -1
             self.sir = -1
@@ -1335,7 +1339,7 @@ class Poshn:
         """
         Return list of registered and active Hypernodes with metrics.
 
-        param is an optional string param "full,start_round,end_round" where full is "0" or "1".
+        param is an optional string param "full,start_round,end_round" where full is "0", "1" or "2".
 
         If full is set to "1", a dict is return instead of a list, with full metrics of each Hypernode for the given period.
 
@@ -2231,6 +2235,7 @@ class Poshn:
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
+    # TODO: refactor, this is confusing, there is a check_round for poshn, and one for poschain. Same name, but different function.
     async def check_round(self):
         """
         Async. Adjust round/slots depending properties.
@@ -2238,6 +2243,8 @@ class Poshn:
         Should not be called too often (1-10sec should be plenty)
         """
         self.round, self.sir = determine.timestamp_to_round_slot(time())
+        if self.verbose:
+            app_log.info("...check_round... R {} SIR {}".format(self.round, self.sir))
         while self.state in [HNState.NEWROUND]:
             # do not re-enter if new round ongoing
             await async_sleep(1)
@@ -2269,7 +2276,30 @@ class Poshn:
                     self.no_test_this_round = False
                     self.no_test_sent = 0
                     # Update the HN list - First query the inactive HN for just finished round.
-                    all_hns = set([peer[0] for peer in self.all_peers])
+                    if len(self.all_peers) == 0 or self.all_peers == config.POC_HYPER_NODES_LIST:
+                        # first run, let get it right
+                        await self.powchain.load_hn_pow(
+                            datadir=self.datadir,
+                            inactive_last_round=[],
+                            a_round=self.round,
+                        )
+                        if not self.powchain.regs:
+                            app_log.error("Unable to load HN Regs")
+                            sys.exit()
+                        self.all_peers = [
+                            (
+                                items["pos"],
+                                items["ip"],
+                                items["port"],
+                                items["weight"],
+                                address,
+                                items["reward"],
+                            )
+                            for address, items in self.powchain.regs.items()
+                        ]
+                    # print("all_peers", self.all_peers)
+                    # sys.exit()
+                    all_hns = set([peer[0] for peer in self.all_peers])  # This is wrong (empty at start, just 5)
                     active_hns = set(
                         await self.poschain.async_active_hns(self.round - 1)
                     )
@@ -2286,6 +2316,8 @@ class Poshn:
                         app_log.warning(
                             "Ignoring inactive HNs since there are not enough active ones."
                         )
+                    # TODO: the flow is wrong. We end up doing 2 requests first time.
+                    # Better ask once with no inactive, and filter out inactive ones before going on.
                     await self.powchain.load_hn_pow(
                         datadir=self.datadir,
                         inactive_last_round=list(inactive_hns),
@@ -2304,7 +2336,15 @@ class Poshn:
                                 len(self.powchain.regs), len(self.active_regs)
                             )
                         )
+                    with open("powreg.json", "w") as fp:
+                        data = {"round": self.round,
+                                "inactive_last_round": list(inactive_hns),
+                                "regs": self.powchain.regs,
+                                "active_regs": self.active_regs}
+                        json.dump(data, fp, indent=2)
+                    self.round_meta['powchain_regs_count'] =len(self.powchain.regs)
                     self.round_meta['powchain_regs'] = sha256(str(self.powchain.regs).encode('utf-8')).hexdigest()
+                    self.round_meta['active_regs_count'] = len(self.active_regs)
                     self.round_meta['active_regs'] = sha256(str(self.active_regs).encode('utf-8')).hexdigest()
 
                     # Now save these infos in the hn db
@@ -2362,6 +2402,11 @@ class Poshn:
                     self.test_slots = await determine.hn_list_to_test_slots(
                         self.all_peers, self.slots
                     )
+                    with open("slots.json", "w") as fp:
+                        data = {"round": self.round,
+                                "slots": self.slots,
+                                "tests": self.test_slots}
+                        json.dump(data, fp, indent=2)
                     # Are we to play this round?
                     self.no_test_this_round = True
                     for a_slot_info in self.test_slots:
@@ -2460,14 +2505,14 @@ class Poshn:
         if config.DEBUG:
             loop.set_debug(True)
 
-        if self.verbose:
-            print("Initial status")
-            loop.run_until_complete(self.status(log=True))
         try:
             loop.run_until_complete(self.init_check())
         except Exception as e:
             app_log.error("Serve Init: {}".format(str(e)))
             return
+        if self.verbose:
+            print("Initial status")
+            loop.run_until_complete(self.status(log=True))
         try:
             server = HnServer()
             server.verbose = self.verbose
@@ -2537,6 +2582,9 @@ class Poshn:
                         len(txs)
                     )
                 )
+            app_log.info("Initial round check {} sir {} - Previous {} sir {}".format(self.round, self.sir, self.last_round, self.last_sir))
+            await self.refresh_last_block()
+            await self.check_round()
         except Exception as e:
             app_log.error("Coherence Check: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
