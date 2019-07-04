@@ -29,10 +29,13 @@ import aioprocessing
 import psutil
 import requests
 import tornado.log
+
 # pip install ConcurrentLogHandler
 from cloghandler import ConcurrentRotatingFileHandler
+
 # Tornado
 from tornado.ioloop import IOLoop
+
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -56,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.98m"
+__version__ = "0.0.98n"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -170,7 +173,11 @@ class HnServer(TCPServer):
                 hn = await self.node.hn_db.hn_from_address(
                     self.node.forger, self.node.round
                 )
-                if hn["ip"] != peer_ip:
+                if (
+                    self.state in [HNState.SYNCING, HNState.ROUND_SYNC]
+                    and hn["ip"] != peer_ip
+                ):
+                    # We can only be sure it's a fake if we are synced up to current round
                     access_log.warning(
                         "Got block from {} but forger {} ip is {}".format(
                             peer_ip, self.node.forger, hn["ip"]
@@ -193,10 +200,7 @@ class HnServer(TCPServer):
                 # TODO: check that this ip is in the current test round, or add to anomalies buffer
                 # await self.node.check_round()  # Make sure our round info is up to date
                 await self.node._new_tx(
-                    msg.tx_values[0].sender,
-                    203,
-                    msg.tx_values[0].params,
-                    int(time()),
+                    msg.tx_values[0].sender, 203, msg.tx_values[0].params, int(time())
                 )
                 await async_send_block(msg, stream, peer_ip)
                 return
@@ -577,7 +581,9 @@ class Poshn:
         self.all_peers = peers
         self.registered_ips = []
         self.active_peers = list(peers)
-        self.round_meta = {}  # control hashes for current round info, to be embedded in status.
+        self.round_meta = (
+            {}
+        )  #  control hashes for current round info, to be embedded in status.
         self.verbose = verbose
         self.server_thread = None
         self.server = None
@@ -963,10 +969,10 @@ class Poshn:
         next_status = time() + 30  # Force first status to be short after start.
         while not config.STOP_EVENT.is_set():
             try:
-                app_log.warning("loop 1")
+                # app_log.warning("loop 1")
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()  # some runs showed quite some time in here for chain swaps.
-                app_log.warning("loop 2")
+                # app_log.warning("loop 2")
                 if (
                     self.state == HNState.SYNCING
                     and self.forger == poscrypto.ADDRESS
@@ -1082,10 +1088,10 @@ class Poshn:
                         await self.run_test_peer(test)
                     finally:
                         self.testing = False
-                app_log.warning("loop 3")
+                # app_log.warning("loop 3")
                 # Do not display every round, cpu intensive
                 if time() > next_status:
-                    print("loop status")
+                    # print("loop status")
                     await self.status(log=True)
                     next_status = time() + config.STATUS_EVERY
                 if self.connecting:
@@ -1108,7 +1114,7 @@ class Poshn:
                                 io_loop.spawn_callback(self.client_worker, peer)
                 # FR: variable sleep time depending on the elapsed loop time - or use timeout?
                 await async_sleep(config.WAIT)
-                app_log.warning("loop CR")
+                # app_log.warning("loop CR")
                 await self.check_round()
 
             except Exception as e:
@@ -1148,7 +1154,7 @@ class Poshn:
             our_status["count"] = 1
             our_status["peers"] = []
             if self.verbose:
-                print("Our status", our_status)
+                app_log.info("Our status: {}".format(json.dumps(our_status)))
             # peers_status = {'WE': our_status}
             # in self.clients we should have the latest blocks of every peer we are connected to
             nb = 0  # Nb of peers with same height as ours.
@@ -1255,11 +1261,32 @@ class Poshn:
             # TEMP
             app_log.info("Status: {} observable chain(s)".format(len(peers_status)))
             if self.verbose:
-                print("> sorted peers status")
+                # app_log.info("> sorted peers status")
+                i = 0
                 for h in peers_status:
-                    print(" ", h)
+                    i += 1
+                    """
+                    {'height': 90140, 'round': 7650, 'sir': 15,
+                     'block_hash': '327087ddc8c2cf3919141610b030ec0572cb5ea4', 'uniques': 397, 'uniques_round': 156,
+                     'forgers': 352, 'forgers_round': 8, 'count': 5,
+                     'peers': ['155.138.215.140:06969', '149.28.53.219:06969', '149.28.20.99:06969',
+                               '94.23.120.129:06969', '46.105.170.153:06969']}
+                    """
+                    # print(" ", h)
+                    app_log.info(
+                        "{}. Height {} Round {} Sir {} - u/ur/f: {}/{}/{} - Count {}".format(
+                            i,
+                            h["height"],
+                            h["round"],
+                            h["sir"],
+                            h["uniques"],
+                            h["uniques_round"],
+                            h["forgers"],
+                            h["count"],
+                        )
+                    )
             try:
-                with open("chains.json", 'w') as fp:
+                with open("chains.json", "w") as fp:
                     json.dump(peers_status, fp, indent=2)
             except Exception as e:
                 app_log.info("Error {} saving chains.json".format(e))
@@ -1446,16 +1473,21 @@ class Poshn:
                 app_log.info("_get_round_blocks({}, {})".format(peer, a_round))
             # needs a timeout there
             start = time()
-            the_blocks = await wait_for(self._get_round_blocks(peer, a_round), timeout=60)
+            the_blocks = await wait_for(
+                self._get_round_blocks(peer, a_round), timeout=60
+            )
             if not the_blocks:
                 raise ValueError("Did not get blocks from {}".format(peer))
             else:
                 if self.verbose:
-                    app_log.info("_get_round_blocks done in {:0.2f} sec.".format(time() - start))
+                    app_log.info(
+                        "_get_round_blocks done in {:0.2f} sec.".format(time() - start)
+                    )
             # check the data fits and count sources/forgers
-            simulated_target = await wait_for(self.poschain.check_round(
-                a_round, the_blocks, fast_check=True
-            ), timeout = 200)
+            simulated_target = await wait_for(
+                self.poschain.check_round(a_round, the_blocks, fast_check=True),
+                timeout=200,
+            )
             # print("expected", promised_height)
             # print("simulated", simulated_target)
             # Check it matches the target,
@@ -1614,11 +1646,14 @@ class Poshn:
         # Takes some time digesting 100 tx. And can be digesting from several peers at the same time.
         # Hold digesting from a peer if we are already digesting from another one?
         # Also, can merge both from client and server side, same host!!!
+        """
+        # Commented out for testing, see if current naive mempool can handle.
         if self.state not in (HNState.SYNCING, HNState.ROUND_SYNC, HNState.STRONG_CONSENSUS, HNState.MINIMAL_CONSENSUS):
             # We are catching up or otherwise busy, do not digest txs?
             # TODO: we will miss txs, since nodes will not resend them. Add a command to tell "send them all" when going into sync state.
             app_log.info("Ignoring tx sync from {}".format(peer_ip))
             return
+        """
         if not len(txs):
             return
         if len(txs) > 200:
@@ -1638,6 +1673,7 @@ class Poshn:
                 app_log.info("Waiting to sync {} txs from {}".format(len(txs), peer_ip))
             await async_sleep(config.WAIT)
         try:
+            start = time()
             self.mempool_digesting = peer_ip
             if self.verbose and "mempool" in config.LOG:
                 app_log.info("Got {} tx(s) from {}".format(len(txs), peer_ip))
@@ -1649,8 +1685,10 @@ class Poshn:
                 if await self.mempool.digest_tx(tx, poschain=self.poschain):
                     nb += 1
                 total += 1
-            if total > 0:
-                app_log.info("Digested {}/{} tx(s) from {}".format(nb, total, peer_ip))
+            if nb > 0:
+                app_log.info("Digested {}/{} tx(s) from {} in {:0.2} sec.".format(nb, total, peer_ip, time() - start))
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
             app_log.warning("Error {} digesting tx".format(e))
         finally:
@@ -1754,8 +1792,9 @@ class Poshn:
             )
             await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
-            if self.verbose:
+            """if self.verbose:
                 print("proto", block)
+            """
             app_log.info("Block Forged, I will send it")
             self.forged_count += 1
             # build the list of jurors to send to. Exclude ourselves.
@@ -1989,78 +2028,90 @@ class Poshn:
                                 self.net_height["height"]
                                 > self.poschain.height_status.height
                             ):
-                                await com_helpers.async_send_int32(
-                                    commands_pb2.Command.blocksync,
-                                    self.poschain.height_status.height + 1,
-                                    stream,
-                                    full_peer,
+                                try:
+                                    await com_helpers.async_send_int32(
+                                        commands_pb2.Command.blocksync,
+                                        self.poschain.height_status.height + 1,
+                                        stream,
+                                        full_peer,
+                                    )
+                                    # TODO: Add some timeout not to be stuck if the peer does not answer.
+                                    # TODO: or at least, go out of this sync mode if the sync peer closes.
+                                    msg = await com_helpers.async_receive(
+                                        stream, full_peer
+                                    )
+                                    if not msg.block_value:
+                                        app_log.info(
+                                            "No more blocks from {}".format(full_peer)
+                                        )
+                                        # Exit or we are stuck
+                                        break
+                                    else:
+                                        blocks_count = 0
+                                        for block in msg.block_value:
+                                            if await self.poschain.digest_block(
+                                                block, from_miner=False
+                                            ):
+                                                blocks_count += 1
+                                            else:
+                                                break  # no need to go on
+                                        app_log.info(
+                                            "Saved {}/{} blocks from {}".format(
+                                                blocks_count,
+                                                len(msg.block_value),
+                                                full_peer,
+                                            )
+                                        )
+                                        await self.poschain.async_commit()  # Should not be necessary
+                                        if not blocks_count:
+                                            app_log.error(
+                                                "Error while inserting block from {}".format(
+                                                    full_peer
+                                                )
+                                            )
+                                            failed = True
+                                            break
+                                        if blocks_count < len(msg.block_value):
+                                            app_log.error(
+                                                "Error while inserting block from {}".format(
+                                                    full_peer
+                                                )
+                                            )
+                                            failed = True
+                                            break
+                                except Exception as e:
+                                    app_log.error(
+                                        "Connection to {} lost while CATCHING_UP_SYNC {}".format(
+                                            peer[1], e
+                                        )
+                                    )
+                        try:
+                            hn = await self.hn_db.hn_from_peer(full_peer, self.round)
+                            if failed:
+                                await self._new_tx(
+                                    hn["address"],
+                                    what=101,
+                                    params="C.FAIL:{}".format(full_peer),
+                                    value=self.round,
                                 )
-                                # TODO: Add some timeout not to be stuck if the peer does not answer.
-                                # TODO: or at least, go out of this sync mode if the sync peer closes.
-                                msg = await com_helpers.async_receive(stream, full_peer)
-                                if not msg.block_value:
-                                    app_log.info(
-                                        "No more blocks from {}".format(full_peer)
-                                    )
-                                    # Exit or we are stuck
-                                    break
-                                else:
-                                    blocks_count = 0
-                                    for block in msg.block_value:
-                                        if await self.poschain.digest_block(
-                                            block, from_miner=False
-                                        ):
-                                            blocks_count += 1
-                                        else:
-                                            break  # no need to go on
-                                    app_log.info(
-                                        "Saved {}/{} blocks from {}".format(
-                                            blocks_count,
-                                            len(msg.block_value),
-                                            full_peer,
-                                        )
-                                    )
-                                    await self.poschain.async_commit()  # Should not be necessary
-                                    if not blocks_count:
-                                        app_log.error(
-                                            "Error while inserting block from {}".format(
-                                                full_peer
-                                            )
-                                        )
-                                        failed = True
-                                        break
-                                    if blocks_count < len(msg.block_value):
-                                        app_log.error(
-                                            "Error while inserting block from {}".format(
-                                                full_peer
-                                            )
-                                        )
-                                        failed = True
-                                        break
-                        hn = await self.hn_db.hn_from_peer(full_peer, self.round)
-                        if failed:
-                            await self._new_tx(
-                                hn["address"],
-                                what=101,
-                                params="C.FAIL:{}".format(full_peer),
-                                value=self.round,
-                            )
-                            app_log.warning(
-                                ">> Net Synced failed via {}".format(full_peer)
-                            )
-                        else:
-                            await self._new_tx(
-                                hn["address"],
-                                what=200,
-                                params="C.SYNC:{}".format(full_peer),
-                                value=self.round,
-                            )
-                            app_log.info(">> Net Synced via {}".format(full_peer))
+                                app_log.warning(
+                                    ">> Net Synced failed via {}".format(full_peer)
+                                )
+                            else:
+                                await self._new_tx(
+                                    hn["address"],
+                                    what=200,
+                                    params="C.SYNC:{}".format(full_peer),
+                                    value=self.round,
+                                )
+                                app_log.info(">> Net Synced via {}".format(full_peer))
 
-                        # Trigger re-eval of peers and such (do that as blocks come?)
-                        self.previous_round = 0  # Force re calc
-                        await self.check_round()
-                        await self.change_state_to(HNState.SYNCING)
+                            # Trigger re-eval of peers and such (do that as blocks come?)
+                            app_log.info("Re computing round info")
+                            self.previous_round = 0  # Force re calc
+                            await self.check_round()
+                        finally:
+                            await self.change_state_to(HNState.SYNCING)
                 else:
                     await async_sleep(config.WAIT)
                     now = time()
@@ -2125,16 +2176,24 @@ class Poshn:
                     return
         except Exception as e:
             if retry:
-                app_log.error(
-                    "Connection lost to {} because {}. Retry in {} sec.".format(
-                        peer[1], e, config.PEER_RETRY_SECONDS
+                # TODO: You can do better
+                if str(e) not in ["'NoneType' object has no attribute 'command'"]:
+                    app_log.warning(
+                        "Connection lost to {} because {}. Retry in {} sec.".format(
+                            peer[1], e, config.PEER_RETRY_SECONDS
+                        )
                     )
-                )
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                app_log.error(
-                    "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
-                )
+                else:
+                    app_log.error(
+                        "Connection lost to {} because {}. Retry in {} sec.".format(
+                            peer[1], e, config.PEER_RETRY_SECONDS
+                        )
+                    )
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    app_log.error(
+                        "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                    )
             else:
                 app_log.error("Connection lost to {} because {}.".format(peer[1], e))
                 return
@@ -2235,7 +2294,7 @@ class Poshn:
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
-    # TODO: refactor, this is confusing, there is a check_round for poshn, and one for poschain. Same name, but different function.
+    #  TODO: refactor, this is confusing, there is a check_round for poshn, and one for poschain. Same name, but different function.
     async def check_round(self):
         """
         Async. Adjust round/slots depending properties.
@@ -2276,7 +2335,10 @@ class Poshn:
                     self.no_test_this_round = False
                     self.no_test_sent = 0
                     # Update the HN list - First query the inactive HN for just finished round.
-                    if len(self.all_peers) == 0 or self.all_peers == config.POC_HYPER_NODES_LIST:
+                    if (
+                        len(self.all_peers) == 0
+                        or self.all_peers == config.POC_HYPER_NODES_LIST
+                    ):
                         # first run, let get it right
                         await self.powchain.load_hn_pow(
                             datadir=self.datadir,
@@ -2299,16 +2361,25 @@ class Poshn:
                         ]
                     # print("all_peers", self.all_peers)
                     # sys.exit()
-                    all_hns = set([peer[0] for peer in self.all_peers])  # This is wrong (empty at start, just 5)
+                    all_hns = set(
+                        [peer[0] for peer in self.all_peers]
+                    )  # This is wrong (empty at start, just 5)
                     active_hns = set(
                         await self.poschain.async_active_hns(self.round - 1)
                     )
-                    self.round_meta['round'], self.round_meta['sir'] = self.round, self.sir
-                    self.round_meta['all_hns_count'] = len(all_hns)
-                    self.round_meta['all_hns_hash'] = sha256(str(all_hns).encode('utf-8')).hexdigest()
+                    self.round_meta["round"], self.round_meta["sir"] = (
+                        self.round,
+                        self.sir,
+                    )
+                    self.round_meta["all_hns_count"] = len(all_hns)
+                    self.round_meta["all_hns_hash"] = sha256(
+                        str(all_hns).encode("utf-8")
+                    ).hexdigest()
                     inactive_hns = all_hns - active_hns
-                    self.round_meta['inactive_hns_count'] = len(inactive_hns)
-                    self.round_meta['inactive_hns_hash'] = sha256(str(inactive_hns).encode('utf-8')).hexdigest()
+                    self.round_meta["inactive_hns_count"] = len(inactive_hns)
+                    self.round_meta["inactive_hns_hash"] = sha256(
+                        str(inactive_hns).encode("utf-8")
+                    ).hexdigest()
                     # Fail safe to avoid disabling everyone on edge cases or attack scenarios
                     if len(active_hns) < config.MIN_ACTIVE_HNS:
                         # Also covers for recovering if previous round had no block because of low consensus.
@@ -2337,15 +2408,21 @@ class Poshn:
                             )
                         )
                     with open("powreg.json", "w") as fp:
-                        data = {"round": self.round,
-                                "inactive_last_round": list(inactive_hns),
-                                "regs": self.powchain.regs,
-                                "active_regs": self.active_regs}
+                        data = {
+                            "round": self.round,
+                            "inactive_last_round": list(inactive_hns),
+                            "regs": self.powchain.regs,
+                            "active_regs": self.active_regs,
+                        }
                         json.dump(data, fp, indent=2)
-                    self.round_meta['powchain_regs_count'] =len(self.powchain.regs)
-                    self.round_meta['powchain_regs'] = sha256(str(self.powchain.regs).encode('utf-8')).hexdigest()
-                    self.round_meta['active_regs_count'] = len(self.active_regs)
-                    self.round_meta['active_regs'] = sha256(str(self.active_regs).encode('utf-8')).hexdigest()
+                    self.round_meta["powchain_regs_count"] = len(self.powchain.regs)
+                    self.round_meta["powchain_regs"] = sha256(
+                        str(self.powchain.regs).encode("utf-8")
+                    ).hexdigest()
+                    self.round_meta["active_regs_count"] = len(self.active_regs)
+                    self.round_meta["active_regs"] = sha256(
+                        str(self.active_regs).encode("utf-8")
+                    ).hexdigest()
 
                     # Now save these infos in the hn db
                     await self.hn_db.clear_rounds_before(
@@ -2396,16 +2473,20 @@ class Poshn:
                     )
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
-                    self.round_meta['slots'] = sha256(str(self.slots).encode('utf-8')).hexdigest()
+                    self.round_meta["slots"] = sha256(
+                        str(self.slots).encode("utf-8")
+                    ).hexdigest()
 
                     # We also test inactive peers, or it would be biased against good nodes.
                     self.test_slots = await determine.hn_list_to_test_slots(
                         self.all_peers, self.slots
                     )
                     with open("slots.json", "w") as fp:
-                        data = {"round": self.round,
-                                "slots": self.slots,
-                                "tests": self.test_slots}
+                        data = {
+                            "round": self.round,
+                            "slots": self.slots,
+                            "tests": self.test_slots,
+                        }
                         json.dump(data, fp, indent=2)
                     # Are we to play this round?
                     self.no_test_this_round = True
@@ -2582,7 +2663,11 @@ class Poshn:
                         len(txs)
                     )
                 )
-            app_log.info("Initial round check {} sir {} - Previous {} sir {}".format(self.round, self.sir, self.last_round, self.last_sir))
+            app_log.info(
+                "Initial round check {} sir {} - Previous {} sir {}".format(
+                    self.round, self.sir, self.last_round, self.last_sir
+                )
+            )
             await self.refresh_last_block()
             await self.check_round()
         except Exception as e:
@@ -2628,9 +2713,16 @@ class Poshn:
                 )
             )
         pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
-        pending_tasks_names = [getattr(coro, '__qualname__', getattr(coro, '__name__', type(coro).__name__)) for coro in pending_tasks]
+        pending_tasks_names = [
+            getattr(
+                coro, "__qualname__", getattr(coro, "__name__", type(coro).__name__)
+            )
+            for coro in pending_tasks
+        ]
         # print(pending_tasks_names)  # TODO: group by coro name
-        tasks_detail = {task: pending_tasks_names.count(task) for task in set(pending_tasks_names)}
+        tasks_detail = {
+            task: pending_tasks_names.count(task) for task in set(pending_tasks_names)
+        }
         # print([*map(asyncio.Task.print_stack, asyncio.Task.all_tasks())])
         # print(frequency)
         # pow = {"node_version": get_pow_node_version()}

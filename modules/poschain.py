@@ -15,6 +15,7 @@ from tornado.tcpclient import TCPClient
 
 import com_helpers
 import commands_pb2
+
 # Our modules
 import config
 import poscrypto
@@ -86,7 +87,9 @@ SQL_STATE_3 = (
 )
 
 # TODO: these 2 requests are huge and slow down everything - missing indices.
-SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
+SQL_STATE_4 = (
+    "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
+)  # uses sender as covering index
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"  # Uses block_height index, not sender
 
 # Block info for a given height. no xx10 info
@@ -288,10 +291,12 @@ SQL_INSERT_GENESIS = """INSERT INTO pos_chain (
                     """
 
 # Dict of index name: create sql
-SQL_INDICES = {"round": "CREATE INDEX round ON pos_chain (round)",
-               "height_ts": "CREATE INDEX height_ts ON pos_messages (block_height, timestamp)",
-               "recipient": "CREATE INDEX recipient ON pos_messages (recipient)",
-               "sender": "CREATE INDEX sender ON pos_messages (sender)"}
+SQL_INDICES = {
+    "round": "CREATE INDEX round ON pos_chain (round)",
+    "height_ts": "CREATE INDEX height_ts ON pos_messages (block_height, timestamp)",
+    "recipient": "CREATE INDEX recipient ON pos_messages (recipient)",
+    "sender": "CREATE INDEX sender ON pos_messages (sender)",
+}
 
 
 class SqlitePosChain(SqliteBase):
@@ -435,7 +440,7 @@ class SqlitePosChain(SqliteBase):
         try:
             previous_block = PosBlock()
             sql = "SELECT * FROM pos_chain WHERE height=?"
-            res = self.execute(sql, (block_height -1,))
+            res = self.execute(sql, (block_height - 1,))
             previous = dict(res.fetchone())
             previous_block.from_dict(previous)
             # print(previous)
@@ -452,30 +457,20 @@ class SqlitePosChain(SqliteBase):
             hello_string = poshelpers.hello_string(port=6969, address=poscrypto.ADDRESS)
             full_peer = "{}:{}".format(peer, 6969)
             await com_helpers.async_send_string(
-                commands_pb2.Command.hello,
-                hello_string,
-                stream,
-                full_peer,
+                commands_pb2.Command.hello, hello_string, stream, full_peer
             )
             msg = await com_helpers.async_receive(stream, full_peer, timeout=45)
-            print(
-                "Client got {}".format(com_helpers.cmd_to_text(msg.command))
-            )
+            print("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                print(
-                    "Client got Hello {} from {}".format(msg.string_value, full_peer)
-                )
+                print("Client got Hello {} from {}".format(msg.string_value, full_peer))
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 print("Client got Ko {}".format(msg.string_value))
                 return False
             # now we can enter a long term relationship with this node.
             await com_helpers.async_send_int32(
-                commands_pb2.Command.getblock,
-                block_height,
-                stream,
-                full_peer,
+                commands_pb2.Command.getblock, block_height, stream, full_peer
             )
             msg = await com_helpers.async_receive(stream, full_peer, timeout=45)
             block = PosBlock()
@@ -620,10 +615,20 @@ class SqlitePosChain(SqliteBase):
             print("Missing1:", missing_blocks)
             loop = get_event_loop()
             for block_height in missing_blocks:
-                loop.run_until_complete(self.get_block_again(block_height))
-            self.app_log.warning("Fixed corrupted blocks")
-            missing_blocks = self.missing_blocks()
+                try:
+                    loop.run_until_complete(self.get_block_again(block_height))
+                except:
+                    pass
+            self.app_log.warning("Hopefully fixed corrupted blocks 1/2")
+            missing_blocks = list(self.missing_blocks())
             print("Missing2:", missing_blocks)
+            # TODO: factorize in a loop, try 3 times maybe, use more default seeders..
+            for block_height in missing_blocks:
+                try:
+                    loop.run_until_complete(self.get_block_again(block_height))
+                except:
+                    pass
+            self.app_log.warning("Hopefully fixed corrupted blocks 2/2")
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -781,7 +786,9 @@ class SqlitePosChain(SqliteBase):
             # see also tx checks from mempool. Maybe lighter
             self.inserting_block = True
             await self._insert_block(block)
-            self.app_log.warning("Digested block {} in {:0.2f} sec.".format(block.height, time() - start))
+            self.app_log.warning(
+                "Digested block {} in {:0.2f} sec.".format(block.height, time() - start)
+            )
             return True
         except Exception as e:
             self.app_log.error("digest_block Error {}".format(e))
@@ -794,7 +801,9 @@ class SqlitePosChain(SqliteBase):
         finally:
             self.inserting_block = False
 
-    async def check_round(self, a_round: int, blocks: commands_pb2.Command, fast_check: bool=True):
+    async def check_round(
+        self, a_round: int, blocks: commands_pb2.Command, fast_check: bool = True
+    ):
         """
         Given a round number and all blocks for this round, checks that these blocks are valid candidates.
         Does not modify the chain, can be used on existing current round to check validity alternate chains.
@@ -833,7 +842,9 @@ class SqlitePosChain(SqliteBase):
             end_block = None
             for block in blocks.block_value:
                 if self.verbose:
-                    self.app_log.info("check_round block {} : {:0.2f}".format(block.height, time()))
+                    self.app_log.info(
+                        "check_round block {} : {:0.2f}".format(block.height, time())
+                    )
                 # Good height?
                 if block.height != ref_blockheight + 1:
                     self.app_log.warning(
@@ -1002,9 +1013,15 @@ class SqlitePosChain(SqliteBase):
             saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
             if saved[0] != block.msg_count:
                 # We did not save all we wanted to.
-                self.app_log.error("Error while saving block {}: only {}/{} saved txns".format(block.height, saved[0], block.msg_count))
+                self.app_log.error(
+                    "Error while saving block {}: only {}/{} saved txns".format(
+                        block.height, saved[0], block.msg_count
+                    )
+                )
                 # Delete leftover
-                await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,), commit=True)
+                await self.async_execute(
+                    SQL_DELETE_BLOCK_TXS, (block.height,), commit=True
+                )
                 # Delete the block also
                 await self.async_execute(SQL_DELETE_BLOCK, (block.height,), commit=True)
                 return False
@@ -1326,7 +1343,9 @@ class SqlitePosChain(SqliteBase):
                             len(txs), block.height, block.msg_count
                         )
                     )
-                    raise ValueError("Corrupted block {} - ignoring.".format(block.height))
+                    raise ValueError(
+                        "Corrupted block {} - ignoring.".format(block.height)
+                    )
                     # com_helpers.MY_NODE.stop()
 
             return protocmd
