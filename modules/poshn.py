@@ -59,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.98n"
+__version__ = "0.0.98o"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -174,7 +174,7 @@ class HnServer(TCPServer):
                     self.node.forger, self.node.round
                 )
                 if (
-                    self.state in [HNState.SYNCING, HNState.ROUND_SYNC]
+                    self.node.state in [HNState.SYNCING, HNState.ROUND_SYNC]
                     and hn["ip"] != peer_ip
                 ):
                     # We can only be sure it's a fake if we are synced up to current round
