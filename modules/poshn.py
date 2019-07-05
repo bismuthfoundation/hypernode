@@ -59,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.98o"
+__version__ = "0.0.98p"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -2085,6 +2085,8 @@ class Poshn:
                                             peer[1], e
                                         )
                                     )
+                                    failed = True
+                                    break
                         try:
                             hn = await self.hn_db.hn_from_peer(full_peer, self.round)
                             if failed:
