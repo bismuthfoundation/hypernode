@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 43:
-`python3 convert.py --action=week --param=43`
+Week 44:
+`python3 convert.py --action=week --param=44`
 
 ```
-Week 43
+Week 44
 -------------
-TS   1561795200
-UTC  2019-06-29T08:00:00Z
-Round 7522
+TS   1562400000
+UTC  2019-07-06T08:00:00Z
+Round 7690
 Slot  0
-Last PoS Round 7521
-PoW Height 1232398
-Real TS 1561795198.15
-Next TS 1561795232.58
-Balance 23738.831175248546
-Balance (int) 23738
+Last PoS Round 7689
+PoW Height 1242627
+Real TS 1562399950.27
+Next TS 1562400130.91
+Balance 24552.831175248488
+Balance (int) 24552
 ```
 
 week.json (week 10):
@@ -134,12 +134,16 @@ Week 41
 Warning: PoW address 2e172a00dec25f9278e98d2f0b7f107eede77e541d957499681ddb70, weight 0 instead of 1 - removing from list.  
 Warning: PoW address e576adfa21b92cfb25e46bcfd7fedd7d3c63b4397c6cd646d4446601, weight 0 instead of 1 - removing from list.
 
-Week43  
+Week 43  
 Warning: PoW address eb8712d7664ff57ed6287c09843c396c72732701c6279219815253e5, weight 0 instead of 3 - removing from list.  
 Warning: PoW address eed4ce8c41701615d37324def12c4f10855f39a3869c269cfac6c19e, weight 0 instead of 3 - removing from list.  
 Warning: PoW address a95063a7c405378769d07765eae9da96afa876e6ade42e88cb4bf551, weight 0 instead of 3 - removing from list.  
 Warning: PoW address c8acfba2d08020c0cf18d045ba02754e9e3ad17fb693ad4b07fe222a, weight 0 instead of 3 - removing from list.  
 Warning: PoW address d0037df391b6a52e0e560f85b9031ab651d18825ae4b611bdca472c1, weight 0 instead of 3 - removing from list.  
+
+Week 44  
+Warning: PoW address f82ed723a9679a66095edb10478d3ebb900436f59792b56b07cdad7b, weight 0 instead of 1 - removing from list.
+
 
 ## Fill_stats
 
@@ -154,16 +158,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 43
-Total Weights at 0.0: 57877
-Full Weights: 61239
-Loss: 5.49%
+Calc Rewards for Week 44
+Total Weights at 0.0: 63063
+Full Weights: 66048
+Loss: 4.52%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week43_per_reward_address.csv
+exported as rewards/week44_per_reward_address.csv
 
 ## Rewards, per HN
 exported as rewards/week43_per_hn_address.csv
