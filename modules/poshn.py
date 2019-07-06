@@ -189,11 +189,11 @@ class HnServer(TCPServer):
                     await self.node.poschain.digest_block(block, from_miner=True)
                 return
             elif msg.command == commands_pb2.Command.test:
-                # block sending does not require hello
+                # test sending does not require hello
                 if peer_ip not in self.node.registered_ips:
                     # TODO: add to anomalies buffer
                     access_log.warning(
-                        "Got block from {} but not a registered ip".format(peer_ip)
+                        "Got test from {} but not a registered ip".format(peer_ip)
                     )
                     return
                 access_log.error("SRV: Got test block from {}".format(peer_ip))

@@ -63,8 +63,8 @@ class SqliteBase:
         self.ram = ram
         self.req = 0
         if XLOG:
-            if not os.path.isfile(XLOG):
-                Path(XLOG).touch()
+            if not os.path.isfile(str(XLOG)):
+                Path(str(XLOG)).touch()
         if SLOW_QUERIES_LOG:
             if not os.path.isfile(SLOW_QUERIES_LOG):
                 Path(SLOW_QUERIES_LOG).touch()

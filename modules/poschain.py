@@ -1568,6 +1568,14 @@ class SqlitePosChain(SqliteBase):
             else:
                 res[address] = {"sources": sources, "forged": 0}
         # This means only nodes who sent at least a transaction for the round will be evaluated.
+        sources = await self.async_fetchall(SQL_ROUNDS_OK_ACTION_COUNT, (h_min, h_max))
+        for address, sources in dict(sources).items():
+            if address in res:
+                res[address]["ok_actions_received"] = sources
+            else:
+                # With that, half stuck nodes still get rewarded for ok actions.
+                # temp. workaround until pos net stabilizes.
+                res[address] = {"sources": 0, "forged": 0, "ok_actions_received": sources}
 
         sources = await self.async_fetchall(SQL_ROUNDS_START_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
@@ -1588,11 +1596,6 @@ class SqlitePosChain(SqliteBase):
         for address, sources in dict(sources).items():
             if address in res:
                 res[address]["ko_tests_sent"] = sources
-
-        sources = await self.async_fetchall(SQL_ROUNDS_OK_ACTION_COUNT, (h_min, h_max))
-        for address, sources in dict(sources).items():
-            if address in res:
-                res[address]["ok_actions_received"] = sources
 
         sources = await self.async_fetchall(SQL_ROUNDS_KO_ACTION_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():
