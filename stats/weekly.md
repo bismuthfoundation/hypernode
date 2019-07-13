@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 44:
-`python3 convert.py --action=week --param=44`
+Week 45:
+`python3 convert.py --action=week --param=45`
 
 ```
-Week 44
+Week 45
 -------------
-TS   1562400000
-UTC  2019-07-06T08:00:00Z
-Round 7690
+TS   1563004800
+UTC  2019-07-13T08:00:00Z
+Round 7858
 Slot  0
-Last PoS Round 7689
-PoW Height 1242627
-Real TS 1562399950.27
-Next TS 1562400130.91
-Balance 24552.831175248488
-Balance (int) 24552
+Last PoS Round 7857
+PoW Height 1252495
+Real TS 1563004775.56
+Next TS 1563004819.43
+Balance 23688.831175288593
+Balance (int) 23688
 ```
 
 week.json (week 10):
@@ -144,6 +144,15 @@ Warning: PoW address d0037df391b6a52e0e560f85b9031ab651d18825ae4b611bdca472c1, w
 Week 44  
 Warning: PoW address f82ed723a9679a66095edb10478d3ebb900436f59792b56b07cdad7b, weight 0 instead of 1 - removing from list.
 
+Week 45
+Warning: PoW address 9b2cf63335a7cf67f095a51104dce03c5bcf3f18588623a63d67a11c, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 90a924b489f6f8a94017c9ad3488506352def52d3576497e4f3b9a6e, weight 0 instead of 3 - removing from list.  
+Warning: PoW address eae88c011a155b9b7edca6092eca5d986aa2bd08c5e936d170cf245b, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 952f2f5a9d82fddd2c2dff54cb652879fb882638d9770bf0b08a1d4b, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 9ab49f66492ebeb91397bd574e84658c7c3f88ab476bab61abac427c, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 74b07b11968849f0e7661a8d5bf638afb0526f8d7efdb8a13278d743, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 27c4b8eefbc8451e53c0cf30fb807813502227ba66b0019dc691a253, weight 0 instead of 3 - removing from list.  
+Warning: PoW address e480811089c7e4c7e93ee67591053bb8317ccaff788caf3ef6fb8ce6, weight 0 instead of 1 - removing from list.
 
 ## Fill_stats
 
@@ -158,10 +167,10 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 44
-Total Weights at 0.0: 63063
-Full Weights: 66048
-Loss: 4.52%
+Calc Rewards for Week 45
+Total Weights at 0.0: 66584
+Full Weights: 68620
+Loss: 2.97%
 ```
 
 The script exports:
