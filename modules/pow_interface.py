@@ -306,14 +306,14 @@ class PowInterface:
 
     async def load_hn_same_process(
         self,
-        a_round: int = 0,
-        datadir: str = "",
+        a_round: int=0,
+        datadir: str="",
         inactive_last_round=None,
-        force_all: bool = False,
-        no_cache: bool = False,
-        ignore_config: bool = False,
-        ip: str = "",
-        balance_check: bool = False,
+        force_all: bool=False,
+        no_cache: bool=False,
+        ignore_config: bool=False,
+        ip: str="",
+        balance_check: bool=False,
         collateral_dropped=None,
     ):
         """
@@ -741,15 +741,15 @@ class PowInterface:
 
     async def load_hn_pow(
         self,
-        a_round: int = 0,
-        datadir: str = "",
+        a_round: int=0,
+        datadir: str="",
         inactive_last_round=None,
-        force_all: bool = False,
-        no_cache: bool = False,
-        ignore_config: bool = False,
+        force_all: bool=False,
+        no_cache: bool=False,
+        ignore_config: bool=False,
         distinct_process=None,
         ip: str = "",
-        balance_check: bool = False,
+        balance_check: bool=False,
         collateral_dropped=None,
     ):
         """

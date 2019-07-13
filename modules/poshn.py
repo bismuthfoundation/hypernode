@@ -2296,7 +2296,7 @@ class Poshn:
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
 
-    #  TODO: refactor, this is confusing, there is a check_round for poshn, and one for poschain. Same name, but different function.
+    # TODO: refactor, this is confusing, there is a check_round for poshn, and one for poschain. Same name, but different function.
     async def check_round(self):
         """
         Async. Adjust round/slots depending properties.
