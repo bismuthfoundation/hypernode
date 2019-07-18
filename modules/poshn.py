@@ -13,29 +13,26 @@ import logging
 import os
 import random
 import socket
-import sys
 from asyncio import get_event_loop, TimeoutError, wait_for, Task
 from asyncio import sleep as async_sleep
 from asyncio import wait as asyncio_wait
 from distutils.version import LooseVersion
 from enum import Enum
+from hashlib import sha256
+# pip install ConcurrentLogHandler
+# from cloghandler import RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from operator import itemgetter
 from os import path
+from sys import version_info, exc_info
 from time import time
-from hashlib import sha256
 
 import aioprocessing
 import psutil
 import requests
 import tornado.log
-
-# pip install ConcurrentLogHandler
-# from cloghandler import RotatingFileHandler
-from logging.handlers import RotatingFileHandler
-
 # Tornado
 from tornado.ioloop import IOLoop
-
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -229,7 +226,7 @@ class HnServer(TCPServer):
                         app_log.error(
                             "SRV: handle_stream {} for ip {}".format(what, full_peer)
                         )
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    exc_type, exc_obj, exc_tb = exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                     app_log.error(
                         "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
@@ -242,7 +239,7 @@ class HnServer(TCPServer):
             # factorize in a single function with common.EXTRA_LOG switch to activate.
             # Maybe also log in a distinct file since these are supposed to be unexpected exceptions
             # Used also in other files.
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             return
@@ -346,7 +343,6 @@ class HnServer(TCPServer):
                             )
                         )
                 # Use clients stats to get real since - beware of one shot clients, send full (int_value=1)
-                # sys.exit()
                 stats = self.node.inbound[full_peer]["stats"]
                 last = int(stats[com_helpers.STATS_LASTMPL]) if len(stats) else 0
                 txs = await self.mempool.async_since(last)
@@ -449,7 +445,7 @@ class HnServer(TCPServer):
 
         except Exception as e:
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
@@ -501,7 +497,7 @@ class HnServer(TCPServer):
                 await async_send_string(commands_pb2.Command.ko, msg, stream, peer_ip)
         except Exception as e:
             app_log.error("Error {} updating from {}".format(e, url))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
@@ -692,7 +688,7 @@ class Poshn:
 
         except Exception as e:
             app_log.error("Error creating poshn: {}".format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
@@ -829,7 +825,7 @@ class Poshn:
             pass
         except Exception as e:
             app_log.error(">> remove_inbound")
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
@@ -1119,7 +1115,7 @@ class Poshn:
 
             except Exception as e:
                 app_log.error("Error in manager {}".format(e))
-                exc_type, exc_obj, exc_tb = sys.exc_info()
+                exc_type, exc_obj, exc_tb = exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 app_log.error(
                     "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
@@ -1297,7 +1293,7 @@ class Poshn:
 
         except Exception as e:
             app_log.error("_consensus: {}".format(str(e)))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
@@ -1357,7 +1353,7 @@ class Poshn:
             return heights
         except Exception as e:
             app_log.error('get_heights error "{}"'.format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             sys.exit()
@@ -1546,7 +1542,7 @@ class Poshn:
             app_log.warning('_round_sync error "{}"'.format(e))
         except Exception as e:
             app_log.error('_round_sync error "{}"'.format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
         finally:
@@ -1574,7 +1570,7 @@ class Poshn:
             await self.mempool.digest_tx(tx, self.poschain)
         except Exception as e:
             app_log.error('_new_tx error "{}"'.format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
@@ -1607,7 +1603,7 @@ class Poshn:
                     app_log.error(
                         '_get_round_blocks error closing stream "{}"'.format(e)
                     )
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    exc_type, exc_obj, exc_tb = exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                     app_log.error(
                         "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
@@ -1618,7 +1614,7 @@ class Poshn:
                 return None
         except Exception as e:
             app_log.error('_get_round_blocks error "{}"'.format(e))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             return None
@@ -1884,7 +1880,7 @@ class Poshn:
             app_log.error(
                 "Connection lost to {} because {}. No Retry.".format(full_peer, e)
             )
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
@@ -2191,7 +2187,7 @@ class Poshn:
                             peer[1], e, config.PEER_RETRY_SECONDS
                         )
                     )
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    exc_type, exc_obj, exc_tb = exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                     app_log.error(
                         "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
@@ -2291,7 +2287,7 @@ class Poshn:
             await self._consensus()
         except Exception as e:
             app_log.error("_update_network: {}".format(str(e)))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
@@ -2674,7 +2670,7 @@ class Poshn:
             await self.check_round()
         except Exception as e:
             app_log.error("Coherence Check: {}".format(str(e)))
-            exc_type, exc_obj, exc_tb = sys.exc_info()
+            exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
@@ -2740,6 +2736,7 @@ class Poshn:
             "instance": {
                 "version": self.client_version,
                 "hn_version": __version__,
+                "python_version": ".".join(version_info[:3]),
                 "statustime": int(time()),
             },
             "chain": poschain_status,
