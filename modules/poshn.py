@@ -2745,6 +2745,7 @@ class Poshn:
                 "port": self.port,
                 "verbose": self.verbose,
                 "outip": self.outip,
+                "posnet": config.POSNET,
             },
             "instance": {
                 "version": self.client_version,

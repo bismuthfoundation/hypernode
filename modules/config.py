@@ -140,6 +140,9 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # required version of the plugin version
 PLUGIN_VERSION = "0.1.0"
 
+# required version of the ledger_queries
+QUERIES_VERSION = "0.0.3"
+
 # required minimal version of the node
 REQUIRED_NODE_VERSION = "4.3.0.6"
 
@@ -148,7 +151,7 @@ REQUIRED_NODE_VERSION = "4.3.0.6"
 POSNET = "posnet0002"
 # I messed up with previous config, why we still need to support posnet0001.
 # Will be gone with next update.
-POSNET_ALLOW = "posnet0001;posnet0002;posnet0003"
+POSNET_ALLOW = "posnet0002;posnet0003;posnet0004"
 
 # Default hard coded url.
 BOOTSTRAP_URLS = ["http://bp12.eggpool.net/hn_bs.tar.gz"]

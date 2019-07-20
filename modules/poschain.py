@@ -604,32 +604,36 @@ class SqlitePosChain(SqliteBase):
                 self.execute(
                     SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True
                 )  # Unwanted: this closes the cursor?!?
-                test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
-                if test2[0] != test[0]:
-                    self.app_log.error(
-                        "Inconsistency height {} but only messages for {}".format(
-                            test[0], test2[0]
-                        )
-                    )
                     # sys.exit()
             missing_blocks = list(self.missing_blocks())
-            print("Missing1:", missing_blocks)
+            # print("Missing1:", missing_blocks)
+            test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
+            test2 = test2[0] if test2 else 0
+            if 76171 in missing_blocks:
+                # Ignore that missing one, broken block net-wide.
+                test2 +=1
+            if test2 != test[0]:
+                self.app_log.error(
+                    "Inconsistency height {} but only messages for {}".format(
+                        test[0], test2
+                    )
+                )
             loop = get_event_loop()
             for block_height in missing_blocks:
                 try:
                     loop.run_until_complete(self.get_block_again(block_height))
                 except:
                     pass
-            self.app_log.warning("Hopefully fixed corrupted blocks 1/2")
+            # self.app_log.warning("Hopefully fixed corrupted blocks 1/2")
             missing_blocks = list(self.missing_blocks())
-            print("Missing2:", missing_blocks)
+            # print("Missing2:", missing_blocks)
             # TODO: factorize in a loop, try 3 times maybe, use more default seeders..
             for block_height in missing_blocks:
                 try:
                     loop.run_until_complete(self.get_block_again(block_height))
                 except:
                     pass
-            self.app_log.warning("Hopefully fixed corrupted blocks 2/2")
+            # self.app_log.warning("Hopefully fixed corrupted blocks 2/2")
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

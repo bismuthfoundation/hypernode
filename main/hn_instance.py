@@ -26,12 +26,39 @@ import com_helpers
 import config
 from poshn import Poshn
 from poschain import SqlitePosChain
+from powasyncclient import PoWAsyncClient
+from distutils.version import LooseVersion
 import poscrypto
 import poshelpers
 
 # import pow_interface
 
 __version__ = "0.0.99"
+
+
+def check_companions():
+    # TODO: factorize with hn_check, it's a helper func.
+    print("Companions check...")
+    try:
+        pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
+        versions = pow_client.command("HN_plugin_version")
+        plugin_ver = versions['hn_plugin']
+        ok_version = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
+        if not ok_version:
+            print("\n>> Bismuth Node restart required, running plugin has wrong version\n")
+            sys.exit()
+        else:
+            print("Plugin ok {}".format(plugin_ver))
+        queries_ver = versions['ledger_queries']
+        ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
+        if not ok_version:
+            print("\n>> Bismuth Node restart required, running queries extension has wrong version\n")
+            sys.exit()
+        else:
+            print("Queries extension ok {}".format(queries_ver))
+        pow_client.close()
+    except:
+        print("Error in live check, probably bad plugin or ledger_queries versions")
 
 
 if __name__ == "__main__":
@@ -107,6 +134,8 @@ if __name__ == "__main__":
                 )
             else:
                 outip = subprocess.getoutput("curl -4 -s ifconfig.co")
+
+            check_companions()
 
             com_helpers.MY_NODE = Poshn(
                 ip,

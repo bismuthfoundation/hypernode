@@ -25,9 +25,9 @@ sys.path.append("../modules")
 import config
 import poshn
 import poscrypto
+from powasyncclient import PoWAsyncClient
 
-
-__version__ = "0.0.7"
+__version__ = "0.1.0"
 
 ONE_GB = 1024 * 1024 * 1024
 
@@ -38,7 +38,10 @@ def check_os(a_status):
     """
     if os.name == "posix":
         p = psutil.Process()
-        limit = p.rlimit(psutil.RLIMIT_NOFILE)
+        try:
+            limit = p.rlimit(psutil.RLIMIT_NOFILE)
+        except:
+            limit = (1024, -1)
         a_status["flimit"] = limit
         if limit[0] < 1024:
             a_status["errors"].append(
@@ -100,7 +103,7 @@ def get_ip_provider(ip: str):
 
 def read_version_from_file(filename):
     for line in open(filename):
-        if "__version__" in line:
+        if "__version__" in line and "import" not in line:
             return line.split("=")[-1].replace("'", "").replace("\"", "").strip()
     return None
 
@@ -138,8 +141,51 @@ def check_plugin():
             plugin_ver, config.PLUGIN_VERSION, ok
         )
     )
+    # ledger_queries
+    # copy file over if it does not exists
+    # queries_file_dest = "../../Bismuth/ledger_queries.py"
+    queries_file_dest = path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger_queries.py", "node.py")
+    )
+    if not path.isfile(queries_file_dest):
+        copyfile("../node_plugin/ledger_queries.py", queries_file_dest)
+        print("\n>> Bismuth Node restart required!!!\n")
+    queries_ver = read_version_from_file(queries_file_dest)
+    ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
+    if not ok_version:
+        # was there but not right or high enough version
+        copyfile("../node_plugin/ledger_queries.py", queries_file_dest)
+        print("\n>> Bismuth Node restart required!!!\n")
+        queries_ver = read_version_from_file(queries_file_dest)
+        ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
+    print(
+        "Queries Version {}, required {}, {}".format(
+            queries_ver, config.QUERIES_VERSION, ok_version
+        )
+    )
+
+    print("Live check...")
+    try:
+        pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
+        versions = pow_client.command("HN_plugin_version")
+        plugin_ver = versions['hn_plugin']
+        ok_version = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
+        if not ok_version:
+            print("\n>> Bismuth Node restart required, running plugin has wrong version\n")
+        else:
+            print("Plugin ok {}".format(plugin_ver))
+        queries_ver = versions['ledger_queries']
+        ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
+        if not ok_version:
+            print("\n>> Bismuth Node restart required, running queries extension has wrong version\n")
+        else:
+            print("Queries extension ok {}".format(queries_ver))
+        pow_client.close()
+    except:
+        print("Error in live check, probably bad plugin or ledger_queries versions")
+        ok = False
     if not ok:
-        print("\n>> Bad companion plugin version\n")
+        print("\n>> Wrong companion plugin or Queries extension version\n")
 
 
 def check_node_version():
