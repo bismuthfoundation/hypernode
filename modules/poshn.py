@@ -26,7 +26,7 @@ from logging.handlers import RotatingFileHandler
 from operator import itemgetter
 from os import path
 from sys import version_info, exc_info, exit
-from time import time
+from time import time, sleep
 
 import aioprocessing
 import psutil
@@ -616,7 +616,7 @@ class Poshn:
                 app_log.warning("No chain found, Bootstrapping.")
                 if not poshelpers.bootstrap(datadir):
                     app_log.warning("Bootstrap failed, will catch slowly over the net.")
-                    time.sleep(10)
+                    sleep(10)
             # Make sure node version is ok and node plugin runs.
             self.check_node()
             self.check_pow_status()
@@ -785,12 +785,12 @@ class Poshn:
                 app_log.warning(
                     "No powstatus.json. Make sure the node runs. Waiting 30 sec"
                 )
-                time.sleep(30)
+                sleep(30)
             elif os.path.getmtime(status_filename) < time() - 6 * 60:
                 app_log.warning(
                     "powstatus.json seems too old. Make sure the node runs. Waiting 30 sec."
                 )
-                time.sleep(30)
+                sleep(30)
             else:
                 app_log.info("powstatus.json ok.")
                 ok = True
