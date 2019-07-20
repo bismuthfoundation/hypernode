@@ -263,18 +263,71 @@ def HN_test(socket_handler):
 
 
 def HN_reg_check_weight(socket_handler, params):
+    """Checks a weight at a given POW height"""
     check_local(socket_handler)
     MANAGER.app_log.warning(
         "Extra command HN_reg_check_weight {}".format(",".join(params))
     )
     try:
         db = get_db()
-        data = LedgerQueries.reg_check_weight(db, params[0], params[1])
-        MANAGER.execute_filter_hook(
-            "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
-        )
+        data = LedgerQueries.reg_check_weight(db, params[0], int(params[1]))
     except Exception as e:
         MANAGER.app_log.warning("HN_reg_check_weight exception {}".format(e))
+        data = -1
+    MANAGER.execute_filter_hook(
+        "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+    )
+
+
+def HN_quick_check_balance(socket_handler, params):
+    """Checks a balance at a given POW height"""
+    check_local(socket_handler)
+    MANAGER.app_log.warning(
+        "Extra command HN_quick_check_balance {}".format(",".join(params))
+    )
+    try:
+        db = get_db()
+        data = LedgerQueries.quick_check_balance(db, params[0], int(params[1]))
+    except Exception as e:
+        MANAGER.app_log.warning("HN_quick_check_balance exception {}".format(e))
+        data = -1
+    MANAGER.execute_filter_hook(
+        "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+    )
+
+
+def HN_ts_of_block(socket_handler, params):
+    """Returns TS of a given POW height"""
+    check_local(socket_handler)
+    MANAGER.app_log.warning(
+        "Extra command HN_ts_of_block {}".format(",".join(params))
+    )
+    try:
+        db = get_db()
+        data = LedgerQueries.get_ts_of_block(db, int(params[0]))
+    except Exception as e:
+        MANAGER.app_log.warning("HN_ts_of_block exception {}".format(e))
+        data = -1
+    MANAGER.execute_filter_hook(
+        "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+    )
+
+
+def HN_block_before_ts(socket_handler, params):
+    """Returns TS of a given POW height"""
+    check_local(socket_handler)
+    MANAGER.app_log.warning(
+        "Extra command HN_block_before_ts {}".format(",".join(params))
+    )
+    try:
+        db = get_db()
+        data = LedgerQueries.get_block_before_ts(db, float(params[0]))
+    except Exception as e:
+        MANAGER.app_log.warning("HN_block_before_ts exception {}".format(e))
+        data = -1
+    MANAGER.execute_filter_hook(
+        "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+    )
 
 
 def HN_last_block_ts(socket_handler):
@@ -283,15 +336,17 @@ def HN_last_block_ts(socket_handler):
     try:
         data = LedgerQueries.get_last_block_ts(get_db())
         # print(">> data", data)
-        MANAGER.execute_filter_hook(
-            "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
-        )
     except Exception as e:
         MANAGER.app_log.warning("HN_last_block_ts exception {}".format(e))
+        data = -1
+    MANAGER.execute_filter_hook(
+        "send_data_back", {"socket": socket_handler, "data": data}, first_only=True
+    )
 
 
 def HN_plugin_version(socket_handler):
     MANAGER.app_log.warning("Extra command HN_plugin_version")
+    # TODO: also send back ledger_queries version
     try:
         MANAGER.execute_filter_hook(
             "send_data_back", {"socket": socket_handler, "data": __version__}, first_only=True
@@ -301,24 +356,27 @@ def HN_plugin_version(socket_handler):
 
 
 def HN_reg_check_weights(socket_handler, params):
+    """Check a list of addresses for weight, at a given timestamp"""
     check_local(socket_handler)
-    MANAGER.app_log.warning(
-        "Extra command HN_reg_check_weights {}".format(" ; ".join(params))
-    )
+    # MANAGER.app_log.warning("Extra command HN_reg_check_weights {}".format(" ; ".join(params)))
+    MANAGER.app_log.warning("Extra command HN_reg_check_weights at ts {}".format(params[1]))
     try:
         db = get_db()
         addresses = params[0].split(",")
         result = {}
+        timestamp = float(params[1])
+        pow_height = LedgerQueries.get_block_before_ts(db, timestamp)
         for address in addresses:
-            weight = LedgerQueries.reg_check_weight(db, address, params[1])
+            weight = LedgerQueries.reg_check_weight(db, address, pow_height)
             result[address] = weight
-        MANAGER.execute_filter_hook(
-            "send_data_back",
-            {"socket": socket_handler, "data": result},
-            first_only=True,
-        )
     except Exception as e:
         MANAGER.app_log.warning("HN_reg_check_weights exception {}".format(e))
+        result = {}
+    MANAGER.execute_filter_hook(
+        "send_data_back",
+        {"socket": socket_handler, "data": result},
+        first_only=True,
+    )
 
 
 def reg_extract(openfield, address):
@@ -432,8 +490,8 @@ def HN_reg_round(socket_handler, params: list) -> Union[dict, bool]:
     )
     with ROUND_LOCK:
         try:
-            pos_round, timestamp, pow_height, ip = params[:4]
-            timestamp = float(timestamp)
+            pos_round, ref_timestamp, pow_height, ip = params[:4]
+            ref_timestamp = float(ref_timestamp)
             pos_round = int(pos_round)
             pow_height = int(pow_height)
             if ip.lower() == "false":
@@ -452,19 +510,20 @@ def HN_reg_round(socket_handler, params: list) -> Union[dict, bool]:
                     return
             height = pow_height
             if height <= 0:
-                height = LedgerQueries.get_block_before_ts(get_db(), timestamp)
+                height = LedgerQueries.get_block_before_ts(get_db(), ref_timestamp)
             if height <= 0:
-                return False
-            # Now take back 30 blocks to account for possible large rollbacks
-            height -= 30
-            # And round to previous multiple of 60
-            height = 60 * floor(height / 60)
+                MANAGER.execute_filter_hook(
+                    "send_data_back",
+                    {"socket": socket_handler, "data": False},
+                    first_only=True,
+                )
+                return
             MANAGER.app_log.warning("Ref height={}".format(height))
             # Default start data if we have nothing
             output = {
                 "params": {
                     "pos_round": pos_round,
-                    "timestamp": timestamp,
+                    "ref_timestamp": ref_timestamp,
                     "pow_height": pow_height,
                     "ref_height": height,
                 }
@@ -610,6 +669,11 @@ def HN_reg_round(socket_handler, params: list) -> Union[dict, bool]:
             )
         except Exception as e:
             MANAGER.app_log.warning("HN_reg_round exception {}".format(e))
+            MANAGER.execute_filter_hook(
+                "send_data_back",
+                {"socket": socket_handler, "data": False},
+                first_only=True,
+            )
 
 
 def action_status(status):
@@ -632,7 +696,7 @@ def my_callback(command_name: str, socket_handler) -> None:
     """The magic is here. This is the generic callback handler answering to the extra command"""
     # This method could stay as this.
     if VERBOSE:
-        MANAGER.app_log.warning("Got HN command {}".format(command_name))
+        MANAGER.app_log.warning("Got HN command {}".format(command_name[:50] + '...'))
     if command_name in globals():
         # this allow to transparently map commands to this module functions with no more code
         globals()[command_name](socket_handler)

@@ -140,4 +140,6 @@ if __name__ == "__main__":
         # todo: do only if not exists ?
         count, hash = loop.run_until_complete(hn_db.save_hn_from_regs(res, round))
         print(count, hash)
+
+        # sys.exit()
         # time.sleep(2)

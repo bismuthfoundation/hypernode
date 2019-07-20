@@ -32,9 +32,12 @@ import pow_interface
 
 from determine import timestamp_to_round_slot
 from determine import round_to_timestamp
+from powasyncclient import PoWAsyncClient
 
+__version__ = '0.0.5'
 
-__version__ = '0.0.3'
+POW_IP = "127.0.0.1"
+POW_PORT = 5658
 
 
 def ts2utc(ts):
@@ -82,16 +85,32 @@ if __name__ == "__main__":
         print("Slot ", a_slot)
         last_pos_round = a_round -1
         print("Last PoS Round", last_pos_round)
-        height = pow.pow_chain.get_block_before_ts(end_of_week_ts)
+        pow = PoWAsyncClient(POW_IP, POW_PORT)
+        # TODO: try more ?
+        command = "HN_block_before_ts {}".format(end_of_week_ts)
+        # print("COMMAND", command)
+        height = pow.command(command, timeout=60)
+        # height = pow.pow_chain.get_block_before_ts(end_of_week_ts)
         print("PoW Height", height)
-        ts1 = pow.pow_chain.get_ts_of_block(height)
+        # ts1 = pow.pow_chain.get_ts_of_block(height)
+        command = "HN_ts_of_block {}".format(height)
+        # print("COMMAND", command)
+        ts1 = pow.command(command, timeout=60)
         print("Real TS", ts1)
-        ts2 = pow.pow_chain.get_ts_of_block(height + 1)
+
+        # ts2 = pow.pow_chain.get_ts_of_block(height + 1)
+        command = "HN_ts_of_block {}".format(height +1)
+        # print("COMMAND", command)
+        ts2 = pow.command(command, timeout=60)
+
         if ts2:
             print("Next TS", ts2)
         else:
             print("End of chain - ts too far in the future.")
-        balance = pow.quick_check_balance('3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16', height)
+        # balance = pow.quick_check_balance('3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16', height)
+        command = "HN_quick_check_balance {} {}".format('3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16', height)
+        # print("COMMAND", command)
+        balance = pow.command(command, timeout=60)
         if balance:
             print("Balance", balance)
         else:

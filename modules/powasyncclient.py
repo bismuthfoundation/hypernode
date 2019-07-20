@@ -10,34 +10,39 @@ Adapted from bismuthClient, to be merged into bismuthclient in the end
 
 """
 
+import json
+from asyncio import sleep as async_sleep
+from asyncio import wait_for, run_coroutine_threadsafe, get_event_loop
+from logging import getLogger
 
 from tornado.tcpclient import TCPClient
-from asyncio import wait_for, run_coroutine_threadsafe, get_event_loop
-import json
+
+__version__ = '0.0.2'
 
 
-__version__ = '0.0.1'
+class PoWAsyncClient:
 
-
-class PoWAsyncClient():
-
-    def __init__(self, server, port, app_log, loop=None, address='', verbose=False):
+    def __init__(self, server, port, app_log=None, loop=None, address='', verbose=False):
         # print("async init", server_list)
         self.server = server
         self.port = port
-        self.app_log = app_log
+        self.app_log = app_log if app_log else getLogger()
         if loop is None:
-            loop= get_event_loop()
+            loop = get_event_loop()
         self.loop = loop
         self.address = address
         self.connected = False
         self.stream = None
+        self.client = None
         self.verbose = verbose
         self._status = {"connected": False, "address": self.address}
         self.ip_port = 'N/A'
 
     async def connect(self, timeout=10):
-        self.stream = await TCPClient().connect(self.server, self.port, timeout=timeout)
+        self.connected = False
+        self.stream = None
+        self.client = TCPClient()
+        self.stream = await self.client.connect(self.server, self.port, timeout=timeout, )
         if self.stream:
             self.connected = True
             if self.verbose:
@@ -46,11 +51,16 @@ class PoWAsyncClient():
             raise RuntimeError("Unable to connect to {}:{}".format(self.server, self.port))
 
     def close(self):
+        self.client.close()
+        """
         if self.stream:
             try:
                 self.stream.close()
             except:
                 pass
+        """
+        self.client = None
+        self.stream = None
         self.connected = False
 
     def status(self, address):
@@ -82,14 +92,32 @@ class PoWAsyncClient():
         return future.result(timeout)
 
     def command(self, data,  param=None, timeout=None):
-        future = run_coroutine_threadsafe(self._command(data, param), self.loop)
-        return future.result(timeout)
-
-    async def async_command(self, data,  param=None, timeout=None):
+        """Sync interface to command."""
         if not self.connected:
-            await self.connect(timeout=timeout)
-        result = await wait_for(self._command(data, param), timeout=timeout)
-        return result
+            # print("connecting")
+            self.loop.run_until_complete(self.connect(timeout=timeout))
+        # print("command")
+        res = self.loop.run_until_complete(self._command(data, param))
+        # future = run_coroutine_threadsafe(self._command(data, param), self.loop)
+        # return future.result(timeout)
+        return res
+
+    async def async_command(self, data: str,  param=None, timeout=None, retry: int=3, retry_pause: int=2):
+        if retry <= 0:
+            retry = 1
+        while retry > 0:
+            retry -= 1
+            try:
+                if not self.connected:
+                    await self.connect(timeout=timeout)
+                result = await wait_for(self._command(data, param), timeout=timeout)
+                return result
+            except Exception as e:
+                self.app_log.warning("async_command: {} connected {}".format(e, self.connected))
+                self.close()
+                await async_sleep(retry_pause)
+        raise RuntimeError("Unable to process command")
+
 
     async def _send(self, data):
         """

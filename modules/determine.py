@@ -3,25 +3,25 @@ Deterministic helpers and/or classes for Bismuth PoS
 """
 
 import math
+
 # Third party modules
 import random
-import sys
 import time
+from math import floor
 
 # Custom modules
 import config
 import poscrypto
 import poshelpers
 
-
-__version__ = '0.0.24'
+__version__ = "0.0.25"
 
 # local verbose switch
 VERBOSE = True
 
 # REF_ADDRESS = ''  # Deprecated
 
-REF_HASH = b''
+REF_HASH = b""
 
 # NOTE: I used distance between hashes to order the HNs, but it may be simpler
 # to use random, seeded with previous hash, then random.shuffle()
@@ -74,7 +74,7 @@ def my_hash_distance(peer):
     # Loop over the bytes of the hash
     for i in range(20):
         # print(i, peer[2][i], REF_HASH[i])
-        #distance += abs(ord(peer[2][i]) - ord(REF_HASH[i]))
+        # distance += abs(ord(peer[2][i]) - ord(REF_HASH[i]))
         distance += abs(peer[2][i] - REF_HASH[i])
         # Better results (spread) than pure bin hamming
     # if VERBOSE:
@@ -100,7 +100,7 @@ async def hn_list_to_tickets(hn_list):
         for hn in hn_list:
             # a more compact and faster version can be written, I prefer to aim at clarity
             for chances in range(hn[3]):  # index 3 is the weight
-                tickets.append((hn[0], tid, poscrypto.blake(hn[0]+str(tid), ).digest()))
+                tickets.append((hn[0], tid, poscrypto.blake(hn[0] + str(tid)).digest()))
                 tid += 1
     return tickets
 
@@ -118,10 +118,14 @@ async def tickets_to_jurors(tickets_list, reference_hash):
     REF_HASH = reference_hash
     # sort the tickets according to their hash distance.
     tickets_list.sort(key=my_hash_distance)
-    if VERBOSE and 'determine' in config.LOG:
+    if VERBOSE and "determine" in config.LOG:
         # print("Ref Hash Bin", REF_HASH_BIN)
         print("Sorted Tickets:\n", tickets_list)
-    final_list = [ticket[:2] for i, ticket in enumerate(tickets_list) if i < config.MAX_ROUND_SLOTS]
+    final_list = [
+        ticket[:2]
+        for i, ticket in enumerate(tickets_list)
+        if i < config.MAX_ROUND_SLOTS
+    ]
     # return tickets_list[:config.MAX_ROUND_SLOTS]
     """
     print("Sorted Tickets:")
@@ -207,7 +211,18 @@ def timestamp_to_round_slot(ts=0):
 
 
 def round_to_timestamp(a_round=0):
+    """Returns timestamp start of that round"""
     return config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
+
+
+def round_to_reference_timestamp(a_round: int) -> int:
+    """Returns timestamp pow reference for that round (1 - 2 hours in the past)"""
+    timestamp = config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
+    # This is the reference timestamp derived from the round that we send. kinda duplicate wwith a_round, but anyway.
+    timestamp -= 40 * 60  # 40 min behind
+    timestamp = 3600 * floor(timestamp / 3600)  # round to previous hour
+    return timestamp
+
 
 # TODO: time_to_next_slot
 
@@ -233,7 +248,7 @@ async def get_connect_to(peers, pos_round, address):
     # TODO: test for this shuffle, make sure it always behaves the same.
     # TODO: see paper notes for a simpler/safer, verifiable method
     random.shuffle(result)
-    return result[:config.MAX_CONNECT_TO]
+    return result[: config.MAX_CONNECT_TO]
 
 
 async def connect_ok_from(msg, access_log):
@@ -251,7 +266,9 @@ async def connect_ok_from(msg, access_log):
     ok = True
     # Check 1. posnet version
     if posnet not in config.POSNET_ALLOW:
-        access_log.warning("Bad posnet {} instead of {}".format(posnet, config.POSNET_ALLOW))
+        access_log.warning(
+            "Bad posnet {} instead of {}".format(posnet, config.POSNET_ALLOW)
+        )
         reason = "Bad Posnet {}".format(posnet)
         ok = False
     # TODO: 2.check peer ip/address matches
