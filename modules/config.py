@@ -43,6 +43,7 @@ AVAILABLE_LOGS = [
     "srvmsg",
     "workermsg",
     "txdigest",
+    "blockdigest"
     "timing",
 ]
 
@@ -122,6 +123,10 @@ MAX_DEBUG_HN = 20
 # Not used except for tests.
 POC_LAST_BROADHASH = b"123456789abcdef12345"
 
+# Local node
+POW_IP = '127.0.0.1'
+# Local pow port
+POW_PORT = 5658
 
 """
 Here comes tuneable algorithm variables - Do not change those or you will fork or be unable to sync
@@ -133,10 +138,10 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = "0.0.64"
+PLUGIN_VERSION = "0.1.0"
 
 # required minimal version of the node
-REQUIRED_NODE_VERSION = "4.3.0.0"
+REQUIRED_NODE_VERSION = "4.3.0.6"
 
 # POC - Will be taken from config - Always 10 chars
 # TODO: enforce 10 chars when assembling chain
@@ -268,6 +273,8 @@ VARS = {
     "AUTO_UPDATE": "bool",
     "ALLOW_UPDATES_FROM": "str",
     "ALLOW_QUERIES_FROM": "str",
+    "POW_IP": "str",
+    "POW_PORT": "int",
 }
 # These two have been removed from config - POSNET depends on code, not config, and POSNET_WALLOW comes from the PoW.
 # "POSNET": "str",

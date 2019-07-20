@@ -15,7 +15,6 @@ import time
 from math import floor
 from os import path
 from tornado.httpclient import AsyncHTTPClient, HTTPError
-from tornado.iostream import StreamClosedError
 from base64 import b85encode
 from hashlib import md5
 from typing import Union
@@ -29,12 +28,11 @@ from fakelog import FakeLog
 from sqlitebase import SqliteBase
 from determine import timestamp_to_round_slot
 from polysign.signerfactory import SignerFactory
-from powasyncclient import PoWAsyncClient
 
 
-__version__ = "0.2.1"
+__version__ = "0.1.10"
 
-"""
+
 SQL_BLOCK_HEIGHT_PRECEDING_TS_SLOW = (
     "SELECT block_height FROM transactions WHERE timestamp <= ? "
     "ORDER BY block_height DESC limit 1"
@@ -79,7 +77,7 @@ SQL_LAST_BLOCK_TS = (
     "SELECT timestamp FROM transactions WHERE block_height = "
     "(SELECT max(block_height) FROM transactions)"
 )
-"""
+
 
 # ================== Helpers ================
 
@@ -184,6 +182,13 @@ class PowInterface:
         self.verbose = config.VERBOSE if verbose is None else verbose
         self.distinct_process = distinct_process
         self.regs = {}
+        """
+        registered HN from PoW. Can be temp. wrong when updating. Calling object must keep a cached working version. 
+        Indexed by pow address.
+        """
+        self.pow_chain = SqlitePowChain(
+            db_path=config.POW_LEDGER_DB, verbose=self.verbose, app_log=app_log
+        )
 
     async def wait_synced(self):
         """
@@ -194,10 +199,8 @@ class PowInterface:
         synced = False
         while not synced:
             try:
-                pow = PoWAsyncClient(config.POW_IP, config.POW_PORT, self.app_log)
-                res = await pow.async_command("HN_last_block_ts")
-                pow.close()
-                last_ts = res
+                res = await self.pow_chain.async_fetchone(SQL_LAST_BLOCK_TS)
+                last_ts = res[0]
             except:
                 last_ts = -1
             delay_min = (time.time() - last_ts) / 60
@@ -209,14 +212,102 @@ class PowInterface:
             synced = delay_min < 15
             if not synced:
                 self.app_log.warning(
-                    "Last block {:0.2f} mins in the past, waiting 30 sec for PoW sync.".format(
+                    "Last block {:0.2f} mins in the past, waiting for PoW sync.".format(
                         delay_min
                     )
                 )
                 await asyncio.sleep(30)
 
+    async def reg_check_balance(self, address, height):
+        """
+        Calc rough estimate (not up to 1e-8) of the balance of an account at a certain point in the past.
+        Raise if not enough for an HN, or return the matching Weight.
 
-    async def load_hn_same_process_old(
+        Requires a full ledger.
+
+        :param address:
+        :param height:
+        :return: weight (1, 2 or 3)
+        """
+        # TODO
+        # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
+        # needs previous round boundaries. Can use an approx method to be faster.
+
+        # credits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_CREDITS, (address, height))
+        # debits = await self.pow_chain.async_fetchone(SQL_QUICK_BALANCE_DEBITS, (address, height))
+        # balance = credits[0] - debits[0]
+        res = await self.pow_chain.async_fetchone(
+            SQL_QUICK_BALANCE_ALL, (address, height, address, height)
+        )
+        balance = res[0]
+        weight = math.floor(balance / 10000)
+        if weight > 3:
+            weight = 3
+        # print(credits[0], debits[0], balance, weight)
+        return weight
+
+    def quick_check_balance(self, address, height):
+        """
+        Calc rough estimate (not up to 1e-8) of the balance of an account at a certain point in the past.
+        return the matching balance
+
+        Requires a full ledger.
+
+        :param address:
+        :param height: pow block (inclusive)
+        :return: balance
+        """
+        # TODO
+        # TODO: check that there was no temporary out tx during the last round that lead to an inferior weight.
+        # needs previous round boundaries. Can use an approx method to be faster.
+
+        res = self.pow_chain.fetchone(
+            SQL_QUICK_BALANCE_ALL_MIRROR, (address, height, address, height)
+        )
+        balance = res[0]
+        return balance
+
+    def reg_extract(self, openfield, address):
+        """
+        Extract data from openfield. 'ip:port:pos' or with option 'ip2:port:pos2,reward=bis2a'
+
+        :param openfield: str
+        :param address: str
+        :return: tuple (ip, port, pos, reward)
+        """
+        options = {}
+        if "," in openfield:
+            # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
+            parts = openfield.split(",")
+            openfield = parts.pop(0)
+            for extra in parts:
+                key, value = extra.split("=")
+                options[key] = value
+        ip, port, pos = openfield.split(":")
+        reward = options["reward"] if "reward" in options else address
+        source = options["source"] if "source" in options else None
+        if source and source != address:
+            raise ValueError("Bad source address")
+        return ip, port, pos, reward
+
+    def extract_reason(self, openfield):
+        """
+        Extract optional reason data from openfield.
+
+        :param openfield: str
+        :return: str
+        """
+        if "," in openfield:
+            # Only allow for 1 extra param at a time. No need for more now, but beware if we add!
+            parts = openfield.split(",")
+            parts.pop(0)
+            for extra in parts:
+                key, value = extra.split("=")
+                if key == "reason":
+                    return value
+        return ""
+
+    async def load_hn_same_process(
         self,
         a_round: int=0,
         datadir: str="",
@@ -228,6 +319,20 @@ class PowInterface:
         balance_check: bool=False,
         collateral_dropped=None,
     ):
+        """
+        Load from async sqlite3 connection from the same process.
+        Been experienced and can hang the whole HN on busy nodes.
+
+        :param a_round:
+        :param datadir:
+        :param inactive_last_round:
+        :param force_all:
+        :param no_cache:
+        :param ignore_config:
+        :param ip:
+        :param balance_check: Force balance check for all HN at the end of the call
+        :return:
+        """
         try:
             if a_round:
                 round_ts = config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
@@ -272,7 +377,6 @@ class PowInterface:
                         checkpoint + 1, height, len(inactive_last_round)
                     )
                 )
-            """
             if config.LOAD_HN_FROM_POW or force_all or ignore_config:
                 # TEMP
                 if self.verbose:
@@ -295,14 +399,21 @@ class PowInterface:
                         inactive_last_round, self.app_log
                     )
                     return self.regs
-            """
+
             # Temp
             if self.verbose:
                 self.app_log.info("Parsing reg info...")
-            #for row in cursor:
-            if True:  # fake for temp. compile
+            for row in cursor:
                 block_height, address, operation, openfield, timestamp = row
                 # TEMP
+                """
+                if self.verbose:
+                    self.app_log.info(
+                        "Row {}: {}, {}, {}".format(
+                            block_height, address, operation, openfield
+                        )
+                    )
+                """
                 valid = True
                 show = False
                 try:
@@ -399,7 +510,6 @@ class PowInterface:
                         if show:
                             self.app_log.info("Ok")
 
-
                 except (ValueError, ZeroDivisionError) as e:
                     # print(e)
                     valid = False
@@ -416,8 +526,6 @@ class PowInterface:
                     self.app_log.info("{} PoW Valid HN.".format(len(self.regs)))
                 else:
                     self.app_log.warning("No PoW Valid HN.")
-
-            # TODO this part to port over below.
             if balance_check:
                 # recheck all balances
                 self.app_log.warning(
@@ -467,7 +575,7 @@ class PowInterface:
             )
             sys.exit()
 
-    async def stream_subprocess_old(self, cmd, timeout=1):
+    async def stream_subprocess(self, cmd, timeout=1):
         """
 
         :param cmd:
@@ -493,7 +601,7 @@ class PowInterface:
             """
         return "false"
 
-    async def load_hn_distinct_process_old(
+    async def load_hn_distinct_process(
         self,
         a_round: int = 0,
         datadir: str = "",
@@ -563,7 +671,7 @@ class PowInterface:
             )
             sys.exit()
 
-    async def load_hn_remote_url_old(
+    async def load_hn_remote_url(
         self,
         a_round: int = 0,
         datadir: str = "",
@@ -662,6 +770,11 @@ class PowInterface:
         """
         if ip == "":
             ip = False
+        # TODO: check it's not a round we have in our local DB first.
+        # If we have, just return the one stored.
+        if distinct_process is None:
+            distinct_process = config.POW_DISTINCT_PROCESS
+        self.distinct_process = distinct_process
 
         if self.verbose:
             self.app_log.info("load_hn_pow, round {}".format(a_round))
@@ -669,57 +782,65 @@ class PowInterface:
 
             if not inactive_last_round:
                 inactive_last_round = []
+            # print("h1", time.time())
 
-            """
-            await self.load_hn_same_process(
-                a_round,
-                inactive_last_round=inactive_last_round,
-                datadir=datadir,
-                force_all=force_all,
-                ignore_config=ignore_config,
-                ip=ip,
-                balance_check=balance_check,
-                collateral_dropped=collateral_dropped,
-            )
-            """
-            pow_height = 0
-            if force_all:
-                pow_height = 8000000
-            if a_round <= 0:
-                a_round, a_slot = timestamp_to_round_slot(time.time())
-            timestamp = config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
-            pow = PoWAsyncClient(config.POW_IP, config.POW_PORT, self.app_log)
-            # TODO: try more ?
-            try:
-                res = await pow.async_command("HN_reg_round {} {} {} {}".format(a_round, timestamp, pow_height, ip),
-                                              timeout=60)
-            except (StreamClosedError, TimeoutError):
-                await pow.close()
-                self.app_log.warning("pow connect failed, try 2")
-                await asyncio.sleep(2)
-                try:
-                    res = await pow.async_command("HN_reg_round {} {} {} {}".format(a_round, timestamp, pow_height, ip),
-                                                  timeout=60)
-                except (StreamClosedError, TimeoutError):
-                    await pow.close()
-                    self.app_log.warning("pow connect failed, try 3")
-                    await asyncio.sleep(5)
-                    res = await pow.async_command("HN_reg_round {} {} {} {}".format(a_round, timestamp, pow_height, ip),
-                                                  timeout=60)
-            if ip:
-                return res['ip_feed']
+            # Here query one way or the other
+            if config.POW_ALTERNATE_URL != "":
+                self.app_log.info(
+                    "Trying to load round {} from alternate URL".format(a_round)
+                )
+                # TODO: try to load from url
+                await self.load_hn_remote_url(
+                    a_round,
+                    inactive_last_round=inactive_last_round,
+                    datadir=datadir,
+                    force_all=force_all,
+                    ignore_config=ignore_config,
+                    ip=ip,
+                    balance_check=balance_check,
+                    url=config.POW_ALTERNATE_URL,
+                )
+            if len(self.regs) <= 0:
+                if self.distinct_process:
+                    await self.load_hn_distinct_process(
+                        a_round,
+                        inactive_last_round=inactive_last_round,
+                        datadir=datadir,
+                        force_all=force_all,
+                        ignore_config=ignore_config,
+                        ip=ip,
+                        balance_check=balance_check,
+                        collateral_dropped=collateral_dropped,
+                    )
+                else:
+                    await self.load_hn_same_process(
+                        a_round,
+                        inactive_last_round=inactive_last_round,
+                        datadir=datadir,
+                        force_all=force_all,
+                        ignore_config=ignore_config,
+                        ip=ip,
+                        balance_check=balance_check,
+                        collateral_dropped=collateral_dropped,
+                    )
 
-            self.regs = res['regs']
-            if balance_check:
-                # TODO
-                self.app_log.warning("I should handle balance checks")
-            if collateral_dropped:
-                # TODO
-                self.app_log.warning("I should handle collateral dropped")
-
-            pow.close()
             # Here we have self.regs
 
+            # await cursor.close()
+            # TEMP
+            # sys.exit()
+
+            if False:  # not no_cache:
+                with open(pow_cache_file_name, "w") as f:
+                    # Save before we filter out inactive
+                    cache = {
+                        "height": height,
+                        "timestamp": int(time.time()),
+                        "HNs": self.regs,
+                    }
+                    # TODO: Error Object of type 'TextIOWrapper' is not JSON serializable
+                    # TODO test cache.
+                    json.dump(f, cache)
             # Now, if round > 0, set active state depending on last round activity
             if self.regs:
                 for address, items in self.regs.items():
@@ -743,3 +864,63 @@ class PowInterface:
             )
             sys.exit()
 
+
+class SqlitePowChain(SqliteBase):
+    def __init__(self, verbose=False, db_path="data/", app_log=None):
+        SqliteBase.__init__(
+            self, verbose=verbose, db_path=db_path, db_name="", app_log=app_log
+        )
+        # Sqlitebase converts path + db_name into db_path
+        self.db = None
+        self.check()
+
+    def check(self):
+        if not os.path.isfile("{}".format(self.db_path)):
+            raise ValueError("Bismuth PoW Ledger not found at {}.".format(self.db_path))
+        if not self.db:
+            self.db = sqlite3.connect(self.db_path, timeout=10)
+            self.db.text_factory = str
+            self.cursor = self.db.cursor()
+
+    def get_block_before_ts(self, a_timestamp):
+        """
+        Returns the last PoW block height preceding the given timestamp.
+
+        :param a_timestamp:
+        :return: block_height preceding the given TS
+        """
+        height = self.fetchone(SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,))
+        height = height[0]
+        if self.verbose:
+            self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
+        return height
+
+    def get_ts_of_block(self, block_height):
+        """
+        Returns the timestamp of the given block height.
+
+        :param block_height:
+        :return: int timestamp
+        """
+        ts = self.fetchone(SQL_TS_OF_BLOCK, (block_height,))
+        if not ts:
+            return None
+        ts = ts[0]
+        if self.verbose:
+            self.app_log.info("Block {} has ts {}".format(block_height, ts))
+        return ts
+
+    async def async_get_block_before_ts(self, a_timestamp):
+        """
+        Async. Returns the last PoW block height preceding the given timestamp.
+
+        :param a_timestamp:
+        :return: block_height preceding the given TS
+        """
+        height = await self.async_fetchone(
+            SQL_BLOCK_HEIGHT_PRECEDING_TS, (a_timestamp,)
+        )
+        height = height[0]
+        if self.verbose:
+            self.app_log.info("Block before ts {} is {}".format(a_timestamp, height))
+        return height

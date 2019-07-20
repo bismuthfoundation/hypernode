@@ -99,6 +99,8 @@ class Posclient:
             msg = await com_helpers.async_receive(
                 stream, self.ip, timeout=self.read_timeout
             )
+            if msg is None:
+                return
             if self.verbose:
                 print("Client got {}".format(msg.__str__().strip()))
 

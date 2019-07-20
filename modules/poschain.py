@@ -6,9 +6,9 @@ A Safe thread/process object interfacing the PoS chain
 import os
 import sqlite3
 import sys
-from time import time
-from asyncio import get_event_loop, wait_for, CancelledError
+from asyncio import get_event_loop, CancelledError
 from random import choice
+from time import time
 
 from tornado.iostream import StreamClosedError
 from tornado.tcpclient import TCPClient
@@ -90,7 +90,8 @@ SQL_STATE_3 = (
 SQL_STATE_4 = (
     "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
 )  # uses sender as covering index
-SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"  # Uses block_height index, not sender
+SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
+# Uses block_height index, not sender. Ok because it's for last round, so few pos_messages are concerned.
 
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
@@ -737,13 +738,14 @@ class SqlitePosChain(SqliteBase):
             block = PosBlock().from_proto(proto_block)
             # print(">> dictblock", block.to_dict())
             if "txdigest" in config.LOG:
-                self.app_log.warning(
+                self.app_log.info(
                     "Digesting block {} {} : {}".format(
                         block.height, block_from, block.to_json()
                     )
                 )
             else:
-                self.app_log.warning(
+                # TODO: this is upside down. fix all config.LOG items
+                self.app_log.info(
                     "Digesting block {} {} : {} txs, {} uniques sources.".format(
                         block.height, block_from, len(block.txs), block.uniques_sources
                     )
@@ -786,7 +788,7 @@ class SqlitePosChain(SqliteBase):
             # see also tx checks from mempool. Maybe lighter
             self.inserting_block = True
             await self._insert_block(block)
-            self.app_log.warning(
+            self.app_log.info(
                 "Digested block {} in {:0.2f} sec.".format(block.height, time() - start)
             )
             return True
@@ -976,41 +978,53 @@ class SqlitePosChain(SqliteBase):
                 if block.msg_count != len(tx_ids):
                     self.app_log.error("block msg_count seems incorrect")
 
-                if "timing" in config.LOG:
+                if "timing" in config.LOG or "blockdigest" in config.LOG:
                     self.app_log.warning(
                         "TIMING: poschain create sql for {} txs : {} sec".format(
                             len(tx_ids), time() - start_time
                         )
                     )
+                    start_time = time()
                 # print(values)
                 # Make sure there are no tx left from something else
                 await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,))
+                if "timing" in config.LOG or "blockdigest" in config.LOG:
+                    self.app_log.warning(
+                        "TIMING: poschain delete block txs: {} sec".format(time() - start_time)
+                    )
+                    start_time = time()
+
                 for batch in str_txs:
                     # TODO: there is some mess here, some batches do not go through.
                     values = SQL_INSERT_INTO_VALUES + ",".join(batch)
                     await self.async_execute(values, commit=True)
 
-            if "timing" in config.LOG:
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
                     "TIMING: poschain _insert {} tx: {} sec".format(
                         len(tx_ids), time() - start_time
                     )
                 )
+                start_time = time()
             # batch delete from mempool
-            """
-            if len(tx_ids) and self.mempool:
-                await self.mempool.async_del_hex_txids(tx_ids)
-            """
             if len(bin_txids) and self.mempool:
                 await self.mempool.async_del_txids(bin_txids)
-            if "timing" in config.LOG:
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: poschain _insert after mempool del: {} sec".format(
+                    "TIMING: mempool del: {} sec".format(
                         time() - start_time
                     )
                 )
+                start_time = time()
             # Double check we have the right number of stored txs
             saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
+                self.app_log.warning(
+                    "TIMING: safety check: {} sec".format(
+                        time() - start_time
+                    )
+                )
+                start_time = time()
             if saved[0] != block.msg_count:
                 # We did not save all we wanted to.
                 self.app_log.error(
@@ -1029,20 +1043,29 @@ class SqlitePosChain(SqliteBase):
             # Then the block and commit
             # First remove it in case it exists.
             await self.async_execute(SQL_DELETE_BLOCK, (block.height,))
-            await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
-            if "timing" in config.LOG:
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: poschain _insert after block: {} sec".format(
+                    "TIMING: delete block: {} sec".format(
                         time() - start_time
                     )
                 )
+                start_time = time()
+
+            await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
+                self.app_log.warning(
+                    "TIMING: insert block: {} sec".format(
+                        time() - start_time
+                    )
+                )
+                start_time = time()
             self._invalidate()
             self.block = block.to_dict()
             # force Recalc - could it be an incremental job ?
             await self._height_status()
-            if "timing" in config.LOG:
+            if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: poschain _insert after recalc status: {} sec".format(
+                    "TIMING: recalc status: {} sec".format(
                         time() - start_time
                     )
                 )
@@ -1228,7 +1251,9 @@ class SqlitePosChain(SqliteBase):
             SQL_STATE_3, (status1["round"],), as_dict=True
         )
         status1.update(status3)
-        status4 = await self.async_fetchone(SQL_STATE_4, as_dict=True)
+        status4 = await self.async_fetchone(
+            SQL_STATE_4, as_dict=True
+        )  # TODO: this one may be huge at start
         status1.update(status4)
         status5 = await self.async_fetchone(
             SQL_STATE_5, (height_of_round["height"],), as_dict=True
@@ -1575,7 +1600,11 @@ class SqlitePosChain(SqliteBase):
             else:
                 # With that, half stuck nodes still get rewarded for ok actions.
                 # temp. workaround until pos net stabilizes.
-                res[address] = {"sources": 0, "forged": 0, "ok_actions_received": sources}
+                res[address] = {
+                    "sources": 0,
+                    "forged": 0,
+                    "ok_actions_received": sources,
+                }
 
         sources = await self.async_fetchall(SQL_ROUNDS_START_COUNT, (h_min, h_max))
         for address, sources in dict(sources).items():

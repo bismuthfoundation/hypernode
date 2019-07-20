@@ -19,20 +19,23 @@ from asyncio import wait as asyncio_wait
 from distutils.version import LooseVersion
 from enum import Enum
 from hashlib import sha256
+
 # pip install ConcurrentLogHandler
 # from cloghandler import RotatingFileHandler
 from logging.handlers import RotatingFileHandler
 from operator import itemgetter
 from os import path
-from sys import version_info, exc_info
+from sys import version_info, exc_info, exit
 from time import time
 
 import aioprocessing
 import psutil
 import requests
 import tornado.log
+
 # Tornado
 from tornado.ioloop import IOLoop
+
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -56,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.98p"
+__version__ = "0.0.99a"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -478,14 +481,6 @@ class HnServer(TCPServer):
                 # FR: bootstrap db on condition or other message ?
                 await async_send_void(commands_pb2.Command.ok, stream, peer_ip)
                 # restart
-                """
-                args = sys.argv[:]
-                app_log.warning('Re-spawning {}'.format(' '.join(args)))
-                args.insert(0, sys.executable)
-                if sys.platform == 'win32':
-                    args = ['"%s"' % arg for arg in args]
-                os.execv(sys.executable, args)
-                """
                 app_log.info("Updated, will now clean stop, cronjob will restart.")
                 # Just close, the cronjob will do a clean relaunch
                 self.node.stop()
@@ -651,7 +646,7 @@ class Poshn:
             # print(self.powchain.regs)
             if not self.powchain.regs:
                 app_log.error("No registered HN found, closing. Try restarting.")
-                sys.exit()
+                exit()
             self.active_regs = [
                 items for items in self.powchain.regs.values() if items["active"]
             ]
@@ -727,11 +722,14 @@ class Poshn:
     def check_os(self):
         if os.name == "posix":
             self.process = psutil.Process()
-            limit = self.process.rlimit(psutil.RLIMIT_NOFILE)
+            try:
+                limit = self.process.rlimit(psutil.RLIMIT_NOFILE)
+            except:
+                limit = (1024, -1)
             app_log.info("OS File limits {}, {}".format(limit[0], limit[1]))
             if limit[0] < 1024:
                 app_log.error("Too small ulimit, please tune your system.")
-                sys.exit()
+                exit()
             if limit[0] < 65000:
                 app_log.warning(
                     "ulimit shows non optimum value, consider tuning your system."
@@ -771,7 +769,7 @@ class Poshn:
                     if "node.py" in proc.cmdline():
                         proc.kill()
             finally:
-                sys.exit()
+                exit()
 
     def check_pow_status(self):
         # TODO: dup code with hn_check, factorize in helpers.
@@ -863,7 +861,7 @@ class Poshn:
         except Exception as e:
             app_log.error("Closing {}".format(e))
         app_log.info("Bye!")
-        sys.exit()
+        exit()
 
     async def do_test_peer(self, proto_block, peer_ip, peer_port):
         """
@@ -1296,7 +1294,7 @@ class Poshn:
             exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
-            sys.exit()
+            exit()
 
         try:
             if len(peers_status):
@@ -1356,7 +1354,7 @@ class Poshn:
             exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
-            sys.exit()
+            exit()
 
     async def get_hypernodes(self, param):
         """
@@ -1682,7 +1680,11 @@ class Poshn:
                     nb += 1
                 total += 1
             if nb > 0:
-                app_log.info("Digested {}/{} tx(s) from {} in {:0.2} sec.".format(nb, total, peer_ip, time() - start))
+                app_log.info(
+                    "Digested {}/{} tx(s) from {} in {:0.2} sec.".format(
+                        nb, total, peer_ip, time() - start
+                    )
+                )
         except KeyboardInterrupt:
             raise
         except Exception as e:
@@ -1951,6 +1953,9 @@ class Poshn:
                             full_peer,
                         )
                         msg = await com_helpers.async_receive(stream, full_peer)
+                        if msg is None:
+                            app_log.warning("lost cnx to ".format(full_peer))
+                            return
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
                         if self.verbose:  # FR: to remove later on
@@ -2003,6 +2008,9 @@ class Poshn:
                                     full_peer,
                                 )
                                 msg = await com_helpers.async_receive(stream, full_peer)
+                                if msg is None:
+                                    app_log.warning("lost cnx to ".format(full_peer))
+                                    return
                                 #  TODO: check message is blockinfo
                                 info = posblock.PosHeight().from_proto(msg.height_value)
                                 # await async_sleep(5)
@@ -2012,7 +2020,7 @@ class Poshn:
                                 )
                             )
                             # config.STOP_EVENT.set()
-                            # sys.exit()
+                            # exit()
 
                     if self.state == HNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.
@@ -2036,6 +2044,9 @@ class Poshn:
                                     msg = await com_helpers.async_receive(
                                         stream, full_peer
                                     )
+                                    if msg is None:
+                                        app_log.warning("lost cnx to ".format(full_peer))
+                                        return
                                     if not msg.block_value:
                                         app_log.info(
                                             "No more blocks from {}".format(full_peer)
@@ -2176,12 +2187,6 @@ class Poshn:
             if retry:
                 # TODO: You can do better
                 if str(e) not in ["'NoneType' object has no attribute 'command'"]:
-                    app_log.warning(
-                        "Connection lost to {} because {}. Retry in {} sec.".format(
-                            peer[1], e, config.PEER_RETRY_SECONDS
-                        )
-                    )
-                else:
                     app_log.error(
                         "Connection lost to {} because {}. Retry in {} sec.".format(
                             peer[1], e, config.PEER_RETRY_SECONDS
@@ -2191,6 +2196,12 @@ class Poshn:
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                     app_log.error(
                         "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                    )
+                else:
+                    app_log.warning(
+                        "Connection to {} lost. Retry in {} sec.".format(
+                            peer[1], config.PEER_RETRY_SECONDS
+                        )
                     )
             else:
                 app_log.error("Connection lost to {} because {}.".format(peer[1], e))
@@ -2345,7 +2356,7 @@ class Poshn:
                         )
                         if not self.powchain.regs:
                             app_log.error("Unable to load HN Regs")
-                            sys.exit()
+                            exit()
                         self.all_peers = [
                             (
                                 items["pos"],
@@ -2358,7 +2369,7 @@ class Poshn:
                             for address, items in self.powchain.regs.items()
                         ]
                     # print("all_peers", self.all_peers)
-                    # sys.exit()
+                    # exit()
                     all_hns = set(
                         [peer[0] for peer in self.all_peers]
                     )  # This is wrong (empty at start, just 5)
@@ -2394,6 +2405,7 @@ class Poshn:
                     )
                     if not self.powchain.regs:
                         self.stop()
+                    # TODO: filter out inactives last round.
                     self.active_regs = [
                         items
                         for items in self.powchain.regs.values()
@@ -2696,6 +2708,7 @@ class Poshn:
 
         :return: HN Status info
         """
+        start = time()
         poschain_status = await self.poschain.status()
         mempool_status = await self.mempool.status()
         extra = {"forged_count": self.forged_count}
@@ -2736,7 +2749,7 @@ class Poshn:
             "instance": {
                 "version": self.client_version,
                 "hn_version": __version__,
-                "python_version": ".".join(version_info[:3]),
+                "python_version": str(version_info[:3]),
                 "statustime": int(time()),
             },
             "chain": poschain_status,
@@ -2783,4 +2796,5 @@ class Poshn:
                 json.dump(status, fp, indent=2)
         except Exception as e:
             app_log.warning("Error {} saving pos status".format(e))
+        # app_log.info("Status calculation took {} sec".format(time() - start))
         return self.my_status

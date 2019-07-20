@@ -31,7 +31,7 @@ import poshelpers
 
 # import pow_interface
 
-__version__ = "0.0.58"
+__version__ = "0.0.99"
 
 
 if __name__ == "__main__":

@@ -94,3 +94,7 @@ if __name__ == "__main__":
     )
     if not args.ip:
         print(json.dumps(res))
+    else:
+        for line in res:
+            print(line)
+

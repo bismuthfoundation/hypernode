@@ -81,7 +81,7 @@ async def async_receive(stream, ip, timeout=90):
         print("** Cancel of async_receive")
         return None
     except TimeoutError:
-        print("** Timeout in async_receive")
+        # print("** Timeout in async_receive")
         return None
 
 
