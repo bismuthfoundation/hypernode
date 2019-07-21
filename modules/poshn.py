@@ -1954,7 +1954,7 @@ class Poshn:
                         )
                         msg = await com_helpers.async_receive(stream, full_peer)
                         if msg is None:
-                            app_log.warning("lost cnx to ".format(full_peer))
+                            app_log.warning("lost cnx to {}".format(full_peer))
                             return
                         # TODO: check message is blockinfo
                         info = posblock.PosHeight().from_proto(msg.height_value)
@@ -2009,7 +2009,7 @@ class Poshn:
                                 )
                                 msg = await com_helpers.async_receive(stream, full_peer)
                                 if msg is None:
-                                    app_log.warning("lost cnx to ".format(full_peer))
+                                    app_log.warning("lost cnx to {}".format(full_peer))
                                     return
                                 #  TODO: check message is blockinfo
                                 info = posblock.PosHeight().from_proto(msg.height_value)
@@ -2045,7 +2045,7 @@ class Poshn:
                                         stream, full_peer
                                     )
                                     if msg is None:
-                                        app_log.warning("lost cnx to ".format(full_peer))
+                                        app_log.warning("lost cnx to {}".format(full_peer))
                                         return
                                     if not msg.block_value:
                                         app_log.info(
