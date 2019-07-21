@@ -138,7 +138,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 # NEXT_HF_AT_ROUND = 586
 
 # required version of the plugin version
-PLUGIN_VERSION = "0.1.0"
+PLUGIN_VERSION = "0.1.1"
 
 # required version of the ledger_queries
 QUERIES_VERSION = "0.0.3"

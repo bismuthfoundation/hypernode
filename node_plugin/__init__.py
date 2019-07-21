@@ -31,7 +31,7 @@ from ledger_queries import LedgerQueries, __version__ as ledger_queries_version
 # from warnings import resetwarnings
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 MANAGER = None
@@ -682,6 +682,16 @@ def HN_reg_round(socket_handler, params: list) -> None:
             )
 
 
+def clean_hnround():
+    path = HNROUNDS_DIR
+    now = time()
+    for f in os.listdir(path):
+        full_file = os.path.join(path, f)
+        if os.stat(full_file).st_mtime < now - 10 * 86400:
+            if os.path.isfile(full_file) and ".json" in full_file:
+                os.remove(full_file)
+
+
 def action_status(status):
     global UPDATED
     if UPDATED:
@@ -696,6 +706,8 @@ def action_status(status):
     # TODO: needs to take real static path from config.
     with open("static/powstatus.json", "w") as f:
         json.dump(status, f)
+    # TODO: could be less frequent, like every hour only.
+    clean_hnround()
 
 
 def my_callback(command_name: str, socket_handler) -> None:
