@@ -27,7 +27,7 @@ import poshn
 import poscrypto
 from powasyncclient import PoWAsyncClient
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 ONE_GB = 1024 * 1024 * 1024
 
@@ -145,7 +145,7 @@ def check_plugin():
     # copy file over if it does not exists
     # queries_file_dest = "../../Bismuth/ledger_queries.py"
     queries_file_dest = path.abspath(
-        config.POW_LEDGER_DB.replace("static/", "").replace("ledger_queries.py", "node.py")
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "ledger_queries.py")
     )
     if not path.isfile(queries_file_dest):
         copyfile("../node_plugin/ledger_queries.py", queries_file_dest)
@@ -163,7 +163,12 @@ def check_plugin():
             queries_ver, config.QUERIES_VERSION, ok_version
         )
     )
-
+    polysign_dir = path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "polysign")
+    )
+    if path.isdir(polysign_dir):
+        print("Directory {} detected. Delete it and make sure to pip install the requirements.txt".format(polysign_dir))
+        sys.exit()
     print("Live check...")
     try:
         pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
@@ -184,6 +189,7 @@ def check_plugin():
     except:
         print("Error in live check, probably bad plugin or ledger_queries versions")
         ok = False
+        sys.exit()
     if not ok:
         print("\n>> Wrong companion plugin or Queries extension version\n")
 

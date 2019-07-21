@@ -2,7 +2,6 @@
 A Safe thread/process object interfacing the PoS chain
 """
 
-# import threading
 import os
 import sqlite3
 import sys
@@ -22,8 +21,6 @@ import poscrypto
 import poshelpers
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
-
-# import asyncio
 
 __version__ = "0.1.5"
 
@@ -482,7 +479,7 @@ class SqlitePosChain(SqliteBase):
             else:
                 ok = self.check_block_hash(block)
             if not ok:
-                print("Block {} KO".format(block_height))
+                print("Block {} hash KO".format(block_height))
                 return False
             if block.previous_hash != previous_block.block_hash:
                 print("Block {} does not fit previous block".format(block_height))
@@ -492,13 +489,16 @@ class SqlitePosChain(SqliteBase):
             return True
 
         except StreamClosedError as e:
-            print(e)
+            # print(e)
             return False
         except Exception as e:
+            """
             print("get_block_again2: {}".format(str(e)))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+            """
+            return False
             # raise
 
     def check(self):
