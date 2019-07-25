@@ -299,7 +299,7 @@ class SqliteBase:
                         await self.async_commit()
                     if cursor:
                         await cursor.close()
-                    asyncio.sleep(0.1)
+                    await asyncio.sleep(0.1)
                     max_tries -= 1
             if not max_tries:
                 self.app_log.error("Too many retries")
