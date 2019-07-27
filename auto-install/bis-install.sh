@@ -56,7 +56,7 @@ install_dependencies() {
     apt update -y
     # This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
-    apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3.7-dev -y
+    apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3.7-dev python3-pip -y
     # ntpdate ntp.ubuntu.com
     # apt install ntp -y
 }
