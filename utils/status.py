@@ -79,8 +79,9 @@ if __name__ == "__main__":
                   f"State {status['state']['state'].ljust(20)} Forger {status['state']['forger']}\t"
                   f"v{status['instance']['hn_version']}\t {label}")
             if "meta" in status:
-                  print(f"        Meta all/inactive {status['meta']['all_hns_count']}/ {status['meta']['inactive_hns_count']}\t"
-                        f" Meta pow reg/active {status['meta']['powchain_regs_count']}/ {status['meta']['active_regs_count']}")
+                print(f"        Meta all/inactive {status['meta']['all_hns_count']}/ {status['meta']['inactive_hns_count']}\t"
+                      f"Meta pow reg/active {status['meta']['powchain_regs_count']}/ {status['meta']['active_regs_count']}")
+                print(status['meta'])
         else:
             print(f"{ip}: Ko")
     """
