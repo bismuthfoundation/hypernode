@@ -53,10 +53,10 @@ update_repos() {
 
 install_dependencies() {
     echo "Installing apt dependencies"
-    # apt update -y
+    apt update -y
     # This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
-    apt install htop ufw unzip ntpdat sqlite3 build-essential python3.7-dev -y
+    apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3.7-dev -y
     # ntpdate ntp.ubuntu.com
     # apt install ntp -y
 }
@@ -105,12 +105,28 @@ download_node() {
     tar -zxf ledger-verified.tar.gz
     # Make some room
     rm ledger-verified.tar.gz
+    echo "Getting companions"
+    cd /root/Bismuth
+    mkdir plugins
+    mkdir plugins/035_socket_client
+    mkdir plugins/500_hypernode
+    cd plugins/035_socket_client
+    rm __init__.py
+    wget https://github.com/bismuthfoundation/BismuthPlugins/raw/master/plugins/035_socket_client/__init__.py
+    cd ../500_hypernode
+    rm __init__.py
+    wget https://github.com/bismuthfoundation/hypernode/raw/beta99/node_plugin/__init__.py
+    cd /root/Bismuth
+    rm ledger_queries.py
+    wget https://github.com/bismuthfoundation/hypernode/raw/beta99/node_plugin/ledger_queries.py       
     echo "Getting node sentinel"
     cd /root/Bismuth
     wget https://gist.githubusercontent.com/EggPool/63f146c6c6b7de8e0929a09dc190c62e/raw/322437b7ec2dea4f2b5f99e0582f2a97f42e420a/node_sentinel.py
     echo "Installing PIP requirements"
     python3.7 -m pip install setuptools ipwhois
     python3.7 -m pip install -r requirements-node.txt
+    # make sure in case of remainings of oldies.
+    rm -rd polysign
 }
 
 download_hypernode() {
