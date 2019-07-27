@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 45:
-`python3 convert.py --action=week --param=45`
+Week 47:
+`python3.7 convert.py --action=week --param=47`
 
 ```
-Week 45
+Week 47
 -------------
-TS   1563004800
-UTC  2019-07-13T08:00:00Z
-Round 7858
+TS   1564214400
+UTC  2019-07-27T08:00:00Z
+Round 8194
 Slot  0
-Last PoS Round 7857
-PoW Height 1252495
-Real TS 1563004775.56
-Next TS 1563004819.43
-Balance 23688.831175288593
-Balance (int) 23688
+Last PoS Round 8193
+PoW Height 1272636
+Real TS 1564214251.14
+Next TS 1564214427.59
+Balance 24360.82565537875
+Balance (int) 24360
 ```
 
 week.json (week 10):
@@ -44,7 +44,7 @@ The next scripts take the values from this json.
 
 ## Fill_rounds
 
-`python3 fill_rounds.py`  
+`python3.7 fill_rounds.py`  
 
 Verifies again the registered and active HNs for each round of the period.   
 This will tell if any HN cheated on its balance (balance dropped below the registered collateral)
@@ -154,29 +154,40 @@ Warning: PoW address 74b07b11968849f0e7661a8d5bf638afb0526f8d7efdb8a13278d743, w
 Warning: PoW address 27c4b8eefbc8451e53c0cf30fb807813502227ba66b0019dc691a253, weight 0 instead of 3 - removing from list.  
 Warning: PoW address e480811089c7e4c7e93ee67591053bb8317ccaff788caf3ef6fb8ce6, weight 0 instead of 1 - removing from list.
 
+Week 46  
+Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
+Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
+
+Week47  
+Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
+Warning: PoW address 57736590c5a519bb03a8404d8d02fca60389983bbc41fb1b18b4a6ea, weight 0 instead of 2 - removing from list.  
+Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 30bff062bc5cd277d2d2d4e203b8eaf159b179210f992573af91b67d, weight 0 instead of 3 - removing from list.
+
+
 ## Fill_stats
 
-`time python3 fill_stats.py`  
+`time python3.7 fill_stats.py`  
 (about 11 min => 11 sec now)
 
 # Rewards extraction
 
-`python3 calc_rewards.py`
+`python3.7 calc_rewards.py`
 
 Now does all the requests. Check SCORE_TRIGGER inside this script.  
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 45
-Total Weights at 0.0: 66584
-Full Weights: 68620
-Loss: 2.97%
+Calc Rewards for Week 47
+Total Weights at 0.0: 74888
+Full Weights: 77957
+Loss: 3.94%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week44_per_reward_address.csv
+exported as rewards/week47_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week43_per_hn_address.csv
+exported as rewards/week47_per_hn_address.csv
