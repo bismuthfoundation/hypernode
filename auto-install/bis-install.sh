@@ -38,32 +38,32 @@ config_os() {
 	fi
 	if ! cat /etc/sysctl.conf | grep "vm.vfs_cache_pressure = 50"; then
 	    echo "vm.vfs_cache_pressure = 50" >> /etc/sysctl.conf
-        fi	    
-        sysctl -p
+    fi	    
+    sysctl -p
 	echo 1 > /proc/sys/net/ipv4/tcp_low_latency
 }
 
 
 update_repos() {
-	echo "Updating repos..."
+    echo "Updating repos..."
     DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" update
     DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade
 }
 
 
 install_dependencies() {
-	echo "Installing apt dependencies"
-	# apt update -y
-	# This may be enough,
+    echo "Installing apt dependencies"
+    # apt update -y
+    # This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
     apt install htop ufw unzip ntpdat sqlite3 build-essential python3.7-dev -y
-	# ntpdate ntp.ubuntu.com
-	# apt install ntp -y
+    # ntpdate ntp.ubuntu.com
+    # apt install ntp -y
 }
 
 
 configure_firewall() {
-	echo "Configuring Firewall"
+    echo "Configuring Firewall"
     ufw disable
     ufw allow ssh/tcp
     ufw limit ssh/tcp
@@ -83,14 +83,14 @@ configure_firewall() {
 
 
 download_node() {
-	echo "Fetching Node"
-	cd
-    if [ -f ./v4.3.0.1-beta.1.tar.gz ]; then
-        rm v4.3.0.1-beta.1.tar.gz
-	fi
-    wget https://github.com/bismuthfoundation/Bismuth/archive/v4.3.0.1-beta.1.tar.gz
-    tar -zxf v4.3.0.1-beta.1.tar.gz
-    mv Bismuth-4.3.0.1-beta.1 Bismuth
+    echo "Fetching Node"
+    cd
+    if [ -f ./4.3.0.6-RC1.tar.gz ]; then
+        rm 4.3.0.6-RC1.tar.gz
+    fi
+    wget wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
+    tar -zxf 4.3.0.6-RC1.tar.gz
+    mv Bismuth-4.3.0.6-RC1 Bismuth
     cd Bismuth
     echo "Configuring node"    
     echo "ram=False" >> config_custom.txt
@@ -100,62 +100,65 @@ download_node() {
     cd static
     if [ -f ./ledger-verified.tar.gz ]; then
         rm ledger-verified.tar.gz
-	fi
+    fi
     wget https://snapshots.s3.nl-ams.scw.cloud/ledger-verified.tar.gz
     tar -zxf ledger-verified.tar.gz
     # Make some room
     rm ledger-verified.tar.gz
     echo "Getting node sentinel"
     cd /root/Bismuth
-    wget https://gist.githubusercontent.com/EggPool/e7ad9baa2b32e4d7d3ba658a40b6d643/raw/934598c7ff815180b913d6549bd2d9688e016855/node_sentinel.py
+    wget https://gist.githubusercontent.com/EggPool/63f146c6c6b7de8e0929a09dc190c62e/raw/322437b7ec2dea4f2b5f99e0582f2a97f42e420a/node_sentinel.py
     echo "Installing PIP requirements"
     python3.7 -m pip install setuptools ipwhois
     python3.7 -m pip install -r requirements-node.txt
 }
 
 download_hypernode() {
-	echo "Fetching Hypernode"
-	cd
-    if [ -f ./hypernode.tar.gz ]; then
-        rm hypernode.tar.gz
-	fi
-    wget http://bp12.eggpool.net/hypernode.tar.gz
-    tar -zxf hypernode.tar.gz
+    echo "Fetching Hypernode"
+    cd
+    if [ -f ./v0.0.99-a.tar.gz ]; then
+        rm v0.0.99-a.tar.gz
+    fi
+    wget https://github.com/bismuthfoundation/hypernode/archive/v0.0.99-a.tar.gz
+    tar -zxf v0.0.99-a.tar.gz
+    mv hypernode-0.0.99-a hypernode
     cd hypernode
     echo "Installing PIP requirements"
     python3.7 -m pip install wheel
     python3.7 -m pip install -r requirements.txt
+    echo "Adjusting cron1.py for python3.7"
+    sed -i -e "s/python3'/python3.7'/g" ./crontab/cron1.py
 }
 
 
 install_plugin() {
-	echo "Installing companion plugin"
-	mkdir /root/Bismuth/plugins
-	mkdir /root/Bismuth/plugins/500_hypernode
-	cp /root/hypernode/node_plugin/__init__.py /root/Bismuth/plugins/500_hypernode
+    echo "Installing companion plugin"
+    mkdir /root/Bismuth/plugins
+    mkdir /root/Bismuth/plugins/500_hypernode
+    cp /root/hypernode/node_plugin/__init__.py /root/Bismuth/plugins/500_hypernode
 }
 
 start_node() {
-	echo "Starting node"
-	cd
-	screen -d -S node -m bash -c "cd Bismuth;python3.7 node.py" -X quit
+    echo "Starting node"
+    cd
+    screen -d -S node -m bash -c "cd Bismuth;python3.7 node.py" -X quit
 }
 
 wait_ledger() {
 	echo "Waiting for ledger to download and extract"
 	while true; do
-	 if [ ! -f /root/Bismuth/static/ledger.db ]; then
-		echo "."
-		sleep 10
-	 else
-	   break
-	 fi
-	done
+    if [ ! -f /root/Bismuth/static/ledger.db ]; then
+        echo "."
+        sleep 10
+    else
+	    break
+    fi
+    done
 }
 
 
 check_hypernode() {
-	echo "Checking Hypernode"
+    echo "Checking Hypernode"
     cd /root/hypernode/main
     python3.7 hn_check.py
 }
@@ -176,32 +179,32 @@ add_cron_jobs() {
 }
 
 if [ "$(whoami)" != "root" ]; then
-  echo "Script must be run as root"
-  exit -1
+    echo "Script must be run as root"
+    exit -1
 fi
 
 while true; do
- if [ -d /root/Bismuth ]; then
-   printf "/root/Bismuth/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
-   pID=$(ps -ef | grep node.py | awk '{print $2}' | head -n 1)
-   kill ${pID}
-   rm -rf /root/Bismuth/
-   break
- else
-   break
- fi
+    if [ -d /root/Bismuth ]; then
+        printf "/root/Bismuth/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
+        pID=$(ps -ef | grep node.py | awk '{print $2}' | head -n 1)
+        kill ${pID}
+        rm -rf /root/Bismuth/
+        break
+    else
+        break
+    fi
 done
 
 while true; do
- if [ -d /root/hypernode ]; then
-   printf "/root/hypernode/ already exists! The installer will delete this folder. Continue anyway?(Y/n)"
-   pID=$(ps -ef | grep hn_instance.py | awk '{print $2}' | head -n 1)
-   kill ${pID}
-   rm -rf /root/hypernode/
-   break
- else
-   break
- fi
+    if [ -d /root/hypernode ]; then
+        printf "/root/hypernode/ already exists! The installer will delete this folder. Continue anyway? (Y/n)"
+        pID=$(ps -ef | grep hn_instance.py | awk '{print $2}' | head -n 1)
+        kill ${pID}
+        rm -rf /root/hypernode/
+        break
+    else
+       break
+    fi
 done
 
 
