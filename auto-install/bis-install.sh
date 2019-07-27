@@ -8,7 +8,9 @@
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-VERSION="0.1.10"
+# This installs latest node 4.3.0.6 and latest 0.0.99 hn version
+
+VERSION="0.1.20"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -54,7 +56,7 @@ install_dependencies() {
 	# apt update -y
 	# This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
-    apt install ufw unzip ntpdate python3-pip sqlite3 build-essential python3-dev -y
+    apt install htop ufw unzip ntpdat sqlite3 build-essential python3.7-dev -y
 	# ntpdate ntp.ubuntu.com
 	# apt install ntp -y
 }
@@ -107,8 +109,8 @@ download_node() {
     cd /root/Bismuth
     wget https://gist.githubusercontent.com/EggPool/e7ad9baa2b32e4d7d3ba658a40b6d643/raw/934598c7ff815180b913d6549bd2d9688e016855/node_sentinel.py
     echo "Installing PIP requirements"
-    pip3 install setuptools
-    pip3 install -r requirements-node.txt
+    python3.7 -m pip install setuptools ipwhois
+    python3.7 -m pip install -r requirements-node.txt
 }
 
 download_hypernode() {
@@ -121,8 +123,8 @@ download_hypernode() {
     tar -zxf hypernode.tar.gz
     cd hypernode
     echo "Installing PIP requirements"
-    pip3 install wheel
-    pip3 install -r requirements.txt
+    python3.7 -m pip install wheel
+    python3.7 -m pip install -r requirements.txt
 }
 
 
@@ -136,7 +138,7 @@ install_plugin() {
 start_node() {
 	echo "Starting node"
 	cd
-	screen -d -S node -m bash -c "cd Bismuth;python3 node.py" -X quit
+	screen -d -S node -m bash -c "cd Bismuth;python3.7 node.py" -X quit
 }
 
 wait_ledger() {
@@ -155,21 +157,21 @@ wait_ledger() {
 check_hypernode() {
 	echo "Checking Hypernode"
     cd /root/hypernode/main
-    python3 hn_check.py
+    python3.7 hn_check.py
 }
 
 add_cron_jobs() {
 	# Node sentinel
 	if ! crontab -l | grep "node_sentinel"; then
-	  (crontab -l ; echo "* * * * * cd /root/Bismuth;python3 node_sentinel.py") | crontab -
+	  (crontab -l ; echo "* * * * * cd /root/Bismuth;python3.7 node_sentinel.py") | crontab -
 	fi
 	# Hypernode sentinel1
 	if ! crontab -l | grep "cron1.py"; then
-	  (crontab -l ; echo "* * * * * cd /root/hypernode/crontab;python3 cron1.py") | crontab -
+	  (crontab -l ; echo "* * * * * cd /root/hypernode/crontab;python3.7 cron1.py") | crontab -
 	fi
 	# Hypernode sentinel5
 	if ! crontab -l | grep "cron5.py"; then
-	  (crontab -l ; echo "*/5 * * * * cd /root/hypernode/crontab;python3 cron5.py") | crontab -
+	  (crontab -l ; echo "*/5 * * * * cd /root/hypernode/crontab;python3.7 cron5.py") | crontab -
 	fi
 }
 
