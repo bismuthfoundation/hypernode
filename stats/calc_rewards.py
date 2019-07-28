@@ -18,7 +18,7 @@ import poschain
 from os import path
 
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 SCORE_TRIGGER = 0.0
 
@@ -58,14 +58,14 @@ if __name__ == "__main__":
     sql = "select reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight from reward_stats where score >= ? group by reward_address order by reward desc"
     per_reward = loop.run_until_complete(hn_db.async_fetchall(sql, (float(BALANCE), float(total_weights), SCORE_TRIGGER)))
     with open('rewards/week{}_per_reward_address.csv'.format(WEEK), 'w') as f:
-        f.write("reward_address,reward,weight\n")
+        f.write("reward_address,reward,total_weights\n")
         for row in per_reward:
             # print(list(row))
             f.write("{},{},{}\n".format(row[0], row[1], row[2]))
 
-    sql = "select address, reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight from reward_stats where score >= ? group by address order by reward desc"
+    sql = "select address, reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight , max(weight) as collateral from reward_stats where score >= ? group by address order by reward desc"
     per_reward = loop.run_until_complete(hn_db.async_fetchall(sql, (float(BALANCE), float(total_weights), SCORE_TRIGGER)))
     with open('rewards/week{}_per_hn_address.csv'.format(WEEK), 'w') as f:
-        f.write("address,reward_address,reward,weight\n")
+        f.write("address,reward_address,reward,total_weight,weight\n")
         for row in per_reward:
-            f.write("{},{},{},{}\n".format(row[0], row[1], row[2], row[3]))
+            f.write("{},{},{},{}\n".format(row[0], row[1], row[2], row[3], row[4]))
