@@ -59,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99a"
+__version__ = "0.0.99b"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -150,6 +150,7 @@ class HnServer(TCPServer):
                 self.node.add_inbound(
                     peer_ip, peer_port, {"hello": msg.string_value, "stats": [0] * 9}
                 )
+
                 remove = True
 
             elif msg.command == commands_pb2.Command.block:
@@ -226,14 +227,17 @@ class HnServer(TCPServer):
                     what = str(e)
                     # FR: Would be cleaner with a custom exception
                     if "OK" not in what:
-                        app_log.error(
-                            "SRV: handle_stream {} for ip {}".format(what, full_peer)
-                        )
-                    exc_type, exc_obj, exc_tb = exc_info()
-                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                    app_log.error(
-                        "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
-                    )
+                        if "Notice" in what:  # ValueError
+                            app_log.info(what)
+                        else:
+                            app_log.error(
+                                "SRV: handle_stream {} for ip {}".format(what, full_peer)
+                            )
+                            exc_type, exc_obj, exc_tb = exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            app_log.error(
+                                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                            )
                     return
 
         except Exception as e:
@@ -346,7 +350,10 @@ class HnServer(TCPServer):
                             )
                         )
                 # Use clients stats to get real since - beware of one shot clients, send full (int_value=1)
-                stats = self.node.inbound[full_peer]["stats"]
+                try:
+                    stats = self.node.inbound[full_peer]["stats"]
+                except:
+                    raise ValueError("Notice: Got mempool from {} but no stats".format(peer_ip))
                 last = int(stats[com_helpers.STATS_LASTMPL]) if len(stats) else 0
                 txs = await self.mempool.async_since(last)
                 self.node.inbound[full_peer]["stats"][
@@ -443,8 +450,9 @@ class HnServer(TCPServer):
                 )
 
         except ValueError as e:
-            app_log.warning("SRV: Error {} for peer {}.".format(e, full_peer))
+            # app_log.warning("SRV: Error {} for peer {}.".format(e, full_peer))
             # FR: can we just ignore, or should we raise to close the connection?
+            raise
 
         except Exception as e:
             app_log.error("SRV: _handle_msg {}: Error {}".format(full_peer, e))
@@ -967,6 +975,7 @@ class Poshn:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()  # some runs showed quite some time in here for chain swaps.
                 # app_log.warning("loop 2")
+
                 if (
                     self.state == HNState.SYNCING
                     and self.forger == poscrypto.ADDRESS
@@ -1708,7 +1717,8 @@ class Poshn:
                 # Client
                 self.clients[full_peer]["height_status"] = height.to_dict(as_hex=True)
         except KeyError as e:
-            app_log.error("Key Error {} digest_height".format(e))
+            # app_log.error("Key Error {} digest_height".format(e))
+            raise ValueError("Peer {} stats not available, server={}".format(full_peer, server))
         except Exception as e:
             app_log.error("Error {} digest_height".format(e))
 
@@ -2478,6 +2488,7 @@ class Poshn:
                     )
                     # but tickets are only for previously active
                     tickets = await determine.hn_list_to_tickets(self.active_peers)
+                    # ERR TODO: not previous hash!!! last hash of round R-1. We could have moved in between.
                     self.slots = await determine.tickets_to_jurors(
                         tickets, self.previous_hash
                     )

@@ -68,4 +68,4 @@ if __name__ == "__main__":
     with open('rewards/week{}_per_hn_address.csv'.format(WEEK), 'w') as f:
         f.write("address,reward_address,reward,total_weight,weight\n")
         for row in per_reward:
-            f.write("{},{},{},{}\n".format(row[0], row[1], row[2], row[3], row[4]))
+            f.write("{},{},{},{}, {}\n".format(row[0], row[1], row[2], row[3], row[4]))

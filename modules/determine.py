@@ -218,9 +218,9 @@ def round_to_timestamp(a_round=0):
 def round_to_reference_timestamp(a_round: int) -> int:
     """Returns timestamp pow reference for that round (1 - 2 hours in the past)"""
     timestamp = config.ORIGIN_OF_TIME + a_round * config.ROUND_TIME_SEC
-    # This is the reference timestamp derived from the round that we send. kinda duplicate wwith a_round, but anyway.
+    # This is the reference timestamp derived from the round that we send. kinda duplicate with a_round, but anyway.
     timestamp -= 40 * 60  # 40 min behind
-    timestamp = 3600 * floor(timestamp / 3600)  # round to previous hour
+    timestamp = 3600 * floor(timestamp / 3600)  # round to previous hour (yep, same as round timestamp - 1 hour)
     return timestamp
 
 

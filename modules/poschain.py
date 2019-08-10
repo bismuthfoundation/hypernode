@@ -837,7 +837,10 @@ class SqlitePosChain(SqliteBase):
             """
             height = height.get("height")
             # print("\nheight", height)
-            # get height stats at that level
+            # get height stats at that level - TODO: that's CPU intensive. Can we cache that somehow?
+            # Will always be stats at end of a round, called multiple times with same info when swapping chains in a round.
+            # Only the latest height is needed, we won't need previous height afterward. 1 cache slot is enough.
+            # only called from here, can do naive cache.
             ref_height = await self.async_blockinfo(height)
             # print("\nref_height", ref_height.to_dict(as_hex=True))
             # for each block, validate and inc stats
