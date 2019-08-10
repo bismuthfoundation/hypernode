@@ -59,7 +59,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99b"
+__version__ = "0.0.99c"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1722,12 +1722,12 @@ class Poshn:
         except Exception as e:
             app_log.error("Error {} digest_height".format(e))
 
-    async def post_block(self, proto_block, peer_ip, peer_port):
+    async def post_block(self, proto_block_command: commands_pb2.Command, peer_ip, peer_port):
         """
         Async. Send the block we forged to a given peer
         Should we use threads instead and a simpler tcp client? Perfs to be tested.
 
-        :param proto_block: a protobuf block
+        :param proto_block_command: a protobuf command of type block
         :param peer_ip: the peer ip
         :param peer_port: the peer port
         """
@@ -1743,7 +1743,7 @@ class Poshn:
                 )
             else:
                 stream = await TCPClient().connect(peer_ip, peer_port, timeout=5)
-            await async_send_block(proto_block, stream, full_peer)
+            await async_send_block(proto_block_command, stream, full_peer)
         except Exception as e:
             app_log.warning(
                 "Error '{}' sending block to {}:{}".format(e, peer_ip, peer_port)
@@ -1756,6 +1756,7 @@ class Poshn:
         """
         Async. Consensus has been reached, we are forger, forge and send block.
         """
+        # Caller set the state to forging already
         try:
             await self.refresh_last_block()
             # check last round and SIR, make sure they are >
@@ -1782,10 +1783,11 @@ class Poshn:
             block = posblock.PosBlock().from_dict(block_dict)
             # txs are native objects
             block.txs = await self.mempool.async_all(self.last_height + 1)
-            if not len(block.txs):
+            if len(block.txs) < config.REQUIRED_MESSAGES_PER_BLOCK:
                 # not enough TX, won't pass in prod
                 # raise ValueError("No TX to embed, block won't be valid.")
-                app_log.error("No TX to embed, block won't be valid.")
+                app_log.error("Not enough TX to embed, block won't be valid.")
+                return
             # TODO: count also uniques_sources
             # Remove from mempool
             await self.mempool.clear()
@@ -1794,20 +1796,25 @@ class Poshn:
             # print(block.to_dict())
             # FR: Shall we pass that one through "digest" to make sure?
             # await self.poschain._insert_block(block)
-            block = block.to_proto()
-            await self.poschain.digest_block(
-                block, from_miner=True, relaxed_checks=True
+            proto_cmd = block.to_proto()
+            proto_block = proto_cmd.block_value[0]
+            # TODO: we convert to a proto, and digest converts again to core object. Add optional param to avoid?
+            digested = await self.poschain.digest_block(
+                proto_block, from_miner=True, relaxed_checks=True
             )
+            if not digested:
+                app_log.warning("Block Forged but not locally digested, aborting")
+                return
             await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
             """if self.verbose:
-                print("proto", block)
+                print("proto", proto_block)
             """
             app_log.info("Block Forged, I will send it")
             self.forged_count += 1
             # build the list of jurors to send to. Exclude ourselves.
             to_send = [
-                self.post_block(block, peer[1], peer[2])
+                self.post_block(proto_cmd, peer[1], peer[2])
                 for peer in self.all_peers
                 if not (peer[1] == self.outip and int(peer[2]) == self.port)
             ]
@@ -1816,6 +1823,7 @@ class Poshn:
             except Exception as e:
                 app_log.error("Timeout sending block: {}".format(e))
             # print(block.__str__())
+            # Caller will reset the state to needed state.
             return True
         except Exception as e:
             app_log.error("Error forging: {}".format(e))

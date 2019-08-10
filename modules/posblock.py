@@ -17,7 +17,7 @@ import poscrypto
 import time
 
 
-__version__ = '0.0.3'
+__version__ = '0.0.4'
 
 
 class PosMessage:
@@ -370,11 +370,11 @@ class PosBlock:
         raw += self.previous_hash
         return raw
 
-    def from_proto(self, block_proto):
+    def from_proto(self, block_proto: commands_pb2.Block):
         """
         Inits the instance properties with the provided protobuff data.
 
-        :param block_proto: a protobuff object
+        :param block_proto: a protobuff block object
         :return: self
         """
         """
@@ -392,11 +392,11 @@ class PosBlock:
         self.forger = block_proto.forger
         return self
 
-    def to_proto(self):
+    def to_proto(self) -> commands_pb2.Command:
         """
         Create a protobuf object from current native format.
 
-        :return: a protobuf object.
+        :return: a protobuf command object, **not** a block
         """
         protocmd = commands_pb2.Command()
         protocmd.Clear()
@@ -413,7 +413,7 @@ class PosBlock:
         # protocmd.block_value = block
         return protocmd
 
-    def add_to_proto(self, protocmd):
+    def add_to_proto(self, protocmd: commands_pb2.Command) -> commands_pb2.Command:
         """
         Adds the block to an existing protobuf command object.
 
