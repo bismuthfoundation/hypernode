@@ -829,7 +829,7 @@ class SqlitePosChain(SqliteBase):
             # Will always be stats at end of a round, called multiple times with same info when swapping chains in a round.
             # Only the latest height is needed, we won't need previous height afterward. 1 cache slot is enough.
             # only called from here, can do naive cache.
-            ref_height = await self.async_blockinfo(height)
+            ref_height = await self.async_blockinfo(height)  # TODO: That's the intensive part
             # print("\nref_height", ref_height.to_dict(as_hex=True))
             # for each block, validate and inc stats
             uniques_round = []
@@ -838,10 +838,12 @@ class SqlitePosChain(SqliteBase):
             ref_hash = ref_height.block_hash
             end_block = None
             for block in blocks.block_value:
+                """
                 if self.verbose:
                     self.app_log.info(
                         "check_round block {} : {:0.2f}".format(block.height, time())
                     )
+                """
                 # Good height?
                 if block.height != ref_blockheight + 1:
                     self.app_log.warning(
@@ -1629,6 +1631,12 @@ class SqlitePosChain(SqliteBase):
         # print("res forge", res)
         # sys.exit()
         return res
+
+    async def last_hash_of_round(self, a_round: int) -> bytes:
+        last_hash = await self.async_fetchone(SQL_LAST_HASH_OF_ROUND, (a_round,))
+        if last_hash:
+            return last_hash[0]
+        return None
 
 
 if __name__ == "__main__":

@@ -679,7 +679,7 @@ class Poshn:
             self.forged = False
             #
             self.last_height = 0
-            self.previous_hash = ""
+            self.previous_hash = b""
             self.last_round = 0
             self.last_sir = 0
             self.connected_count = 0
@@ -2509,9 +2509,12 @@ class Poshn:
                     # but tickets are only for previously active
                     tickets = await determine.hn_list_to_tickets(self.active_peers)
                     # ERR TODO: not previous hash!!! last hash of round R-1. We could have moved in between.
-                    # last_round_hash = self.poschain.last_hash_of_round(self.round)
+                    last_round_hash = await self.poschain.last_hash_of_round(self.round - 1)
+                    print(last_round_hash, self.previous_hash)
+                    app_log.info("last round hash {}".format(last_round_hash.hex()))
+                    app_log.info("previous hash {}".format(self.previous_hash.hex()))
                     self.slots = await determine.tickets_to_jurors(
-                        tickets, self.previous_hash
+                        tickets, last_round_hash
                     )
                     if self.verbose:
                         app_log.info("Slots {}".format(json.dumps(self.slots)))
