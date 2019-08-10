@@ -22,7 +22,7 @@ import poshelpers
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 
-__version__ = "0.1.5"
+__version__ = "0.1.6"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -39,18 +39,19 @@ SQL_INSERT_INTO_VALUES = (
 
 SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-SQL_TXS_FOR_HEIGHT = (
-    "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
-)
+SQL_TXS_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
 
 # sender and recipient indices would only really be useful for here
-SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? ORDER BY block_height, timestamp DESC LIMIT 100"
+SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? " \
+                      "ORDER BY block_height, timestamp DESC LIMIT 100"
+
 SQL_TXS_FOR_ADDRESS_FROM_HEIGHT = (
     "SELECT * FROM pos_messages WHERE (sender = ? or recipient = ?) "
     "AND block_height >= ? ORDER BY block_height, timestamp ASC LIMIT 100"
 )
 
 SQL_TXID_EXISTS = "SELECT txid FROM pos_messages WHERE txid = ?"
+
 SQL_TX_FOR_TXID = "SELECT * FROM pos_messages WHERE txid = ?"
 
 SQL_TX_STATS_FOR_HEIGHT = (
@@ -58,43 +59,36 @@ SQL_TX_STATS_FOR_HEIGHT = (
     "WHERE block_height = ?"
 )
 
-# TODO: bench vs SELECT height, round, sir, block_hash FROM pos_chain WHERE height = (select max(height) from pos_chain) limit 1
+# TODO: bench vs SELECT height, round, sir, block_hash FROM pos_chain
+# WHERE height = (select max(height) from pos_chain) limit 1
 # to use covering index
-SQL_STATE_1 = (
-    "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
-)  # FR: opt
+SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"  # FR: opt
 
 # TODO: duplicate round in pos_messages table to avoid these extra requests
-SQL_HEIGHT_OF_ROUND = (
-    "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
-)
-SQL_LAST_HEIGHT_OF_ROUND = (
-    "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
-)
-SQL_LAST_HEIGHT_BEFORE_ROUND = (
-    "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
-)
-SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max FROM pos_chain WHERE round >= ? and round <= ?"
+SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 
+SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+
+SQL_LAST_HEIGHT_BEFORE_ROUND = "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
+
+SQL_LAST_HASH_OF_ROUND = "SELECT block_hash FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+
+SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max " \
+                             "FROM pos_chain WHERE round >= ? and round <= ?"
 
 # FR: some of these may be costly. check perfs.
 SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
-SQL_STATE_3 = (
-    "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
-)
+SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
 
 # TODO: these 2 requests are huge and slow down everything - missing indices.
-SQL_STATE_4 = (
-    "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
-)  # uses sender as covering index
+SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
+
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
 # Uses block_height index, not sender. Ok because it's for last round, so few pos_messages are concerned.
 
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
-SQL_INFO_2 = (
-    "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
-)
+SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
 SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
 SQL_BLOCKS_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
@@ -110,20 +104,14 @@ SQL_DELETE_BLOCK_TXS = "DELETE FROM pos_messages WHERE block_height = ?"
 
 SQL_COUNT_TX_FOR_HEIGHT = "SELECT COUNT(*) FROM pos_messages WHERE block_height = ?"
 
-SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = (
-    "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
-)
+SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
 
-SQL_DELETE_ROUND_TXS = (
-    "DELETE FROM pos_messages WHERE block_height IN "
-    "(SELECT height FROM pos_chain WHERE round = ?)"
-)
+SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN (SELECT height FROM pos_chain WHERE round = ?)"
 
 SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
 
-SQL_ROUNDS_FORGERS = (
-    "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
-)
+SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
+
 SQL_ROUNDS_SOURCES = "SELECT DISTINCT(sender) FROM pos_messages WHERE block_height >= ? AND block_height <= ?"
 
 # ----------------- KPIs -----------------
@@ -604,14 +592,14 @@ class SqlitePosChain(SqliteBase):
                 self.execute(
                     SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True
                 )  # Unwanted: this closes the cursor?!?
-                    # sys.exit()
+                # sys.exit()
             missing_blocks = list(self.missing_blocks())
             # print("Missing1:", missing_blocks)
             test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
             test2 = test2[0] if test2 else 0
             if 76171 in missing_blocks:
                 # Ignore that missing one, broken block net-wide.
-                test2 +=1
+                test2 += 1
             if test2 != test[0]:
                 self.app_log.error(
                     "Inconsistency height {} but only messages for {}".format(
@@ -997,7 +985,9 @@ class SqlitePosChain(SqliteBase):
                 await self.async_execute(SQL_DELETE_BLOCK_TXS, (block.height,))
                 if "timing" in config.LOG or "blockdigest" in config.LOG:
                     self.app_log.warning(
-                        "TIMING: poschain delete block txs: {} sec".format(time() - start_time)
+                        "TIMING: poschain delete block txs: {} sec".format(
+                            time() - start_time
+                        )
                     )
                     start_time = time()
 
@@ -1018,18 +1008,14 @@ class SqlitePosChain(SqliteBase):
                 await self.mempool.async_del_txids(bin_txids)
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: mempool del: {} sec".format(
-                        time() - start_time
-                    )
+                    "TIMING: mempool del: {} sec".format(time() - start_time)
                 )
                 start_time = time()
             # Double check we have the right number of stored txs
             saved = await self.async_fetchone(SQL_COUNT_TX_FOR_HEIGHT, (block.height,))
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: safety check: {} sec".format(
-                        time() - start_time
-                    )
+                    "TIMING: safety check: {} sec".format(time() - start_time)
                 )
                 start_time = time()
             if saved[0] != block.msg_count:
@@ -1052,18 +1038,14 @@ class SqlitePosChain(SqliteBase):
             await self.async_execute(SQL_DELETE_BLOCK, (block.height,))
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: delete block: {} sec".format(
-                        time() - start_time
-                    )
+                    "TIMING: delete block: {} sec".format(time() - start_time)
                 )
                 start_time = time()
 
             await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: insert block: {} sec".format(
-                        time() - start_time
-                    )
+                    "TIMING: insert block: {} sec".format(time() - start_time)
                 )
                 start_time = time()
             self._invalidate()
@@ -1072,9 +1054,7 @@ class SqlitePosChain(SqliteBase):
             await self._height_status()
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: recalc status: {} sec".format(
-                        time() - start_time
-                    )
+                    "TIMING: recalc status: {} sec".format(time() - start_time)
                 )
             return True
         except Exception as e:
