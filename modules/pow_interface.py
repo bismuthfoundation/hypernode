@@ -273,8 +273,15 @@ class PowInterface:
                     self.regs.pop(pow_address, None)
 
             if collateral_dropped:
-                # TODO
-                self.app_log.warning("I should handle collateral dropped")
+                # self.app_log.warning("I should handle collateral dropped")
+                for dropped in collateral_dropped:
+                    bisurl = create_bis_url(recipient=dropped["pow"],
+                                            amount="0",
+                                            operation="hypernode:unregister",
+                                            openfield="{}:{}:{},reason=Collateral drop".format(dropped["ip"],
+                                                                        dropped["port"],
+                                                                        dropped["pos"]))
+                    print(bisurl)
 
             pow_client.close()
             # Here we have self.regs
