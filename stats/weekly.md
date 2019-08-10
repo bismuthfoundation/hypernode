@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 48:
-`python3.7 convert.py --action=week --param=48`
+Week 49:
+`python3.7 convert.py --action=week --param=49`
 
 ```
-WWeek 48
+Week 49
 -------------
-TS   1564819200
-UTC  2019-08-03T08:00:00Z
-Round 8362
+TS   1565424000
+UTC  2019-08-10T08:00:00Z
+Round 8530
 Slot  0
-Last PoS Round 8361
-PoW Height 1282503
-Real TS 1564819127.74
-Next TS 1564819231.75
-Balance 23689.060015448777
-Balance (int) 23689
+Last PoS Round 8529
+PoW Height 1292500
+Real TS 1565423982.54
+Next TS 1565424168.14
+Balance 24000.060015448253
+Balance (int) 24000
 ```
 
 week.json (week 10):
@@ -158,13 +158,13 @@ Week 46
 Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
 Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
 
-Week47  
+Week 47  
 Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
 Warning: PoW address 57736590c5a519bb03a8404d8d02fca60389983bbc41fb1b18b4a6ea, weight 0 instead of 2 - removing from list.  
 Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
 Warning: PoW address 30bff062bc5cd277d2d2d4e203b8eaf159b179210f992573af91b67d, weight 0 instead of 3 - removing from list.
 
-Week48
+Week 48
 Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
 Warning: PoW address 57736590c5a519bb03a8404d8d02fca60389983bbc41fb1b18b4a6ea, weight 0 instead of 2 - removing from list.  
 Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
@@ -174,6 +174,16 @@ Warning: PoW address 861b525e33947fb2302b728c1b9512938ac7043c3113c2e6fa176ec4, w
 Warning: PoW address 6a144d1bdc04709d41f6d85a38c5a20fa711749d2a3bede54a848bf7, weight 0 instead of 3 - removing from list.  
 Warning: PoW address 4a6df7ab7071f82717e1f63aee106eff858e624582dc4f0ad10a0470, weight 0 instead of 2 - removing from list.  
 
+Week 49  
+Warning: PoW address 9d1d55bdad0b0f09152a603b73bbb03a951f376a3bae474ca98fe3da, weight 0 instead of 1 - removing from list.  
+Warning: PoW address 27f6fc4609a49968b0ca742cf02ef82f256aaeea7d2faae71d2de064, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 57736590c5a519bb03a8404d8d02fca60389983bbc41fb1b18b4a6ea, weight 0 instead of 2 - removing from list.  
+Warning: PoW address 9463995e455116ed5e4969aac36e8f315eb1c4714ae076eaff6cded8, weight 0 instead of 3 - removing from list.  
+Warning: PoW address ecf667adadf3af8f70c2091d9285d93e3ac5ad4e9c71b28d74e7c707, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 30bff062bc5cd277d2d2d4e203b8eaf159b179210f992573af91b67d, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 861b525e33947fb2302b728c1b9512938ac7043c3113c2e6fa176ec4, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 6a144d1bdc04709d41f6d85a38c5a20fa711749d2a3bede54a848bf7, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 4a6df7ab7071f82717e1f63aee106eff858e624582dc4f0ad10a0470, weight 0 instead of 2 - removing from list.  
 
 ## Fill_stats
 
@@ -188,16 +198,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 48
-Total Weights at 0.0: 75892
-Full Weights: 78159
-Loss: 2.90%
+Calc Rewards for Week 49
+Total Weights at 0.0: 75511
+Full Weights: 77854
+Loss: 3.01%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week48_per_reward_address.csv
+exported as rewards/week49_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week48_per_hn_address.csv
+exported as rewards/week49_per_hn_address.csv
