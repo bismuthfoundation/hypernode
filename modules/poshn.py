@@ -2510,9 +2510,13 @@ class Poshn:
                     tickets = await determine.hn_list_to_tickets(self.active_peers)
                     # ERR TODO: not previous hash!!! last hash of round R-1. We could have moved in between.
                     last_round_hash = await self.poschain.last_hash_of_round(self.round - 1)
-                    print(last_round_hash, self.previous_hash)
-                    app_log.info("last round hash {}".format(last_round_hash.hex()))
-                    app_log.info("previous hash {}".format(self.previous_hash.hex()))
+                    # print(last_round_hash, self.previous_hash)
+                    if not last_round_hash:
+                        last_round_hash = self.previous_hash
+                        # Can be none at start
+                        # app_log.info("last round hash {}".format(last_round_hash.hex()))
+                        # app_log.info("previous hash {}".format(self.previous_hash.hex()))
+
                     self.slots = await determine.tickets_to_jurors(
                         tickets, last_round_hash
                     )
