@@ -2,16 +2,16 @@
 Communication helper utils for Bismuth Hypernodes
 =================================================
 """
-import datetime
+# import datetime
 import struct
 import time
 from asyncio import wait_for, CancelledError, TimeoutError
 
-import tornado.gen
+# import tornado.gen
 
 import commands_pb2
 
-__version__ = '0.0.33'
+__version__ = '0.0.34'
 
 
 # Index for clients stats
@@ -109,7 +109,7 @@ async def async_send(cmd: commands_pb2.Command, stream, ip) -> None:
         except:
             pass
     except Exception as e:
-        # TODO: remove try block if it's just to raise.
+        # As well remove try block if it's just to raise. Kept for more precise debug when needed.
         # app_log.error("_send ip {}: {}".format(ip, e))
         """
         exc_type, exc_obj, exc_tb = sys.exc_info()
