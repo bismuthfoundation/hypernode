@@ -27,7 +27,7 @@ import poshn
 import poscrypto
 from powasyncclient import PoWAsyncClient
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 ONE_GB = 1024 * 1024 * 1024
 
@@ -61,7 +61,7 @@ def check_os(a_status):
     a_status["cpu_cores"] = os.cpu_count()
     if os.cpu_count() < 2:
         a_status["errors"].append(
-            "Too few cpu ({}) compared to official requirements (2). Use at your own risks."
+            "Too few cpu ({}) compared to official requirements (2). Use at your own risks.".format(os.cpu_count())
         )
     # Available Ram
     mem = virtual_memory()
