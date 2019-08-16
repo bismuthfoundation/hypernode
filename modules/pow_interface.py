@@ -22,7 +22,7 @@ from determine import timestamp_to_round_slot, round_to_reference_timestamp
 from fakelog import FakeLog
 from powasyncclient import PoWAsyncClient
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 # ================== Helpers ================
@@ -138,11 +138,10 @@ class PowInterface:
         while not synced:
             try:
                 try:
-                    pow_client = PoWAsyncClient(
+                    async with PoWAsyncClient(
                         config.POW_IP, config.POW_PORT, self.app_log
-                    )
-                    res = await pow_client.async_command("HN_last_block_ts")
-                    pow_client.close()
+                    ) as pow_client:
+                        res = await pow_client.async_command("HN_last_block_ts")
                     last_ts = res
                 except:
                     last_ts = -1
@@ -208,82 +207,84 @@ class PowInterface:
 
             ref_timestamp = round_to_reference_timestamp(a_round)
 
-            pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT, self.app_log)
-            command = "HN_reg_round {} {} {} {}".format(
-                a_round, ref_timestamp, pow_height, ip
-            )
-            # print("COMMAND", command)
-            try:
-                res = await pow_client.async_command(
-                    "HN_reg_round {} {} {} {}".format(
-                        a_round, ref_timestamp, pow_height, ip
-                    ),
-                    timeout=60,
-                    retry=3,
-                    retry_pause=2,
-                )
-                if not res:
-                    # Query failed, likely pow node behind.
-                    self.app_log.error("pow reg query failed")
+            async with PoWAsyncClient(
+                config.POW_IP, config.POW_PORT, self.app_log
+            ) as pow_client:
+                # command = "HN_reg_round {} {} {} {}".format(a_round, ref_timestamp, pow_height, ip)
+                # print("COMMAND", command)
+                try:
+                    res = await pow_client.async_command(
+                        "HN_reg_round {} {} {} {}".format(
+                            a_round, ref_timestamp, pow_height, ip
+                        ),
+                        timeout=60,
+                        retry=3,
+                        retry_pause=2,
+                    )
+                    if not res:
+                        # Query failed, likely pow node behind.
+                        self.app_log.error("pow reg query failed")
+                        sys.exit()
+                except (StreamClosedError, TimeoutError):
+                    self.app_log.error("pow connect failed")
                     sys.exit()
-            except (StreamClosedError, TimeoutError):
-                self.app_log.error("pow connect failed")
-                sys.exit()
-            if ip:
-                return res["ip_feed"]
+                if ip:
+                    return res["ip_feed"]
 
-            self.regs = res["regs"]
-            collateral_dropped = []
-            if balance_check:
-                self.app_log.warning("Balance checks asked...")
-                addresses = ",".join(self.regs.keys())
-                weights = await pow_client.async_command(
-                    "HN_reg_check_weights {} {}".format(addresses, ref_timestamp),
-                    timeout=60,
-                )
-                # print("RES weights", weights)
+                self.regs = res["regs"]
+                collateral_dropped = []
+                if balance_check:
+                    self.app_log.warning("Balance checks asked...")
+                    addresses = ",".join(self.regs.keys())
+                    weights = await pow_client.async_command(
+                        "HN_reg_check_weights {} {}".format(addresses, ref_timestamp),
+                        timeout=60,
+                    )
+                    # print("RES weights", weights)
 
-                bad_balance = []
-                for pow_address, detail in self.regs.items():
-                    weight = weights.get(pow_address, -1)
-                    if weight < detail["weight"]:
-                        # Can be more, can't be less.
-                        self.app_log.warning(
-                            "PoW address {}, weight {} instead of {} - removing from list.".format(
-                                pow_address, weight, detail["weight"]
+                    bad_balance = []
+                    for pow_address, detail in self.regs.items():
+                        weight = weights.get(pow_address, -1)
+                        if weight < detail["weight"]:
+                            # Can be more, can't be less.
+                            self.app_log.warning(
+                                "PoW address {}, weight {} instead of {} - removing from list.".format(
+                                    pow_address, weight, detail["weight"]
+                                )
                             )
+                            if type(collateral_dropped) == list:
+                                collateral_dropped.append(
+                                    {
+                                        "pow": pow_address,
+                                        "ip": detail["ip"],
+                                        "port": detail["port"],
+                                        "pos": detail["pos"],
+                                        "weight": weight,
+                                        "registered_weight": detail["weight"],
+                                    }
+                                )
+                            # Remove from the list.
+                            # self.regs.pop(pow_address, None)
+                            self.regs[pow_address]["active"] = False
+                            bad_balance.append(pow_address)
+                    # now remove the balance cheaters
+                    for pow_address in bad_balance:
+                        self.regs.pop(pow_address, None)
+
+                if collateral_dropped:
+                    # self.app_log.warning("I should handle collateral dropped")
+                    for dropped in collateral_dropped:
+                        bisurl = create_bis_url(
+                            recipient=dropped["pow"],
+                            amount="0",
+                            operation="hypernode:unregister",
+                            openfield="{}:{}:{},reason=Collateral drop".format(
+                                dropped["ip"], dropped["port"], dropped["pos"]
+                            ),
                         )
-                        if type(collateral_dropped) == list:
-                            collateral_dropped.append(
-                                {
-                                    "pow": pow_address,
-                                    "ip": detail["ip"],
-                                    "port": detail["port"],
-                                    "pos": detail["pos"],
-                                    "weight": weight,
-                                    "registered_weight": detail["weight"],
-                                }
-                            )
-                        # Remove from the list.
-                        # self.regs.pop(pow_address, None)
-                        self.regs[pow_address]["active"] = False
-                        bad_balance.append(pow_address)
-                # now remove the balance cheaters
-                for pow_address in bad_balance:
-                    self.regs.pop(pow_address, None)
+                        print(bisurl)
 
-            if collateral_dropped:
-                # self.app_log.warning("I should handle collateral dropped")
-                for dropped in collateral_dropped:
-                    bisurl = create_bis_url(recipient=dropped["pow"],
-                                            amount="0",
-                                            operation="hypernode:unregister",
-                                            openfield="{}:{}:{},reason=Collateral drop".format(dropped["ip"],
-                                                                        dropped["port"],
-                                                                        dropped["pos"]))
-                    print(bisurl)
-
-            pow_client.close()
+            # pow_client.close() - handled by the context handler
             # Here we have self.regs
             # Now, if round > 0, set active state depending on last round activity
             if self.regs:

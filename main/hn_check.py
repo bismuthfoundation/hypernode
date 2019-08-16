@@ -187,7 +187,7 @@ def check_plugin():
             print("Queries extension ok {}".format(queries_ver))
     except:
         print("Error in live check, probably bad plugin or ledger_queries versions")
-        ok = False
+        # ok = False
         sys.exit()
     finally:
         pow_client.close()

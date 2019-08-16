@@ -39,26 +39,32 @@ __version__ = "0.0.99"
 def check_companions():
     # TODO: factorize with hn_check, it's a helper func.
     print("Companions check...")
+    pow_client = None
     try:
         pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
         versions = pow_client.command("HN_plugin_version")
-        plugin_ver = versions['hn_plugin']
+        plugin_ver = versions["hn_plugin"]
         ok_version = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
         if not ok_version:
-            print("\n>> Bismuth Node restart required, running plugin has wrong version\n")
+            print(
+                "\n>> Bismuth Node restart required, running plugin has wrong version\n"
+            )
             sys.exit()
         else:
             print("Plugin ok {}".format(plugin_ver))
-        queries_ver = versions['ledger_queries']
+        queries_ver = versions["ledger_queries"]
         ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
         if not ok_version:
-            print("\n>> Bismuth Node restart required, running queries extension has wrong version\n")
+            print(
+                "\n>> Bismuth Node restart required, running queries extension has wrong version\n"
+            )
             sys.exit()
         else:
             print("Queries extension ok {}".format(queries_ver))
-        pow_client.close()
     except:
         print("Error in live check, probably bad plugin or ledger_queries versions")
+    finally:
+        pow_client.close()
 
 
 if __name__ == "__main__":
