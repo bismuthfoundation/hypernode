@@ -13,7 +13,7 @@ TODO
 # Abstraction for the socket connection dialog
 
 import struct
-import socks
+import socket
 import time
 
 # Our modules
@@ -26,7 +26,7 @@ LTIMEOUT = 45
 # Fixed header length for legacy protocol
 SLEN = 10
 
-# Index for stats 
+# Index for stats
 STATS_COSINCE = 0
 STATS_MSGSENT = 1
 STATS_MSGRECV = 2
@@ -69,7 +69,7 @@ class Connection:
         """
         Initiate connection to the given host,
         """
-        self.socket = socks.socksocket()
+        self.socket = socket.socket()
         self.socket.settimeout(timeout)
         self.socket.connect((host, port))
         if self.socket:
@@ -77,6 +77,10 @@ class Connection:
             self.peer_ip = host
             if self.logstats:
                 self.stats[STATS_COSINCE] = time.time()
+
+    def close(self):
+        if self.socket:
+            self.socket.close()
 
     def _get(self, header=None):
         if not self.connected:
@@ -141,3 +145,5 @@ class Connection:
         """returns a full message from a peer"""
         self._get()
         return self.protomsg
+
+
