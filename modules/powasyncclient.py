@@ -17,7 +17,7 @@ from logging import getLogger
 
 from tornado.tcpclient import TCPClient
 
-__version__ = '0.0.2'
+__version__ = '0.0.3'
 
 
 class PoWAsyncClient:
@@ -62,6 +62,16 @@ class PoWAsyncClient:
         self.client = None
         self.stream = None
         self.connected = False
+
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        try:
+            self.close()
+        except Exception as e:
+            self.app_log.warning("PoWAsyncClient exception {}".format(e))
 
     def status(self, address):
         self.address = address
