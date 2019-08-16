@@ -170,8 +170,8 @@ def check_plugin():
         print("Directory {} detected. Delete it and make sure to pip install the requirements.txt".format(polysign_dir))
         sys.exit()
     print("Live check...")
+    pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
     try:
-        pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
         versions = pow_client.command("HN_plugin_version")
         plugin_ver = versions['hn_plugin']
         ok_version = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION)
@@ -185,11 +185,12 @@ def check_plugin():
             print("\n>> Bismuth Node restart required, running queries extension has wrong version\n")
         else:
             print("Queries extension ok {}".format(queries_ver))
-        pow_client.close()
     except:
         print("Error in live check, probably bad plugin or ledger_queries versions")
         ok = False
         sys.exit()
+    finally:
+        pow_client.close()
     if not ok:
         print("\n>> Wrong companion plugin or Queries extension version\n")
 

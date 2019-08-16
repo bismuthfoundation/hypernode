@@ -51,14 +51,13 @@ class PoWAsyncClient:
             raise RuntimeError("Unable to connect to {}:{}".format(self.server, self.port))
 
     def close(self):
-        self.client.close()
-        """
+        if self.client:
+            self.client.close()
         if self.stream:
             try:
                 self.stream.close()
             except:
                 pass
-        """
         self.client = None
         self.stream = None
         self.connected = False
@@ -101,7 +100,7 @@ class PoWAsyncClient:
         future = run_coroutine_threadsafe(self._send(data), self.loop)
         return future.result(timeout)
 
-    def command(self, data,  param=None, timeout=None):
+    def command(self, data, param=None, timeout=None):
         """Sync interface to command."""
         if not self.connected:
             # print("connecting")
