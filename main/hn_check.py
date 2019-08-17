@@ -27,7 +27,7 @@ import poshn
 import poscrypto
 from powasyncclient import PoWAsyncClient
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 ONE_GB = 1024 * 1024 * 1024
 
@@ -179,6 +179,10 @@ def check_plugin():
             print("\n>> Bismuth Node restart required, running plugin has wrong version\n")
         else:
             print("Plugin ok {}".format(plugin_ver))
+        ok_version_best = LooseVersion(plugin_ver) >= LooseVersion(config.PLUGIN_VERSION_BEST)
+        if not ok_version_best:
+            print("\n>> A better version of the companion plugin is available, {} Try to restart the node.\n".format(config.PLUGIN_VERSION_BEST))
+
         queries_ver = versions['ledger_queries']
         ok_version = LooseVersion(queries_ver) >= LooseVersion(config.QUERIES_VERSION)
         if not ok_version:

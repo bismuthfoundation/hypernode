@@ -139,6 +139,7 @@ Here comes tuneable algorithm variables - Do not change those or you will fork o
 
 # required version of the plugin version
 PLUGIN_VERSION = "0.1.1"
+PLUGIN_VERSION_BEST = "0.1.2"
 
 # required version of the ledger_queries
 QUERIES_VERSION = "0.0.3"
