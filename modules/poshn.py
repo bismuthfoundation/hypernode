@@ -405,7 +405,8 @@ class HnServer(TCPServer):
                 )
 
             elif msg.command == commands_pb2.Command.blockinfo:
-                height = await self.node.poschain.async_blockinfo(msg.int32_value)
+                height_dict = await self.node.poschain.async_blockinfo(msg.int32_value)
+                height = posblock.PosHeight().from_dict(height_dict)
                 await async_send_height(
                     commands_pb2.Command.blockinfo, height, stream, full_peer
                 )

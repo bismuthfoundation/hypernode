@@ -21,6 +21,7 @@ import poscrypto
 import poshelpers
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
+from ttlcache import asyncttlcache
 
 __version__ = "0.1.6"
 
@@ -829,7 +830,8 @@ class SqlitePosChain(SqliteBase):
             # Will always be stats at end of a round, called multiple times with same info when swapping chains in a round.
             # Only the latest height is needed, we won't need previous height afterward. 1 cache slot is enough.
             # only called from here, can do naive cache.
-            ref_height = await self.async_blockinfo(height)  # TODO: That's the intensive part
+            ref_height_dict = await self.async_blockinfo(height)  # TODO: That's the intensive part
+            ref_height = PosHeight().from_dict(ref_height_dict)
             # print("\nref_height", ref_height.to_dict(as_hex=True))
             # for each block, validate and inc stats
             uniques_round = []
@@ -1170,6 +1172,7 @@ class SqlitePosChain(SqliteBase):
         # force Recalc - could it be an incremental job ?
         await self._last_block()
         await self._height_status()
+        asyncttlcache.purge()
         return True
 
     async def tx_exists(self, txid):
@@ -1210,6 +1213,7 @@ class SqlitePosChain(SqliteBase):
         await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
         # reset status so future block digestions will be ok.
         self._invalidate()
+        asyncttlcache.purge()
 
     async def _height_status(self):
         """
@@ -1252,7 +1256,8 @@ class SqlitePosChain(SqliteBase):
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
 
-    async def async_blockinfo(self, height):
+    @asyncttlcache(ttl=3600*4)
+    async def async_blockinfo(self, height: int) -> dict:
         """
         Returns partial height info of a given block
 
@@ -1273,8 +1278,9 @@ class SqlitePosChain(SqliteBase):
         finally:
             if not status1:
                 status1 = {}
-            height_info = PosHeight().from_dict(status1)
-            return height_info
+            # height_info = PosHeight().from_dict(status1)
+            # return height_info
+            return status1
 
     async def async_blocksync(self, height):
         """
