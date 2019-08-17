@@ -58,7 +58,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99d"
+__version__ = "0.0.99e"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1596,6 +1596,7 @@ class Poshn:
         :param a_round:
         :return: list of blocks
         """
+        stream = None
         try:
             # FR: Do we have a stream to this peer? if yes, use it instead of creating a new one ?
             # means add to self.clients
@@ -1632,6 +1633,13 @@ class Poshn:
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             return None
+        finally:
+            # Streams are to be closed eventually to free the underlying socket.
+            try:
+                if stream:
+                    stream.close()
+            except:
+                pass
 
     async def refresh_last_block(self):
         """
