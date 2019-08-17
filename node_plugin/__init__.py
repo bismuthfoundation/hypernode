@@ -15,7 +15,7 @@ import sqlite3
 from hashlib import blake2b
 from threading import Lock
 
-from time import time
+from time import time, sleep
 from typing import Union
 from warnings import filterwarnings
 
@@ -31,7 +31,7 @@ from ledger_queries import LedgerQueries, __version__ as ledger_queries_version
 # from warnings import resetwarnings
 
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 
 MANAGER = None
@@ -692,6 +692,17 @@ def clean_hnround():
                 os.remove(full_file)
 
 
+def test_colored():
+    """Tries to load colored"""
+    try:
+        with open(HNCOLORED) as fp:
+            test = json.load(fp)
+    except Exception as e:
+        MANAGER.app_log.error("colored.json {}".format(e))
+        sleep(10)
+        init_colored()
+
+
 def action_status(status):
     global UPDATED
     if UPDATED:
@@ -708,6 +719,10 @@ def action_status(status):
         json.dump(status, f)
     # TODO: could be less frequent, like every hour only.
     clean_hnround()
+    if not os.path.isfile(HNCOLORED):
+        # Recreate colored if missing
+        init_colored()
+    test_colored()
 
 
 def my_callback(command_name: str, socket_handler) -> None:

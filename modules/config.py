@@ -8,8 +8,9 @@ Also serves as config file for POC and tests
 import json
 from hashlib import blake2b
 from os import path
+from sys import exit
 
-__version__ = "0.0.39"
+__version__ = "0.0.40"
 
 """
 User config - You can change these ones, but **See doc**
@@ -43,8 +44,7 @@ AVAILABLE_LOGS = [
     "srvmsg",
     "workermsg",
     "txdigest",
-    "blockdigest"
-    "timing",
+    "blockdigest" "timing",
 ]
 
 # Path to the Bismuth chain
@@ -124,7 +124,7 @@ MAX_DEBUG_HN = 20
 POC_LAST_BROADHASH = b"123456789abcdef12345"
 
 # Local node
-POW_IP = '127.0.0.1'
+POW_IP = "127.0.0.1"
 # Local pow port
 POW_PORT = 5658
 
@@ -211,7 +211,7 @@ END_ROUND_SLOTS = 1
 # How many tests should the whole Net perform per slot?
 # each test will issue 2 messages, one from the tester, the other from the testee
 # 19 slots per round. 10 tests per slots, check
-TESTS_PER_SLOT = 10
+TESTS_PER_SLOT = 8
 
 # We can run several type of tests. They are indexed by a byte. This can evolve with time.
 TESTS_TYPE = [0, 1, 2, 3, 4]
@@ -339,18 +339,29 @@ def overload(file_name: str):
 def update_colored():
     # Check colored from plugin - if exists - and overload again
     colored_file_name = POW_LEDGER_DB.replace("static/ledger.db", "colored.json")
-    if path.isfile(colored_file_name):
-        with open(colored_file_name) as f:
-            colored = json.load(f)
-            rainbow = colored.get("rainbow")
-            for key_value in rainbow:
-                left, right = get_left_right(key_value, COLORED_VARS)
-                if left:
-                    # print("Set {}={} from rainbow".format(left, right))
-                    globals().update({left: right})
-            bootstrap = colored.get("bootstrap")
-            if bootstrap:
-                globals().update({"BOOTSTRAP_URLS": bootstrap})
+    try:
+        if path.isfile(colored_file_name):
+            with open(colored_file_name) as f:
+                colored = json.load(f)
+                rainbow = colored.get("rainbow")
+                for key_value in rainbow:
+                    left, right = get_left_right(key_value, COLORED_VARS)
+                    if left:
+                        # print("Set {}={} from rainbow".format(left, right))
+                        globals().update({left: right})
+                bootstrap = colored.get("bootstrap")
+                if bootstrap:
+                    globals().update({"BOOTSTRAP_URLS": bootstrap})
+        else:
+            print(
+                "No Colored file: {}. Make sure node runs with required companions.".format(
+                    colored_file_name
+                )
+            )
+            exit()
+    except Exception as e:
+        print("Error reading {} file: {}".format(colored_file_name, e))
+        exit()
 
 
 def load(prefix: str = ""):
