@@ -65,23 +65,27 @@ SQL_TX_STATS_FOR_HEIGHT = (
 # to use covering index
 SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"  # FR: opt
 
-# TODO: duplicate round in pos_messages table to avoid these extra requests
+# Q: duplicate round in pos_messages table to avoid these extra requests?
 SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
 
 SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
 
 SQL_LAST_HEIGHT_BEFORE_ROUND = "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
 
+SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT = "SELECT round, height FROM pos_chain " \
+                                          "WHERE height <= ? ORDER BY height DESC LIMIT 1"
+
 SQL_LAST_HASH_OF_ROUND = "SELECT block_hash FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
 
 SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max " \
                              "FROM pos_chain WHERE round >= ? and round <= ?"
 
-# FR: some of these may be costly. check perfs.
+# TODO: these request is huge and slows down everything.
 SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
+
 SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
 
-# TODO: these 2 requests are huge and slow down everything - missing indices.
+# TODO: these request is huge and slows down everything.
 SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
 
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
@@ -89,6 +93,7 @@ SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages
 
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
+# TODO: these 2 requests are huge and slow down everything.
 SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
 SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
@@ -1256,7 +1261,52 @@ class SqlitePosChain(SqliteBase):
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
 
-    @asyncttlcache(ttl=3600*4)
+    async def async_round_and_height_before_height(self, height: int):
+        res = await self.async_fetchone(SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT, (height,), as_dict=True)
+        height = res.get("height")
+        a_round = res.get("round")
+        return a_round, height
+
+    async def async_uniques_at_round(self, a_round: int):
+        """
+        Calcs forged and uniques from live data or file cache if exists
+        :param a_round:
+        :return:
+        """
+        # TODO
+        pass
+
+    async def async_uniques_at_height(self, height: int):
+        """
+        Uses partial info from previous round, then complete with latest info
+        :param height:
+        :return:
+        """
+        # TODO
+        pass
+
+    async def async_trim_uniques_cache(self, a_round: int=0, height: int=0):
+        """
+        Purge cached info more recent than given a_round or height.
+        Only one param is supposed to be given, round will be derived from height if height is given.
+        height will be ignored if a_round is given.
+
+        :param a_round:
+        :param height:
+        :return:
+        """
+        # TODO
+        pass
+
+    async def async_purge_uniques_cache(self):
+        """
+        Clean up - keeps at most 255 most recent cache files.
+        :return:
+        """
+        # TODO
+        pass
+
+    # @asyncttlcache(ttl=3600*4)
     async def async_blockinfo(self, height: int) -> dict:
         """
         Returns partial height info of a given block
