@@ -10,7 +10,7 @@
 
 # This installs latest node 4.3.0.6 and latest 0.0.99 hn version
 
-VERSION="0.1.20"
+VERSION="0.1.21"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -101,7 +101,7 @@ download_node() {
     if [ -f ./ledger-verified.tar.gz ]; then
         rm ledger-verified.tar.gz
     fi
-    wget https://snapshots.s3.nl-ams.scw.cloud/ledger-verified.tar.gz
+    wget http://212.47.253.89/ledger-verified.tar.gz
     tar -zxf ledger-verified.tar.gz
     # Make some room
     rm ledger-verified.tar.gz
