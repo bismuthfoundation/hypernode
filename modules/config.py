@@ -10,7 +10,7 @@ from hashlib import blake2b
 from os import path
 from sys import exit
 
-__version__ = "0.0.40"
+__version__ = "0.0.41"
 
 """
 User config - You can change these ones, but **See doc**
@@ -44,7 +44,8 @@ AVAILABLE_LOGS = [
     "srvmsg",
     "workermsg",
     "txdigest",
-    "blockdigest" "timing",
+    "blockdigest",
+    "timing",
 ]
 
 # Path to the Bismuth chain
@@ -174,6 +175,13 @@ MIN_ACTIVE_HNS = 10
 # TODO: Estimate block size depending on the HN count
 BLOCK_SYNC_COUNT = 20
 
+# How many txs at max to sync from a peer .Do not restrict too much, or we loose info when chain was stalled for a while
+# This is also the max number of txs we will send to a peer.
+MAX_TXS_TO_SYNC = 2000
+
+# How many txs at most to embed in a block. Random sample if we have more.
+MAX_TXS_PER_BLOCK = 5000
+
 # How long to wait in the main client loop
 WAIT = 10
 
@@ -301,6 +309,8 @@ COLORED_VARS = {
     "TESTS_PER_SLOT": "int",
     "PING_DELAY": "int",
     "MIN_FORGE_CONSENSUS": "int",
+    "MAX_TXS_TO_SYNC": "int",
+    "MAX_TXS_PER_BLOCK": "int",
 }
 
 

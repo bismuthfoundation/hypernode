@@ -1675,7 +1675,7 @@ class Poshn:
         """
         if not len(txs):
             return
-        if len(txs) > 200:
+        if len(txs) > config.MAX_TXS_TO_SYNC:
             if self.verbose and "mempool" in config.LOG:
                 app_log.info(
                     "Too many ({}) txs to sync from {}, ignoring ".format(
