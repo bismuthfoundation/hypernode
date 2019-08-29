@@ -2,12 +2,14 @@
 A Safe thread/process object interfacing the PoS chain
 """
 
+import json
 import os
 import sqlite3
 import sys
 from asyncio import get_event_loop, CancelledError
 from random import choice
 from time import time
+from typing import Union
 
 from tornado.iostream import StreamClosedError
 from tornado.tcpclient import TCPClient
@@ -81,12 +83,12 @@ SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max " \
                              "FROM pos_chain WHERE round >= ? and round <= ?"
 
 # TODO: these request is huge and slows down everything.
-SQL_STATE_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
+SQL_STATE_2_REPLACE = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
 
 SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
 
 # TODO: these request is huge and slows down everything.
-SQL_STATE_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
+SQL_STATE_4_REPLACE = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
 
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
 # Uses block_height index, not sender. Ok because it's for last round, so few pos_messages are concerned.
@@ -94,8 +96,12 @@ SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
 # TODO: these 2 requests are huge and slow down everything.
-SQL_INFO_2 = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
-SQL_INFO_4 = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
+SQL_INFO_2_REPLACE = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
+SQL_INFO_4_REPLACE = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
+
+# New requests to incrementaly determine chain stats
+SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED = "SELECT DISTINCT(forger) AS forgers FROM pos_chain WHERE height >= ? AND height <= ?"
+SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED = "SELECT DISTINCT(sender) AS uniques FROM pos_messages WHERE block_height >= ? AND block_height <= ?"
 
 SQL_BLOCKS_SYNC = "SELECT * FROM pos_chain WHERE height >= ? ORDER BY height LIMIT ?"
 SQL_BLOCKS_LAST = "SELECT * FROM pos_chain ORDER BY height DESC LIMIT ?"
@@ -291,6 +297,9 @@ SQL_INDICES = {
 }
 
 
+HN_CACHE_DIR = "./.cache/"
+
+
 class SqlitePosChain(SqliteBase):
     def __init__(self, verbose=False, db_path="data/", app_log=None, mempool=None):
         self.custom_data_dir = db_path
@@ -309,6 +318,10 @@ class SqlitePosChain(SqliteBase):
             db_name="poc_pos_chain.db",
             app_log=app_log,
         )
+        try:
+            os.mkdir(HN_CACHE_DIR)
+        except:
+            pass
 
     def missing_blocks(self) -> set:
         """
@@ -821,15 +834,7 @@ class SqlitePosChain(SqliteBase):
             if self.verbose:
                 self.app_log.info("check_round start {:0.2f}".format(time()))
             # Get the last block of the a-round -1 round from our chain
-            height = await self.async_fetchone(
-                SQL_LAST_HEIGHT_BEFORE_ROUND, (a_round,), as_dict=True
-            )
-            # print(SQL_LAST_HEIGHT_BEFORE_ROUND, a_round )
-            """ TODO
-            [E 180815 09:09:42 poschain:400] check_round Error 'NoneType' object has no attribute 'get'
-            [E 180815 09:09:42 poschain:403] detail <class 'AttributeError'> poschain.py 353
-            """
-            height = height.get("height")
+            height = await self.async_height_of_round(a_round)
             # print("\nheight", height)
             # get height stats at that level - TODO: that's CPU intensive. Can we cache that somehow?
             # Will always be stats at end of a round, called multiple times with same info when swapping chains in a round.
@@ -1243,21 +1248,24 @@ class SqlitePosChain(SqliteBase):
             SQL_HEIGHT_OF_ROUND, (status1["round"],), as_dict=True
         )
         # self.app_log.info("Height of round {} is {}".format(status1['round'], height_of_round['height']))
-        status2 = await self.async_fetchone(SQL_STATE_2, as_dict=True)
+
+        uniques = await self.async_uniques_at_height(height_of_round["height"])
+
+        status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
         status1.update(status2)
         status3 = await self.async_fetchone(
             SQL_STATE_3, (status1["round"],), as_dict=True
         )
         status1.update(status3)
         status4 = await self.async_fetchone(
-            SQL_STATE_4, as_dict=True
+            SQL_STATE_4_REPLACE, as_dict=True
         )  # TODO: this one may be huge at start
         status1.update(status4)
         status5 = await self.async_fetchone(
             SQL_STATE_5, (height_of_round["height"],), as_dict=True
         )
         status1.update(status5)
-        # print(status1)
+        print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]))
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
 
@@ -1267,23 +1275,87 @@ class SqlitePosChain(SqliteBase):
         a_round = res.get("round")
         return a_round, height
 
-    async def async_uniques_at_round(self, a_round: int):
+    async def async_height_of_round(self, pos_round: int):
+        """height at start of the round (no bloc yet)"""
+        res = await self.async_fetchone(SQL_LAST_HEIGHT_BEFORE_ROUND, (pos_round,), as_dict=True)
+        height = res.get("height")
+        return height
+
+    # ------------------------ NEW CACHE -------------------------------------------
+
+    def uniques_and_round_from_cache(self, pos_round) -> tuple:
+        """given a pos round, gives the unique lists at *start* of round (no block yet)"""
+        all_cache = os.listdir(HN_CACHE_DIR)
+        rounds = [int(file[:-5]) for file in all_cache]  # strip .json
+        rounds = sorted(rounds, reverse=True)
+        uniques = {"forgers": [], "senders": []}
+        checkpoint = 0
+        try:
+            for a_round in rounds:
+                if a_round <= pos_round:
+                    with open("{}{}.json".format(HN_CACHE_DIR, a_round)) as fp:
+                        uniques = json.load(fp)
+                        self.app_log.warning("Found cached round {}".format(a_round))
+                        return uniques, a_round
+        except Exception as e:
+            self.app_log.warning("Error reading round {} cache: {}".format(a_round, e))
+        return uniques, checkpoint
+
+    async def __async_uniques_at_round(self, pos_round: int):
         """
-        Calcs forged and uniques from live data or file cache if exists
-        :param a_round:
+        Calcs forged and uniques from live data and file cache/
+        :param pos_round:
         :return:
         """
-        # TODO
-        pass
 
-    async def async_uniques_at_height(self, height: int):
+    async def async_uniques_at_height(self, pos_height: int):
         """
         Uses partial info from previous round, then complete with latest info
-        :param height:
+        :param pos_height:
         :return:
         """
-        # TODO
-        pass
+        try:
+            pos_round, pos_round_height = await self.async_round_and_height_before_height(pos_height)
+            uniques, round_checkpoint = self.uniques_and_round_from_cache(pos_round)
+            self.app_log.warning("async_uniques_at_height {}: round {} checkpoint {}".format(pos_height, pos_round, round_checkpoint))
+            uniques['forgers'] = set(uniques['forgers'])
+            uniques['senders'] = set(uniques['senders'])
+            if round_checkpoint < pos_round:
+                # Extract the data from checkpoint to start of pos_round...
+                # We first need the height of the last round before pos_round
+                try:
+                    pos_checkpoint_height = await self.async_height_of_round(round_checkpoint)
+                except:
+                    pos_checkpoint_height = 0
+                round_height = await self.async_height_of_round(pos_round)
+                forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED, (pos_checkpoint_height + 1, round_height))
+                senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED, (pos_checkpoint_height + 1, round_height))
+                # Then merge...
+                uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
+                uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
+                # and save as new cache for round pos_round
+                with open("{}{}.json".format(HN_CACHE_DIR, pos_round), 'w') as fp:
+                    # a set is not json serializable.
+                    json.dump({key: list(value) for key, value in uniques.items()}, fp)
+                # sys.exit()
+            if pos_round_height < pos_height:
+                # we want more, include the current round info
+                forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
+                                                    (pos_round_height + 1, pos_height), as_dict=True)
+                senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
+                                                    (pos_round_height + 1, pos_height), as_dict=True)
+                # Then merge...
+                uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
+                uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
+            return uniques
+
+            # Now check if we wanted more than that (like extra blocks after pos_round, to reach pos_height
+        except Exception as e:
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            raise
 
     async def async_trim_uniques_cache(self, a_round: int=0, height: int=0):
         """
@@ -1316,13 +1388,15 @@ class SqlitePosChain(SqliteBase):
         # global SQL_INFO_1
         # global SQL_INFO_2
         # global SQL_INFO_4
+        uniques = await self.async_uniques_at_height(height)
         status1 = {}
         try:
             status1 = await self.async_fetchone(SQL_INFO_1, (height,), as_dict=True)
-            status2 = await self.async_fetchone(SQL_INFO_2, (height,), as_dict=True)
+            status2 = await self.async_fetchone(SQL_INFO_2_REPLACE, (height,), as_dict=True)
             status1.update(status2)
-            status4 = await self.async_fetchone(SQL_INFO_4, (height,), as_dict=True)
+            status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
             status1.update(status4)
+            print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]))
         except:
             pass
         finally:
@@ -1688,7 +1762,7 @@ class SqlitePosChain(SqliteBase):
         # sys.exit()
         return res
 
-    async def last_hash_of_round(self, a_round: int) -> bytes:
+    async def last_hash_of_round(self, a_round: int) -> Union[bytes, None]:
         last_hash = await self.async_fetchone(SQL_LAST_HASH_OF_ROUND, (a_round,))
         if last_hash:
             return last_hash[0]

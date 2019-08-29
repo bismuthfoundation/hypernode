@@ -6,3 +6,4 @@ check.json
 powreg.json
 slots.json
 config.txt
+.cache

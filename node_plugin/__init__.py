@@ -475,13 +475,13 @@ def get_regs_from(pos_round: int) -> tuple:
     rounds = sorted(rounds, reverse=True)
     regs = {}
     checkpoint = 773800
-    for round in rounds:
-        if round <= pos_round:
-            with open("{}{}.json".format(HNROUNDS_DIR, round)) as fp:
+    for a_round in rounds:
+        if a_round <= pos_round:
+            with open("{}{}.json".format(HNROUNDS_DIR, a_round)) as fp:
                 info = json.load(fp)
                 MANAGER.app_log.warning(
                     "Found cached round {} with ref_height ".format(
-                        round, info["params"]["ref_height"]
+                        a_round, info["params"]["ref_height"]
                     )
                 )
                 return info["regs"], info["params"]["ref_height"]
