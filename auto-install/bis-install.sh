@@ -10,7 +10,7 @@
 
 # This installs latest node 4.3.0.6 and latest 0.0.99 hn version
 
-VERSION="0.1.21"
+VERSION="0.1.22"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -88,7 +88,7 @@ download_node() {
     if [ -f ./4.3.0.6-RC1.tar.gz ]; then
         rm 4.3.0.6-RC1.tar.gz
     fi
-    wget wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
+    wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
     tar -zxf 4.3.0.6-RC1.tar.gz
     mv Bismuth-4.3.0.6-RC1 Bismuth
     cd Bismuth
