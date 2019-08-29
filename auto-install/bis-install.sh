@@ -232,7 +232,7 @@ install_dependencies
 configure_firewall
 download_node
 download_hypernode
-install_plugin
+# install_plugin
 # start_node
 # wait_ledger
 check_hypernode
