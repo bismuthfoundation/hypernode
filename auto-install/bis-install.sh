@@ -10,7 +10,7 @@
 
 # This installs latest node 4.3.0.6 and latest 0.0.99 hn version
 
-VERSION="0.1.20"
+VERSION="0.1.22"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -88,7 +88,7 @@ download_node() {
     if [ -f ./4.3.0.6-RC1.tar.gz ]; then
         rm 4.3.0.6-RC1.tar.gz
     fi
-    wget wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
+    wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
     tar -zxf 4.3.0.6-RC1.tar.gz
     mv Bismuth-4.3.0.6-RC1 Bismuth
     cd Bismuth
@@ -101,7 +101,7 @@ download_node() {
     if [ -f ./ledger-verified.tar.gz ]; then
         rm ledger-verified.tar.gz
     fi
-    wget https://snapshots.s3.nl-ams.scw.cloud/ledger-verified.tar.gz
+    wget http://212.47.253.89/ledger-verified.tar.gz
     tar -zxf ledger-verified.tar.gz
     # Make some room
     rm ledger-verified.tar.gz
@@ -232,7 +232,7 @@ install_dependencies
 configure_firewall
 download_node
 download_hypernode
-install_plugin
+# install_plugin
 # start_node
 # wait_ledger
 check_hypernode
