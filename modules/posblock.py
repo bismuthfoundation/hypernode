@@ -237,9 +237,9 @@ class PosMessage:
         if self.timestamp > time.time() + config.FUTURE_ALLOWED:
             raise ValueError("Transaction in the future, not allowed")
         # Check 2. sender is valid address
-        poscrypto.validate_address(self.sender)
+        poscrypto.validate_address_quick(self.sender)
         # Check 3. recipient is valid address
-        poscrypto.validate_address(self.recipient)
+        poscrypto.validate_address_quick(self.recipient)
 
         # TODO: check both address are valid (pow registered) HN for that round, or reject the TX.
 

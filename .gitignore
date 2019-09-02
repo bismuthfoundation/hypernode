@@ -3,6 +3,7 @@ __pycache__
 *.bak
 *.old
 *.db
+*.cprof
 .data
 data
 data*

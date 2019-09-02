@@ -12,7 +12,6 @@ Note:
 import json
 import logging
 import os
-import random
 import socket
 from asyncio import get_event_loop, TimeoutError, wait_for, Task
 from asyncio import sleep as async_sleep
@@ -20,10 +19,10 @@ from asyncio import wait as asyncio_wait
 from distutils.version import LooseVersion
 from enum import Enum
 from hashlib import sha256
-
 from logging.handlers import RotatingFileHandler
 from operator import itemgetter
 from os import path
+from random import choice, shuffle
 from sys import version_info, exc_info, exit
 from time import time, sleep
 
@@ -31,10 +30,8 @@ import aioprocessing
 import psutil
 import requests
 import tornado.log
-
 # Tornado
 from tornado.ioloop import IOLoop
-
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -58,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99e"
+__version__ = "0.0.99f"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -368,6 +365,9 @@ class HnServer(TCPServer):
                 # app_log.info("{} txs before filtering".format(len(txs)))
                 peer_txids = [tx.txid for tx in msg.tx_values]
                 txs = [tx for tx in txs if tx.txid not in peer_txids]
+                if len(txs) > config.MAX_TXS_TO_SYNC:
+                    shuffle(txs)
+                    txs = txs[:config.MAX_TXS_TO_SYNC]
                 # app_log.info("{} txs after filtering".format(len(txs)))
                 if "mempool" in config.LOG:
                     if self.verbose and "txdigest" in config.LOG:
@@ -1014,7 +1014,7 @@ class Poshn:
                             self.net_height['count'] >= 2 :
                         # We are in the right round, but a most valuable chain is there.
                         app_log.warning("Better net chain, will analyse - TODO")
-                        self.sync_from = random.choice(self.net_height['peers'])
+                        self.sync_from = choice(self.net_height['peers'])
                         # TODO: get whole round in one message, fast analyse without storing to check it's true,
                         # digest if ok.
                         # This is temp only, recycle late sync for now.
@@ -1035,7 +1035,7 @@ class Poshn:
                     # on connect2 phase, we add random peers other than our round peers to get enough
                     await self.change_state_to(HNState.CATCHING_UP_ELECT)
                     # FR: more magic here to be sure we got a good one - here, just pick one from the top chain.
-                    self.sync_from = random.choice(self.net_height["peers"])
+                    self.sync_from = choice(self.net_height["peers"])
                     app_log.warning("Sync From {}".format(self.sync_from))
                     await self.change_state_to(HNState.CATCHING_UP_PRESYNC)
                 if self.state == HNState.CATCHING_UP_PRESYNC:
@@ -1475,7 +1475,7 @@ class Poshn:
         self.saved_state = self.state
         await self.change_state_to(HNState.ROUND_SYNC)
         # pick a peer - if sync fails, we will try another random one next time
-        peer = random.choice(promised_height["peers"])
+        peer = choice(promised_height["peers"])
         if self.verbose:
             app_log.info("_round_sync, {} peers".format(len(promised_height["peers"])))
         try:
@@ -1808,6 +1808,12 @@ class Poshn:
                 # raise ValueError("No TX to embed, block won't be valid.")
                 app_log.error("Not enough TX to embed, block won't be valid.")
                 return
+            if len(block.txs) > config.MAX_TXS_PER_BLOCK:
+                app_log.warning("Too many txs ({}) to embed, will limit to {} by config"
+                                .format(len(block.txs), config.MAX_TXS_PER_BLOCK))
+                # TODO: safer to do a sampling by most recent and more diverse txs, like only 2 or 3 of every signer, rather than random sampling
+                shuffle(block.txs)
+                block.txs = block.txs[:config.MAX_TXS_PER_BLOCK]
             # FR: count also uniques_sources
             # Remove from mempool
             await self.mempool.clear()
@@ -2302,6 +2308,9 @@ class Poshn:
                 )
             )
         self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL] = time()
+        if len(txs) > config.MAX_TXS_TO_SYNC:
+            shuffle(txs)
+            txs = txs[:config.MAX_TXS_TO_SYNC]
         await com_helpers.async_send_txs(
             commands_pb2.Command.mempool, txs, stream, full_peer
         )

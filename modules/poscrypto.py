@@ -30,7 +30,7 @@ except:
 # https://github.com/ludbb/secp256k1-py   is older
 
 
-__version__ = '0.0.41'
+__version__ = '0.0.42'
 
 # Do not change, impact addresses format
 BLAKE_DIGEST_SIZE = 20
@@ -40,6 +40,8 @@ BLAKE_DIGEST_SIZE = 20
 PUB_KEY = None
 PRIV_KEY = None
 ADDRESS = None
+
+RE_VALID_ADDRESS = re.compile("[A-Za-z0-9]{34}")
 
 
 def raw_to_hex(digest):
@@ -109,6 +111,17 @@ def pub_key_to_addr(pub_key, network=None):
     return hash_to_addr(hash20, network)
 
 
+def validate_address_quick(address, network=None):
+    """
+    Verify an address, just charset and len.
+
+    :param address: the address string to validate
+    :param network: The network id to validate against
+    :return: True or False
+    """
+    return RE_VALID_ADDRESS.match(address)
+
+
 def validate_address(address, network=None):
     """
     Decode and verify the checksum of a Base58 encoded string.
@@ -117,8 +130,8 @@ def validate_address(address, network=None):
     :param network: The network id to validate against
     :return: The 20 bytes hash of the pubkey if address matches format and network, or throw an exception
     """
-    if not re.match('[A-Za-z0-9]{34}', address):
-        # B9oMPPW5hZEAAuq8oCpT6i6pavPJhgXViq
+    # TODO: can be time consuming, check it's not called more often than really needed.
+    if not RE_VALID_ADDRESS.match(address):
         raise ValueError("Invalid address format: {}".format(address))
     if not network:
         network = config.NETWORK_ID
