@@ -220,11 +220,18 @@ class PosMessage:
         :return: Signature as bytearray.
         """
         # exception if we are not the forger
-        raw = self.to_raw()
-        if self.verbose:
-            print(raw)
-        self.pubkey = poscrypto.PUB_KEY.to_string()
-        self.txid = poscrypto.sign(raw, verify=verify)
+        try:
+            raw = self.to_raw()
+            if self.verbose:
+                print(raw)
+            self.pubkey = poscrypto.PUB_KEY.to_string()
+            self.txid = poscrypto.sign(raw, verify=verify)
+        except Exception as e:
+            print("posblock.sign error")
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+            raise
 
     def check(self):
         """

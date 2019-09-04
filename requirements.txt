@@ -4,6 +4,7 @@ aiosqlite3
 polysign>=0.1.0
 tornado>=6.0.3
 requests
+coincurve
 ecdsa
 protobuf
 psutil

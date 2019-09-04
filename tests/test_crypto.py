@@ -11,6 +11,8 @@ import pytest
 sys.path.append('../modules')
 import poscrypto
 
+poscrypto.USE_CC = False
+
 
 def test_make_addresses():
     pub_key = "d3ccc2eb64d578582d39924246f2c2bf0768491b85235f242e37f65c3a7ce77569fec4c67cba6d457a5d9a6ad8cecc15584f51bc401e1d7683db6c470acbe776".encode('ascii')

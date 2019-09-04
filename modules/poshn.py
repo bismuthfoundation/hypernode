@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99f"
+__version__ = "0.0.99g"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.

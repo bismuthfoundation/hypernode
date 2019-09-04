@@ -7,6 +7,7 @@ Checks the wallet, config, and tells if an hn instance is running.
 import argparse
 import json
 import os
+import platform
 import psutil
 import subprocess
 import sys
@@ -27,7 +28,7 @@ import poshn
 import poscrypto
 from powasyncclient import PoWAsyncClient
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 ONE_GB = 1024 * 1024 * 1024
 
@@ -247,6 +248,21 @@ def check_pow_status():
         print("powstatus.json ok.")
 
 
+def check_fast_ecdsa(try_to_install=True):
+    try:
+        import fastecdsa
+        print("Ok, fastecdsa is available")
+    except:
+        print("Warning: Fastecdsa was not found. Large improvements ahead.")
+        if try_to_install and ("Linux" in platform.system()):
+            print("Trying to install...")
+            os.system("apt update -y")
+            os.system("apt install -y libgmp3-dev")
+            os.system("python3.7 -m pip install fastecdsa")
+        check_fast_ecdsa(False)
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Bismuth HyperNode Check")
     parser.add_argument(
@@ -273,6 +289,7 @@ if __name__ == "__main__":
     check_plugin()
     check_node_version()
     check_pow_status()
+    check_fast_ecdsa()
     # check if db exists
     if not path.isfile(config.POW_LEDGER_DB):
         status["errors"].append(
@@ -295,10 +312,10 @@ if __name__ == "__main__":
     if args.interface:
         status["external_ip"] = subprocess.getoutput(
             "curl --interface {} -4 -s ifconfig.co".format(args.interface)
-        )
+        ).split("\n")[-1]
         status["interface"] = args.interface
     else:
-        status["external_ip"] = subprocess.getoutput("curl -4 -s ifconfig.co")
+        status["external_ip"] = subprocess.getoutput("curl -4 -s ifconfig.co").split("\n")[-1]
         status["interface"] = ""
     status["provider"] = get_ip_provider(status["external_ip"])
     status["default_port"] = config.DEFAULT_PORT

@@ -180,7 +180,7 @@ BLOCK_SYNC_COUNT = 20
 MAX_TXS_TO_SYNC = 2000
 
 # How many txs at most to embed in a block. Random sample if we have more.
-MAX_TXS_PER_BLOCK = 5000
+MAX_TXS_PER_BLOCK = 3000
 
 # How long to wait in the main client loop
 WAIT = 10
