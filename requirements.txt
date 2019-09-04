@@ -6,6 +6,8 @@ tornado>=6.0.3
 requests
 coincurve
 ecdsa
+# needs apt install libgmp3-dev
+fastecdsa
 protobuf
 psutil
 pytest
