@@ -10,10 +10,10 @@ import subprocess
 import time
 
 try:
-    if os.path.getmtime("../main/logs/pos_app.log") < time.time() -120:
+    if os.path.getmtime("../main/logs/pos_app.log") < time.time() - 5 * 60:
         print("Hypernode is frozen, stopping...")
         data = subprocess.getoutput("screen -S hypernode -X at '#' stuff $'\003'")
-    if os.path.getmtime("../main/logs/pos_app.log") < time.time() -300:
+    if os.path.getmtime("../main/logs/pos_app.log") < time.time() - 10 * 60:
         print("Hypernode is frozen, killing...")
         data = subprocess.getoutput("screen -list")
         i2 = data.find('.hypernode')
@@ -21,6 +21,6 @@ try:
         if (i1>0) and (i2>i1):
             data = data[i1+1:i2]
             str = "kill -15 {}".format(data)
-            subprocess.getoutput(str)        
+            subprocess.getoutput(str)
 except:
     pass
