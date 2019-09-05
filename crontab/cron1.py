@@ -7,7 +7,7 @@ To be run every minute.
 import subprocess
 
 # Edit this if you are not using the standard invocation
-PYTHON_EXECUTABLE='python3'
+PYTHON_EXECUTABLE='python3.7'
 
 list_ = subprocess.getoutput("screen -ls")
 try:
