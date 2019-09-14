@@ -1530,6 +1530,8 @@ class Poshn:
                 await self.status(log=False)
                 # get PoS address from peer (it's a ip:0port string)
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
+                # TODO: this spams txs when network is in bad shape and we have everyone resyncing from best chain
+                # TODO: Limit when assembling in a block (
                 await self.new_tx(
                     hn["address"],
                     what=200,

@@ -113,10 +113,10 @@ def get_score(pos, weight, detail):
     score -= detail.get('start_count', 0)/3 * weight
     # No weight here, tests are not weighted
     tests_sent = (detail.get('no_tests_sent', 0) + detail.get('ok_tests_sent', 0) + detail.get('ko_tests_sent', 0))
-    # 10 tests = 1 point, 1 moint max.
+    # 10 tests = 1 point, 1 point max.
     score += min(tests_sent/10, 1)
-    # Needs 2 (was 5) ok actions to counter one ko. non weighted. cap max number of ok?
-    score += detail.get('ok_actions_received', 0) /4
+    # Needs 1 (was 5, then 2) ok actions to counter one ko. non weighted. cap max number of ok?
+    score += detail.get('ok_actions_received', 0) /2
     score -= detail.get('ko_actions_received', 0) /2
     return score
 
