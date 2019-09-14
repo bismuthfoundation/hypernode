@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 53:  
-`python3.7 convert.py --action=week --param=53`
+Week 54:  
+`python3.7 convert.py --action=week --param=54`
 
 ```
-Week 53
+Week 54
 -------------
-TS   1567843200
-UTC  2019-09-07T08:00:00Z
-Round 9202
+TS   1568448000
+UTC  2019-09-14T08:00:00Z
+Round 9370
 Slot  0
-Last PoS Round 9201
-PoW Height 1332765
-Real TS 1567843153.26
-Next TS 1567843204.98
-Balance 23880.232016628142
-Balance (int) 23880
+Last PoS Round 9369
+PoW Height 1342859
+Real TS 1568447979.65
+Next TS 1568448093.18
+Balance 24216.232016698108
+Balance (int) 24216
 ```
 
 week.json (week 10):
@@ -48,81 +48,6 @@ The next scripts take the values from this json.
 
 Verifies again the registered and active HNs for each round of the period.   
 This will tell if any HN cheated on its balance (balance dropped below the registered collateral)
-
-Week 11:  
-Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list. (will be auto unreg)  
-
-Week 12:  
-Warning: PoW address 857f1193e311f6eacfdb0b75623c978b55839dd4a1d24138594d590d, weight 0 instead of 3 - removing from list.
-
-Week 13:  
-getting round  2484  
-Warning: Balance check required for PoW height 931980  
-Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list.  
-Warning: PoW address 857f1193e311f6eacfdb0b75623c978b55839dd4a1d24138594d590d, weight 0 instead of 3 - removing from list.  
-Warning: PoW address e812188c631c044d7baf01f5935cbec3402bde36ca32dad13ad6d407, weight 0 instead of 1 - removing from list.  
-Warning: PoW address dea8a5df9129dc9182ee17eddfda3eb91e3af79742636bff149bfc71, weight 0 instead of 1 - removing from list.
-
-Week 14:  
-Warning: PoW address 9383a6dc2866c59e8639b61fac4b2ad81250ce3b341fe2fc504665a8, weight 0 instead of 3 - removing from list.  
-Warning: PoW address ced79e572f6bddde238baa5f3fe493b59fc764b5eff4174b9cc6c594, weight 1 instead of 2 - removing from list.  
-Warning: PoW address e981d2fb519edb74a72f0349e2185e8a19cab08e82c02df25c543d39, weight 0 instead of 1 - removing from list.  
-Warning: PoW address 857f1193e311f6eacfdb0b75623c978b55839dd4a1d24138594d590d, weight 0 instead of 3 - removing from list.  
-Warning: PoW address e812188c631c044d7baf01f5935cbec3402bde36ca32dad13ad6d407, weight 0 instead of 1 - removing from list.  
-Warning: PoW address dea8a5df9129dc9182ee17eddfda3eb91e3af79742636bff149bfc71, weight 0 instead of 1 - removing from list.
-
-Auto unreg does not work as intended. Will need some fix. No incidence on earnings.  
-(Fixed with week 15)
-
-Week 19:  70K loss  
-Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, weight 2 instead of 3 - removing from list.  *  
-Warning: PoW address 9a92218d6682e4f2a01722dff41d1d3e9654c4807b4c29cdc7a95e47, weight 0 instead of 1 - removing from list.  *  
-Warning: PoW address b4c32ab1e27a991dfee8f5460c1796a40e9e944c14a006e5e291e8a0, weight 1 instead of 3 - removing from list.  *  
-
-Week 20:  90K loss  
-Warning: PoW address 7c35fc4f1cd74e886dab73d4fe6ee8e798301c3a7720529c4a7eb03b, weight 2 instead of 3 - removing from list.  *   
-Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, weight 2 instead of 3 - removing from list.  
-Warning: PoW address 9a92218d6682e4f2a01722dff41d1d3e9654c4807b4c29cdc7a95e47, weight 0 instead of 1 - removing from list.  
-Warning: PoW address b4c32ab1e27a991dfee8f5460c1796a40e9e944c14a006e5e291e8a0, weight 2 instead of 3 - removing from list.  
-Warning: PoW address 74f45adf91d0f0116cc3b61652822551dcfb19b7b02101cd5c86685d, weight 0 instead of 3 - removing from list.  *  
-Warning: PoW address da06e77a08f9b07e4a7f6a4788ab269d3df0e09c38d8fa64f321374e, weight 0 instead of 3 - removing from list.  *  
-
-6 HNs to be deactivated. Reminder: If you want to lower your collateral, you have to unreg, wait for the transaction to be mined, then rereg.
-
-Week 21:  30k loss  
-Warning: PoW address 5841e2d6473c8b2d1285bf07bf8893738a34fc240f80122bae36c81c, weight 0 instead of 3 - removing from list.  *  
-
-Week23:  10K loss  
-Warning: PoW address ea00b8991c6f76c2922f522c6d135df5dfcbe800e58cb78507c4caeb, weight 0 instead of 1 - removing from list.  *  
-
-Week24 and 25:  10K loss  
-Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.  *  
-
-Week 26 and 27:  10K loss  
-Warning: PoW address fd385f7152bb649a71c404ff3a8163e84c24c083f3281df827ad69d8, weight 0 instead of 1 - removing from list.  
-Warning: PoW address 6ab07aec4f68b3f4f1671da81f4cbe3287037e9041d3325fbdf5b46b, weight 0 instead of 1 - removing from list.  *  
-
-Week 28:  30K loss  
-Warning: PoW address 6191730b866836430df215651a2f97d4a3e8a526aacb95b27ebe3041, weight 2 instead of 3 - removing from list.  *  
-Warning: PoW address e5e7452326fdd2bafbae55bc3acf32a635b4b9203d1bd56849393102, weight 0 instead of 3 - removing from list.  *  
-
-Week 35:  40K loss  
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.  *  
-Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 2 instead of 3 - removing from list.  *  
-
-Week 36:  70K loss  
-Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.  *  
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight -1 instead of 1 - removing from list.  
-Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.  
-Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.  *  
-Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.  *  
-
-Week 37:  
-Warning: PoW address 7f416973869f8f655a11deafdf1291b34269e5e43f28ac915ee6d98a, weight 0 instead of 1 - removing from list.  
-Warning: PoW address 0e63ce3259dfd5b1928e0edd85880b557fad0f66635fdd9899d36233, weight 0 instead of 1 - removing from list.  
-Warning: PoW address eeec69543f6236e296e8a4293e4129207d621e4107730ede28bbaf80, weight 0 instead of 3 - removing from list.  
-Warning: PoW address 03e1e5ac5616a4925cece0f315a8482b2a87f9d9ee3dbff46667fe42, weight 0 instead of 3 - removing from list.  
-Warning: PoW address 6b746e6cec45bb42dc9a27c1f682c6622b4f3ba81864d6aee2fb0a27, weight 0 instead of 3 - removing from list.  
 
 Week 40:  50K loss  
 Warning: PoW address 46d70c334c277b77ef5a2bb6e545ed0f6c33c9b4f412d6dec3bc3aba, weight 0 instead of 2 - removing from list.  *  
@@ -203,6 +128,8 @@ Warning: PoW address 1525994bfd12be2a6a0e8ee80460d57ed3fa9638e589437c93754c81, w
 Warning: PoW address d4d69ddce86794a325e307b7bcc8fd78f7aa4a6076dc76011300a5f8, weight 0 instead of 1 - removing from list.  
 Warning: PoW address f61cd144852d280e1aa3b66a7120d39c655ca6c21244693b1fd0dc34, weight -1 instead of 3 - removing from list.  
 
+Week 54:  20K loss  
+Warning: PoW address 82ac6b778ac48da686736819e0dc06c739332e5c5903b3167b64e5de, weight 0 instead of 2 - removing from list.  *  
 
 
 ## Fill_stats
@@ -218,16 +145,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 53
-Total Weights at 0.0: 59622
-Full Weights: 83535
-Loss: 28.63%
+Calc Rewards for Week 54
+Total Weights at 0.0: 53603
+Full Weights: 63521
+Loss: 15.61%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-exported as rewards/week53_per_reward_address.csv
+exported as rewards/week54_per_reward_address.csv
 
 ## Rewards, per HN
-exported as rewards/week53_per_hn_address.csv
+exported as rewards/week54_per_hn_address.csv
