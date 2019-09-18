@@ -9,10 +9,10 @@ from subprocess import getoutput
 from datetime import datetime
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 # If your python invocation is not standard, edit it there.
-PYTHON_EXECUTABLE='python3'
+PYTHON_EXECUTABLE='python3.7'
 
 
 ############################################################################################
@@ -46,10 +46,10 @@ def check5():
     """
     Run every 5 minutes, restart HN screen if needed
     """
-    if os.path.getmtime("../main/logs/pos_app.log") < time.time() -120:
+    if os.path.getmtime("../main/logs/pos_app.log") < time.time() - 600:
         say("Hypernode is frozen, stopping...")
         getoutput("screen -S hypernode -X at '#' stuff $'\003'")
-    if os.path.getmtime("../main/logs/pos_app.log") < time.time() -300:
+    if os.path.getmtime("../main/logs/pos_app.log") < time.time() - 1200:
         print("Hypernode is frozen, killing...")
         data = getoutput("screen -list")
         i2 = data.find('.hypernode')
