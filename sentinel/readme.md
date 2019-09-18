@@ -35,7 +35,8 @@ For instance, mine could be `/home/eggdrasyl/hypernode/sentinel`
 
 To run the sentinel in its `sentinel` screen, just do
 
-`screen -d -S sentinel -m bash -c "python3 sentinel.py"`
+`screen -d -S sentinel -m bash -c "python3.7 sentinel.py"`  
+(supposses you run the latest version,with python3.7)
 
 > **note**: If you need to edit your python3 invocation in sentinel.py, then you may want to rename sentinel.py to something else, like my_sentinel.py, so it won't be override by updates.
 
@@ -69,9 +70,10 @@ If you want to stop your Hypernode for a reason (like an update), then you need 
 kill it:  
 `ctrl-c`  
 
-restart with `screen -d -S sentinel -m bash -c "python3 sentinel.py"` to activate again
+restart with `screen -d -S sentinel -m bash -c "python3.7 sentinel.py"` to activate again
 
 
 ## Changelog
 
 - V 1.0 - Initial commit  
+- V 1.1 - Update python3.7
