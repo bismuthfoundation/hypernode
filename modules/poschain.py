@@ -335,6 +335,7 @@ class SqlitePosChain(SqliteBase):
         sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
         sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
         for height in range(max_height - 1):
+            self.app_log.info("Trying to add missing {}...".format(height))
             # get txn count from header
             res = self.execute(sql1, (height,))
             temp = res.fetchone()
