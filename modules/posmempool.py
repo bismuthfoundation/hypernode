@@ -27,7 +27,7 @@ import poscrypto
 from sqlitebase import SqliteBase
 
 
-__version__ = "0.0.43"
+__version__ = "0.0.44"
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -49,7 +49,7 @@ SQL_INSERT_TX = (
 
 # Purge old txs that may be stuck
 SQL_PURGE = (
-    "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-5 hour')"
+    "DELETE FROM pos_messages WHERE timestamp <= strftime('%s', 'now', '-1 hour')"
 )
 
 # For benchmarks

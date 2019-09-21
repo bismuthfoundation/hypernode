@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99g"
+__version__ = "0.0.99h"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1461,7 +1461,7 @@ class Poshn:
 
         return hypernodes
 
-    async def _round_sync(self, a_round, promised_height):
+    async def _round_sync(self, a_round: int, promised_height: dict) -> bool:
         """
         Async. Tries to sync from a peer advertising a better chain than ours.
         BEWARE: this is only ok if the peer is a juror for the current round.
@@ -1494,6 +1494,13 @@ class Poshn:
                     app_log.info(
                         "_get_round_blocks done in {:0.2f} sec.".format(time() - start)
                     )
+            # handle exceptions
+            for block in the_blocks.block_value:
+                if block.block_hash == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2':
+                    app_log.info(
+                        "_round_sync banned block {}".format(block.block_hash)
+                    )
+                    return res
             # check the data fits and count sources/forgers
             simulated_target = await wait_for(
                 self.poschain.check_round(a_round, the_blocks, fast_check=True),
@@ -1513,6 +1520,11 @@ class Poshn:
                             a_round, peer
                         )
                     )
+
+                for block in the_blocks.block_value:
+                    my_block = await self.poschain.async_getblockheader(block.height)
+                    print(my_block)
+
                 # Delete the round to replace
                 if self.verbose:
                     app_log.info("delete_round({})".format(a_round))
@@ -1523,7 +1535,9 @@ class Poshn:
                 await self.poschain.status()
                 # digest the blocks
                 for block in the_blocks.block_value:
+                    # TODO: if height > last_good
                     await self.poschain.digest_block(block, from_miner=False)
+
                 # Force update again at end of sync.
                 if self.verbose:
                     app_log.info("round sync 2 status")

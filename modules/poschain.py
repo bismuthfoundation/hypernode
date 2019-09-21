@@ -332,10 +332,12 @@ class SqlitePosChain(SqliteBase):
         sql = "SELECT MAX(height) FROM pos_chain"
         res = self.execute(sql)
         max_height = res.fetchone()[0]
+        print("max_height", max_height)
+        # sys.exit()
         sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
         sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
         for height in range(max_height - 1):
-            self.app_log.info("Trying to add missing {}...".format(height))
+            # self.app_log.info("Trying to add missing {}...".format(height))
             # get txn count from header
             res = self.execute(sql1, (height,))
             temp = res.fetchone()
@@ -758,8 +760,8 @@ class SqlitePosChain(SqliteBase):
             else:
                 # TODO: this is upside down. fix all config.LOG items
                 self.app_log.info(
-                    "Digesting block {} {} : {} txs, {} uniques sources.".format(
-                        block.height, block_from, len(block.txs), block.uniques_sources
+                    "Digesting block {} {} : {} txs, {} uniques sources ({} async_uniques_at_height).".format(
+                        block.height, block_from, len(block.txs), block.uniques_sources, block.block_hash
                     )
                 )
             # Good height? - FR: harmonize, use objects everywhere?
@@ -1252,21 +1254,28 @@ class SqlitePosChain(SqliteBase):
 
         uniques = await self.async_uniques_at_height(height_of_round["height"])
 
-        status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
+        """status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
         status1.update(status2)
+        """
+        status1["uniques"] = len(uniques["senders"])
+
         status3 = await self.async_fetchone(
             SQL_STATE_3, (status1["round"],), as_dict=True
         )
         status1.update(status3)
-        status4 = await self.async_fetchone(
+
+        """status4 = await self.async_fetchone(
             SQL_STATE_4_REPLACE, as_dict=True
         )  # TODO: this one may be huge at start
-        status1.update(status4)
+        status1.update(status4)"""
+        status1["forgers"] = len(uniques["forgers"])
+
         status5 = await self.async_fetchone(
             SQL_STATE_5, (height_of_round["height"],), as_dict=True
         )
         status1.update(status5)
-        print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]))
+        print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]), '*Fake')
+        #
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
 
@@ -1533,6 +1542,28 @@ class SqlitePosChain(SqliteBase):
 
         except Exception as e:
             self.app_log.error("SRV: async_getblock: Error {}".format(e))
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            self.app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
+            raise
+
+    async def async_getblockheader(self, a_height):
+        """
+        returns the block header of the given height, no tx
+
+        :param a_height: int
+        :return: dict with the block header if exists or None
+        """
+        try:
+            block = await self.async_fetchone(
+                SQL_HEIGHT_BLOCK, (a_height,), as_dict=True
+            )
+            return block
+
+        except Exception as e:
+            self.app_log.error("SRV: async_getblockheader: Error {}".format(e))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error(
