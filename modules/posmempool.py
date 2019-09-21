@@ -142,8 +142,11 @@ class Mempool:
         # TODO: if list, convert also
         if self.verbose and "txdigest" in config.LOG:
             self.app_log.info("Digesting {}".format(tx.to_json()))
+        now = time.time()
         try:
-
+            if tx.timestamp < now - 3600:
+                # Ignore old txs
+                return False
             if await self.tx_exists(tx.txid):
                 # Could seem useless since we have an index, we can raise or ignore commit if exists.
                 # Kept for alternative impl. without an index.
