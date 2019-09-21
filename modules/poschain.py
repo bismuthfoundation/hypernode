@@ -644,6 +644,14 @@ class SqlitePosChain(SqliteBase):
                 except:
                     pass
             # self.app_log.warning("Hopefully fixed corrupted blocks 2/2")
+            # Remove offending 104021 block if present
+            hash104021 = self.execute("select block_hash from pos_chain where height=104021").fetchone()
+            hash104021 = hash104021[0] if hash104021 else None
+            if hash104021 == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2':
+                self.app_log.warning("Removing offending block")
+                self.execute("delete from pos_chain where height>104020")
+                self.execute("delete from pos_messages where block_height>104020")
+                self.commit()
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

@@ -1177,6 +1177,11 @@ class Poshn:
                                   'forgers': 4, 'forgers_round': 3}
                 """
                 try:
+                    # print("h", peer["height_status"]["block_hash"])
+                    #  temp: ignore that height
+                    if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
+                        continue
+
                     if peer["height_status"]["block_hash"] in peers_status:
                         peers_status[peer["height_status"]["block_hash"]]["count"] += 1
                         peers_status[peer["height_status"]["block_hash"]][
@@ -1220,6 +1225,10 @@ class Poshn:
             for ip, peer in self.inbound.items():
                 if ip not in self.clients:
                     try:
+                        # print("h", peer["height_status"]["block_hash"])
+                        # temp: ignore that height
+                        if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
+                            continue
                         if peer["height_status"]["block_hash"] in peers_status:
                             peers_status[peer["height_status"]["block_hash"]][
                                 "count"
@@ -1520,6 +1529,7 @@ class Poshn:
                             a_round, peer
                         )
                     )
+
 
                 for block in the_blocks.block_value:
                     my_block = await self.poschain.async_getblockheader(block.height)
