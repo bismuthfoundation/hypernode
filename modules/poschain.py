@@ -471,7 +471,8 @@ class SqlitePosChain(SqliteBase):
             print("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                print("Client got Hello {} from {}".format(msg.string_value, full_peer))
+                if "hello" in config.LOG:
+                    print("Client got Hello {} from {}".format(msg.string_value, full_peer))
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 print("Client got Ko {}".format(msg.string_value))
@@ -651,6 +652,14 @@ class SqlitePosChain(SqliteBase):
                 self.app_log.warning("Removing offending block")
                 self.execute("delete from pos_chain where height>104020")
                 self.execute("delete from pos_messages where block_height>104020")
+                self.commit()
+            # Remove offending 104021 block if present
+            hash104070 = self.execute("select block_hash from pos_chain where height=104070").fetchone()
+            hash104070 = hash104070[0] if hash104070 else None
+            if hash104070 == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca':
+                self.app_log.warning("Removing offending block")
+                self.execute("delete from pos_chain where height>=104070")
+                self.execute("delete from pos_messages where block_height>=104070")
                 self.commit()
 
         except Exception as e:
@@ -1414,7 +1423,7 @@ class SqlitePosChain(SqliteBase):
             status1.update(status2)
             status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
             status1.update(status4)
-            print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]))
+            print(">>>2 ", status1, len(uniques['forgers']), len(uniques["senders"]))
         except:
             pass
         finally:

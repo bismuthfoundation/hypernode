@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99h"
+__version__ = "0.0.99h2"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -125,9 +125,10 @@ class HnServer(TCPServer):
                 )
                 peer_port = msg.string_value[10:15]
                 full_peer = poshelpers.ipport_to_fullpeer(peer_ip, peer_port)
-                access_log.info(
-                    "SRV: Got Hello {} from {}".format(msg.string_value, full_peer)
-                )
+                if "hello" in config.LOG:
+                    access_log.info(
+                        "SRV: Got Hello {} from {}".format(msg.string_value, full_peer)
+                    )
                 if not ok:
                     # FR: send reason of deny?
                     # Should we send back a proper ko message in that case? - remove later if used as a DoS attack
@@ -1181,6 +1182,8 @@ class Poshn:
                     #  temp: ignore that height
                     if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
                         continue
+                    if peer["height_status"]["block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
+                        continue
 
                     if peer["height_status"]["block_hash"] in peers_status:
                         peers_status[peer["height_status"]["block_hash"]]["count"] += 1
@@ -1228,6 +1231,9 @@ class Poshn:
                         # print("h", peer["height_status"]["block_hash"])
                         # temp: ignore that height
                         if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
+                            continue
+                        if peer["height_status"][
+                            "block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
                             continue
                         if peer["height_status"]["block_hash"] in peers_status:
                             peers_status[peer["height_status"]["block_hash"]][
@@ -1505,7 +1511,8 @@ class Poshn:
                     )
             # handle exceptions
             for block in the_blocks.block_value:
-                if block.block_hash == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2':
+                if block.block_hash in (b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2',
+                                        b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'):
                     app_log.info(
                         "_round_sync banned block {}".format(block.block_hash)
                     )
@@ -1932,9 +1939,10 @@ class Poshn:
                 )
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                access_log.info(
-                    "Client got Hello {} from {}".format(msg.string_value, full_peer)
-                )
+                if "hello" in config.LOG:
+                    access_log.info(
+                        "Client got Hello {} from {}".format(msg.string_value, full_peer)
+                    )
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Client got Ko {}".format(msg.string_value))
@@ -1985,9 +1993,10 @@ class Poshn:
                 )
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
-                access_log.info(
-                    "Worker got Hello {} from {}".format(msg.string_value, full_peer)
-                )
+                if "hello" in config.LOG:
+                    access_log.info(
+                        "Worker got Hello {} from {}".format(msg.string_value, full_peer)
+                    )
                 self.clients[full_peer]["hello"] = msg.string_value
             if msg.command == commands_pb2.Command.ko:
                 access_log.info("Worker got Ko {}".format(msg.string_value))

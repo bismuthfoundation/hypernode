@@ -43,6 +43,7 @@ AVAILABLE_LOGS = [
     "mempool",
     "srvmsg",
     "workermsg",
+    "hello",
     "txdigest",
     "blockdigest",
     "timing",

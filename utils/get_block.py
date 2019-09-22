@@ -8,6 +8,7 @@ import asyncio
 import json
 import sqlite3
 
+from logging import getLogger
 from tornado.iostream import StreamClosedError
 from tornado.tcpclient import TCPClient
 import argparse
@@ -128,15 +129,18 @@ def insert_block(block):
     return True
 
 
-async def get_block(peer, port, block_height):
+async def get_block(peer, port, block_height, logger=None):
     """
     Get block from a peer
     :param peer:
     :param port:
     :param block_height:
+    :param an optional logger
     :return:
     """
+    logger = logger if logger else getLogger("tornado.application")
     try:
+        logger.info("Asking {} for missing block {}...".format(peer, block_height))
         previous_block = PosBlock()
         previous = get_local_block(block_height - 1)
         previous_block.from_dict(previous)
@@ -151,17 +155,20 @@ async def get_block(peer, port, block_height):
             full_peer,
         )
         msg = await com_helpers.async_receive(stream, full_peer)
+        """
         print(
             "Client got {}".format(com_helpers.cmd_to_text(msg.command))
         )
+        """
         if msg.command == commands_pb2.Command.hello:
             # decompose posnet/address and check.
-            print(
+            """print(
                 "Client got Hello {} from {}".format(msg.string_value, full_peer)
             )
+            """
             # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
         if msg.command == commands_pb2.Command.ko:
-            print("Client got Ko {}".format(msg.string_value))
+            logger.warning("Client got Ko {}".format(msg.string_value))
             return
         # now we can enter a long term relationship with this node.
         await com_helpers.async_send_int32(
@@ -181,16 +188,19 @@ async def get_block(peer, port, block_height):
         else:
             ok = check_block_hash(block)
         if not ok:
-            print("Block {} KO".format(block_height))
+            logger.warning("Block {} KO".format(block_height))
             return False
         if block.previous_hash != previous_block.block_hash:
-            print("Block {} does not fit previous block".format(block_height))
+            logger.warning("Block {} does not fit previous block".format(block_height))
             return False
         # Ok, insert
-        insert_block(block)
+        try:
+            insert_block(block)
+        except:
+            pass
         return True
     except StreamClosedError as e:
-        print(e)
+        logger.warning("Error {} fetching missing block".format(str(e)))
         return False
 
 

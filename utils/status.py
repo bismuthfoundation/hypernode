@@ -63,7 +63,7 @@ async def query(timeout=30):
 
 if __name__ == "__main__":
 
-    with open("hns_status.json", 'r') as fp:
+    with open("hns_status.full.json", 'r') as fp:
         HNS = json.load(fp)
 
     event_loop = asyncio.get_event_loop()
