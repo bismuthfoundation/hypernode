@@ -456,7 +456,9 @@ class SqlitePosChain(SqliteBase):
             peers = ("192.99.248.44", "91.121.87.99", "192.99.34.19")
             peer = choice(peers)
         except Exception as e:
-            self.app_log.warning("get_block_again: {}".format(str(e)))
+            # We get an exception there if the previous block was not found in our chain
+            # (Then we can't be sure this one would be good)
+            self.app_log.warning("get_block_again: Missing predecessor of {}".format(str(e)))
             return
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -628,7 +630,7 @@ class SqlitePosChain(SqliteBase):
                 # Ignore that missing one, broken block net-wide.
                 test2 += 1
             if test2 != test[0]:
-                self.app_log.error(
+                self.app_log.warning(
                     "Inconsistency height {} but only messages for {}".format(
                         test[0], test2
                     )
@@ -1423,8 +1425,10 @@ class SqlitePosChain(SqliteBase):
         status1 = {}
         try:
             status1 = await self.async_fetchone(SQL_INFO_1, (height,), as_dict=True)
+            # Forgers
             status2 = await self.async_fetchone(SQL_INFO_2_REPLACE, (height,), as_dict=True)
             status1.update(status2)
+            # uniques
             status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
             status1.update(status4)
             print(">>>2 ", status1, len(uniques['forgers']), len(uniques["senders"]))
