@@ -269,6 +269,14 @@ class HnServer(TCPServer):
         :param stream:
         :param peer_ip:
         """
+        if msg is None:
+            if self.verbose:
+                access_log.info(
+                    "SRV: Got empty msg >{}< from {}:{}".format(
+                        com_helpers.cmd_to_text(msg.command), peer_ip, peer_port
+                    )
+                )
+            return
         if self.verbose and "srvmsg" in config.LOG:
             access_log.info(
                 "SRV: Got msg >{}< from {}:{}".format(
