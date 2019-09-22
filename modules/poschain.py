@@ -446,6 +446,7 @@ class SqlitePosChain(SqliteBase):
             # TODO: special processing TBD
             return True
         try:
+            self.app_log.info("Trying to get missing block {}".format(block_height))
             previous_block = PosBlock()
             sql = "SELECT * FROM pos_chain WHERE height=?"
             res = self.execute(sql, (block_height - 1,))
@@ -455,11 +456,14 @@ class SqlitePosChain(SqliteBase):
             peers = ("192.99.248.44", "91.121.87.99", "192.99.34.19")
             peer = choice(peers)
         except Exception as e:
-            print("get_block_again: {}".format(str(e)))
+            self.app_log.warning("get_block_again: {}".format(str(e)))
+            return
+            """
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
             raise
+            """
         try:
             stream = await TCPClient().connect(peer, 6969, timeout=45)
             hello_string = poshelpers.hello_string(port=6969, address=poscrypto.ADDRESS)
@@ -468,14 +472,14 @@ class SqlitePosChain(SqliteBase):
                 commands_pb2.Command.hello, hello_string, stream, full_peer
             )
             msg = await com_helpers.async_receive(stream, full_peer, timeout=45)
-            print("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
+            # print("Client got {}".format(com_helpers.cmd_to_text(msg.command)))
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
                 if "hello" in config.LOG:
                     print("Client got Hello {} from {}".format(msg.string_value, full_peer))
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
-                print("Client got Ko {}".format(msg.string_value))
+                self.app_log.info("Client got Ko {}".format(msg.string_value))
                 return False
             # now we can enter a long term relationship with this node.
             await com_helpers.async_send_int32(
@@ -490,10 +494,10 @@ class SqlitePosChain(SqliteBase):
             else:
                 ok = self.check_block_hash(block)
             if not ok:
-                print("Block {} hash KO".format(block_height))
+                self.app_log.info("Block {} hash KO".format(block_height))
                 return False
             if block.previous_hash != previous_block.block_hash:
-                print("Block {} does not fit previous block".format(block_height))
+                self.app_log.info("Block {} does not fit previous block".format(block_height))
                 return False
             # Ok, insert
             self.direct_insert_block(block)
