@@ -458,7 +458,7 @@ class SqlitePosChain(SqliteBase):
         except Exception as e:
             # We get an exception there if the previous block was not found in our chain
             # (Then we can't be sure this one would be good)
-            self.app_log.warning("get_block_again: Missing predecessor of {}".format(str(e)))
+            self.app_log.warning("get_block_again: Missing predecessor of {}".format(block_height))
             return
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -622,7 +622,7 @@ class SqlitePosChain(SqliteBase):
                     SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True
                 )  # Unwanted: this closes the cursor?!?
                 # sys.exit()
-            missing_blocks = list(self.missing_blocks())
+            missing_blocks = sorted(list(self.missing_blocks()))
             # print("Missing1:", missing_blocks)
             test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
             test2 = test2[0] if test2 else 0
@@ -642,7 +642,8 @@ class SqlitePosChain(SqliteBase):
                 except:
                     pass
             # self.app_log.warning("Hopefully fixed corrupted blocks 1/2")
-            missing_blocks = list(self.missing_blocks())
+            missing_blocks = sorted(list(self.missing_blocks()))
+
             # print("Missing2:", missing_blocks)
             # TODO: factorize in a loop, try 3 times maybe, use more default seeders..
             for block_height in missing_blocks:

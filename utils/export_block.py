@@ -3,6 +3,7 @@ sys.path.append("../modules")
 
 import poscrypto
 import sqlite3
+import json
 
 import argparse
 from posblock import PosBlock, PosMessage
@@ -53,16 +54,21 @@ def export_block(block_height: int) -> str:
             block.txs.append(tx)
 
         # tests
-        if block.uniques_sources < 2:
-            print("block unique sources seems incorrect")
-            return
+        if block.uniques_sources < 5:
+            print("block unique sources seems too low")
+            return False
             # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
         if block.msg_count != len(txs):
             print("block msg_count seems incorrect")
-            return
-        check_block_hash(block)
+            return False
+        if not check_block_hash(block):
+            print("block hash seems incorrect")
+            return False
 
-        return block.to_json()
+        jsond = block.to_json()
+        with open("block_{}.json".format(args.height), "w") as f:
+            f.write(jsond)
+        return jsond
     except Exception as e:
         print(e)
 
@@ -72,11 +78,26 @@ if __name__ == "__main__":
     parser.add_argument(
         "-H", "--height", type=int, default=1, help="Block height to export"
     )
+    parser.add_argument(
+        "-M", "--missing", type=str, default="", help="Take from json file"
+    )
     args = parser.parse_args()
 
     DB = sqlite3.connect("../main/data/poc_pos_chain.db", timeout=10)
     DB.row_factory = sqlite3.Row  # So it can convert into dict
 
-    json = export_block(args.height)
-    with open("block_{}.json".format(args.height), "w") as f:
-        f.write(json)
+    if args.missing != "":
+        # take from the file
+        missings = []
+        with open(args.missing) as fp:
+            missing = json.load(fp)
+        for height in missing:
+            test = export_block(args.height)
+            if not test:
+                missings.append(height)
+        print("In error:", missings)
+
+    else:
+        export_block(args.height)
+
+
