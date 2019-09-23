@@ -1547,27 +1547,49 @@ class Poshn:
                 """
                 if self.verbose:
                     app_log.info(
-                        "Distant Round {} Data from {} fits expectations.".format(
-                            a_round, peer
+                        "Distant Round {} Data from {} fits expectations. {} Blocks.".format(
+                            a_round, peer, len(the_blocks.block_value)
                         )
                     )
 
-
+                blocks_height_to_delete = []
+                blocks_to_add = []
                 for block in the_blocks.block_value:
+                    replace = False
                     my_block = await self.poschain.async_getblockheader(block.height)
+                    """
                     print(my_block)
+                    {'height': 104203, 'round': 9594, 'sir': 12, 'timestamp': 1569256564,
+                     'previous_hash': b'\x7f\x8c\x8b\xa2\t\x9dq\xb3\xa1hxZ\x9a\r-\x94\xef\r2\xef', 'msg_count': 1324,
+                     'uniques_sources': 187,
+                     'signature': b'Y\xbc{Jn\xcb\xc32\xb6\xcea/dz\xaf\xfc\x19\xc3\x8d\xcf\xcb\xfc\tbn\xf98\xe6\x88Z1\x85\xfb\xa1\r\x14,@m\xba\x0c\xc5\x98#\xec\x14\xf5\xee\xa8\xffi\x03R\xb9\x83\x13h\xc9\xb5\x9f\xcf\x15\xf5\x8e',
+                     'block_hash': b'\xd4\xb4.0q\x11\x05\xc9>\xf5j<Aa/\xc6~\xf0\xd6\x15', 'received_by': '',
+                     'forger': 'BEPBrWGGEkopbmiKGUaWxV6tuEnTD4L7Hf'}
+                    """
+                    if not my_block:
+                        replace = True
+                    else:
+                        if my_block['block_hash'] != block.block_hash:
+                            replace = True
+                    if replace:
+                        blocks_height_to_delete.append(block.height)
+                        blocks_to_add.append(block)
 
+                if self.verbose:
+                    app_log.info("{} Remaining Blocks to replace.".format(len(blocks_to_add)))
+                await self.poschain.delete_blocks(blocks_height_to_delete)
+                """    
                 # Delete the round to replace
                 if self.verbose:
                     app_log.info("delete_round({})".format(a_round))
                 await self.poschain.delete_round(a_round)
+                """
                 # Force status update
                 if self.verbose:
                     app_log.info("round sync 1 status")
                 await self.poschain.status()
                 # digest the blocks
-                for block in the_blocks.block_value:
-                    # TODO: if height > last_good
+                for block in blocks_to_add:
                     await self.poschain.digest_block(block, from_miner=False)
 
                 # Force update again at end of sync.

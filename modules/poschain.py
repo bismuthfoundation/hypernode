@@ -25,7 +25,7 @@ from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 from ttlcache import asyncttlcache
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -121,6 +121,10 @@ SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = "SELECT COUNT(DISTINCT(block_height)) FR
 SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN (SELECT height FROM pos_chain WHERE round = ?)"
 
 SQL_DELETE_ROUND = "DELETE FROM pos_chain WHERE round = ?"
+
+SQL_DELETE_LIST_TXS = "DELETE FROM pos_messages WHERE block_height IN ({})"
+
+SQL_DELETE_LIST = "DELETE FROM pos_chain WHERE height IN ({})"
 
 SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
 
@@ -963,7 +967,7 @@ class SqlitePosChain(SqliteBase):
         :return:
         """
         block = await self.async_fetchone(SQL_LAST_BLOCK, as_dict=True)
-        print("last block", block)
+        # print("last block", block)
         # self.block_height = block['height']
         self.block = block
         return block
@@ -1243,6 +1247,26 @@ class SqlitePosChain(SqliteBase):
                 )
             return True
         return False
+
+    async def delete_blocks(self, a_list_of_height: list) -> None:
+        """
+        Remove header and transactions data for this list
+        The caller is responsible for updating state if necessary
+
+        :param a_list_of_height:
+        :return: None
+        """
+        # First delete the tx
+        # TODO: this deletes the TX, but we want to move them back to mempool !important
+        # Make sure we only have ints and convert to str
+        a_list_of_height = [str(int(h)) for h in a_list_of_height]
+        in_str = ",".join(a_list_of_height)
+        await self.async_execute(SQL_DELETE_LIST_TXS.format(in_str), commit=True)
+        # Then the block data itself
+        await self.async_execute(SQL_DELETE_LIST.format((in_str)), commit=True)
+        # reset status so future block digestions will be ok.
+        self._invalidate()
+        asyncttlcache.purge()
 
     async def delete_round(self, a_round):
         """
