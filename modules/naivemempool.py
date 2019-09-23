@@ -44,9 +44,9 @@ class NaiveMempool(Mempool):
 
     async def async_purge(self):
         """
-        Async. Purge old txs (5 hours)
+        Async. Purge old txs (1 hour)
         """
-        ts_limit = time() - 5 * 3600
+        ts_limit = time() - NOT_OLDER_THAN_SECONDS
         self._dict = {txid: tx for txid, tx in self._dict.items() if tx.timestamp > ts_limit}
 
     async def async_purge_test(self, ts_limit :int):
@@ -79,7 +79,8 @@ class NaiveMempool(Mempool):
         :param date:
         :return: a list of posblock.PosMessage objects
         """
-        return [tx for tx in self._dict.values() if tx.received >= date]
+        ts_limit = int(time()) - NOT_OLDER_THAN_SECONDS
+        return [tx for tx in self._dict.values() if tx.received >= date and tx.timestamp >= ts_limit]
 
     async def async_all(self, block_height=0):
         """
@@ -101,7 +102,8 @@ class NaiveMempool(Mempool):
 
         :return: list()
         """
-        return [tx.txid for tx in self._dict.values()]
+        ts_limit = int(time()) - NOT_OLDER_THAN_SECONDS
+        return [tx.txid for tx in self._dict.values() if tx.timestamp >= ts_limit]
 
     async def async_del_txids(self, txids):
         """

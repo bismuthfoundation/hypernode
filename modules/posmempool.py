@@ -27,7 +27,7 @@ import poscrypto
 from sqlitebase import SqliteBase
 
 
-__version__ = "0.0.44"
+__version__ = "0.0.45"
 
 SQL_CREATE_MEMPOOL = "CREATE TABLE pos_messages (\
     txid         BLOB (64)    PRIMARY KEY,\
@@ -101,7 +101,7 @@ SQL_REMOVE_TXID_IN = "DELETE FROM pos_messages where txid IN "
 SQL_ADD_INDEX = "CREATE INDEX timestamp ON pos_messages (timestamp)"
 
 # How old a transaction can be to be embedded in a block ? Don't pick too large a delta T
-NOT_OLDER_THAN_SECONDS = 60 * 30 * 1000
+NOT_OLDER_THAN_SECONDS = 60 * 60
 
 
 class Mempool:
@@ -144,7 +144,7 @@ class Mempool:
             self.app_log.info("Digesting {}".format(tx.to_json()))
         now = time.time()
         try:
-            if tx.timestamp < now - 3600:
+            if tx.timestamp < now - NOT_OLDER_THAN_SECONDS:
                 # Ignore old txs
                 return False
             if await self.tx_exists(tx.txid):
