@@ -345,7 +345,7 @@ class PosBlock:
                 value = block_dict[prop]
                 self.__dict__[prop] = value
         for key in self.hex_encodable:
-            block_dict[key] = poscrypto.hex_to_raw(block_dict[key])
+            self.__dict__[key] = poscrypto.hex_to_raw(self.__dict__[key])
         # txs
         try:
             self.txs = [PosMessage().from_list(tx, as_hex=True) for tx in block_dict['txs']]
@@ -359,7 +359,6 @@ class PosBlock:
             print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
             self.txs = []
         return self
-
 
     def to_json(self):
         """
@@ -395,18 +394,25 @@ class PosBlock:
         :return: bytearray
         """
         raw = b''
-        # block datation
-        raw += self.height.to_bytes(4, byteorder='big')
-        raw += self.round.to_bytes(4, byteorder='big')
-        raw += self.sir.to_bytes(4, byteorder='big')
-        raw += self.timestamp.to_bytes(4, byteorder='big')
-        # ordered txids - by ts, if any (only genesis can have none)
-        if len(self.txs):
-            for tx in self.txs:
-                raw += tx.txid
-        # previous hash
-        raw += self.previous_hash
-        return raw
+        try:
+            # block datation
+            raw += self.height.to_bytes(4, byteorder='big')
+            raw += self.round.to_bytes(4, byteorder='big')
+            raw += self.sir.to_bytes(4, byteorder='big')
+            raw += self.timestamp.to_bytes(4, byteorder='big')
+            # ordered txids - by ts, if any (only genesis can have none)
+            if len(self.txs):
+                for tx in self.txs:
+                    raw += tx.txid
+            # previous hash
+            raw += self.previous_hash
+            return raw
+        except Exception as e:
+            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+            raise
 
     def from_proto(self, block_proto: commands_pb2.Block):
         """

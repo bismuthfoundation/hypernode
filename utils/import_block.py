@@ -32,16 +32,22 @@ def get_local_block(block_height):
 
 
 def check_block_hash(block):
-    raw = block.to_raw()
-    msg_count = len(block.txs)
-    # set removes duplicates.
-    block.uniques_sources = len(set([tx.sender for tx in block.txs]))
-    # TODO: verify sig signature = poscrypto.sign(raw, verify=True)
-    block_hash = poscrypto.blake(raw).digest()
-    if msg_count != block.msg_count:
-        print("Bad Tnx count")
-        return False
-    return block_hash == block.block_hash
+    try:
+        raw = block.to_raw()
+        msg_count = len(block.txs)
+        # set removes duplicates.
+        block.uniques_sources = len(set([tx.sender for tx in block.txs]))
+        # TODO: verify sig signature = poscrypto.sign(raw, verify=True)
+        block_hash = poscrypto.blake(raw).digest()
+        if msg_count != block.msg_count:
+            print("Bad Tnx count")
+            return False
+        return block_hash == block.block_hash
+    except Exception as e:
+        print(e)
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
 
 def insert_block(block, simulate=False):
@@ -93,11 +99,6 @@ def insert_block(block, simulate=False):
                 # optimize push in a batch and do a single sql with all tx in a row
                 # await self.async_execute(SQL_INSERT_TX, tx.to_db(), commit=False)
             # print(tx_ids)
-            # Delete the existing block
-            sql1 = "DELETE from pos_messages WHERE block_height=?"
-            if not simulate:
-                DB.execute(sql1, (block.height,))
-                DB.commit()
             if len(batch):
                 str_txs.append(batch)
             if len(tx_ids):
@@ -109,6 +110,7 @@ def insert_block(block, simulate=False):
                 if block.msg_count != len(tx_ids):
                     print("block msg_count seems incorrect")
                     return
+                check_block_hash(block)
 
                 try:
                     for batch in str_txs:
@@ -121,6 +123,11 @@ def insert_block(block, simulate=False):
                     print(e)
                     return
                 # TODO: recheck all was inserted, if not error and end.
+        # Delete the existing block
+        sql1 = "DELETE from pos_messages WHERE block_height=?"
+        if not simulate:
+            DB.execute(sql1, (block.height,))
+            DB.commit()
 
         sql2 = "DELETE from pos_chain WHERE height=?"
         if not simulate:
@@ -136,11 +143,15 @@ def insert_block(block, simulate=False):
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         print("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
 
+
 def import_block(block_height: int, simulate:bool=False):
     try:
         with open("block_{}.json".format(block_height)) as f:
             data = json.load(f)
         block = PosBlock().from_hex_dict(data)
+        """for tx in block.txs:
+            print(tx.to_list())
+        """
         insert_block(block, simulate=simulate)
     except Exception as e:
         print(e)
