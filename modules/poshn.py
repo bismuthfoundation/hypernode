@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99h2"
+__version__ = "0.0.99h3"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1192,6 +1192,8 @@ class Poshn:
                         continue
                     if peer["height_status"]["block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
                         continue
+                    if peer["height_status"]["block_hash"] == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y'.hex():
+                        continue
 
                     if peer["height_status"]["block_hash"] in peers_status:
                         peers_status[peer["height_status"]["block_hash"]]["count"] += 1
@@ -1240,8 +1242,9 @@ class Poshn:
                         # temp: ignore that height
                         if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
                             continue
-                        if peer["height_status"][
-                            "block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
+                        if peer["height_status"]["block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
+                            continue
+                        if peer["height_status"]["block_hash"] == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y'.hex():
                             continue
                         if peer["height_status"]["block_hash"] in peers_status:
                             peers_status[peer["height_status"]["block_hash"]][

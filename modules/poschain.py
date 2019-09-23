@@ -659,13 +659,21 @@ class SqlitePosChain(SqliteBase):
                 self.execute("delete from pos_chain where height>104020")
                 self.execute("delete from pos_messages where block_height>104020")
                 self.commit()
-            # Remove offending 104021 block if present
+            # Remove offending 104070 block if present
             hash104070 = self.execute("select block_hash from pos_chain where height=104070").fetchone()
             hash104070 = hash104070[0] if hash104070 else None
             if hash104070 == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca':
                 self.app_log.warning("Removing offending block")
                 self.execute("delete from pos_chain where height>=104070")
                 self.execute("delete from pos_messages where block_height>=104070")
+                self.commit()
+            # Remove offending 104160 block if present
+            hash104160 = self.execute("select block_hash from pos_chain where height=104160").fetchone()
+            hash104160 = hash104160[0] if hash104160 else None
+            if hash104160 == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y':
+                self.app_log.warning("Removing offending block")
+                self.execute("delete from pos_chain where height>=104160")
+                self.execute("delete from pos_messages where block_height>=104160")
                 self.commit()
 
         except Exception as e:
