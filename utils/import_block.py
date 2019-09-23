@@ -112,6 +112,12 @@ def insert_block(block, simulate=False):
                     return
                 check_block_hash(block)
 
+                # Delete the existing block
+                sql1 = "DELETE from pos_messages WHERE block_height=?"
+                if not simulate:
+                    DB.execute(sql1, (block.height,))
+                    DB.commit()
+
                 try:
                     for batch in str_txs:
                         # TODO: there is some mess here, some batches do not go through.
@@ -123,11 +129,6 @@ def insert_block(block, simulate=False):
                     print(e)
                     return
                 # TODO: recheck all was inserted, if not error and end.
-        # Delete the existing block
-        sql1 = "DELETE from pos_messages WHERE block_height=?"
-        if not simulate:
-            DB.execute(sql1, (block.height,))
-            DB.commit()
 
         sql2 = "DELETE from pos_chain WHERE height=?"
         if not simulate:
@@ -168,6 +169,6 @@ if __name__ == "__main__":
     DB = sqlite3.connect("../main/data/poc_pos_chain.db", timeout=10)
     DB.row_factory = sqlite3.Row  # So it can convert into dict
 
-    import_block(args.height, simulate=True)
+    import_block(args.height, simulate=False)
 
     # return
