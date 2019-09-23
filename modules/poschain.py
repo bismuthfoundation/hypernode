@@ -724,7 +724,7 @@ class SqlitePosChain(SqliteBase):
         block = PosBlock().from_dict(block_dict)
         # print(block.to_json())
         block.sign()
-        print(block.to_json())
+        # print(block.to_json())
         if self.verbose:
             print(block.to_json())
         return block

@@ -487,6 +487,7 @@ class PosBlock:
     def sign(self):
         """
         Sign the raw block and calc it's hash
+        !!!txs are to be ordered by ascending timestamp!!!
 
         :return: signature, bytearray
         """
