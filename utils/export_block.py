@@ -59,7 +59,7 @@ def export_block(block_height: int) -> str:
             return False
             # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
         if block.msg_count != len(txs):
-            print("block msg_count seems incorrect")
+            print("block msg_count seems incorrect {} instead of {}".format(len(txs), block.msg_count))
             return False
         if not check_block_hash(block):
             print("block hash seems incorrect")
@@ -68,6 +68,7 @@ def export_block(block_height: int) -> str:
         jsond = block.to_json()
         with open("block_{}.json".format(args.height), "w") as f:
             f.write(jsond)
+        print("Ok")
         return jsond
     except Exception as e:
         print(e)
@@ -92,7 +93,8 @@ if __name__ == "__main__":
         with open(args.missing) as fp:
             missing = json.load(fp)
         for height in missing:
-            test = export_block(args.height)
+            print(height)
+            test = export_block(height)
             if not test:
                 missings.append(height)
         print("In error:", missings)
