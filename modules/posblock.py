@@ -17,7 +17,7 @@ import poscrypto
 import time
 
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 
 
 class PosMessage:
@@ -288,7 +288,7 @@ class PosBlock:
 
     def from_dict(self, block_dict):
         """
-        Converts a dict representing a block to the native object format
+        Converts a dict representing a block to the native object format.
 
         :param block_dict:
         :return: self
@@ -329,6 +329,37 @@ class PosBlock:
             else:
                 block_dict[prop] = self.__dict__[prop]
         return block_dict
+
+    def from_hex_dict(self, block_dict):
+        """
+        Converts a dict representing a block to the native object format, with binary data hex encoded.
+        distinct from from_dict for perfs reasons
+
+        :param block_dict:
+        :return: self
+        """
+        # Main block values
+        for prop in self.props:
+            if prop in block_dict:
+                # do not override what may not be passed
+                value = block_dict[prop]
+                self.__dict__[prop] = value
+        for key in self.hex_encodable:
+            block_dict[key] = poscrypto.hex_to_raw(block_dict[key])
+        # txs
+        try:
+            self.txs = [PosMessage().from_list(tx, as_hex=True) for tx in block_dict['txs']]
+        except KeyError:
+            # print(">> Empty block")
+            self.txs = []
+        except Exception as e:
+            print("posblock from_hex_dict exception ", e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print('detail {} {} {}'.format(exc_type, fname, exc_tb.tb_lineno))
+            self.txs = []
+        return self
+
 
     def to_json(self):
         """
