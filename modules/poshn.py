@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99h4"
+__version__ = "0.0.99h5"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1858,11 +1858,11 @@ class Poshn:
                 # TODO: safer to do a sampling by most recent and more diverse txs, like only 2 or 3 of every signer, rather than random sampling
                 shuffle(block.txs)
                 block.txs = block.txs[:config.MAX_TXS_PER_BLOCK]
-                # We have to reorder them by timestamp of the hash will be wrong.
-                # Could be done in sign() function, but would add latency to every sign()
-                block.txs.sort(key=lambda x: x.timestamp)
+            # No matter where they come from, we have make sure they are reordered by timestamp or the hash will be wrong.
+            # Could be done in sign() function, but would add latency to every sign()
+            block.txs.sort(key=lambda x: x.timestamp)
             # FR: count also uniques_sources
-            # Remove from mempool
+            # Remove from mempool - Actually, this will clear all txs, eventhough we may not have embedded every one.
             await self.mempool.clear()
             # print(block.to_dict())
             block.sign()

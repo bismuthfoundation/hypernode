@@ -364,6 +364,9 @@ class SqlitePosChain(SqliteBase):
         if msg_count != block.msg_count:
             print("Bad Txn count")
             return False
+        if 95000 < block.height < 105000:
+            # hack to cope with corrupted blocks at that time.
+            return True
         return block_hash == block.block_hash
 
     def direct_insert_block(self, block):
