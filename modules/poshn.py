@@ -214,6 +214,10 @@ class HnServer(TCPServer):
                 try:
                     # Loop over the requests until disconnect or end of server.
                     msg = await async_receive(stream, full_peer)
+                    if msg is None:
+                        if "connections" in config.LOG:
+                            access_log.info("SRV: Peer {} left.".format(full_peer))
+                        return
                     await self._handle_msg(msg, stream, peer_ip, peer_port)
                 except StreamClosedError:
                     # This is a disconnect event, not an error
