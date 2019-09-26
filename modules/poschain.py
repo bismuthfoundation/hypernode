@@ -25,7 +25,7 @@ from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 from ttlcache import asyncttlcache
 
-__version__ = "0.1.9"
+__version__ = "0.2.0"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -318,6 +318,8 @@ class SqlitePosChain(SqliteBase):
         self.bans = {"huge_blocks": [],
                     "duptx_blocks": [],
                     "partial_blocks": []}
+        self.last_cache_cleanup = 0
+        self.purge_cache()
         # Each ban entry is a list of list: [end_timestamp, block_hash(hex), peer_ip] - peer_ip is only needed for partial_blocks entry
         SqliteBase.__init__(
             self,
@@ -1291,9 +1293,10 @@ class SqlitePosChain(SqliteBase):
             )
         self._invalidate()
         # force Recalc - could it be an incremental job ?
-        await self._last_block()
+        last = await self._last_block()
         await self._height_status()
         asyncttlcache.purge()
+        self.delete_rounds_above(last["round"])
         return True
 
     async def tx_exists(self, txid):
@@ -1382,27 +1385,30 @@ class SqlitePosChain(SqliteBase):
 
         uniques = await self.async_uniques_at_height(height_of_round["height"])
 
-        """status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
-        status1.update(status2)
-        """
         status1["uniques"] = len(uniques["senders"])
+        if config.TEST_ROUND_CACHE:
+            status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
+            if status2["uniques"] != status1["uniques"]:
+                self.app_log.error("Round cache error uniques, sql {} vs cache {}".format(status2["uniques"], status1["uniques"]))
+            status1.update(status2)
 
         status3 = await self.async_fetchone(
             SQL_STATE_3, (status1["round"],), as_dict=True
         )
         status1.update(status3)
 
-        """status4 = await self.async_fetchone(
-            SQL_STATE_4_REPLACE, as_dict=True
-        )  # TODO: this one may be huge at start
-        status1.update(status4)"""
         status1["forgers"] = len(uniques["forgers"])
+        if config.TEST_ROUND_CACHE:
+            status4 = await self.async_fetchone(SQL_STATE_4_REPLACE, as_dict=True)
+            if status4["forgers"] != status1["forgers"]:
+                self.app_log.error("Round cache error forgers , sql {} vs cache {}".format(status4["forgers"], status1["forgers"]))
+            status1.update(status4)
 
         status5 = await self.async_fetchone(
             SQL_STATE_5, (height_of_round["height"],), as_dict=True
         )
         status1.update(status5)
-        print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]), '*Fake')
+        # print(">>> ", status1, len(uniques['forgers']), len(uniques["senders"]), '*Fake')
         #
         self.height_status = PosHeight().from_dict(status1)
         return self.height_status
@@ -1424,20 +1430,37 @@ class SqlitePosChain(SqliteBase):
     def uniques_and_round_from_cache(self, pos_round) -> tuple:
         """given a pos round, gives the unique lists at *start* of round (no block yet)"""
         all_cache = os.listdir(HN_CACHE_DIR)
-        rounds = [int(file[:-5]) for file in all_cache]  # strip .json
+        rounds = [int(file[:-11]) for file in all_cache]  # strip .round.json
         rounds = sorted(rounds, reverse=True)
         uniques = {"forgers": [], "senders": []}
         checkpoint = 0
         try:
             for a_round in rounds:
                 if a_round <= pos_round:
-                    with open("{}{}.json".format(HN_CACHE_DIR, a_round)) as fp:
+                    with open("{}{}.round.json".format(HN_CACHE_DIR, a_round)) as fp:
                         uniques = json.load(fp)
                         self.app_log.warning("Found cached round {}".format(a_round))
                         return uniques, a_round
         except Exception as e:
             self.app_log.warning("Error reading round {} cache: {}".format(a_round, e))
         return uniques, checkpoint
+
+    def delete_rounds_above(self, pos_round):
+        """deletes rounds above (and including) given round from cache"""
+        all_cache = os.listdir(HN_CACHE_DIR)
+        rounds = [int(file[:-5]) for file in all_cache]  # strip .json
+        rounds = [num for num in rounds if num >= pos_round]  # filter rounds to delete
+        for num in rounds:
+            os.remove("{}{}.round.json".format(HN_CACHE_DIR, num))
+
+    def purge_cache(self):
+        """empty cache every 23h of run to avoid drifts"""
+        if time() - self.last_cache_cleanup > 3600 * 23:
+            all_cache = os.listdir(HN_CACHE_DIR)
+            self.app_log.info("Purge cache: {} files".format(len(all_cache)))
+            for file in all_cache:
+                os.remove("{}/{}".format(HN_CACHE_DIR, file))
+            self.last_cache_cleanup = time()
 
     async def __async_uniques_at_round(self, pos_round: int):
         """
@@ -1455,10 +1478,11 @@ class SqlitePosChain(SqliteBase):
         try:
             pos_round, pos_round_height = await self.async_round_and_height_before_height(pos_height)
             uniques, round_checkpoint = self.uniques_and_round_from_cache(pos_round)
-            self.app_log.warning("async_uniques_at_height {}: round {} checkpoint {}".format(pos_height, pos_round, round_checkpoint))
+            self.app_log.info("async_uniques_at_height {}: round {} checkpoint {}".format(pos_height, pos_round, round_checkpoint))
             uniques['forgers'] = set(uniques['forgers'])
             uniques['senders'] = set(uniques['senders'])
             if round_checkpoint < pos_round:
+                start = time()
                 # Extract the data from checkpoint to start of pos_round...
                 # We first need the height of the last round before pos_round
                 try:
@@ -1472,16 +1496,19 @@ class SqlitePosChain(SqliteBase):
                 uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
                 uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
                 # and save as new cache for round pos_round
-                with open("{}{}.json".format(HN_CACHE_DIR, pos_round), 'w') as fp:
+                with open("{}{}.round.json".format(HN_CACHE_DIR, pos_round), 'w') as fp:
                     # a set is not json serializable.
                     json.dump({key: list(value) for key, value in uniques.items()}, fp)
                 # sys.exit()
+                delta = time() - start
+                self.app_log.info("async_uniques_at_height {}: round {} calc'd in {:0.2f}s".format(pos_height, pos_round, delta))
             if pos_round_height < pos_height:
                 # we want more, include the current round info
                 forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
                                                     (pos_round_height + 1, pos_height), as_dict=True)
                 senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
                                                     (pos_round_height + 1, pos_height), as_dict=True)
+                print(forgers)
                 # Then merge...
                 uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
                 uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
@@ -1530,13 +1557,19 @@ class SqlitePosChain(SqliteBase):
         status1 = {}
         try:
             status1 = await self.async_fetchone(SQL_INFO_1, (height,), as_dict=True)
-            # Forgers
-            status2 = await self.async_fetchone(SQL_INFO_2_REPLACE, (height,), as_dict=True)
-            status1.update(status2)
-            # uniques
-            status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
-            status1.update(status4)
-            print(">>>2 ", status1, len(uniques['forgers']), len(uniques["senders"]))
+            if config.TEST_ROUND_CACHE:
+                # Forgers
+                status2 = await self.async_fetchone(SQL_INFO_2_REPLACE, (height,), as_dict=True)
+                status1.update(status2)
+                # uniques
+                status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
+                status1.update(status4)
+                if status1["forgers"] != len(uniques['forgers']) or  status1["uniques"] != len(uniques['senders']):
+                    # print(">>>2 ", status1, len(uniques['forgers']), len(uniques["senders"]))
+                    self.app_log.error("Round cache fail sql {} vs forgers {} uniques {}".format(json.dumps(status1), len(uniques['forgers']), len(uniques["senders"])))
+            else:
+                status1["forgers"] = len(uniques['forgers'])
+                status1["uniques"] = len(uniques['senders'])
         except:
             pass
         finally:

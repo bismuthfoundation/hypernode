@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99h6"
+__version__ = "0.0.99i"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -2462,6 +2462,7 @@ class Poshn:
         self.round, self.sir = determine.timestamp_to_round_slot(time())
         if self.verbose:
             app_log.info("...check_round... R {} SIR {}".format(self.round, self.sir))
+        self.poschain.purge_cache()  # Will only clear when needed.
         while self.state in [HNState.NEWROUND]:
             # do not re-enter if new round ongoing
             await async_sleep(1)

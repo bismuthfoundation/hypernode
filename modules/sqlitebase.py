@@ -282,7 +282,7 @@ class SqliteBase:
 
                     self.app_log.warning(
                         "Database {} query: {} {}, retry because {}".format(
-                            self.db_name, sql, param, e
+                            self.db_name, sql[:100]+" [...]", param, e
                         )
                     )
                     exc_type, exc_obj, exc_tb = sys.exc_info()

@@ -189,8 +189,11 @@ WAIT = 10
 # How long between status reports - status are intensive to build, 30 sec min, 5 min max (300 sec) - 1 min default.
 STATUS_EVERY = 60
 
-# Show detailled status, or short version (short by default)
+# Show detailed status, or short version (short by default)
 STATUS_LONG = False
+
+# Compare cache to intensive slq request (debug)
+TEST_ROUND_CACHE = False
 
 # Wait time when catching up, to speed things up.
 SHORT_WAIT = 0.001
@@ -282,6 +285,7 @@ VARS = {
     "WAIT": "int",
     "STATUS_EVERY": "int",
     "STATUS_LONG": "bool",
+    "TEST_ROUND_CACHE": "bool",
     "SHORT_WAIT": "float",
     "PEER_RETRY_SECONDS": "int",
     "PYTHON_EXECUTABLE": "str",
