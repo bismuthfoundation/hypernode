@@ -25,7 +25,7 @@ from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 from ttlcache import asyncttlcache
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -315,6 +315,10 @@ class SqlitePosChain(SqliteBase):
         self.mempool = mempool
         # Avoid re-entrance
         self.inserting_block = False
+        self.bans = {"huge_blocks": [],
+                    "duptx_blocks": [],
+                    "partial_blocks": []}
+        # Each ban entry is a list of list: [end_timestamp, block_hash, peer_ip] - peer_ip is only needed for partial_blocks entry
         SqliteBase.__init__(
             self,
             verbose=verbose,
@@ -326,6 +330,27 @@ class SqlitePosChain(SqliteBase):
             os.mkdir(HN_CACHE_DIR)
         except:
             pass
+
+    def purge_bans(self) -> None:
+        """Check time of bans to clear them
+        These lists are supposed to be very short, empty most of the time so this is not intensive a process.
+        """
+        now = time()
+        for key in ("huge_blocks", "duptx_blocks", "partial_blocks"):
+            # keep only the valid ones (in the future)
+            self.bans[key] = [entry for entry in self.bans[key] if entry[0] > now]
+
+    def is_banned(self, block_hash: bytes) -> bool:
+        """Tells whether that block hash is banned or not"""
+        for key in ("huge_blocks", "duptx_blocks"):
+            for entry in self.bans[key]:
+                if entry[1] == block_hash:
+                    return True
+        return False
+
+    def ban_hash(self, block_hash: bytes, key:str="duptx_blocks", ttl: int=15*60) -> None:
+        """Ban a block hash for ttl seconds"""
+        self.bans[key].append([time()+ttl, block_hash])
 
     def missing_blocks(self) -> set:
         """
@@ -776,6 +801,7 @@ class SqlitePosChain(SqliteBase):
 
         :return:
         """
+        self.purge_bans()
         try:
             block_from = "from Peer"
             if from_miner:
@@ -789,6 +815,10 @@ class SqlitePosChain(SqliteBase):
             start = time()
             # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
+            if self.is_banned(block.block_hash):
+                self.app_log.warning("Digestion of block {} {} aborted, banned {}".format(block.height, block_from, block.block_hash.hex()))
+                return False
+
             # print(">> dictblock", block.to_dict())
             if "txdigest" in config.LOG:
                 self.app_log.info(
@@ -858,7 +888,8 @@ class SqlitePosChain(SqliteBase):
                 height = -1
                 hash = 'N/A'
                 pass
-            self.app_log.error("digest_block {} integrity error hash {}".format(height, hash.hex()))
+            self.app_log.error("digest_block {} integrity error hash {} - banning".format(height, hash.hex()))
+            self.ban_hash(hash)
             return False
         except Exception as e:
             try:

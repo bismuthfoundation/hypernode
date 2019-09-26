@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99h5"
+__version__ = "0.0.99h6"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1179,6 +1179,7 @@ class Poshn:
             our_status = our_status.to_dict(as_hex=True)
             our_status["count"] = 1
             our_status["peers"] = []
+            banned = 0
             if self.verbose:
                 app_log.info("Our status: {}".format(json.dumps(our_status)))
             # peers_status = {'WE': our_status}
@@ -1192,6 +1193,10 @@ class Poshn:
                                   'forgers': 4, 'forgers_round': 3}
                 """
                 try:
+                    if self.poschain.is_banned(peer["height_status"]["block_hash"]):
+                        banned += 1
+                        continue
+
                     # print("h", peer["height_status"]["block_hash"])
                     #  temp: ignore that height
                     if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
@@ -1244,6 +1249,9 @@ class Poshn:
             for ip, peer in self.inbound.items():
                 if ip not in self.clients:
                     try:
+                        if self.poschain.is_banned(peer["height_status"]["block_hash"]):
+                            banned += 1
+                            continue
                         # print("h", peer["height_status"]["block_hash"])
                         # temp: ignore that height
                         if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
@@ -1302,7 +1310,7 @@ class Poshn:
                 reverse=True,
             )
             # TEMP
-            app_log.info("Status: {} observable chain(s)".format(len(peers_status)))
+            app_log.info("Status: {} observable chain(s),  {} Temp. banned Peers".format(len(peers_status), banned))
             if self.verbose:
                 # app_log.info("> sorted peers status")
                 i = 0
