@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i"
+__version__ = "0.0.99i2"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -184,7 +184,7 @@ class HnServer(TCPServer):
                     # TODO: add to anomalies buffer
                     return
                 for block in msg.block_value:
-                    if block.forger not in self.registered_forgers:
+                    if block.forger not in self.node.registered_forgers:
                         app_log.warning("Block forger {} not in registered forgers".format(block.forger))
                         ok = False
                         break
@@ -2105,83 +2105,98 @@ class Poshn:
                     app_log.info(">> Entering presync with {}".format(full_peer))
                     await async_sleep(config.SHORT_WAIT)
                     if self.state == HNState.CATCHING_UP_PRESYNC:
-                        # Here, we check if our last block matches the peer's one.
-                        # If not, we rollback one block at a time until we agree.
-                        await com_helpers.async_send_int32(
-                            commands_pb2.Command.blockinfo,
-                            self.poschain.height_status.height,
-                            stream,
-                            full_peer,
-                        )
-                        msg = await com_helpers.async_receive(stream, full_peer)
-                        if msg is None:
-                            app_log.warning("lost cnx to {}".format(full_peer))
-                            return
-                        # TODO: check message is blockinfo
-                        info = posblock.PosHeight().from_proto(msg.height_value)
-                        if self.verbose:  # FR: to remove later on
-                            if self.poschain.height_status:
-                                print(
-                                    "self",
-                                    self.poschain.height_status.to_dict(as_hex=True),
-                                )
-                            print("peer", info.to_dict(as_hex=True))
-                        if (
-                            self.poschain.height_status.block_hash == info.block_hash
-                            and self.poschain.height_status.round == info.round
-                        ):
-                            # we are ok, move to next state
-                            await self.change_state_to(HNState.CATCHING_UP_SYNC)
-                            app_log.info(
-                                ">> Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(
-                                    full_peer
-                                )
+                        try:
+                            # Here, we check if our last block matches the peer's one.
+                            # If not, we rollback one block at a time until we agree.
+                            await com_helpers.async_send_int32(
+                                commands_pb2.Command.blockinfo,
+                                self.poschain.height_status.height,
+                                stream,
+                                full_peer,
                             )
-                        else:
-                            app_log.info(">> Block mismatch, will rollback")
-                            # FR: find the common ancestor faster via height/hash list
-                            while (
-                                self.poschain.height_status.block_hash
-                                != info.block_hash
-                            ):
-                                # TODO: limit possible rollback to a few heights, like 1 or 2 rounds worth of blocks.
-                                if self.verbose:  # FR: remove later on
+                            msg = await com_helpers.async_receive(stream, full_peer)
+                            if msg is None:
+                                app_log.warning("lost cnx to {}".format(full_peer))
+                                return
+                            # TODO: check message is blockinfo
+                            info = posblock.PosHeight().from_proto(msg.height_value)
+                            if self.verbose:  # FR: to remove later on
+                                if self.poschain.height_status:
                                     print(
                                         "self",
-                                        self.poschain.height_status.to_dict(
-                                            as_hex=True
-                                        ),
+                                        self.poschain.height_status.to_dict(as_hex=True),
                                     )
-                                    print("peer", info.to_dict(as_hex=True))
-                                if self.poschain.height_status.height == 0:
-                                    app_log.warning(">> Won't rollback block 0")
-                                    # TODO: temp ban (store on disk)
-                                    # TODO: send warning tx
-                                    # allow to sync again from another one
-                                    await self.change_state_to(HNState.SYNCING)
-                                    # close
-                                    return
-                                await self.poschain.rollback()
-                                await com_helpers.async_send_int32(
-                                    commands_pb2.Command.blockinfo,
-                                    self.poschain.height_status.height,
-                                    stream,
-                                    full_peer,
+                                print("peer", info.to_dict(as_hex=True))
+                            if (
+                                self.poschain.height_status.block_hash == info.block_hash
+                                and self.poschain.height_status.round == info.round
+                            ):
+                                # we are ok, move to next state
+                                await self.change_state_to(HNState.CATCHING_UP_SYNC)
+                                app_log.info(
+                                    ">> Common ancestor OK with {}, CATCHING MISSED BLOCKS".format(
+                                        full_peer
+                                    )
                                 )
-                                msg = await com_helpers.async_receive(stream, full_peer)
-                                if msg is None:
-                                    app_log.warning("lost cnx to {}".format(full_peer))
-                                    return
-                                #  TODO: check message is blockinfo
-                                info = posblock.PosHeight().from_proto(msg.height_value)
-                                # await async_sleep(5)
-                            app_log.info(
-                                ">> Should have rolled back to {} level.".format(
-                                    full_peer
+                            else:
+                                app_log.info(">> Block mismatch, will rollback")
+                                # FR: find the common ancestor faster via height/hash list
+                                while (
+                                    self.poschain.height_status.block_hash
+                                    != info.block_hash
+                                ):
+                                    # TODO: limit possible rollback to a few heights, like 1 or 2 rounds worth of blocks.
+                                    if self.verbose:  # FR: remove later on
+                                        print(
+                                            "self",
+                                            self.poschain.height_status.to_dict(
+                                                as_hex=True
+                                            ),
+                                        )
+                                        print("peer", info.to_dict(as_hex=True))
+                                    if self.poschain.height_status.height == 0:
+                                        app_log.warning(">> Won't rollback block 0")
+                                        # TODO: temp ban (store on disk)
+                                        # TODO: send warning tx
+                                        # allow to sync again from another one
+                                        await self.change_state_to(HNState.SYNCING)
+                                        # close
+                                        return
+                                    await self.poschain.rollback()
+                                    await com_helpers.async_send_int32(
+                                        commands_pb2.Command.blockinfo,
+                                        self.poschain.height_status.height,
+                                        stream,
+                                        full_peer,
+                                    )
+                                    msg = await com_helpers.async_receive(stream, full_peer)
+                                    if msg is None:
+                                        app_log.warning("lost cnx to {}".format(full_peer))
+                                        return
+                                    #  TODO: check message is blockinfo
+                                    info = posblock.PosHeight().from_proto(msg.height_value)
+                                    # await async_sleep(5)
+                                app_log.info(
+                                    ">> Should have rolled back to {} level.".format(
+                                        full_peer
+                                    )
                                 )
-                            )
                             # config.STOP_EVENT.set()
                             # exit()
+                        except Exception as e:
+                            app_log.error(
+                                "Connection to {} lost while CATCHING_UP_PRESYNC {}".format(
+                                    peer[1], e
+                                )
+                            )
+                            exc_type, exc_obj, exc_tb = exc_info()
+                            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                            app_log.error(
+                                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                            )
+                            failed = True
+                            await self.change_state_to(HNState.SYNCING)
+                            break
 
                     if self.state == HNState.CATCHING_UP_SYNC:
                         # We are on a compatible branch, lets get the missing blocks until we are sync.
