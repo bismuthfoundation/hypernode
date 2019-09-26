@@ -709,7 +709,7 @@ class Poshn:
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
-
+            self.digested = {"peers":[], "count": 0, "total": 0, "time": 0}
         except Exception as e:
             app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = exc_info()
@@ -1795,12 +1795,17 @@ class Poshn:
                 if await self.mempool.digest_tx(tx, poschain=self.poschain):
                     nb += 1
                 total += 1
-            if nb > 0:
+            delta = time() - start
+            if nb > 0 and "mempool" in config.LOG:
                 app_log.info(
                     "Digested {}/{} tx(s) from {} in {:0.2} sec.".format(
-                        nb, total, peer_ip, time() - start
+                        nb, total, peer_ip, delta
                     )
                 )
+            self.digested["peers"].append(peer_ip)
+            self.digested["count"] += nb
+            self.digested["total"] += total
+            self.digested["time"] += delta
         except KeyboardInterrupt:
             raise
         except Exception as e:
@@ -2876,6 +2881,10 @@ class Poshn:
                     of, co, fd, len(self.inbound), len(self.clients), self.forged_count
                 )
             )
+        if self.digested["total"] > 0:
+            app_log.info("Digested {}/{} txs from {} peers in {:0.2f}s".format(self.digested["count"], self.digested["total"], len(set(self.digested["peers"])), self.digested["time"]))
+        self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
+
         pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
         pending_tasks_names = [
             getattr(

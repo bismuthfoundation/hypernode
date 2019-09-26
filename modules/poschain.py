@@ -361,7 +361,7 @@ class SqlitePosChain(SqliteBase):
         sql = "SELECT MAX(height) FROM pos_chain"
         res = self.execute(sql)
         max_height = res.fetchone()[0]
-        print("max_height", max_height)
+        # print("max_height", max_height)
         # sys.exit()
         sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
         sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
