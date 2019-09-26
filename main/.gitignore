@@ -5,5 +5,6 @@ chains.json
 check.json
 powreg.json
 slots.json
+debug.json
 config.txt
 .cache

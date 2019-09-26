@@ -319,6 +319,10 @@ class SqlitePosChain(SqliteBase):
                     "duptx_blocks": [],
                     "partial_blocks": []}
         self.last_cache_cleanup = 0
+        try:
+            os.mkdir(HN_CACHE_DIR)
+        except:
+            pass
         self.purge_cache()
         self.debug = None
         self.last_debug_load = 0
@@ -331,10 +335,6 @@ class SqlitePosChain(SqliteBase):
             db_name="poc_pos_chain.db",
             app_log=app_log,
         )
-        try:
-            os.mkdir(HN_CACHE_DIR)
-        except:
-            pass
 
     def purge_bans(self) -> None:
         """Check time of bans to clear them
