@@ -25,7 +25,7 @@ from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
 from ttlcache import asyncttlcache
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -766,7 +766,7 @@ class SqlitePosChain(SqliteBase):
             self.height_status = await self._height_status()
         return self.height_status
 
-    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False):
+    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False) -> bool:
         """
         Checks if the block is valid and saves it
 
@@ -784,8 +784,8 @@ class SqlitePosChain(SqliteBase):
                 block_from += " (Relaxed checks)"
             # Avoid re-entrance
             if self.inserting_block:
-                self.app_log.warning("Digestion of block {} aborted".format(block_from))
-                return
+                self.app_log.warning("Digestion of block {} aborted, already digesting".format(block_from))
+                return False
             start = time()
             # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
@@ -840,13 +840,34 @@ class SqlitePosChain(SqliteBase):
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
             # see also tx checks from mempool. Maybe lighter
             self.inserting_block = True
-            await self._insert_block(block)
-            self.app_log.info(
-                "Digested block {} in {:0.2f} sec.".format(block.height, time() - start)
-            )
-            return True
+            res = await self._insert_block(block)  # returns with a 'sqlite3.IntegrityError' from a bad block
+            if res:
+                self.app_log.info(
+                    "Digested block {} in {:0.2f} sec.".format(block.height, time() - start)
+                )
+            else:
+                self.app_log.warning(
+                    "Digest block {} failed in {:0.2f} sec.".format(block.height, time() - start)
+                )
+            return res
+
+        except sqlite3.IntegrityError as e:
+            try:
+                height, hash = block.height, block.block_hash
+            except:
+                height = -1
+                hash = 'N/A'
+                pass
+            self.app_log.error("digest_block {} integrity error hash {}".format(height, hash.hex()))
+            return False
         except Exception as e:
-            self.app_log.error("digest_block Error {}".format(e))
+            try:
+                height, hash = block.height, block.block_hash
+            except:
+                height = -1
+                hash = 'N/A'
+                pass
+            self.app_log.error("digest_block {} Error {}, hash {}".format(height, e, hash))
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error(
@@ -987,10 +1008,15 @@ class SqlitePosChain(SqliteBase):
         Saves block object to file db
 
         :param block: a native PosBlock object
-        :return:
+        :return: True of False
         """
         # Save the txs
         # TODO: if error inserting block, delete the txs... transaction?
+        try:
+            height = block.height
+        except:
+            self.app_log.error("No height for block")
+            return False
         try:
             tx_ids = []
             bin_txids = []
@@ -1024,10 +1050,15 @@ class SqlitePosChain(SqliteBase):
             if len(tx_ids):
 
                 if block.uniques_sources < 2:
-                    self.app_log.error("block unique sources seems incorrect")
+                    self.app_log.error("block {} unique sources seems incorrect".format(block.height))
+                    return False
+                if block.msg_count < config.REQUIRED_MESSAGES_PER_BLOCK:
+                    self.app_log.error("Not enough txs in block {}".format(block.height))
+                    return False
                 # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
                 if block.msg_count != len(tx_ids):
-                    self.app_log.error("block msg_count seems incorrect")
+                    self.app_log.error("block {} msg_count seems incorrect, corrupted".format(block.height))
+                    return False
 
                 if "timing" in config.LOG or "blockdigest" in config.LOG:
                     self.app_log.warning(
@@ -1101,7 +1132,7 @@ class SqlitePosChain(SqliteBase):
             await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: insert block: {} sec".format(time() - start_time)
+                    "TIMING: insert block {}: {} sec".format(height, time() - start_time)
                 )
                 start_time = time()
             self._invalidate()
@@ -1113,8 +1144,15 @@ class SqlitePosChain(SqliteBase):
                     "TIMING: recalc status: {} sec".format(time() - start_time)
                 )
             return True
+        except sqlite3.IntegrityError as e:
+            # Let level above catch?
+            await self.async_execute(SQL_DELETE_BLOCK_TXS, (height,))
+            await self.async_execute(SQL_DELETE_BLOCK, (height,), commit=True)
+            raise
         except Exception as e:
-            self.app_log.error("_insert_block Error {}".format(e))
+            self.app_log.error("_insert_block {} Error {}".format(height, e))
+            await self.async_execute(SQL_DELETE_BLOCK_TXS, (height,))
+            await self.async_execute(SQL_DELETE_BLOCK, (height,), commit=True)
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error(

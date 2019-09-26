@@ -184,7 +184,9 @@ class HnServer(TCPServer):
                     # TODO: add to anomalies buffer
                     return
                 for block in msg.block_value:
-                    await self.node.poschain.digest_block(block, from_miner=True)
+                    if not await self.node.poschain.digest_block(block, from_miner=True):
+                        # one bad block = stop
+                        return
                 return
             elif msg.command == commands_pb2.Command.test:
                 # test sending does not require hello
@@ -1589,8 +1591,11 @@ class Poshn:
                     app_log.info("round sync 1 status")
                 await self.poschain.status()
                 # digest the blocks
+                ok = True
                 for block in blocks_to_add:
-                    await self.poschain.digest_block(block, from_miner=False)
+                    if not await self.poschain.digest_block(block, from_miner=False):
+                        ok = False
+                        break
 
                 # Force update again at end of sync.
                 if self.verbose:
@@ -1600,12 +1605,20 @@ class Poshn:
                 hn = await self.hn_db.hn_from_peer(peer, self.round)
                 # TODO: this spams txs when network is in bad shape and we have everyone resyncing from best chain
                 # TODO: Limit when assembling in a block (
-                await self.new_tx(
-                    hn["address"],
-                    what=200,
-                    params="R.SYNC:{}".format(peer),
-                    value=a_round,
-                )
+                if ok:
+                    await self.new_tx(
+                        hn["address"],
+                        what=200,
+                        params="R.SYNC:{}".format(peer),
+                        value=a_round,
+                    )
+                else:
+                    await self.new_tx(
+                        hn["address"],
+                        what=101,
+                        params="P.FAIL:{}".format(peer),
+                        value=a_round,
+                    )
             else:
                 app_log.warning(
                     "Distant Round {} Data from {} fails its promise.".format(
