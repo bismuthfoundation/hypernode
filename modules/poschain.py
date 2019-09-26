@@ -318,7 +318,7 @@ class SqlitePosChain(SqliteBase):
         self.bans = {"huge_blocks": [],
                     "duptx_blocks": [],
                     "partial_blocks": []}
-        # Each ban entry is a list of list: [end_timestamp, block_hash, peer_ip] - peer_ip is only needed for partial_blocks entry
+        # Each ban entry is a list of list: [end_timestamp, block_hash(hex), peer_ip] - peer_ip is only needed for partial_blocks entry
         SqliteBase.__init__(
             self,
             verbose=verbose,
@@ -340,7 +340,7 @@ class SqlitePosChain(SqliteBase):
             # keep only the valid ones (in the future)
             self.bans[key] = [entry for entry in self.bans[key] if entry[0] > now]
 
-    def is_banned(self, block_hash: bytes) -> bool:
+    def is_banned(self, block_hash: str) -> bool:
         """Tells whether that block hash is banned or not"""
         for key in ("huge_blocks", "duptx_blocks"):
             for entry in self.bans[key]:
@@ -348,7 +348,7 @@ class SqlitePosChain(SqliteBase):
                     return True
         return False
 
-    def ban_hash(self, block_hash: bytes, key:str="duptx_blocks", ttl: int=15*60) -> None:
+    def ban_hash(self, block_hash: str, key:str="duptx_blocks", ttl: int=15*60) -> None:
         """Ban a block hash for ttl seconds"""
         self.bans[key].append([time()+ttl, block_hash])
 
@@ -889,7 +889,7 @@ class SqlitePosChain(SqliteBase):
                 hash = 'N/A'
                 pass
             self.app_log.error("digest_block {} integrity error hash {} - banning".format(height, hash.hex()))
-            self.ban_hash(hash)
+            self.ban_hash(hash.hex())
             return False
         except Exception as e:
             try:
