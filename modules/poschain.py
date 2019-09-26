@@ -830,7 +830,7 @@ class SqlitePosChain(SqliteBase):
                 # TODO: this is upside down. fix all config.LOG items
                 self.app_log.info(
                     "Digesting block {} {} : {} txs, {} uniques sources ({} async_uniques_at_height).".format(
-                        block.height, block_from, len(block.txs), block.uniques_sources, block.block_hash
+                        block.height, block_from, len(block.txs), block.uniques_sources, block.block_hash.hex()
                     )
                 )
             # Good height? - FR: harmonize, use objects everywhere?

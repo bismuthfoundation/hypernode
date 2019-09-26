@@ -2936,7 +2936,32 @@ class Poshn:
         else:
             self.not_reg = False
         if log:
-            app_log.info("Status: {}".format(json.dumps(status)))
+            if config.STATUS_LONG:
+                app_log.info("Status: {}".format(json.dumps(status)))
+            else:
+                short_status = json.loads(json.dumps(status))  # deep copy
+                try:
+                    short_status["peers"]["net_height"]["peers"] = len(short_status["peers"]["net_height"]["peers"])
+                except:
+                    pass
+                try:
+                    short_status["peers"]["outbound"] = len(short_status["peers"]["outbound"])
+                except:
+                    pass
+                try:
+                    short_status["peers"]["inbound"] = len(short_status["peers"]["inbound"])
+                except:
+                    pass
+                """
+                try:
+                    short_status["meta"] = short_status["meta"]["slots"]
+                except:
+                    pass
+                """
+                del short_status["extra"]
+                del short_status["tasks"]
+                del short_status["meta"]
+                app_log.info("Status: {}".format(json.dumps(short_status)))
         if "connections" in config.LOG:
             for con in self.process.connections(kind="tcp4"):
                 app_log.info(
