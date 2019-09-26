@@ -68,7 +68,7 @@ class AsyncTtlCache(object):
         return outer
 
     def purge(self):
-        print("!! Cache purge !!")
+        # print("!! Cache purge !!")
         self.cached_function_responses = {}
 
 

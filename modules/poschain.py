@@ -320,6 +320,9 @@ class SqlitePosChain(SqliteBase):
                     "partial_blocks": []}
         self.last_cache_cleanup = 0
         self.purge_cache()
+        self.debug = None
+        self.last_debug_load = 0
+        self.check_debug()
         # Each ban entry is a list of list: [end_timestamp, block_hash(hex), peer_ip] - peer_ip is only needed for partial_blocks entry
         SqliteBase.__init__(
             self,
@@ -353,6 +356,25 @@ class SqlitePosChain(SqliteBase):
     def ban_hash(self, block_hash: str, key:str="duptx_blocks", ttl: int=15*60) -> None:
         """Ban a block hash for ttl seconds"""
         self.bans[key].append([time()+ttl, block_hash])
+
+    def check_debug(self):
+        try:
+            if config.DEBUG_MODE:
+                if self.last_debug_load < os.path.getmtime("debug.json"):
+                    with open("debug.json") as fp:
+                        self.debug = json.load(fp)
+                    self.last_debug_load = time()
+        except:
+            pass
+
+    def get_debug(self, key: str):
+        """Safe read access to debug dict"""
+        if self.debug is None:
+            return None
+        try:
+            return self.debug.get(key)
+        except:
+            return None
 
     def missing_blocks(self) -> set:
         """

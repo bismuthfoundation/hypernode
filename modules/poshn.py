@@ -184,6 +184,10 @@ class HnServer(TCPServer):
                     # TODO: add to anomalies buffer
                     return
                 for block in msg.block_value:
+                    if block.forger not in self.registered_forgers:
+                        app_log.warning("Block forger {} not in registered forgers".format(block.forger))
+                        ok = False
+                        break
                     if not await self.node.poschain.digest_block(block, from_miner=True):
                         # one bad block = stop
                         return
@@ -600,6 +604,7 @@ class Poshn:
         self.address = address
         self.all_peers = peers
         self.registered_ips = []
+        self.registered_forgers = []
         self.active_peers = list(peers)
         self.round_meta = (
             {}
@@ -996,6 +1001,14 @@ class Poshn:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()  # some runs showed quite some time in here for chain swaps.
                 # app_log.warning("loop 2")
+                if self.state == HNState.SYNCING and self.poschain.get_debug("force") and (self.last_height in self.poschain.get_debug("force")):
+                    mempool_status = await self.mempool.status()
+                    if mempool_status["NB"] >= 3 * config.REQUIRED_MESSAGES_PER_BLOCK:
+                        app_log.error("Force by debug")
+                        await self.change_state_to(HNState.FORGING)
+                        await self.forge()
+                        self.forged = True
+                        await self.change_state_to(HNState.SYNCING)
 
                 if (
                     self.state == HNState.SYNCING
@@ -1197,15 +1210,15 @@ class Poshn:
                         banned += 1
                         continue
 
-                    # print("h", peer["height_status"]["block_hash"])
-                    #  temp: ignore that height
+                    """
+                    # historical bad blocks, no more use
                     if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
                         continue
                     if peer["height_status"]["block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
                         continue
                     if peer["height_status"]["block_hash"] == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y'.hex():
                         continue
-
+                    """
                     if peer["height_status"]["block_hash"] in peers_status:
                         peers_status[peer["height_status"]["block_hash"]]["count"] += 1
                         peers_status[peer["height_status"]["block_hash"]][
@@ -1252,14 +1265,15 @@ class Poshn:
                         if self.poschain.is_banned(peer["height_status"]["block_hash"]):
                             banned += 1
                             continue
-                        # print("h", peer["height_status"]["block_hash"])
-                        # temp: ignore that height
+                        """
+                        # historical bad blocks, no more use
                         if peer["height_status"]["block_hash"] == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2'.hex():
                             continue
                         if peer["height_status"]["block_hash"] == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'.hex():
                             continue
                         if peer["height_status"]["block_hash"] == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y'.hex():
                             continue
+                        """
                         if peer["height_status"]["block_hash"] in peers_status:
                             peers_status[peer["height_status"]["block_hash"]][
                                 "count"
@@ -1601,6 +1615,10 @@ class Poshn:
                 # digest the blocks
                 ok = True
                 for block in blocks_to_add:
+                    if block.forger not in self.registered_forgers:
+                        app_log.warning("Block forger {} not in registered forgers".format(block.forger))
+                        ok = False
+                        break
                     if not await self.poschain.digest_block(block, from_miner=False):
                         ok = False
                         break
@@ -1878,7 +1896,7 @@ class Poshn:
             # check last round and SIR, make sure they are >
             if self.round <= self.last_round and self.sir <= self.last_sir:
                 raise ValueError("We already have this round/SIR in our chain.")
-            if not self.forger == poscrypto.ADDRESS:
+            if (not self.forger == poscrypto.ADDRESS) and self.poschain.get_debug("forge") is None:
                 # Should never pass here.
                 raise ValueError("We are not the forger for current round!!!")
             block_dict = {
@@ -2460,9 +2478,12 @@ class Poshn:
         Should not be called too often (1-10sec should be plenty)
         """
         self.round, self.sir = determine.timestamp_to_round_slot(time())
+        """
         if self.verbose:
             app_log.info("...check_round... R {} SIR {}".format(self.round, self.sir))
+        """
         self.poschain.purge_cache()  # Will only clear when needed.
+        self.poschain.check_debug()
         while self.state in [HNState.NEWROUND]:
             # do not re-enter if new round ongoing
             await async_sleep(1)
@@ -2619,6 +2640,9 @@ class Poshn:
                     ]
                     self.registered_ips = [
                         items["ip"] for items in self.powchain.regs.values()
+                    ]
+                    self.registered_forgers = [
+                        items["pos"] for items in self.powchain.regs.values()
                     ]
                     self.current_round_start = int(time())
                     self.previous_round = self.round
@@ -2946,6 +2970,8 @@ class Poshn:
         else:
             self.not_reg = False
         if log:
+            if self.poschain.debug:
+                app_log.warning("Debug: {}".format(json.dumps(self.poschain.debug)))
             if config.STATUS_LONG:
                 app_log.info("Status: {}".format(json.dumps(status)))
             else:

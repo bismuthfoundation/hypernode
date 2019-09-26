@@ -27,7 +27,7 @@ DO_NOT_FORGE = False
 
 # Dev only - break nice color
 DEBUG = False
-
+DEBUG_MODE = False
 # Dev only, dumps sql insert params in data dir
 DUMP_INSERTS = False
 
@@ -285,6 +285,7 @@ VARS = {
     "WAIT": "int",
     "STATUS_EVERY": "int",
     "STATUS_LONG": "bool",
+    "DEBUG_MODE": "bool",
     "TEST_ROUND_CACHE": "bool",
     "SHORT_WAIT": "float",
     "PEER_RETRY_SECONDS": "int",
