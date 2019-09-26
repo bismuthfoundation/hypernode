@@ -1527,10 +1527,10 @@ class SqlitePosChain(SqliteBase):
             if pos_round_height < pos_height:
                 # we want more, include the current round info
                 forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
-                                                    (pos_round_height + 1, pos_height), as_dict=True)
+                                                    (pos_round_height + 1, pos_height))
                 senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
-                                                    (pos_round_height + 1, pos_height), as_dict=True)
-                print(forgers)
+                                                    (pos_round_height + 1, pos_height))
+                # print(forgers)
                 # Then merge...
                 uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
                 uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
