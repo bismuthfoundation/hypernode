@@ -23,9 +23,10 @@ import poscrypto
 import poshelpers
 from posblock import PosBlock, PosMessage, PosHeight
 from sqlitebase import SqliteBase
-from ttlcache import asyncttlcache
 
-__version__ = "0.2.0"
+# from ttlcache import asyncttlcache
+
+__version__ = "0.2.1"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -42,11 +43,15 @@ SQL_INSERT_INTO_VALUES = (
 
 SQL_INSERT_TX = "INSERT INTO pos_messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-SQL_TXS_FOR_HEIGHT = "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
+SQL_TXS_FOR_HEIGHT = (
+    "SELECT * FROM pos_messages WHERE block_height = ? ORDER BY timestamp ASC"
+)
 
 # sender and recipient indices would only really be useful for here
-SQL_TXS_FOR_ADDRESS = "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? " \
-                      "ORDER BY block_height, timestamp DESC LIMIT 100"
+SQL_TXS_FOR_ADDRESS = (
+    "SELECT * FROM pos_messages WHERE sender = ? or recipient = ? "
+    "ORDER BY block_height, timestamp DESC LIMIT 100"
+)
 
 SQL_TXS_FOR_ADDRESS_FROM_HEIGHT = (
     "SELECT * FROM pos_messages WHERE (sender = ? or recipient = ?) "
@@ -65,30 +70,48 @@ SQL_TX_STATS_FOR_HEIGHT = (
 # TODO: bench vs SELECT height, round, sir, block_hash FROM pos_chain
 # WHERE height = (select max(height) from pos_chain) limit 1
 # to use covering index
-SQL_STATE_1 = "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"  # FR: opt
+SQL_STATE_1 = (
+    "SELECT height, round, sir, block_hash FROM pos_chain ORDER BY height DESC LIMIT 1"
+)  # FR: opt
 
 # Q: duplicate round in pos_messages table to avoid these extra requests?
-SQL_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
+SQL_HEIGHT_OF_ROUND = (
+    "SELECT height FROM pos_chain WHERE round = ? ORDER BY height ASC LIMIT 1"
+)
 
-SQL_LAST_HEIGHT_OF_ROUND = "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+SQL_LAST_HEIGHT_OF_ROUND = (
+    "SELECT height FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+)
 
-SQL_LAST_HEIGHT_BEFORE_ROUND = "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
+SQL_LAST_HEIGHT_BEFORE_ROUND = (
+    "SELECT height FROM pos_chain WHERE round < ? ORDER BY height DESC LIMIT 1"
+)
 
-SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT = "SELECT round, height FROM pos_chain " \
-                                          "WHERE height <= ? ORDER BY height DESC LIMIT 1"
+SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT = (
+    "SELECT round, height FROM pos_chain "
+    "WHERE height <= ? ORDER BY height DESC LIMIT 1"
+)
 
-SQL_LAST_HASH_OF_ROUND = "SELECT block_hash FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+SQL_LAST_HASH_OF_ROUND = (
+    "SELECT block_hash FROM pos_chain WHERE round = ? ORDER BY height DESC LIMIT 1"
+)
 
-SQL_MINMAXHEIGHT_OF_ROUNDS = "SELECT min(height) as min, max(height) as max " \
-                             "FROM pos_chain WHERE round >= ? and round <= ?"
+SQL_MINMAXHEIGHT_OF_ROUNDS = (
+    "SELECT min(height) as min, max(height) as max "
+    "FROM pos_chain WHERE round >= ? and round <= ?"
+)
 
 # TODO: these request is huge and slows down everything.
 SQL_STATE_2_REPLACE = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain"
 
-SQL_STATE_3 = "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
+SQL_STATE_3 = (
+    "SELECT COUNT(DISTINCT(forger)) AS forgers_round FROM pos_chain WHERE round = ?"
+)
 
 # TODO: these request is huge and slows down everything.
-SQL_STATE_4_REPLACE = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"  # uses sender as covering index
+SQL_STATE_4_REPLACE = (
+    "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages"
+)  # uses sender as covering index
 
 SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages WHERE block_height >= ?"
 # Uses block_height index, not sender. Ok because it's for last round, so few pos_messages are concerned.
@@ -96,7 +119,9 @@ SQL_STATE_5 = "SELECT COUNT(DISTINCT(sender)) AS uniques_round FROM pos_messages
 # Block info for a given height. no xx10 info
 SQL_INFO_1 = "SELECT height, round, sir, block_hash FROM pos_chain WHERE height = ?"
 # TODO: these 2 requests are huge and slow down everything.
-SQL_INFO_2_REPLACE = "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
+SQL_INFO_2_REPLACE = (
+    "SELECT COUNT(DISTINCT(forger)) AS forgers FROM pos_chain WHERE height <= ?"
+)
 SQL_INFO_4_REPLACE = "SELECT COUNT(DISTINCT(sender)) AS uniques FROM pos_messages WHERE block_height <= ?"
 
 # New requests to incrementaly determine chain stats
@@ -116,7 +141,9 @@ SQL_DELETE_BLOCK_TXS = "DELETE FROM pos_messages WHERE block_height = ?"
 
 SQL_COUNT_TX_FOR_HEIGHT = "SELECT COUNT(*) FROM pos_messages WHERE block_height = ?"
 
-SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
+SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES = (
+    "SELECT COUNT(DISTINCT(block_height)) FROM pos_messages"
+)
 
 SQL_DELETE_ROUND_TXS = "DELETE FROM pos_messages WHERE block_height IN (SELECT height FROM pos_chain WHERE round = ?)"
 
@@ -126,7 +153,9 @@ SQL_DELETE_LIST_TXS = "DELETE FROM pos_messages WHERE block_height IN ({})"
 
 SQL_DELETE_LIST = "DELETE FROM pos_chain WHERE height IN ({})"
 
-SQL_ROUNDS_FORGERS = "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
+SQL_ROUNDS_FORGERS = (
+    "SELECT DISTINCT(forger) FROM pos_chain WHERE round >= ? AND round <= ?"
+)
 
 SQL_ROUNDS_SOURCES = "SELECT DISTINCT(sender) FROM pos_messages WHERE block_height >= ? AND block_height <= ?"
 
@@ -315,9 +344,7 @@ class SqlitePosChain(SqliteBase):
         self.mempool = mempool
         # Avoid re-entrance
         self.inserting_block = False
-        self.bans = {"huge_blocks": [],
-                    "duptx_blocks": [],
-                    "partial_blocks": []}
+        self.bans = {"huge_blocks": [], "duptx_blocks": [], "partial_blocks": []}
         self.last_cache_cleanup = 0
         try:
             os.mkdir(HN_CACHE_DIR)
@@ -353,9 +380,11 @@ class SqlitePosChain(SqliteBase):
                     return True
         return False
 
-    def ban_hash(self, block_hash: str, key:str="duptx_blocks", ttl: int=15*60) -> None:
+    def ban_hash(
+        self, block_hash: str, key: str = "duptx_blocks", ttl: int = 15 * 60
+    ) -> None:
         """Ban a block hash for ttl seconds"""
-        self.bans[key].append([time()+ttl, block_hash])
+        self.bans[key].append([time() + ttl, block_hash])
 
     def check_debug(self):
         try:
@@ -514,7 +543,9 @@ class SqlitePosChain(SqliteBase):
         except Exception as e:
             # We get an exception there if the previous block was not found in our chain
             # (Then we can't be sure this one would be good)
-            self.app_log.warning("get_block_again: Missing predecessor of {}".format(block_height))
+            self.app_log.warning(
+                "get_block_again: Missing predecessor of {}".format(block_height)
+            )
             return
             """
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -534,7 +565,11 @@ class SqlitePosChain(SqliteBase):
             if msg.command == commands_pb2.Command.hello:
                 # decompose posnet/address and check.
                 if "hello" in config.LOG:
-                    print("Client got Hello {} from {}".format(msg.string_value, full_peer))
+                    print(
+                        "Client got Hello {} from {}".format(
+                            msg.string_value, full_peer
+                        )
+                    )
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
                 self.app_log.info("Client got Ko {}".format(msg.string_value))
@@ -555,7 +590,9 @@ class SqlitePosChain(SqliteBase):
                 self.app_log.info("Block {} hash KO".format(block_height))
                 return False
             if block.previous_hash != previous_block.block_hash:
-                self.app_log.info("Block {} does not fit previous block".format(block_height))
+                self.app_log.info(
+                    "Block {} does not fit previous block".format(block_height)
+                )
                 return False
             # Ok, insert
             self.direct_insert_block(block)
@@ -709,25 +746,37 @@ class SqlitePosChain(SqliteBase):
                     pass
             # self.app_log.warning("Hopefully fixed corrupted blocks 2/2")
             # Remove offending 104021 block if present
-            hash104021 = self.execute("select block_hash from pos_chain where height=104021").fetchone()
+            hash104021 = self.execute(
+                "select block_hash from pos_chain where height=104021"
+            ).fetchone()
             hash104021 = hash104021[0] if hash104021 else None
-            if hash104021 == b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2':
+            if (
+                hash104021
+                == b"n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2"
+            ):
                 self.app_log.warning("Removing offending block")
                 self.execute("delete from pos_chain where height>104020")
                 self.execute("delete from pos_messages where block_height>104020")
                 self.commit()
             # Remove offending 104070 block if present
-            hash104070 = self.execute("select block_hash from pos_chain where height=104070").fetchone()
+            hash104070 = self.execute(
+                "select block_hash from pos_chain where height=104070"
+            ).fetchone()
             hash104070 = hash104070[0] if hash104070 else None
-            if hash104070 == b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca':
+            if (
+                hash104070
+                == b"\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca"
+            ):
                 self.app_log.warning("Removing offending block")
                 self.execute("delete from pos_chain where height>=104070")
                 self.execute("delete from pos_messages where block_height>=104070")
                 self.commit()
             # Remove offending 104160 block if present
-            hash104160 = self.execute("select block_hash from pos_chain where height=104160").fetchone()
+            hash104160 = self.execute(
+                "select block_hash from pos_chain where height=104160"
+            ).fetchone()
             hash104160 = hash104160[0] if hash104160 else None
-            if hash104160 == b'g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y':
+            if hash104160 == b"g\x87\x14\xe2wF\x9d|8\x9eE8\x87D6Xa\xdd)y":
                 self.app_log.warning("Removing offending block")
                 self.execute("delete from pos_chain where height>=104160")
                 self.execute("delete from pos_messages where block_height>=104160")
@@ -815,7 +864,9 @@ class SqlitePosChain(SqliteBase):
             self.height_status = await self._height_status()
         return self.height_status
 
-    async def digest_block(self, proto_block, from_miner=False, relaxed_checks=False) -> bool:
+    async def digest_block(
+        self, proto_block, from_miner=False, relaxed_checks=False
+    ) -> bool:
         """
         Checks if the block is valid and saves it
 
@@ -834,13 +885,21 @@ class SqlitePosChain(SqliteBase):
                 block_from += " (Relaxed checks)"
             # Avoid re-entrance
             if self.inserting_block:
-                self.app_log.warning("Digestion of block {} aborted, already digesting".format(block_from))
+                self.app_log.warning(
+                    "Digestion of block {} aborted, already digesting".format(
+                        block_from
+                    )
+                )
                 return False
             start = time()
             # print(">> protoblock", proto_block)
             block = PosBlock().from_proto(proto_block)
             if self.is_banned(block.block_hash):
-                self.app_log.warning("Digestion of block {} {} aborted, banned {}".format(block.height, block_from, block.block_hash.hex()))
+                self.app_log.warning(
+                    "Digestion of block {} {} aborted, banned {}".format(
+                        block.height, block_from, block.block_hash.hex()
+                    )
+                )
                 return False
 
             # print(">> dictblock", block.to_dict())
@@ -854,7 +913,11 @@ class SqlitePosChain(SqliteBase):
                 # TODO: this is upside down. fix all config.LOG items
                 self.app_log.info(
                     "Digesting block {} {} : {} txs, {} uniques sources ({} async_uniques_at_height).".format(
-                        block.height, block_from, len(block.txs), block.uniques_sources, block.block_hash.hex()
+                        block.height,
+                        block_from,
+                        len(block.txs),
+                        block.uniques_sources,
+                        block.block_hash.hex(),
                     )
                 )
             # Good height? - FR: harmonize, use objects everywhere?
@@ -894,14 +957,20 @@ class SqlitePosChain(SqliteBase):
             # Checks will depend on from_miner (state = sync) or not (relaxed checks when catching up)
             # see also tx checks from mempool. Maybe lighter
             self.inserting_block = True
-            res = await self._insert_block(block)  # returns with a 'sqlite3.IntegrityError' from a bad block
+            res = await self._insert_block(
+                block
+            )  # returns with a 'sqlite3.IntegrityError' from a bad block
             if res:
                 self.app_log.info(
-                    "Digested block {} in {:0.2f} sec.".format(block.height, time() - start)
+                    "Digested block {} in {:0.2f} sec.".format(
+                        block.height, time() - start
+                    )
                 )
             else:
                 self.app_log.warning(
-                    "Digest block {} failed in {:0.2f} sec.".format(block.height, time() - start)
+                    "Digest block {} failed in {:0.2f} sec.".format(
+                        block.height, time() - start
+                    )
                 )
             return res
 
@@ -910,9 +979,13 @@ class SqlitePosChain(SqliteBase):
                 height, hash = block.height, block.block_hash
             except:
                 height = -1
-                hash = 'N/A'
+                hash = "N/A"
                 pass
-            self.app_log.error("digest_block {} integrity error hash {} - banning".format(height, hash.hex()))
+            self.app_log.error(
+                "digest_block {} integrity error hash {} - banning".format(
+                    height, hash.hex()
+                )
+            )
             self.ban_hash(hash.hex())
             return False
         except Exception as e:
@@ -920,9 +993,11 @@ class SqlitePosChain(SqliteBase):
                 height, hash = block.height, block.block_hash
             except:
                 height = -1
-                hash = 'N/A'
+                hash = "N/A"
                 pass
-            self.app_log.error("digest_block {} Error {}, hash {}".format(height, e, hash))
+            self.app_log.error(
+                "digest_block {} Error {}, hash {}".format(height, e, hash)
+            )
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             self.app_log.error(
@@ -958,7 +1033,9 @@ class SqlitePosChain(SqliteBase):
             # Will always be stats at end of a round, called multiple times with same info when swapping chains in a round.
             # Only the latest height is needed, we won't need previous height afterward. 1 cache slot is enough.
             # only called from here, can do naive cache.
-            ref_height_dict = await self.async_blockinfo(height)  # TODO: That's the intensive part
+            ref_height_dict = await self.async_blockinfo(
+                height
+            )  # TODO: That's the intensive part
             ref_height = PosHeight().from_dict(ref_height_dict)
             # print("\nref_height", ref_height.to_dict(as_hex=True))
             # for each block, validate and inc stats
@@ -1105,14 +1182,22 @@ class SqlitePosChain(SqliteBase):
             if len(tx_ids):
 
                 if block.uniques_sources < 2:
-                    self.app_log.error("block {} unique sources seems incorrect".format(block.height))
+                    self.app_log.error(
+                        "block {} unique sources seems incorrect".format(block.height)
+                    )
                     return False
                 if block.msg_count < config.REQUIRED_MESSAGES_PER_BLOCK:
-                    self.app_log.error("Not enough txs in block {}".format(block.height))
+                    self.app_log.error(
+                        "Not enough txs in block {}".format(block.height)
+                    )
                     return False
                 # TODO: halt on these errors? Will lead to db corruption. No, because should have been tested by digest?
                 if block.msg_count != len(tx_ids):
-                    self.app_log.error("block {} msg_count seems incorrect, corrupted".format(block.height))
+                    self.app_log.error(
+                        "block {} msg_count seems incorrect, corrupted".format(
+                            block.height
+                        )
+                    )
                     return False
 
                 if "timing" in config.LOG or "blockdigest" in config.LOG:
@@ -1189,7 +1274,9 @@ class SqlitePosChain(SqliteBase):
             await self.async_execute(SQL_INSERT_BLOCK, block.to_db(), commit=True)
             if "timing" in config.LOG or "blockdigest" in config.LOG:
                 self.app_log.warning(
-                    "TIMING: insert block {}: {} sec".format(height, time() - start_time)
+                    "TIMING: insert block {}: {} sec".format(
+                        height, time() - start_time
+                    )
                 )
                 start_time = time()
             self._invalidate()
@@ -1319,7 +1406,7 @@ class SqlitePosChain(SqliteBase):
         # force Recalc - could it be an incremental job ?
         last = await self._last_block()
         await self._height_status()
-        asyncttlcache.purge()
+        # asyncttlcache.purge()
         self.delete_rounds_above(last["round"])
         return True
 
@@ -1362,7 +1449,7 @@ class SqlitePosChain(SqliteBase):
         await self.async_execute(SQL_DELETE_LIST.format((in_str)), commit=True)
         # reset status so future block digestions will be ok.
         self._invalidate()
-        asyncttlcache.purge()
+        # asyncttlcache.purge()
 
     async def delete_round(self, a_round):
         """
@@ -1381,7 +1468,7 @@ class SqlitePosChain(SqliteBase):
         await self.async_execute(SQL_DELETE_ROUND, (a_round,), commit=True)
         # reset status so future block digestions will be ok.
         self._invalidate()
-        asyncttlcache.purge()
+        # asyncttlcache.purge()
 
     async def _height_status(self):
         """
@@ -1413,7 +1500,11 @@ class SqlitePosChain(SqliteBase):
         if config.TEST_ROUND_CACHE:
             status2 = await self.async_fetchone(SQL_STATE_2_REPLACE, as_dict=True)
             if status2["uniques"] != status1["uniques"]:
-                self.app_log.error("Round cache error uniques, sql {} vs cache {}".format(status2["uniques"], status1["uniques"]))
+                self.app_log.error(
+                    "Round cache error uniques, sql {} vs cache {}".format(
+                        status2["uniques"], status1["uniques"]
+                    )
+                )
             status1.update(status2)
 
         status3 = await self.async_fetchone(
@@ -1425,7 +1516,11 @@ class SqlitePosChain(SqliteBase):
         if config.TEST_ROUND_CACHE:
             status4 = await self.async_fetchone(SQL_STATE_4_REPLACE, as_dict=True)
             if status4["forgers"] != status1["forgers"]:
-                self.app_log.error("Round cache error forgers , sql {} vs cache {}".format(status4["forgers"], status1["forgers"]))
+                self.app_log.error(
+                    "Round cache error forgers , sql {} vs cache {}".format(
+                        status4["forgers"], status1["forgers"]
+                    )
+                )
             status1.update(status4)
 
         status5 = await self.async_fetchone(
@@ -1438,14 +1533,18 @@ class SqlitePosChain(SqliteBase):
         return self.height_status
 
     async def async_round_and_height_before_height(self, height: int):
-        res = await self.async_fetchone(SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT, (height,), as_dict=True)
+        res = await self.async_fetchone(
+            SQL_LAST_ROUND_AND_HEIGHT_BEFORE_HEIGHT, (height,), as_dict=True
+        )
         height = res.get("height")
         a_round = res.get("round")
         return a_round, height
 
     async def async_height_of_round(self, pos_round: int):
         """height at start of the round (no bloc yet)"""
-        res = await self.async_fetchone(SQL_LAST_HEIGHT_BEFORE_ROUND, (pos_round,), as_dict=True)
+        res = await self.async_fetchone(
+            SQL_LAST_HEIGHT_BEFORE_ROUND, (pos_round,), as_dict=True
+        )
         height = res.get("height")
         return height
 
@@ -1500,42 +1599,72 @@ class SqlitePosChain(SqliteBase):
         :return:
         """
         try:
-            pos_round, pos_round_height = await self.async_round_and_height_before_height(pos_height)
+            pos_round, pos_round_height = await self.async_round_and_height_before_height(
+                pos_height
+            )
             uniques, round_checkpoint = self.uniques_and_round_from_cache(pos_round)
-            self.app_log.info("async_uniques_at_height {}: round {} checkpoint {}".format(pos_height, pos_round, round_checkpoint))
-            uniques['forgers'] = set(uniques['forgers'])
-            uniques['senders'] = set(uniques['senders'])
+            self.app_log.info(
+                "async_uniques_at_height {}: round {} checkpoint {}".format(
+                    pos_height, pos_round, round_checkpoint
+                )
+            )
+            uniques["forgers"] = set(uniques["forgers"])
+            uniques["senders"] = set(uniques["senders"])
             if round_checkpoint < pos_round:
                 start = time()
                 # Extract the data from checkpoint to start of pos_round...
                 # We first need the height of the last round before pos_round
                 try:
-                    pos_checkpoint_height = await self.async_height_of_round(round_checkpoint)
+                    pos_checkpoint_height = await self.async_height_of_round(
+                        round_checkpoint
+                    )
                 except:
                     pos_checkpoint_height = 0
                 round_height = await self.async_height_of_round(pos_round)
-                forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED, (pos_checkpoint_height + 1, round_height))
-                senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED, (pos_checkpoint_height + 1, round_height))
+                forgers = await self.async_fetchall(
+                    SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
+                    (pos_checkpoint_height + 1, round_height),
+                )
+                senders = await self.async_fetchall(
+                    SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
+                    (pos_checkpoint_height + 1, round_height),
+                )
                 # Then merge...
-                uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
-                uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
+                uniques["forgers"] = uniques["forgers"].union(
+                    [forger[0] for forger in forgers]
+                )
+                uniques["senders"] = uniques["senders"].union(
+                    [sender[0] for sender in senders]
+                )
                 # and save as new cache for round pos_round
-                with open("{}{}.round.json".format(HN_CACHE_DIR, pos_round), 'w') as fp:
+                with open("{}{}.round.json".format(HN_CACHE_DIR, pos_round), "w") as fp:
                     # a set is not json serializable.
                     json.dump({key: list(value) for key, value in uniques.items()}, fp)
                 # sys.exit()
                 delta = time() - start
-                self.app_log.info("async_uniques_at_height {}: round {} calc'd in {:0.2f}s".format(pos_height, pos_round, delta))
+                self.app_log.info(
+                    "async_uniques_at_height {}: round {} calc'd in {:0.2f}s".format(
+                        pos_height, pos_round, delta
+                    )
+                )
             if pos_round_height < pos_height:
                 # we want more, include the current round info
-                forgers = await self.async_fetchall(SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
-                                                    (pos_round_height + 1, pos_height))
-                senders = await self.async_fetchall(SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
-                                                    (pos_round_height + 1, pos_height))
+                forgers = await self.async_fetchall(
+                    SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
+                    (pos_round_height + 1, pos_height),
+                )
+                senders = await self.async_fetchall(
+                    SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
+                    (pos_round_height + 1, pos_height),
+                )
                 # print(forgers)
                 # Then merge...
-                uniques['forgers'] = uniques['forgers'].union([forger[0] for forger in forgers])
-                uniques['senders'] = uniques['senders'].union([sender[0] for sender in senders])
+                uniques["forgers"] = uniques["forgers"].union(
+                    [forger[0] for forger in forgers]
+                )
+                uniques["senders"] = uniques["senders"].union(
+                    [sender[0] for sender in senders]
+                )
             return uniques
 
             # Now check if we wanted more than that (like extra blocks after pos_round, to reach pos_height
@@ -1546,7 +1675,7 @@ class SqlitePosChain(SqliteBase):
             print(exc_type, fname, exc_tb.tb_lineno)
             raise
 
-    async def async_trim_uniques_cache(self, a_round: int=0, height: int=0):
+    async def async_trim_uniques_cache(self, a_round: int = 0, height: int = 0):
         """
         Purge cached info more recent than given a_round or height.
         Only one param is supposed to be given, round will be derived from height if height is given.
@@ -1583,17 +1712,29 @@ class SqlitePosChain(SqliteBase):
             status1 = await self.async_fetchone(SQL_INFO_1, (height,), as_dict=True)
             if config.TEST_ROUND_CACHE:
                 # Forgers
-                status2 = await self.async_fetchone(SQL_INFO_2_REPLACE, (height,), as_dict=True)
+                status2 = await self.async_fetchone(
+                    SQL_INFO_2_REPLACE, (height,), as_dict=True
+                )
                 status1.update(status2)
                 # uniques
-                status4 = await self.async_fetchone(SQL_INFO_4_REPLACE, (height,), as_dict=True)
+                status4 = await self.async_fetchone(
+                    SQL_INFO_4_REPLACE, (height,), as_dict=True
+                )
                 status1.update(status4)
-                if status1["forgers"] != len(uniques['forgers']) or  status1["uniques"] != len(uniques['senders']):
+                if status1["forgers"] != len(uniques["forgers"]) or status1[
+                    "uniques"
+                ] != len(uniques["senders"]):
                     # print(">>>2 ", status1, len(uniques['forgers']), len(uniques["senders"]))
-                    self.app_log.error("Round cache fail sql {} vs forgers {} uniques {}".format(json.dumps(status1), len(uniques['forgers']), len(uniques["senders"])))
+                    self.app_log.error(
+                        "Round cache fail sql {} vs forgers {} uniques {}".format(
+                            json.dumps(status1),
+                            len(uniques["forgers"]),
+                            len(uniques["senders"]),
+                        )
+                    )
             else:
-                status1["forgers"] = len(uniques['forgers'])
-                status1["uniques"] = len(uniques['senders'])
+                status1["forgers"] = len(uniques["forgers"])
+                status1["uniques"] = len(uniques["senders"])
         except:
             pass
         finally:
