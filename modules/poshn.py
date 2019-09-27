@@ -30,8 +30,10 @@ import aioprocessing
 import psutil
 import requests
 import tornado.log
+
 # Tornado
 from tornado.ioloop import IOLoop
+
 # from tornado.options import define, options
 # from tornado import gen
 from tornado.iostream import StreamClosedError
@@ -186,10 +188,16 @@ class HnServer(TCPServer):
                 # last_block = None
                 for block in msg.block_value:
                     if block.forger not in self.node.registered_forgers:
-                        app_log.warning("Block forger {} not in registered forgers".format(block.forger))
+                        app_log.warning(
+                            "Block forger {} not in registered forgers".format(
+                                block.forger
+                            )
+                        )
                         ok = False
                         break
-                    if not await self.node.poschain.digest_block(block, from_miner=True):
+                    if not await self.node.poschain.digest_block(
+                        block, from_miner=True
+                    ):
                         # one bad block = stop
                         return
                     # last_block = block
@@ -254,6 +262,8 @@ class HnServer(TCPServer):
                             )
                     return
 
+        except tornado.iostream.StreamClosedError:
+            app_log.warning("SRV: TCP Server init {}: Stream closed".format(peer_ip))
         except Exception as e:
             app_log.error("SRV: TCP Server init {}: Error {}".format(peer_ip, e))
             # FR: the following code logs extra info for debug.
@@ -263,7 +273,6 @@ class HnServer(TCPServer):
             exc_type, exc_obj, exc_tb = exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             app_log.error("detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
-            return
 
         finally:
             if remove:
@@ -389,7 +398,7 @@ class HnServer(TCPServer):
                 txs = [tx for tx in txs if tx.txid not in peer_txids]
                 if len(txs) > config.MAX_TXS_TO_SYNC:
                     shuffle(txs)
-                    txs = txs[:config.MAX_TXS_TO_SYNC]
+                    txs = txs[: config.MAX_TXS_TO_SYNC]
                 # app_log.info("{} txs after filtering".format(len(txs)))
                 if "mempool" in config.LOG:
                     if self.verbose and "txdigest" in config.LOG:
@@ -717,7 +726,7 @@ class Poshn:
             self.round_lock = aioprocessing.Lock()
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
-            self.digested = {"peers":[], "count": 0, "total": 0, "time": 0}
+            self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
         except Exception as e:
             app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = exc_info()
@@ -1004,7 +1013,11 @@ class Poshn:
                 # updates our current view of the peers we are connected to and net global status/consensus
                 await self._update_network()  # some runs showed quite some time in here for chain swaps.
                 # app_log.warning("loop 2")
-                if self.state == HNState.SYNCING and self.poschain.get_debug("force") and (self.last_height in self.poschain.get_debug("force")):
+                if (
+                    self.state == HNState.SYNCING
+                    and self.poschain.get_debug("force")
+                    and (self.last_height in self.poschain.get_debug("force"))
+                ):
                     mempool_status = await self.mempool.status()
                     if mempool_status["NB"] >= 3 * config.REQUIRED_MESSAGES_PER_BLOCK:
                         app_log.error("Force by debug")
@@ -1327,7 +1340,11 @@ class Poshn:
                 reverse=True,
             )
             # TEMP
-            app_log.info("Status: {} observable chain(s),  {} Temp. banned Peers".format(len(peers_status), banned))
+            app_log.info(
+                "Status: {} observable chain(s),  {} Temp. banned Peers".format(
+                    len(peers_status), banned
+                )
+            )
             if self.verbose:
                 # app_log.info("> sorted peers status")
                 i = 0
@@ -1553,11 +1570,11 @@ class Poshn:
                     )
             # handle exceptions
             for block in the_blocks.block_value:
-                if block.block_hash in (b'n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2',
-                                        b'\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca'):
-                    app_log.info(
-                        "_round_sync banned block {}".format(block.block_hash)
-                    )
+                if block.block_hash in (
+                    b"n\x07:\xfa\xbe\xb1\xfa\xf4t\x1e\xf9\x90\xd8g\xe4=i\x91\xdb\xa2",
+                    b"\xf6\xbdj\xa4\x139\xfagsRg\x00\x97\x94ge\xa9\x98\x08\xca",
+                ):
+                    app_log.info("_round_sync banned block {}".format(block.block_hash))
                     return res
             # check the data fits and count sources/forgers
             simulated_target = await wait_for(
@@ -1596,14 +1613,16 @@ class Poshn:
                     if not my_block:
                         replace = True
                     else:
-                        if my_block['block_hash'] != block.block_hash:
+                        if my_block["block_hash"] != block.block_hash:
                             replace = True
                     if replace:
                         blocks_height_to_delete.append(block.height)
                         blocks_to_add.append(block)
 
                 if self.verbose:
-                    app_log.info("{} Remaining Blocks to replace.".format(len(blocks_to_add)))
+                    app_log.info(
+                        "{} Remaining Blocks to replace.".format(len(blocks_to_add))
+                    )
                 await self.poschain.delete_blocks(blocks_height_to_delete)
                 """    
                 # Delete the round to replace
@@ -1619,7 +1638,11 @@ class Poshn:
                 ok = True
                 for block in blocks_to_add:
                     if block.forger not in self.registered_forgers:
-                        app_log.warning("Block forger {} not in registered forgers".format(block.forger))
+                        app_log.warning(
+                            "Block forger {} not in registered forgers".format(
+                                block.forger
+                            )
+                        )
                         ok = False
                         break
                     if not await self.poschain.digest_block(block, from_miner=False):
@@ -1899,7 +1922,9 @@ class Poshn:
             # check last round and SIR, make sure they are >
             if self.round <= self.last_round and self.sir <= self.last_sir:
                 raise ValueError("We already have this round/SIR in our chain.")
-            if (not self.forger == poscrypto.ADDRESS) and self.poschain.get_debug("force") is None:
+            if (not self.forger == poscrypto.ADDRESS) and self.poschain.get_debug(
+                "force"
+            ) is None:
                 # Should never pass here.
                 raise ValueError("We are not the forger for current round!!!")
             block_dict = {
@@ -1926,11 +1951,14 @@ class Poshn:
                 app_log.error("Not enough TX to embed, block won't be valid.")
                 return
             if len(block.txs) > config.MAX_TXS_PER_BLOCK:
-                app_log.warning("Too many txs ({}) to embed, will limit to {} by config"
-                                .format(len(block.txs), config.MAX_TXS_PER_BLOCK))
+                app_log.warning(
+                    "Too many txs ({}) to embed, will limit to {} by config".format(
+                        len(block.txs), config.MAX_TXS_PER_BLOCK
+                    )
+                )
                 # TODO: safer to do a sampling by most recent and more diverse txs, like only 2 or 3 of every signer, rather than random sampling
                 shuffle(block.txs)
-                block.txs = block.txs[:config.MAX_TXS_PER_BLOCK]
+                block.txs = block.txs[: config.MAX_TXS_PER_BLOCK]
             # No matter where they come from, we have make sure they are reordered by timestamp or the hash will be wrong.
             # Could be done in sign() function, but would add latency to every sign()
             block.txs.sort(key=lambda x: x.timestamp)
@@ -2029,7 +2057,9 @@ class Poshn:
                 # decompose posnet/address and check.
                 if "hello" in config.LOG:
                     access_log.info(
-                        "Client got Hello {} from {}".format(msg.string_value, full_peer)
+                        "Client got Hello {} from {}".format(
+                            msg.string_value, full_peer
+                        )
                     )
                 # self.clients[full_peer]['hello'] = msg.string_value  # nott here, it's out of the client biz
             if msg.command == commands_pb2.Command.ko:
@@ -2083,7 +2113,9 @@ class Poshn:
                 # decompose posnet/address and check.
                 if "hello" in config.LOG:
                     access_log.info(
-                        "Worker got Hello {} from {}".format(msg.string_value, full_peer)
+                        "Worker got Hello {} from {}".format(
+                            msg.string_value, full_peer
+                        )
                     )
                 self.clients[full_peer]["hello"] = msg.string_value
             if msg.command == commands_pb2.Command.ko:
@@ -2128,11 +2160,14 @@ class Poshn:
                                 if self.poschain.height_status:
                                     print(
                                         "self",
-                                        self.poschain.height_status.to_dict(as_hex=True),
+                                        self.poschain.height_status.to_dict(
+                                            as_hex=True
+                                        ),
                                     )
                                 print("peer", info.to_dict(as_hex=True))
                             if (
-                                self.poschain.height_status.block_hash == info.block_hash
+                                self.poschain.height_status.block_hash
+                                == info.block_hash
                                 and self.poschain.height_status.round == info.round
                             ):
                                 # we are ok, move to next state
@@ -2173,12 +2208,18 @@ class Poshn:
                                         stream,
                                         full_peer,
                                     )
-                                    msg = await com_helpers.async_receive(stream, full_peer)
+                                    msg = await com_helpers.async_receive(
+                                        stream, full_peer
+                                    )
                                     if msg is None:
-                                        app_log.warning("lost cnx to {}".format(full_peer))
+                                        app_log.warning(
+                                            "lost cnx to {}".format(full_peer)
+                                        )
                                         return
                                     #  TODO: check message is blockinfo
-                                    info = posblock.PosHeight().from_proto(msg.height_value)
+                                    info = posblock.PosHeight().from_proto(
+                                        msg.height_value
+                                    )
                                     # await async_sleep(5)
                                 app_log.info(
                                     ">> Should have rolled back to {} level.".format(
@@ -2196,7 +2237,9 @@ class Poshn:
                             exc_type, exc_obj, exc_tb = exc_info()
                             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                             app_log.error(
-                                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+                                "detail {} {} {}".format(
+                                    exc_type, fname, exc_tb.tb_lineno
+                                )
                             )
                             failed = True
                             await self.change_state_to(HNState.SYNCING)
@@ -2449,7 +2492,7 @@ class Poshn:
         self.clients[full_peer]["stats"][com_helpers.STATS_LASTMPL] = time()
         if len(txs) > config.MAX_TXS_TO_SYNC:
             shuffle(txs)
-            txs = txs[:config.MAX_TXS_TO_SYNC]
+            txs = txs[: config.MAX_TXS_TO_SYNC]
         await com_helpers.async_send_txs(
             commands_pb2.Command.mempool, txs, stream, full_peer
         )
@@ -2673,7 +2716,9 @@ class Poshn:
                     # but tickets are only for previously active
                     tickets = await determine.hn_list_to_tickets(self.active_peers)
                     # ERR TODO: not previous hash!!! last hash of round R-1. We could have moved in between.
-                    last_round_hash = await self.poschain.last_hash_of_round(self.round - 1)
+                    last_round_hash = await self.poschain.last_hash_of_round(
+                        self.round - 1
+                    )
                     # print(last_round_hash, self.previous_hash)
                     if not last_round_hash:
                         last_round_hash = self.previous_hash
@@ -2927,7 +2972,14 @@ class Poshn:
                 )
             )
         if self.digested["total"] > 0:
-            app_log.info("Digested {}/{} txs from {} peers in {:0.2f}s".format(self.digested["count"], self.digested["total"], len(set(self.digested["peers"])), self.digested["time"]))
+            app_log.info(
+                "Digested {}/{} txs from {} peers in {:0.2f}s".format(
+                    self.digested["count"],
+                    self.digested["total"],
+                    len(set(self.digested["peers"])),
+                    self.digested["time"],
+                )
+            )
         self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
 
         pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
@@ -2997,15 +3049,21 @@ class Poshn:
             else:
                 short_status = json.loads(json.dumps(status))  # deep copy
                 try:
-                    short_status["peers"]["net_height"]["peers"] = len(short_status["peers"]["net_height"]["peers"])
+                    short_status["peers"]["net_height"]["peers"] = len(
+                        short_status["peers"]["net_height"]["peers"]
+                    )
                 except:
                     pass
                 try:
-                    short_status["peers"]["outbound"] = len(short_status["peers"]["outbound"])
+                    short_status["peers"]["outbound"] = len(
+                        short_status["peers"]["outbound"]
+                    )
                 except:
                     pass
                 try:
-                    short_status["peers"]["inbound"] = len(short_status["peers"]["inbound"])
+                    short_status["peers"]["inbound"] = len(
+                        short_status["peers"]["inbound"]
+                    )
                 except:
                     pass
                 """
