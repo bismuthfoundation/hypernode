@@ -1463,7 +1463,7 @@ class SqlitePosChain(SqliteBase):
                 if a_round <= pos_round:
                     with open("{}{}.round.json".format(HN_CACHE_DIR, a_round)) as fp:
                         uniques = json.load(fp)
-                        self.app_log.warning("Found cached round {}".format(a_round))
+                        # self.app_log.warning("Found cached round {}".format(a_round))
                         return uniques, a_round
         except Exception as e:
             self.app_log.warning("Error reading round {} cache: {}".format(a_round, e))
