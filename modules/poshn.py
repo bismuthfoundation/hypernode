@@ -183,6 +183,7 @@ class HnServer(TCPServer):
                     )
                     # TODO: add to anomalies buffer
                     return
+                # last_block = None
                 for block in msg.block_value:
                     if block.forger not in self.node.registered_forgers:
                         app_log.warning("Block forger {} not in registered forgers".format(block.forger))
@@ -191,6 +192,7 @@ class HnServer(TCPServer):
                     if not await self.node.poschain.digest_block(block, from_miner=True):
                         # one bad block = stop
                         return
+                    # last_block = block
                 await self.node.refresh_last_block()
                 return
             elif msg.command == commands_pb2.Command.test:
@@ -990,7 +992,7 @@ class Poshn:
         if self.verbose:
             app_log.info("Started HN Manager")
         # Initialise round/sir data
-        await self.refresh_last_block()
+        await self.refresh_last_block(self.poschain.block)
         await self.check_round()
         await self.new_tx(
             recipient=self.address, what=202, params="START", value=self.round
@@ -1752,12 +1754,12 @@ class Poshn:
             except:
                 pass
 
-    async def refresh_last_block(self):
+    async def refresh_last_block(self, block=None):
         """
         Async. Fetch fresh info from the PoS chain.
         Update the inner properties.
         """
-        last_block = await self.poschain.last_block()
+        last_block = block if block is not None else await self.poschain.last_block()
         self.last_height, self.previous_hash = (
             last_block["height"],
             last_block["block_hash"],
@@ -1893,7 +1895,7 @@ class Poshn:
         """
         # Caller set the state to forging already
         try:
-            await self.refresh_last_block()
+            await self.refresh_last_block(self.poschain.block)
             # check last round and SIR, make sure they are >
             if self.round <= self.last_round and self.sir <= self.last_sir:
                 raise ValueError("We already have this round/SIR in our chain.")
