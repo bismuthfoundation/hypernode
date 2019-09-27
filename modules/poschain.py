@@ -1173,6 +1173,8 @@ class SqlitePosChain(SqliteBase):
                 )
                 # Delete the block also
                 await self.async_execute(SQL_DELETE_BLOCK, (block.height,), commit=True)
+                self._invalidate()
+                self.block = self.last_block()
                 return False
 
             # Then the block and commit

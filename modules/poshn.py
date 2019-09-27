@@ -55,7 +55,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i2"
+__version__ = "0.0.99i3"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -191,6 +191,7 @@ class HnServer(TCPServer):
                     if not await self.node.poschain.digest_block(block, from_miner=True):
                         # one bad block = stop
                         return
+                await self.node.refresh_last_block()
                 return
             elif msg.command == commands_pb2.Command.test:
                 # test sending does not require hello
@@ -1622,7 +1623,7 @@ class Poshn:
                     if not await self.poschain.digest_block(block, from_miner=False):
                         ok = False
                         break
-
+                await self.refresh_last_block()
                 # Force update again at end of sync.
                 if self.verbose:
                     app_log.info("round sync 2 status")
@@ -1896,7 +1897,7 @@ class Poshn:
             # check last round and SIR, make sure they are >
             if self.round <= self.last_round and self.sir <= self.last_sir:
                 raise ValueError("We already have this round/SIR in our chain.")
-            if (not self.forger == poscrypto.ADDRESS) and self.poschain.get_debug("forge") is None:
+            if (not self.forger == poscrypto.ADDRESS) and self.poschain.get_debug("force") is None:
                 # Should never pass here.
                 raise ValueError("We are not the forger for current round!!!")
             block_dict = {
@@ -1946,6 +1947,7 @@ class Poshn:
             if not digested:
                 app_log.warning("Block Forged but not locally digested, aborting")
                 return
+            await self.refresh_last_block()
             await self.change_state_to(HNState.SENDING)
             # Send the block to our peers (unless we were unable to insert it in our db)
             """if self.verbose:
@@ -2240,6 +2242,7 @@ class Poshn:
                                                 blocks_count += 1
                                             else:
                                                 break  # no need to go on
+                                        await self.refresh_last_block()
                                         app_log.info(
                                             "Saved {}/{} blocks from {}".format(
                                                 blocks_count,
