@@ -10,7 +10,7 @@
 
 # This installs latest node 4.3.0.6 and latest 0.0.99 hn version
 
-VERSION="0.1.23"
+VERSION="0.1.24"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -132,12 +132,12 @@ download_node() {
 download_hypernode() {
     echo "Fetching Hypernode"
     cd
-    if [ -f ./v0.0.99-g.tar.gz ]; then
-        rm v0.0.99-g.tar.gz
+    if [ -f ./beta99.zip ]; then
+        rm beta99.zip
     fi
-    wget https://github.com/bismuthfoundation/hypernode/archive/v0.0.99-g.tar.gz
-    tar -zxf v0.0.99-g.tar.gz
-    mv hypernode-0.0.99-g hypernode
+    wget https://github.com/bismuthfoundation/hypernode/archive/beta99.zip
+    unzip beta99.zip
+    mv hypernode-beta99 hypernode
     cd hypernode
     echo "Installing PIP requirements"
     python3.7 -m pip install wheel fastecdsa
