@@ -13,7 +13,7 @@ list_ = subprocess.getoutput("screen -ls")
 try:
     if ".hypernode\t" not in list_:
         print("Restarting stopped Hypernode...")
-        data = subprocess.getoutput('screen -d -S hypernode -m bash -c "cd ../main;{} hn_instance.py -v" -X quit'.format(PYTHON_EXECUTABLE))
+        data = subprocess.getoutput('screen -d -S hypernode -m bash -c "cd ../main;{} hn_instance.py -v;sleep 30" -X quit'.format(PYTHON_EXECUTABLE))
         print("started")
 except:
     pass
