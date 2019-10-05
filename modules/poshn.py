@@ -57,7 +57,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i3"
+__version__ = "0.0.99i4"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -2957,137 +2957,148 @@ class Poshn:
         :return: HN Status info
         """
         start = time()
-        poschain_status = await self.poschain.status()
-        mempool_status = await self.mempool.status()
-        extra = {"forged_count": self.forged_count}
-        if self.process:
-            of = len(self.process.open_files())
-            fd = self.process.num_fds()
-            co = len(self.process.connections(kind="tcp4"))
-            extra["open_files"], extra["connections"], extra["num_fd"] = of, co, fd
-            app_log.info(
-                "Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}"
-                " - Forged {} since start.".format(
-                    of, co, fd, len(self.inbound), len(self.clients), self.forged_count
-                )
-            )
-        if self.digested["total"] > 0:
-            app_log.info(
-                "Digested {}/{} txs from {} peers in {:0.2f}s".format(
-                    self.digested["count"],
-                    self.digested["total"],
-                    len(set(self.digested["peers"])),
-                    self.digested["time"],
-                )
-            )
-        self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
-
-        pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
-        pending_tasks_names = [
-            getattr(
-                coro, "__qualname__", getattr(coro, "__name__", type(coro).__name__)
-            )
-            for coro in pending_tasks
-        ]
-        # print(pending_tasks_names)
-        tasks_detail = {
-            task: pending_tasks_names.count(task) for task in set(pending_tasks_names)
-        }
-        # print([*map(asyncio.Task.print_stack, asyncio.Task.all_tasks())])
-        # print(frequency)
-        # pow = {"node_version": get_pow_node_version()}
-        pow_status = get_pow_status()
-        status = {
-            "config": {
-                "address": self.address,
-                "ip": self.ip,
-                "port": self.port,
-                "verbose": self.verbose,
-                "outip": self.outip,
-                "posnet": config.POSNET,
-            },
-            "instance": {
-                "version": self.client_version,
-                "hn_version": __version__,
-                "python_version": str(version_info[:3]),
-                "statustime": int(time()),
-            },
-            "chain": poschain_status,
-            "mempool": mempool_status,
-            "peers": {
-                "connected_count": self.connected_count,
-                "outbound": list(self.clients.keys()),
-                "inbound": list(self.inbound.keys()),
-                "net_height": self.net_height,
-            },
-            "state": {
-                "state": self.state.name,
-                "round": self.round,
-                "sir": self.sir,
-                "forger": self.forger,
-            },
-            "tasks": {"total": len(pending_tasks), "detail": tasks_detail},
-            "extra": extra,
-            "meta": self.round_meta,
-            "pow": pow_status,
-        }
-        if self.process:
-            status["PID"] = self.process.pid
-        # 'peers': self.peers
-        if self.address not in [peer[0] for peer in self.all_peers]:
-            self.not_reg = True
-            app_log.warning(
-                "Status: This Hypernode is not registered nor activated yet."
-            )
-        else:
-            self.not_reg = False
-        if log:
-            if self.poschain.debug:
-                app_log.warning("Debug: {}".format(json.dumps(self.poschain.debug)))
-            if config.STATUS_LONG:
-                app_log.info("Status: {}".format(json.dumps(status)))
-            else:
-                short_status = json.loads(json.dumps(status))  # deep copy
-                try:
-                    short_status["peers"]["net_height"]["peers"] = len(
-                        short_status["peers"]["net_height"]["peers"]
-                    )
-                except:
-                    pass
-                try:
-                    short_status["peers"]["outbound"] = len(
-                        short_status["peers"]["outbound"]
-                    )
-                except:
-                    pass
-                try:
-                    short_status["peers"]["inbound"] = len(
-                        short_status["peers"]["inbound"]
-                    )
-                except:
-                    pass
-                """
-                try:
-                    short_status["meta"] = short_status["meta"]["slots"]
-                except:
-                    pass
-                """
-                del short_status["extra"]
-                del short_status["tasks"]
-                del short_status["meta"]
-                app_log.info("Status: {}".format(json.dumps(short_status)))
-        if "connections" in config.LOG:
-            for con in self.process.connections(kind="tcp4"):
-                app_log.info(
-                    "!C local {} rem {} state {}".format(
-                        con.laddr, con.raddr, con.status
-                    )
-                )
-        self.my_status = status
         try:
-            with open("posstatus.json", "w") as fp:
-                json.dump(status, fp, indent=2)
+            poschain_status = await self.poschain.status()
+            mempool_status = await self.mempool.status()
+            extra = {"forged_count": self.forged_count}
+            if self.process:
+                of = len(self.process.open_files())
+                fd = self.process.num_fds()
+                co = len(self.process.connections(kind="tcp4"))
+                extra["open_files"], extra["connections"], extra["num_fd"] = of, co, fd
+                app_log.info(
+                    "Status: {} Open files, {} connections, {} FD used. Inbound {}, Outbound {}"
+                    " - Forged {} since start.".format(
+                        of, co, fd, len(self.inbound), len(self.clients), self.forged_count
+                    )
+                )
+            if self.digested["total"] > 0:
+                app_log.info(
+                    "Digested {}/{} txs from {} peers in {:0.2f}s".format(
+                        self.digested["count"],
+                        self.digested["total"],
+                        len(set(self.digested["peers"])),
+                        self.digested["time"],
+                    )
+                )
+            self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
+
+            pending_tasks = [task._coro for task in Task.all_tasks() if not task.done()]
+            pending_tasks_names = [
+                getattr(
+                    coro, "__qualname__", getattr(coro, "__name__", type(coro).__name__)
+                )
+                for coro in pending_tasks
+            ]
+            # print(pending_tasks_names)
+            tasks_detail = {
+                task: pending_tasks_names.count(task) for task in set(pending_tasks_names)
+            }
+            # print([*map(asyncio.Task.print_stack, asyncio.Task.all_tasks())])
+            # print(frequency)
+            # pow = {"node_version": get_pow_node_version()}
+            pow_status = get_pow_status()
+            status = {
+                "config": {
+                    "address": self.address,
+                    "ip": self.ip,
+                    "port": self.port,
+                    "verbose": self.verbose,
+                    "outip": self.outip,
+                    "posnet": config.POSNET,
+                },
+                "instance": {
+                    "version": self.client_version,
+                    "hn_version": __version__,
+                    "python_version": str(version_info[:3]),
+                    "statustime": int(time()),
+                },
+                "chain": poschain_status,
+                "mempool": mempool_status,
+                "peers": {
+                    "connected_count": self.connected_count,
+                    "outbound": list(self.clients.keys()),
+                    "inbound": list(self.inbound.keys()),
+                    "net_height": self.net_height,
+                },
+                "state": {
+                    "state": self.state.name,
+                    "round": self.round,
+                    "sir": self.sir,
+                    "forger": self.forger,
+                },
+                "tasks": {"total": len(pending_tasks), "detail": tasks_detail},
+                "extra": extra,
+                "meta": self.round_meta,
+                "pow": pow_status,
+            }
+            if self.process:
+                status["PID"] = self.process.pid
+            # 'peers': self.peers
+            if self.address not in [peer[0] for peer in self.all_peers]:
+                self.not_reg = True
+                app_log.warning(
+                    "Status: This Hypernode is not registered nor activated yet."
+                )
+            else:
+                self.not_reg = False
+            if log:
+                if self.poschain.debug:
+                    app_log.warning("Debug: {}".format(json.dumps(self.poschain.debug)))
+                if config.STATUS_LONG:
+                    app_log.info("Status: {}".format(json.dumps(status)))
+                else:
+                    short_status = json.loads(json.dumps(status))  # deep copy
+                    try:
+                        short_status["peers"]["net_height"]["peers"] = len(
+                            short_status["peers"]["net_height"]["peers"]
+                        )
+                    except:
+                        pass
+                    try:
+                        short_status["peers"]["outbound"] = len(
+                            short_status["peers"]["outbound"]
+                        )
+                    except:
+                        pass
+                    try:
+                        short_status["peers"]["inbound"] = len(
+                            short_status["peers"]["inbound"]
+                        )
+                    except:
+                        pass
+                    """
+                    try:
+                        short_status["meta"] = short_status["meta"]["slots"]
+                    except:
+                        pass
+                    """
+                    del short_status["extra"]
+                    del short_status["tasks"]
+                    del short_status["meta"]
+                    app_log.info("Status: {}".format(json.dumps(short_status)))
+            if "connections" in config.LOG:
+                for con in self.process.connections(kind="tcp4"):
+                    app_log.info(
+                        "!C local {} rem {} state {}".format(
+                            con.laddr, con.raddr, con.status
+                        )
+                    )
+            self.my_status = status
+            try:
+                with open("posstatus.json", "w") as fp:
+                    json.dump(status, fp, indent=2)
+            except Exception as e:
+                app_log.warning("Error {} saving pos status".format(e))
+            # app_log.info("Status calculation took {} sec".format(time() - start))
+            return self.my_status
         except Exception as e:
-            app_log.warning("Error {} saving pos status".format(e))
-        # app_log.info("Status calculation took {} sec".format(time() - start))
-        return self.my_status
+            app_log.error("Error in status {}".format(e))
+            exc_type, exc_obj, exc_tb = exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            app_log.error(
+                "detail {} {} {}".format(exc_type, fname, exc_tb.tb_lineno)
+            )
+            app_log.error("Stopping, show log for debug")
+            self.stop()
+
