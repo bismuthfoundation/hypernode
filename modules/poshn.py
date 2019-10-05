@@ -57,7 +57,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i4"
+__version__ = "0.0.99i5"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1636,7 +1636,8 @@ class Poshn:
                         pass
                     return False
 
-                while blocks_height_to_delete[-1] < self.poschain.last_block()['height']:
+                our_last = await self.poschain.last_block()
+                while blocks_height_to_delete[-1] < our_last['height']:
                     delete_extra = blocks_height_to_delete[-1] + 1
                     blocks_height_to_delete.append(delete_extra)
                     app_log.warning("Had to append {} to delete list".format(delete_extra))
