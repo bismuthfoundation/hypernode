@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 56:  
-`python3.7 convert.py --action=week --param=56`
+Week 57:  
+`python3.7 convert.py --action=week --param=57`
 
 ```
-Week 56
+Week 57
 -------------
-TS   1569657600
-UTC  2019-09-28T08:00:00Z
-Round 9706
+TS   1570262400
+UTC  2019-10-05T08:00:00Z
+Round 9874
 Slot  0
-Last PoS Round 9705
-PoW Height 1363002
-Real TS 1569657545.71
-Next TS 1569657683.94
-Balance 24576.232016579597
-Balance (int) 24576
+Last PoS Round 9873
+PoW Height 1372673
+Real TS 1570262397.99
+Next TS 1570262404.16
+Balance 23208.232016620343
+Balance (int) 23208
 ```
 
 week.json (week 10):
@@ -156,6 +156,10 @@ Warning: PoW address 36783c65fa60cdb8a40954468d206c39f65fb1a726c831462ab032ef, w
 Warning: PoW address 63dcd18823c7b3f85446a13059a0e26f639666637ace58c7bd0f34dc, weight 0 instead of 3 - removing from list.  *  
 Warning: PoW address 81292078ccefdf41768416497d6c7ec4c5e310ba50e051a66d91df16, weight 0 instead of 3 - removing from list.  *  
 
+WeeK 57:  40K loss
+Warning: PoW address e556274d92f6b3d035c6ae6e35e8620af8e0df9833d8040f51a22c04, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address b2c0f4ae6f9a2068aac6287bf8f3f0008e29c6156092d6efdb179b95, weight 0 instead of 1 - removing from list.  *  
+
 
 ## Fill_stats
 
@@ -170,16 +174,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 56
-Total Weights at 0.0: 58304
-Full Weights: 67691
-Loss: 13.87%
+Calc Rewards for Week 57
+Total Weights at 0.0: 73350
+Full Weights: 87209
+Loss: 15.89%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week56_per_reward_address.csv
+Exported as rewards/week57_per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week56_per_hn_address.csv
+Exported as rewards/week57_per_hn_address.csv
