@@ -1583,6 +1583,8 @@ class Poshn:
             )
             # print("expected", promised_height)
             # print("simulated", simulated_target)
+            last_block = the_blocks.block_value[-1]
+            # print("Last block for sync\n", last_block.height, last_block.block_hash.hex())
             # Check it matches the target,
             if poshelpers.heights_match(promised_height, simulated_target):
                 """ TODO
@@ -1598,6 +1600,7 @@ class Poshn:
 
                 blocks_height_to_delete = []
                 blocks_to_add = []
+                # last_block = None
                 for block in the_blocks.block_value:
                     replace = False
                     my_block = await self.poschain.async_getblockheader(block.height)
@@ -1618,11 +1621,25 @@ class Poshn:
                     if replace:
                         blocks_height_to_delete.append(block.height)
                         blocks_to_add.append(block)
+                    # last_block = block
 
                 if self.verbose:
                     app_log.info(
                         "{} Remaining Blocks to replace.".format(len(blocks_to_add))
                     )
+                if len(blocks_to_add) <= 0:
+                    # older version of our chain, just wrong metrics, ignore so we don't try to merge again
+                    try:
+                        self.poschain.ban_hash(last_block.block_hash.hex())
+                        app_log.warning("Block {} is an older version of our chain, temp. banning. hash {}".format(last_block.height, last_block.block_hash.hex()))
+                    except:
+                        pass
+                    return False
+
+                while blocks_height_to_delete[-1] < self.poschain.last_block()['height']:
+                    delete_extra = blocks_height_to_delete[-1] + 1
+                    blocks_height_to_delete.append(delete_extra)
+                    app_log.warning("Had to append {} to delete list".format(delete_extra))
                 await self.poschain.delete_blocks(blocks_height_to_delete)
                 """    
                 # Delete the round to replace
@@ -1686,6 +1703,11 @@ class Poshn:
                     value=a_round,
                 )
                 # FR: Add to buffer instead of sending right away (avoid tx spam)
+                try:
+                    self.poschain.ban_hash(last_block.block_hash.hex())
+                    app_log.warning("Block {} fails, temp. banning. hash {}".format(last_block.height, last_block.block_hash.hex()))
+                except:
+                    pass
         except TimeoutError:
             app_log.warning("_round_sync timeout")
         except ValueError as e:  # innocuous error, will retry.
