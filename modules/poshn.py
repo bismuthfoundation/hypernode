@@ -1661,6 +1661,13 @@ class Poshn:
                             )
                         )
                         ok = False
+                        try:
+                            self.poschain.ban_hash(last_block.block_hash.hex())
+                            app_log.warning("Block {} has incorrect ancestors, temp. banning. hash {}".format(
+                                last_block.height, last_block.block_hash.hex()))
+                        except:
+                            pass
+                        return False
                         break
                     if not await self.poschain.digest_block(block, from_miner=False):
                         ok = False
