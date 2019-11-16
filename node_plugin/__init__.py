@@ -88,7 +88,7 @@ HNROUNDS_DIR = "static/hnrounds/"
 HNCOLORED = "colored.json"
 
 # TODO: from config
-LEDGER_PATH = "static/ledger.db"
+LEDGER_PATH = "../Bismuth-temp/static/ledger.db"
 
 
 # Convention is to have a prefix ending in _ , so prefix and subsequent commands are easily readable.
