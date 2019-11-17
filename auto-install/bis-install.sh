@@ -3,14 +3,14 @@
 # Distributed under the MIT software license, see http://www.opensource.org/licenses/mit-license.php.
 
 # Usage: bash ./bis-install.sh
-# or one liner : curl https://raw.githubusercontent.com/bismuthfoundation/hypernode/master/auto-install/bis-install.sh|bash
+# or one liner : curl https://raw.githubusercontent.com/bismuthfoundation/hypernode/beta99/auto-install/bis-install.sh|bash
 # Setup a regular Bismuth node and hypernode on a fresh Ubuntu 18 install.
 
 # BEWARE: The anti-ddos part will disable http, https and dns ports.
 
-# This installs latest node 4.3.0.6 and latest 0.0.99 hn version
+# This installs latest node 4.4.0.3 and latest 0.0.99 hn version
 
-VERSION="0.1.24"
+VERSION="0.1.25"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -85,12 +85,12 @@ configure_firewall() {
 download_node() {
     echo "Fetching Node"
     cd
-    if [ -f ./4.3.0.6-RC1.tar.gz ]; then
-        rm 4.3.0.6-RC1.tar.gz
+    if [ -f ./Bismuth-master.zip ]; then
+        rm Bismuth-master.zip
     fi
-    wget https://github.com/bismuthfoundation/Bismuth/archive/4.3.0.6-RC1.tar.gz
-    tar -zxf 4.3.0.6-RC1.tar.gz
-    mv Bismuth-4.3.0.6-RC1 Bismuth
+    wget https://github.com/bismuthfoundation/Bismuth/archive/master.zip
+    unzip Bismuth-master.zip
+    mv Bismuth-master Bismuth
     cd Bismuth
     echo "Configuring node"    
     echo "ram=False" >> config_custom.txt
