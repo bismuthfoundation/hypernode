@@ -85,11 +85,11 @@ configure_firewall() {
 download_node() {
     echo "Fetching Node"
     cd
-    if [ -f ./Bismuth-master.zip ]; then
-        rm Bismuth-master.zip
+    if [ -f ./master.zip ]; then
+        rm master.zip
     fi
     wget https://github.com/bismuthfoundation/Bismuth/archive/master.zip
-    unzip Bismuth-master.zip
+    unzip master.zip
     mv Bismuth-master Bismuth
     cd Bismuth
     echo "Configuring node"    
