@@ -23,7 +23,8 @@ Old Official Install FAQ: https://github.com/bismuthfoundation/Bismuth-FAQ/blob/
 
 ## Running the node
 
-See "main" directory.
+Handled by the auto install script.  
+See "main" directory for details.
 
 ## Explorer and doc
 
