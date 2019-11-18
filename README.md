@@ -31,5 +31,3 @@ https://hypernodes.bismuth.live/
 
 # Work in progress.
 
-First month will see a lot of updates - we will limit their frequency as much as possible - to get to the full experience.
-  
