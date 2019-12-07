@@ -206,7 +206,7 @@ class PowInterface:
                 a_round, a_slot = timestamp_to_round_slot(time.time())
 
             ref_timestamp = round_to_reference_timestamp(a_round)
-
+            print("Connecting to ", config.POW_IP, config.POW_PORT)
             async with PoWAsyncClient(
                 config.POW_IP, config.POW_PORT, self.app_log
             ) as pow_client:
