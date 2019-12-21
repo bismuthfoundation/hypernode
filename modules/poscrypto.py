@@ -274,7 +274,7 @@ def gen_keys_file(pos_filename='poswallet.json'):
 
 
 try:
-    print("Trying to monkey patch fastkeys...")
+    # print("Trying to monkey patch fastkeys...")
     from fastkeys import PrivkeyFast, PubkeyFast
 
     def _version_fast() -> str:
@@ -397,7 +397,7 @@ try:
     check_sig = _check_sig_fast
     gen_keys = _gen_keys_fast
 
-    print("Monkey patch successful...")
+    # print("Monkey patch successful...")
 
 except:
     pass

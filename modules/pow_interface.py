@@ -217,7 +217,7 @@ class PowInterface:
                         "HN_reg_round {} {} {} {}".format(
                             a_round, ref_timestamp, pow_height, ip
                         ),
-                        timeout=60,
+                        timeout=240,
                         retry=3,
                         retry_pause=2,
                     )
@@ -238,7 +238,7 @@ class PowInterface:
                     addresses = ",".join(self.regs.keys())
                     weights = await pow_client.async_command(
                         "HN_reg_check_weights {} {}".format(addresses, ref_timestamp),
-                        timeout=60,
+                        timeout=240,
                     )
                     # print("RES weights", weights)
 
