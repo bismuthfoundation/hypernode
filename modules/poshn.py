@@ -51,13 +51,14 @@ import posblock
 import poschain
 import poscrypto
 import poshelpers
+import plugins
 from com_helpers import async_receive, async_send_string, async_send_block
 from com_helpers import async_send_void, async_send_txs, async_send_height
 from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i6"
+__version__ = "0.0.99i7"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -663,6 +664,7 @@ class Poshn:
                 if not poshelpers.bootstrap(datadir):
                     app_log.warning("Bootstrap failed, will catch slowly over the net.")
                     sleep(10)
+            self.plugin_manager = plugins.PluginManager(app_log=app_log, plugin_folder="../plugins", init=True)
             # Make sure node version is ok and node plugin runs.
             self.check_node()
             self.check_pow_status()
@@ -727,6 +729,7 @@ class Poshn:
             self.clients_lock = aioprocessing.Lock()
             self.inbound_lock = aioprocessing.Lock()
             self.digested = {"peers": [], "count": 0, "total": 0, "time": 0}
+            self.plugin_manager.execute_action_hook("post_init")
         except Exception as e:
             app_log.error("Error creating poshn: {}".format(e))
             exc_type, exc_obj, exc_tb = exc_info()
