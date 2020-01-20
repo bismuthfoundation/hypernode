@@ -57,7 +57,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i5"
+__version__ = "0.0.99i6"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1577,10 +1577,17 @@ class Poshn:
                     app_log.info("_round_sync banned block {}".format(block.block_hash))
                     return res
             # check the data fits and count sources/forgers
-            simulated_target = await wait_for(
-                self.poschain.check_round(a_round, the_blocks, fast_check=True),
-                timeout=200,
-            )
+            try:
+                simulated_target = await wait_for(
+                    self.poschain.check_round(a_round, the_blocks, fast_check=True),
+                    timeout=240,
+                )
+            except Exception as e:
+                app_log.error("Time out while check_round - Likely perf issue. Closing.")
+                self.stop()
+            if self.poschain.has_to_close:
+                app_log.error("Poschain asked to close due to inconstitency.")
+                self.stop()
             # print("expected", promised_height)
             # print("simulated", simulated_target)
             last_block = the_blocks.block_value[-1]
@@ -2325,7 +2332,13 @@ class Poshn:
                                                 full_peer,
                                             )
                                         )
-                                        await self.poschain.async_commit()  # Should not be necessary
+                                        try:
+                                            await self.poschain.async_commit()  # Should not be necessary
+                                        except Exception as e:
+                                            app_log.error(
+                                                "Error while inserting block into db: {}, Closing".format(str(e))
+                                            )
+                                            self.stop()
                                         if not blocks_count:
                                             app_log.error(
                                                 "Error while inserting block from {}".format(

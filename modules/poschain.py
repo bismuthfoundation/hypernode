@@ -26,7 +26,7 @@ from sqlitebase import SqliteBase
 
 # from ttlcache import asyncttlcache
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -346,6 +346,7 @@ class SqlitePosChain(SqliteBase):
         self.inserting_block = False
         self.bans = {"huge_blocks": [], "duptx_blocks": [], "partial_blocks": []}
         self.last_cache_cleanup = 0
+        self.has_to_close = False
         try:
             os.mkdir(HN_CACHE_DIR)
         except:
@@ -1058,6 +1059,7 @@ class SqlitePosChain(SqliteBase):
                             block.height, ref_blockheight
                         )
                     )
+                    self.has_to_close=True
                     return False
                 # Good hash?
                 if block.previous_hash != ref_hash:
@@ -1103,6 +1105,7 @@ class SqlitePosChain(SqliteBase):
             return ref_height.to_dict(as_hex=True)
         except CancelledError:
             self.app_log.error("check_round Cancelled")
+            self.has_to_close = True
             return False
         except Exception as e:
             self.app_log.error("check_round Error {}".format(e))
