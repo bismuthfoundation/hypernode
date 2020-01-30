@@ -1,3 +1,11 @@
+# Note
+
+This doc may be used for local dev, but is likely outdated.
+
+To setup a Hypernode, refer to the up to date "one liner" installation instructions at https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Hypernodes/00-Auto-Install-Script.md
+
+See [Roadmap](Roadmap.md) for mid term devs.
+
 # IMPORTANT
 
 * I tend to cut the problems into small pieces, easier to handle. This may seem too much, and sometimes it is.  
