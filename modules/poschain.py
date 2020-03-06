@@ -928,6 +928,7 @@ class SqlitePosChain(SqliteBase):
                         block.height, self.block["height"]
                     )
                 )
+                com_helpers.MY_NODE.stop()
                 return False
             # Good hash?
             if block.previous_hash != self.block["block_hash"]:

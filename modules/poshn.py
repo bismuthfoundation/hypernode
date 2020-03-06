@@ -58,7 +58,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i7"
+__version__ = "0.0.99i8"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -2134,12 +2134,18 @@ class Poshn:
             if self.verbose and "connections" in config.LOG:
                 access_log.info("Initiating client co-routine for {}".format(full_peer))
             # ip_port = "{}:{}".format(peer[1], peer[2])
-            if self.interface:
-                stream = await TCPClient().connect(
-                    peer[1], peer[2], timeout=LTIMEOUT, source_ip=self.outip
-                )
-            else:
-                stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
+            try:
+                if self.interface:
+                    stream = await TCPClient().connect(
+                        peer[1], peer[2], timeout=LTIMEOUT, source_ip=self.outip
+                    )
+                else:
+                    stream = await TCPClient().connect(peer[1], peer[2], timeout=LTIMEOUT)
+            except socket.gaierror as e:
+                app_log.error("socket.gaierror with {}:{} - usually unrecoverable, closing.".format(peer[1], peer[2]))
+                com_helpers.MY_NODE.stop()
+            except Exception as e:
+                pass
             connect_time = time()
             await com_helpers.async_send_string(
                 commands_pb2.Command.hello, self.hello_string(), stream, full_peer
