@@ -58,7 +58,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i8"
+__version__ = "0.0.99i9"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -2144,8 +2144,8 @@ class Poshn:
             except socket.gaierror as e:
                 app_log.error("socket.gaierror with {}:{} - usually unrecoverable, closing.".format(peer[1], peer[2]))
                 com_helpers.MY_NODE.stop()
-            except Exception as e:
-                pass
+                return
+
             connect_time = time()
             await com_helpers.async_send_string(
                 commands_pb2.Command.hello, self.hello_string(), stream, full_peer
