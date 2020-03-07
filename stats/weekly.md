@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 78:  
-`python3.7 convert.py --action=week --param=78`
+Week 79:  
+`python3.7 convert.py --action=week --param=79`
 
 ```
-Week 78
+Week 79
 -------------
-TS   1582963200
-UTC  2020-02-29T08:00:00Z
-Round 13402
+TS   1583568000
+UTC  2020-03-07T08:00:00Z
+Round 13570
 Slot  0
-Last PoS Round 13401
-PoW Height 1583759
-Real TS 1582963195.01
-Next TS 1582963494.45
-Balance 23759.84663799731
-Balance (int) 23759
+Last PoS Round 13569
+PoW Height 1593827
+Real TS 1583567987.64
+Next TS 1583568090.64
+Balance 23702.958088067127
+Balance (int) 23702
 ```
 
 week.json (week 10):
@@ -226,7 +226,10 @@ Warning: PoW address 17dabf2990a00a9fc1221db779c3a752113c8966b64537eb6b164937, w
 
 Week 78: No loss
 
-
+Week 79: 90K loss
+Warning: PoW address 905dff2233842c886f600a4777348e5df85c36211d1c86f39cd26e03, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address 50e2ebb1375803ad5a319eeb94f907da5c78b9953b49ee8a669c8ddd, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address bda1951e0591d5f4cd95daab212cdedbf4cfdd4f498197fc0f4d0d17, weight 0 instead of 3 - removing from list *  
 
 ## Fill_stats
 
@@ -241,16 +244,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 78
-Total Weights at 0.0: 83828
-Full Weights: 109933
-Loss: 23.75%
+Calc Rewards for Week 79
+Total Weights at 0.0: 77025
+Full Weights: 109256
+Loss: 29.50%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week78_per_reward_address.csv
+Exported as rewards/week79_per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week78_per_hn_address.csv
+Exported as rewards/week79_per_hn_address.csv
