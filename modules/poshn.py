@@ -58,7 +58,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i9"
+__version__ = "0.0.99i10"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -1581,6 +1581,7 @@ class Poshn:
                     return res
             # check the data fits and count sources/forgers
             try:
+                # 240s may not be enough on low perf hosts.
                 simulated_target = await wait_for(
                     self.poschain.check_round(a_round, the_blocks, fast_check=True),
                     timeout=240,
@@ -3011,7 +3012,9 @@ class Poshn:
         start = time()
         try:
             poschain_status = await self.poschain.status()
+            app_log.info("Poschain Status ok")
             mempool_status = await self.mempool.status()
+            app_log.info("Mempool Status ok")
             extra = {"forged_count": self.forged_count}
             if self.process:
                 of = len(self.process.open_files())
@@ -3050,6 +3053,7 @@ class Poshn:
             # print(frequency)
             # pow = {"node_version": get_pow_node_version()}
             pow_status = get_pow_status()
+            app_log.info("Pow Status ok")
             status = {
                 "config": {
                     "address": self.address,

@@ -26,7 +26,7 @@ from sqlitebase import SqliteBase
 
 # from ttlcache import asyncttlcache
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 SQL_LAST_BLOCK = "SELECT * FROM pos_chain ORDER BY height DESC limit 1"
@@ -420,6 +420,8 @@ class SqlitePosChain(SqliteBase):
         sql1 = "SELECT msg_count FROM pos_chain WHERE height=?"
         sql2 = "SELECT count(*) FROM pos_messages WHERE block_height=?"
         for height in range(max_height - 1):
+            if height % 10000 == 0:
+                self.app_log.info("{}...".format(height))
             # self.app_log.info("Trying to add missing {}...".format(height))
             # get txn count from header
             res = self.execute(sql1, (height,))
@@ -435,6 +437,7 @@ class SqlitePosChain(SqliteBase):
             if msg_count1 != msg_count2:
                 # print("{}: {} - {}".format(height, msg_count1, msg_count2))
                 missings.add(height)
+        self.app_log.info("/missing_blocks")
         return missings
 
     def check_block_hash(self, block: PosBlock) -> bool:
@@ -633,6 +636,7 @@ class SqlitePosChain(SqliteBase):
                 self.db.text_factory = str
                 self.db.row_factory = sqlite3.Row
                 self.cursor = self.db.cursor()
+                self.app_log.info("pos chain Check 1")
                 # check if db needs recreating
                 self.cursor.execute("PRAGMA table_info('addresses')")
                 res1 = self.cursor.fetchall()
@@ -697,6 +701,7 @@ class SqlitePosChain(SqliteBase):
                     self.commit()
                     self.app_log.info("Status: Added {} index".format(name))
             # Now test data
+            self.app_log.info("Testing...")
             test = self.execute(SQL_LAST_BLOCK).fetchone()
             if not test:
                 # empty db, try to bootstrap - only Genesis HN can do this
@@ -716,7 +721,9 @@ class SqlitePosChain(SqliteBase):
                     SQL_ROLLBACK_BLOCKS_TXS, (test[0] + 1,), commit=True
                 )  # Unwanted: this closes the cursor?!?
                 # sys.exit()
+            self.app_log.info("Looking for missing blocks...")
             missing_blocks = sorted(list(self.missing_blocks()))
+            self.app_log.info("Got missing blocks...")
             # print("Missing1:", missing_blocks)
             test2 = self.execute(SQL_COUNT_DISTINCT_BLOCKS_IN_MESSAGES).fetchone()
             test2 = test2[0] if test2 else 0
@@ -730,8 +737,10 @@ class SqlitePosChain(SqliteBase):
                     )
                 )
             loop = get_event_loop()
+            self.app_log.info("Looking for missing blocks...")
             for block_height in missing_blocks:
                 try:
+                    self.app_log.info("Trying {}...".format(block_height))
                     loop.run_until_complete(self.get_block_again(block_height))
                 except:
                     pass
@@ -740,8 +749,10 @@ class SqlitePosChain(SqliteBase):
 
             # print("Missing2:", missing_blocks)
             # TODO: factorize in a loop, try 3 times maybe, use more default seeders..
+            self.app_log.info("Looking for missing blocks 2...")
             for block_height in missing_blocks:
                 try:
+                    self.app_log.info("Trying {}...".format(block_height))
                     loop.run_until_complete(self.get_block_again(block_height))
                 except:
                     pass
@@ -1624,19 +1635,24 @@ class SqlitePosChain(SqliteBase):
                     )
                 except:
                     pos_checkpoint_height = 0
+                self.app_log.info("Round H...")
                 round_height = await self.async_height_of_round(pos_round)
+                self.app_log.info("Forgers...")
                 forgers = await self.async_fetchall(
                     SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
                     (pos_checkpoint_height + 1, round_height),
                 )
+                self.app_log.info("Senders...")
                 senders = await self.async_fetchall(
                     SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
                     (pos_checkpoint_height + 1, round_height),
                 )
                 # Then merge...
+                # self.app_log.info("Merging...")  # No time
                 uniques["forgers"] = uniques["forgers"].union(
                     [forger[0] for forger in forgers]
                 )
+                # self.app_log.info("Merging...")
                 uniques["senders"] = uniques["senders"].union(
                     [sender[0] for sender in senders]
                 )
@@ -1657,6 +1673,7 @@ class SqlitePosChain(SqliteBase):
                     SQL_FORGERS_BETWEEN_HEIGHTS_INCLUDED,
                     (pos_round_height + 1, pos_height),
                 )
+                self.app_log.info("Senders...")
                 senders = await self.async_fetchall(
                     SQL_SENDERS_BETWEEN_HEIGHTS_INCLUDED,
                     (pos_round_height + 1, pos_height),

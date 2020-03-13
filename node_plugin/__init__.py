@@ -31,7 +31,7 @@ from ledger_queries import LedgerQueries, __version__ as ledger_queries_version
 # from warnings import resetwarnings
 
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 
 MANAGER = None
@@ -148,6 +148,16 @@ def action_init(params):
     except:
         pass
     DESC = {"127.0.0.1": "localhost"}
+    # Adjust paths from config
+    global HNROUNDS_DIR
+    HNROUNDS_DIR = os.path.join(MANAGER.base_folder, "static/hnrounds/")
+    print("HNROUNDS_DIR", HNROUNDS_DIR)
+    global HNCOLORED
+    HNCOLORED = os.path.join(MANAGER.base_folder, "colored.json")
+    print("HNCOLORED", HNCOLORED)
+    global LEDGER_PATH
+    LEDGER_PATH = os.path.join(MANAGER.base_folder, "static/ledger.db")
+    print("LEDGER_PATH", LEDGER_PATH)
     try:
         os.mkdir(HNROUNDS_DIR)
     except:
