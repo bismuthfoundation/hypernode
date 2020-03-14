@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 79:  
-`python3.7 convert.py --action=week --param=79`
+Week 80:  
+`python3.7 convert.py --action=week --param=80`
 
 ```
-Week 79
+Week 80
 -------------
-TS   1583568000
-UTC  2020-03-07T08:00:00Z
-Round 13570
+TS   1584172800
+UTC  2020-03-14T08:00:00Z
+Round 13738
 Slot  0
-Last PoS Round 13569
-PoW Height 1593827
-Real TS 1583567987.64
-Next TS 1583568090.64
-Balance 23702.958088067127
-Balance (int) 23702
+Last PoS Round 13737
+PoW Height 1603800
+Real TS 1584172798.97
+Next TS 1584172856.19
+Balance 23493.886592865456
+Balance (int) 23493
 ```
 
 week.json (week 10):
@@ -231,6 +231,12 @@ Warning: PoW address 905dff2233842c886f600a4777348e5df85c36211d1c86f39cd26e03, w
 Warning: PoW address 50e2ebb1375803ad5a319eeb94f907da5c78b9953b49ee8a669c8ddd, weight 0 instead of 3 - removing from list. *  
 Warning: PoW address bda1951e0591d5f4cd95daab212cdedbf4cfdd4f498197fc0f4d0d17, weight 0 instead of 3 - removing from list *  
 
+
+Week 80: 30K loss  
+Warning: PoW address fe6c23eae26ef3113b452faa73ea31d86c1eb0a7254ea9cb57e2db10, weight 0 instead of 3 - removing from list.  * 
+
+
+
 ## Fill_stats
 
 `time python3.7 fill_stats.py`  
@@ -244,16 +250,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 79
-Total Weights at 0.0: 77025
-Full Weights: 109256
-Loss: 29.50%
+Calc Rewards for Week 80
+Total Weights at 0.0: 91358
+Full Weights: 113009
+Loss: 19.16%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week79_per_reward_address.csv
+Exported as rewards/week80_per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week79_per_hn_address.csv
+Exported as rewards/week80_per_hn_address.csv
