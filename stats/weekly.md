@@ -10,7 +10,7 @@ convert.py allows to deal with timestamp and block conversion.
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
 Week 85  
-`python3.7 convert.py --action=week --param=85
+`python3.7 convert.py --action=week --param=85`
 
 ```
 Week 85
