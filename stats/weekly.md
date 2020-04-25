@@ -9,22 +9,23 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 85  
-`python3.7 convert.py --action=week --param=85`
+Week 86  
+`python3.7 convert.py --action=week --param=86`
 
 ```
-Week 85
+Week 86
 -------------
-TS   1587196800
-UTC  2020-04-18T08:00:00Z
-Round 14578
+TS   1587801600
+UTC  2020-04-25T08:00:00Z
+Round 14746
 Slot  0
-Last PoS Round 14577
-PoW Height 1654017
-Real TS 1587196684.9
-Next TS 1587196894.41
-Balance 23453.44587622839
-Balance (int) 23453
+Last PoS Round 14745
+PoW Height 1664080
+Real TS 1587801551.14
+Next TS 1587801631.27
+Balance 23574.372670038836
+Balance (int) 23574
+
 ```
 
 week.json (week 10):
@@ -129,7 +130,11 @@ Week 85: 60K loss
 Warning: PoW address d28bbda8a752bd6d011501504bcb781d13c035240981fdea0c11bdfd, weight -1 instead of 3 - removing from list.  *  
 Warning: PoW address 5846042bb12f2bca54ec945bfbcd635ce5a35e6ec0f1d9c91a561c2e, weight 0 instead of 3 - removing from list.  *  
 
-
+Week 86:  110K loss 
+Warning: PoW address 7d5c2999f9a2e44c23e7b2b73b4c0edae308e9d39482bf44da481edc, weight 0 instead of 2 - removing from list. *  
+Warning: PoW address c0c1e37d2a6c18e7977109520c39d5c13a82dc90a3d6852ea2179ec1, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address cd293727e742a91472d3193229a5d7cae43bb8fe460e640de74b703f, weight -1 instead of 3 - removing from list. *  
+Warning: PoW address 9f6f1a0168ef1d140d3d4dd57c2122a0ee2645ecbfd98f03e0e071fc, weight -1 instead of 3 - removing from list. *  
 
 
 ## Fill_stats
@@ -145,16 +150,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 85
-Total Weights at 0.0: 84963
-Full Weights: 98860
-Loss: 14.06%
+Calc Rewards for Week 86
+Total Weights at 0.0: 92638
+Full Weights: 99511
+Loss: 6.91%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week85.per_reward_address.csv
+Exported as rewards/week86.per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week85.per_hn_address.csv
+Exported as rewards/week86.per_hn_address.csv
