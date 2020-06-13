@@ -9,22 +9,23 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 92  
-`python3.7 convert.py --action=week --param=92`
+Week 93  
+`python3.7 convert.py --action=week --param=93`
 
 ```
-Week 92
+Week 93
 -------------
-TS   1591430400
-UTC  2020-06-06T08:00:00Z
-Round 15754
+TS   1592035200
+UTC  2020-06-13T08:00:00Z
+Round 15922
 Slot  0
-Last PoS Round 15753
-PoW Height 1724433
-Real TS 1591430398.57
-Next TS 1591430434.51
-Balance 23217.547971384134
-Balance (int) 23217
+Last PoS Round 15921
+PoW Height 1734484
+Real TS 1592035184.71
+Next TS 1592035266.06
+Balance 23273.596720723668
+Balance (int) 23273
+
 ```
 
 week.json (week 10):
@@ -147,6 +148,8 @@ Week 91: 30K loss
 
 Week 92: No loss
 
+Week 93: No loss
+
 ## Fill_stats
 
 `time python3.7 fill_stats.py`  
@@ -160,16 +163,16 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 92
-Total Weights at 0.0: 78815
-Full Weights: 98712
-Loss: 20.16%
+Calc Rewards for Week 93
+Total Weights at 0.0: 86022
+Full Weights: 101748
+Loss: 15.46%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week92.per_reward_address.csv
+Exported as rewards/week93.per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week92.per_hn_address.csv
+Exported as rewards/week93.per_hn_address.csv
