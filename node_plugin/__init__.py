@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sqlite3
+from os import path
 from hashlib import blake2b
 from threading import Lock
 
@@ -28,13 +29,16 @@ import base58
 # you can symlink in this dir for dev purposes and add it to "sources" in pycharm.
 from ledger_queries import LedgerQueries, __version__ as ledger_queries_version
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from libs.plugins import PluginManager
 # from warnings import resetwarnings
 
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 
-MANAGER = None
+MANAGER: "PluginManager" = None
 
 VERBOSE = True  # False in production, set to True for first version.
 
@@ -84,12 +88,13 @@ POW_CONTROL_ADDRESS = "cf2562488992997dff3658e455701589678d0e966a79e2a037cbb2ff"
 
 UPDATED = False
 
-HNROUNDS_DIR = "static/hnrounds/"
+# from config
+HNROUNDS_DIR = ""
 HNCOLORED = "colored.json"
 
-# TODO: from config
-LEDGER_PATH = "static/ledger.db"
-
+# from config
+LEDGER_PATH = ""
+POWSTATUS_PATH = ""
 
 # Convention is to have a prefix ending in _ , so prefix and subsequent commands are easily readable.
 # Take care not to overload an existing command
@@ -150,14 +155,18 @@ def action_init(params):
     DESC = {"127.0.0.1": "localhost"}
     # Adjust paths from config
     global HNROUNDS_DIR
-    HNROUNDS_DIR = os.path.join(MANAGER.base_folder, "static/hnrounds/")
+    HNROUNDS_DIR = os.path.join(MANAGER.config.get_live_path(), "hnrounds")
     print("HNROUNDS_DIR", HNROUNDS_DIR)
     global HNCOLORED
-    HNCOLORED = os.path.join(MANAGER.base_folder, "colored.json")
+    HNCOLORED = os.path.join(MANAGER.config.get_live_path(), "colored.json")
     print("HNCOLORED", HNCOLORED)
     global LEDGER_PATH
-    LEDGER_PATH = os.path.join(MANAGER.base_folder, "static/ledger.db")
+    LEDGER_PATH = MANAGER.config.get_ledger_db_path()
+    # os.path.join(MANAGER.base_folder, "static/ledger .db")
     print("LEDGER_PATH", LEDGER_PATH)
+    global POWSTATUS_PATH
+    POWSTATUS_PATH = os.path.join(MANAGER.config.get_live_path(), "powstatus.json")
+    print("POWSTATUS_PATH", POWSTATUS_PATH)
     try:
         os.mkdir(HNROUNDS_DIR)
     except:
@@ -166,7 +175,8 @@ def action_init(params):
     init_colored()
     # sys.exit()
     try:
-        with open("ipresolv.json", "r") as f:
+        ip_cache_filename = MANAGER.config.get_file_path("live", "ipresolv.conf")
+        with open(ip_cache_filename, "r") as f:
             DESC = json.load(f)
     except:
         pass
@@ -479,6 +489,10 @@ def validate_pos_address(address, network=None):
     return result[1:]
 
 
+def path_for_round_cache(a_round: int) -> str:
+    return path.join(HNROUNDS_DIR, "{}.json".format(a_round))
+
+
 def get_regs_from(pos_round: int) -> tuple:
     all_cache = os.listdir(HNROUNDS_DIR)
     rounds = [int(file[:-5]) for file in all_cache]  # strip .json
@@ -487,7 +501,7 @@ def get_regs_from(pos_round: int) -> tuple:
     checkpoint = 773800
     for a_round in rounds:
         if a_round <= pos_round:
-            with open("{}{}.json".format(HNROUNDS_DIR, a_round)) as fp:
+            with open(path_for_round_cache(a_round)) as fp:
                 info = json.load(fp)
                 MANAGER.app_log.warning(
                     "Found cached round {} with ref_height ".format(
@@ -512,7 +526,7 @@ def HN_reg_round(socket_handler, params: list) -> None:
             pow_height = int(pow_height)
             if ip.lower() == "false":
                 ip = False
-            cache_file = "{}{}.json".format(HNROUNDS_DIR, pos_round)
+            cache_file = path_for_round_cache(pos_round)
             if pow_height <= 0 and not ip:
                 # Regular request, check if cached
                 if os.path.isfile(cache_file):
@@ -717,16 +731,20 @@ def action_status(status):
     global UPDATED
     if UPDATED:
         # save new descriptions on status
-        with open("ipresolv.json", "w") as f:
+        ip_cache_filename = MANAGER.config.get_file_path("live", "ipresolv.conf")  # could be cached, by light use.
+        with open(ip_cache_filename, "w") as f:
             json.dump(DESC, f)
         UPDATED = False
     # Update powstatus for the HN to read (could be moved to a HN_ Command)
-    with open("powstatus.json", "w") as f:
+    with open(POWSTATUS_PATH, "w") as f:
         json.dump(status, f)
-    # not pretty. store in static also so it's a mount in docker context.
+    """
+    # Not needed anymore since it lives in datadir, that can be mounted in docker.
+    # not pretty. store in static also so it's a mount in docker context.    
     # TODO: needs to take real static path from config.
     with open("static/powstatus.json", "w") as f:
         json.dump(status, f)
+    """
     # TODO: could be less frequent, like every hour only.
     clean_hnround()
     if not os.path.isfile(HNCOLORED):
