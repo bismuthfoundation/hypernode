@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 111  
-`python3.7 convert.py --action=week --param=111`
+Week 112  
+`python3 convert.py --action=week --param=112`
 
 ```
-Week 111
+Week 112
 -------------
-TS   1602921600
-UTC  2020-10-17T08:00:00Z
-Round 18946
+TS   1603526400
+UTC  2020-10-24T08:00:00Z
+Round 19114
 Slot  0
-Last PoS Round 18945
-PoW Height 1915932
-Real TS 1602921585.49
-Next TS 1602921617.44
-Balance 22688.57974246
-Balance (int) 22688
+Last PoS Round 19113
+PoW Height 1925881
+Real TS 1603526358.54
+Next TS 1603526462.29
+Balance 22435.91147344
+Balance (int) 22435
 
 ```
 
@@ -45,7 +45,7 @@ The next scripts take the values from this json.
 
 ## Fill_rounds
 
-`python3.7 fill_rounds.py`  
+`python3 fill_rounds.py`  
 
 Verifies again the registered and active HNs for each round of the period.   
 This will tell if any HN cheated on its balance (balance dropped below the registered collateral)
@@ -119,29 +119,32 @@ Week 111: 20K loss
 Warning: PoW address 0b9bef177bca2f4213012e1b9e8eb5a3cca5ef1a96624e4c97720ae9, weight 0 instead of 2 - removing from list.
 
 
+Week 112: No loss  
+
+
 ## Fill_stats
 
-`time python3.7 fill_stats.py`  
+`time python3 fill_stats.py`  
 (about 11 min => 11 sec now)
 
 # Rewards extraction
 
-`python3.7 calc_rewards.py`
+`python3 calc_rewards.py`
 
 Now does all the requests. Check SCORE_TRIGGER inside this script.  
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 111
-Total Weights at 0.0: 81886
-Full Weights: 98515
-Loss: 16.88%
+Calc Rewards for Week 112
+Total Weights at 0.0: 85150
+Full Weights: 100985
+Loss: 15.68%
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week111per_reward_address.csv
+Exported as rewards/week112per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week111per_hn_address.csv
+Exported as rewards/week112per_hn_address.csv
