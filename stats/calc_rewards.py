@@ -50,25 +50,35 @@ if __name__ == "__main__":
 
     if path.isfile('rewards/week{}_per_reward_address.csv'.format(WEEK)):
         print("csv file already there, *not* overwriting")
-        sys.exit()
+        #sys.exit()
     if path.isfile('rewards/week{}_per_hn_address.csv'.format(WEEK)):
         print("csv file already there, *not* overwriting")
-        sys.exit()
-
-    sql = "select reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight from reward_stats where score >= ? group by reward_address order by reward desc"
-    per_reward = loop.run_until_complete(hn_db.async_fetchall(sql, (float(BALANCE), float(total_weights), SCORE_TRIGGER)))
-    with open('rewards/week{}_per_reward_address.csv'.format(WEEK), 'w') as f:
-        f.write("reward_address,reward,total_weights\n")
-        for row in per_reward:
-            # print(list(row))
-            f.write("{},{},{}\n".format(row[0], row[1], row[2]))
+        #sys.exit()
 
     sql = "select address, reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight , max(weight) as collateral from reward_stats where score >= ? group by address order by reward desc"
     per_reward = loop.run_until_complete(hn_db.async_fetchall(sql, (float(BALANCE), float(total_weights), SCORE_TRIGGER)))
+    max_reward = per_reward[0][2]
+    token_unit = max_reward * 0.5 / per_reward[0][4]
+    print(f"Max Reward {max_reward:0.2f} BIS, Token unit {token_unit:0.2f}")
+    tokens_rewards = {}
+    total_tokens_rewards = 0
     with open('rewards/week{}_per_hn_address.csv'.format(WEEK), 'w') as f:
         f.write("address,reward_address,reward,total_weight,weight\n")
         for row in per_reward:
             f.write("{},{},{},{}, {}\n".format(row[0], row[1], row[2], row[3], row[4]))
-    max_reward = per_reward[0][2]
-    token_unit = max_reward * 0.75 / 3
-    print(f"Max Reward {max_reward:0.2f} BIS, Token unit {token_unit:0.2f}")
+            reward_address = row[1]
+            reward = row[2]
+            weight = row[4]
+            token_reward = weight if (reward / weight) >= token_unit else 0
+            total_tokens_rewards += token_reward
+            # token_reward *= weight
+            tokens_rewards[reward_address] = tokens_rewards.get(reward_address, 0) + token_reward
+    print(f"Total token rewards {total_tokens_rewards}")
+
+    sql = "select reward_address, cast(sum(weight) as double)*?/? as reward, sum(weight) as weight from reward_stats where score >= ? group by reward_address order by reward desc"
+    per_reward = loop.run_until_complete(hn_db.async_fetchall(sql, (float(BALANCE), float(total_weights), SCORE_TRIGGER)))
+    with open('rewards/week{}_per_reward_address.csv'.format(WEEK), 'w') as f:
+        f.write("reward_address,reward,total_weights,total_tokens\n")
+        for row in per_reward:
+            # print(list(row))
+            f.write("{},{},{},{}\n".format(row[0], row[1], row[2], tokens_rewards[row[0]]))
