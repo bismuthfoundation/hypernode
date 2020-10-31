@@ -69,3 +69,6 @@ if __name__ == "__main__":
         f.write("address,reward_address,reward,total_weight,weight\n")
         for row in per_reward:
             f.write("{},{},{},{}, {}\n".format(row[0], row[1], row[2], row[3], row[4]))
+    max_reward = per_reward[0][2]
+    token_unit = max_reward * 0.75 / 3
+    print(f"Max Reward {max_reward:0.2f} BIS, Token unit {token_unit:0.2f}")
