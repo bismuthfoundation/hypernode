@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 115  
-`python3 convert.py --action=week --param=115`
+Week 116  
+`python3 convert.py --action=week --param=116`
 
 ```
-Week 115
+Week 116
 -------------
-TS   1605340800
-UTC  2020-11-14T08:00:00Z
-Round 19618
+TS   1605945600
+UTC  2020-11-21T08:00:00Z
+Round 19786
 Slot  0
-Last PoS Round 19617
-PoW Height 1955998
-Real TS 1605340775.06
-Next TS 1605340880.62
-Balance 22419.48083668
-Balance (int) 22419
+Last PoS Round 19785
+PoW Height 1966065
+Real TS 1605945593.88
+Next TS 1605945628.77
+Balance 22453.11708663
+Balance (int) 22453
 ```
 
 week.json (week 10):
@@ -127,6 +127,12 @@ Warning: PoW address 5c7fdf67d6753de9f26460da56c1379a1ec26c6e1e4a79eb69912451, w
 Week 115: 30K loss  
 Warning: PoW address 8d57af5dc042b824c62baecffb64ce6eabb74a0027a434617a10f8cd, weight 2 instead of 3 - removing from list.  *
 
+Week 116: 80K loss  
+Warning: PoW address 003b2b143949241801c9003702b446d5abb37496cad025514ccce55b, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 080965db6930a2fdce8413033b3d3365597585d78dd1a0d565999d8d, weight 0 instead of 2 - removing from list.  *  
+Warning: PoW address 7c7032c155a2c71ad8dc18fdb0c8a544e771e8a5ab2ec03a358dd67f, weight 0 instead of 3 - removing from list.  *  
+
+
 ## Fill_stats
 
 `time python3 fill_stats.py`  
@@ -140,18 +146,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 115
-Total Weights at 0.0: 77655
-Full Weights: 103173
-Loss: 24.73%
-Max Reward 135.11 BIS, Token unit 22.52
-Total token rewards 605
+Calc Rewards for Week 116
+Total Weights at 0.0: 92736
+Full Weights: 105998
+Loss: 12.51%
+Max Reward 117.67 BIS, Token unit 19.61
+Total token rewards 641
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week115per_reward_address.csv
+Exported as rewards/week116per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week115per_hn_address.csv
+Exported as rewards/week116per_hn_address.csv
