@@ -9,6 +9,10 @@
 # Usually static/ledger.db under your Bismuth dir.
 POW_LEDGER_DB=../../Bismuth/static/ledger.db
 
+# Path to the Bismuth node main file.
+# Usually node.py under your Bismuth dir.
+# NODE_PY_PATH=../../Bismuth/node.py
+
 # What extra logs to show
 # Empty, of list of items among : determine, connections, mempool, srvmsg, workermsg, txdigest, timing
 # For instance:

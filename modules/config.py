@@ -10,7 +10,7 @@ from hashlib import blake2b
 from os import path
 from sys import exit
 
-__version__ = "0.0.41"
+__version__ = "0.0.42"
 
 """
 User config - You can change these ones, but **See doc**
@@ -279,6 +279,7 @@ STOP_EVENT = None
 # The potential variables and their type
 VARS = {
     "POW_LEDGER_DB": "str",
+    "NODE_PY_PATH": "str",
     "LOG": "list",
     "MAX_CONNECT_TO": "int",
     "BLOCK_SYNC_COUNT": "int",
@@ -291,6 +292,7 @@ VARS = {
     "PEER_RETRY_SECONDS": "int",
     "PYTHON_EXECUTABLE": "str",
     "POW_DISTINCT_PROCESS": "bool",
+    "IGNORE_POLYSIGN": "bool",
     "POW_ALTERNATE_URL": "str",
     "AUTO_UPDATE": "bool",
     "ALLOW_UPDATES_FROM": "str",
@@ -301,6 +303,10 @@ VARS = {
 # These two have been removed from config - POSNET depends on code, not config, and POSNET_WALLOW comes from the PoW.
 # "POSNET": "str",
 # "POSNET_ALLOW": "list",
+
+V2_NODE = False
+NODE_PY_PATH = ''
+IGNORE_POLYSIGN = False
 
 COLORED_VARS = {
     # "POW_LEDGER_DB": "str",
@@ -359,7 +365,7 @@ def overload(file_name: str):
 
 def update_colored():
     # Check colored from plugin - if exists - and overload again
-    colored_file_name = POW_LEDGER_DB.replace("static/ledger.db", "colored.json")
+    colored_file_name = colored_file_path()  # POW_LEDGER_DB.replace("static/ledger.db", "colored.json")
     try:
         if path.isfile(colored_file_name):
             with open(colored_file_name) as f:
@@ -385,17 +391,96 @@ def update_colored():
         exit()
 
 
-def load(prefix: str = ""):
+def load(prefix: str = "", verbose: bool=False):
     """
     Overload info with config.default.txt and config.txt
     :return:
     """
+    global V2_NODE
     overload(prefix + "config.default.txt")
     if path.exists(prefix + "config.txt"):
         overload(prefix + "config.txt")
+    if "chain-" in POW_LEDGER_DB:
+        V2_NODE = True
+    if verbose:
+        print("POW_LEDGER_DB", POW_LEDGER_DB)
+        print("V2_NODE", V2_NODE)
+        print("NODE_PY_DIR_PATH", node_py_dir_path())
+        print("HN Plugin Dir", plugin_dir())
+        print("Queries file path", queries_file_path())
+        print("Polysign dir", polysign_dir())
+        print("Colored file path", colored_file_path())
     update_colored()
-
     return {var: globals()[var] for var in VARS}
+
+
+def node_py_dir_path():
+    if NODE_PY_PATH != '':
+        return path.dirname(NODE_PY_PATH)
+    if "static" in POW_LEDGER_DB:
+        test_legacy_db = path.abspath(
+            POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "")
+        )
+        if path.isdir(test_legacy_db):
+            return test_legacy_db
+    test_default = path.abspath("../../Bismuth")
+    if path.isdir(test_default):
+        return test_default
+    raise ValueError("Unable to guess Bismuth node.py path")
+
+
+def node_py_path():
+    return path.join(node_py_dir_path(), "node.py")
+
+
+def plugin_dir():
+    """Derives the plugin dir from node.py path or pow_ledger_db"""
+    return path.join(node_py_dir_path(), "plugins/500_hypernode")
+    """
+    path.abspath(
+        POW_LEDGER_DB.replace("static", "plugins").replace(
+            "ledger.db", "500_hypernode"
+        )
+    )
+    """
+
+
+def queries_file_path():
+    return path.join(node_py_dir_path(), "ledger_queries.py")
+    """
+    path.abspath(
+        POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "ledger_queries.py")
+    )
+    """
+
+
+def polysign_dir():
+    return path.join(node_py_dir_path(), "polysign")
+    """path.abspath(
+        POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "polysign")
+    )"""
+
+
+def colored_file_path():
+    if V2_NODE:
+        # New node, no matter the chain version, colored lies in "live/" directory
+        return path.abspath(
+            POW_LEDGER_DB.replace("chain-v2/", "").replace("chain-legacy/", "").replace("ledger.db", "live/colored.json")
+        )
+    else:
+        # legacy node, colored is on main dir
+        return path.join(node_py_dir_path(), "colored.json")
+
+
+def powstatus_file_path():
+    if V2_NODE:
+        # New node, no matter the chain version, powstatus lies in "live/" directory
+        return path.abspath(
+            POW_LEDGER_DB.replace("chain-v2/", "").replace("chain-legacy/", "").replace("ledger.db", "live/powstatus.json")
+        )
+    else:
+        # legacy node, powstatus is on main dir
+        return path.join(node_py_dir_path(), "powstatus.json")
 
 
 if __name__ == "__main__":

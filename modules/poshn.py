@@ -58,7 +58,7 @@ from naivemempool import NaiveMempool
 from pow_interface import PowInterface
 from pow_interface import get_pow_status
 
-__version__ = "0.0.99i10"
+__version__ = "0.0.99i11"
 
 """
 # FR: I use a global object to keep the state and route data between the servers and threads.
@@ -790,9 +790,10 @@ class Poshn:
 
     def check_node(self):
         # TODO: dup code with hn_check, factorize in helpers.
-        node_filename = path.abspath(
-            config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "node.py")
-        )
+        node_filename = config.node_py_path()
+        """path.abspath(
+            config.POW_LEDGER_DB.replace("static/", "").replace("ledger._db", "node.py")
+        )"""
         node_version = None
         for line in open(node_filename):
             if "VERSION" in line:
@@ -823,11 +824,12 @@ class Poshn:
     def check_pow_status(self):
         # TODO: dup code with hn_check, factorize in helpers.
         # FR: rule of 3: 3 times we do that hack to get a filename, use a helper.
-        status_filename = path.abspath(
+        status_filename = config.powstatus_file_path()
+        """path.abspath(
             config.POW_LEDGER_DB.replace("static/", "").replace(
-                "ledger.db", "powstatus.json"
+                "ledger._db", "powstatus.json"
             )
-        )
+        )"""
         ok = False
         while not ok:
             if not path.isfile(status_filename):
@@ -1584,7 +1586,7 @@ class Poshn:
                 # 240s may not be enough on low perf hosts.
                 simulated_target = await wait_for(
                     self.poschain.check_round(a_round, the_blocks, fast_check=True),
-                    timeout=240,
+                    timeout=240 + 60,
                 )
             except Exception as e:
                 app_log.error("Time out while check_round - Likely perf issue. Closing.")

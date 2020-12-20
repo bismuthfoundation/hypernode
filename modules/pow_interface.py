@@ -82,9 +82,10 @@ def get_pow_node_version():
     Returns PoW node version
     """
     # creates dir if need to be
-    node_filename = path.abspath(
-        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "node.py")
-    )
+    node_filename = config.node_py_path()
+    """path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger._db", "node.py")
+    )"""
     node_version = read_node_version_from_file(node_filename)
     return node_version
 
@@ -93,11 +94,12 @@ def get_pow_status():
     """
     Returns full json status from pow node - Requires 0.0.62+ companion plugin
     """
-    status_filename = path.abspath(
+    status_filename = config.powstatus_file_path()
+    """path.abspath(
         config.POW_LEDGER_DB.replace("static/", "").replace(
-            "ledger.db", "powstatus.json"
+            "ledger._db", "powstatus.json"
         )
-    )
+    )"""
     try:
         with open(status_filename, "r") as f:
             status = json.load(f)

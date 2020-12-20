@@ -41,17 +41,19 @@ def check_os(a_status):
         p = psutil.Process()
         try:
             limit = p.rlimit(psutil.RLIMIT_NOFILE)
-        except:
+        except Exception:
             limit = (1024, -1)
         a_status["flimit"] = limit
         if limit[0] < 1024:
             a_status["errors"].append(
-                "Too small ulimit, please tune your system, \nsee https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Install/Linux.md#os-config"
+                "Too small ulimit, please tune your system, \n"
+                "see https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Install/Linux.md#os-config"
             )
             sys.exit()
         if limit[0] < 65000:
             a_status["errors"].append(
-                "ulimit shows non optimum value, consider tuning your system, \nsee https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Install/Linux.md#os-config"
+                "ulimit shows non optimum value, consider tuning your system, \n"
+                "see https://github.com/bismuthfoundation/Bismuth-FAQ/blob/master/Install/Linux.md#os-config"
             )
     else:
         a_status["flimit"] = "N/A"
@@ -116,11 +118,7 @@ def check_plugin():
     If not, do it.
     """
     # creates dir if need to be
-    plugin_dir = path.abspath(
-        config.POW_LEDGER_DB.replace("static", "plugins").replace(
-            "ledger.db", "500_hypernode"
-        )
-    )
+    plugin_dir = config.plugin_dir()
     # print(plugin_dir)
     if not path.isdir(plugin_dir):
         os.makedirs(plugin_dir, exist_ok=True)
@@ -145,9 +143,7 @@ def check_plugin():
     # ledger_queries
     # copy file over if it does not exists
     # queries_file_dest = "../../Bismuth/ledger_queries.py"
-    queries_file_dest = path.abspath(
-        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "ledger_queries.py")
-    )
+    queries_file_dest = config.queries_file_path()
     if not path.isfile(queries_file_dest):
         copyfile("../node_plugin/ledger_queries.py", queries_file_dest)
         print("\n>> Bismuth Node restart required!!!\n")
@@ -164,12 +160,11 @@ def check_plugin():
             queries_ver, config.QUERIES_VERSION, ok_version
         )
     )
-    polysign_dir = path.abspath(
-        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "polysign")
-    )
+    polysign_dir = config.polysign_dir()
     if path.isdir(polysign_dir):
-        print("Directory {} detected. Delete it and make sure to pip install the requirements.txt".format(polysign_dir))
-        sys.exit()
+        print(">> Directory {} detected. Delete it and make sure to pip install the requirements.txt <<".format(polysign_dir))
+        if not config.IGNORE_POLYSIGN:
+            sys.exit()
     print("Live check...")
     pow_client = PoWAsyncClient(config.POW_IP, config.POW_PORT)
     try:
@@ -201,9 +196,10 @@ def check_plugin():
 
 
 def check_node_version():
-    node_filename = path.abspath(
-        config.POW_LEDGER_DB.replace("static/", "").replace("ledger.db", "node.py")
-    )
+    node_filename = config.node_py_path()
+    """path.abspath(
+        config.POW_LEDGER_DB.replace("static/", "").replace("ledger._db", "node.py")
+    )"""
     node_version = None
     for line in open(node_filename):
         if "VERSION" in line:
@@ -231,11 +227,13 @@ def check_pow_status():
     :return:
     """
     # FR: rule of 3: 3 times we do that hack to get a filename, use a helper.
-    status_filename = path.abspath(
+    status_filename = config.powstatus_file_path()
+    """path.abspath(
         config.POW_LEDGER_DB.replace("static/", "").replace(
-            "ledger.db", "powstatus.json"
+            "ledger._db", "powstatus.json"
         )
     )
+    """
     if not path.isfile(status_filename):
         print(
             "\n>>No powstatus.json. Make sure the node runs. If it does, wait 5 min and retry.\n"
@@ -262,7 +260,6 @@ def check_fast_ecdsa(try_to_install=True):
         check_fast_ecdsa(False)
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Bismuth HyperNode Check")
     parser.add_argument(
@@ -284,7 +281,7 @@ if __name__ == "__main__":
     poscrypto.load_keys(wallet_name)
     status = {"address": poscrypto.ADDRESS, "errors": []}
     status["hn_lib_version"] = poshn.__version__
-    status["config"] = config.load()
+    status["config"] = config.load(verbose=True)
     check_os(status)
     check_plugin()
     check_node_version()
