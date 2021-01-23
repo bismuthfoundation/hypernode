@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 124  
-`python3 convert.py --action=week --param=124`
+Week 125  
+`python3 convert.py --action=week --param=125`
 
 ```
-Week 124
+Week 125
 -------------
-TS   1610784000
-UTC  2021-01-16T08:00:00Z
-Round 21130
+TS   1611388800
+UTC  2021-01-23T08:00:00Z
+Round 21298
 Slot  0
-Last PoS Round 21129
-PoW Height 2046332
-Real TS 1610783902.04
-Next TS 1610784043.9
-Balance 22021.15165797
-Balance (int) 22021
+Last PoS Round 21297
+PoW Height 2056520
+Real TS 1611388783.32
+Next TS 1611388800.79
+Balance 22413.28758128
+Balance (int) 22413
 ```
 
 week.json (week 10):
@@ -156,6 +156,10 @@ Warning: PoW address 90ce1ecab243e722a6981b603c443e87571499a9ca261e3bb2b87f8f, w
 
 Week 124:  No loss
 
+Week 125:  20K Loss  
+Warning: PoW address b55b25d2937abead6249340449aa354c2264a7d867861463544253d6, weight 1 instead of 2 - removing from list.  
+Warning: PoW address e1bf97a8163c818110a3c265a52601e87f6fec838bf48c36dac5bdf9, weight 0 instead of 1 - removing from list.  
+
 ## Fill_stats
 
 `time python3 fill_stats.py`  
@@ -168,18 +172,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 124
-Total Weights at 0.0: 104042
-Full Weights: 114009
-Loss: 8.74%
-Max Reward 103.50 BIS, Token unit 17.25
-Total token rewards 694
+Calc Rewards for Week 125
+Total Weights at 0.0: 93293
+Full Weights: 114136
+Loss: 18.26%
+Max Reward 116.04 BIS, Token unit 19.34
+Total token rewards 675
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week124per_reward_address.csv
+Exported as rewards/week125per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week124per_hn_address.csv
+Exported as rewards/week125per_hn_address.csv
