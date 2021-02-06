@@ -9,23 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 126  
-`python3 convert.py --action=week --param=126`
+Week 127  
+`python3 convert.py --action=week --param=127`
 
 ```
-Week 126
+Week 127
 -------------
-TS   1611993600
-UTC  2021-01-30T08:00:00Z
-Round 21466
+TS   1612598400
+UTC  2021-02-06T08:00:00Z
+Round 21634
 Slot  0
-Last PoS Round 21465
-PoW Height 2066399
-Real TS 1611993578.39
-Next TS 1611993688.95
-Balance 21676.57817126
-Balance (int) 21676
-
+Last PoS Round 21633
+PoW Height 2076562
+Real TS 1612598345.87
+Next TS 1612598412.44
+Balance 22332.56449034
+Balance (int) 22332
 ```
 
 week.json (week 10):
@@ -164,6 +163,9 @@ Warning: PoW address e1bf97a8163c818110a3c265a52601e87f6fec838bf48c36dac5bdf9, w
 Week 126: 10k loss  
 Warning: PoW address 2b63a62a0f655fc50a79baf95b25373560202e95032a281e4b7824c3, weight 0 instead of 1 - removing from list.  *  
 
+Week 127: 10k loss  
+Warning: PoW address 6939922fac47ba8d9a5f0234b1af93856eac52f693eb55f4ab9de79a,, weight 0 instead of 1 - removing from list.  *  
+
 
 ## Fill_stats
 
@@ -177,18 +179,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 126
-Total Weights at 0.0: 87943
-Full Weights: 114572
-Loss: 23.24%
-Max Reward 121.27 BIS, Token unit 20.21
-Total token rewards 659
+Calc Rewards for Week 127
+Total Weights at 0.0: 96813
+Full Weights: 115184
+Loss: 15.95%
+Max Reward 112.11 BIS, Token unit 18.68
+Total token rewards 683
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week126per_reward_address.csv
+Exported as rewards/week127per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week126per_hn_address.csv
+Exported as rewards/week127per_hn_address.csv
