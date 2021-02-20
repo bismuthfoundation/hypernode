@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 128  
-`python3 convert.py --action=week --param=128`
+Week 129  
+`python3 convert.py --action=week --param=129`
 
 ```
-Week 128
+Week 129
 -------------
-TS   1613203200
-UTC  2021-02-13T08:00:00Z
-Round 21802
+TS   1613808000
+UTC  2021-02-20T08:00:00Z
+Round 21970
 Slot  0
-Last PoS Round 21801
-PoW Height 2086539
-Real TS 1613203047.34
-Next TS 1613203338.59
-Balance 21829.70696699
-Balance (int) 21829
+Last PoS Round 21969
+PoW Height 2096607
+Real TS 1613807962.24
+Next TS 1613808072.95
+Balance 22015.16405032
+Balance (int) 22015
 ```
 
 week.json (week 10):
@@ -166,8 +166,14 @@ Warning: PoW address 2b63a62a0f655fc50a79baf95b25373560202e95032a281e4b7824c3, w
 Week 127: 10k loss  
 Warning: PoW address 6939922fac47ba8d9a5f0234b1af93856eac52f693eb55f4ab9de79a,, weight 0 instead of 1 - removing from list.  *  
 
-Week 128: 
+Week 128:  
 No loss
+
+Week 129:  11K loss  
+Warning: PoW address a5c51c73b7b97fdfd97b0b86a3f809d09102249007b292e4fc67230a, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 5e47f571c6c084f37ed727455d54f0c7f3fca8eb0b795aec72e1e9a4, weight 0 instead of 2 - removing from list.  *  
+Warning: PoW address 8e5a86002bd2e0c4c2cc29c808f51a9e8b2442c25f72a1cfe8f17f3b, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 07042d4da79f461b235114bf3a32f247d6c8e21b461cc872cbf75d21, weight 0 instead of 3 - removing from list.  *  
 
 
 ## Fill_stats
@@ -182,19 +188,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 128
-Total Weights at 0.0: 94196
-Full Weights: 113322
-Loss: 16.88%
-Max Reward 110.54 BIS, Token unit 18.42
-Total token rewards 681
-
+Calc Rewards for Week 129
+Total Weights at 0.0: 97020
+Full Weights: 110548
+Loss: 12.24%
+Max Reward 111.64 BIS, Token unit 18.61
+Total token rewards 676
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week128per_reward_address.csv
+Exported as rewards/week129per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week128per_hn_address.csv
+Exported as rewards/week129per_hn_address.csv
