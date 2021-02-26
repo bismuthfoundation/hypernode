@@ -10,7 +10,7 @@
 
 # This installs latest node 4.4.0.3 and latest 0.0.99 hn version
 
-VERSION="0.1.25"
+VERSION="0.1.26"
 
 create_swap() {
 	if [ -d /swapfile ]; then
@@ -56,7 +56,12 @@ install_dependencies() {
     apt update -y
     # This may be enough,
     # apt install ufw unzip ntpdate python3-pip sqlite3 -y
-    apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3.7-dev python3-pip libgmp3-dev -y
+    apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3.7-dev python3-pip -y
+    # Install optional packages that may be needed on some setups only
+    apt install autoconf autogen pkg-config -y
+    apt install libtool-bin -y
+    apt install libsecp256k1-dev -y
+    apt install libgmp3-dev -y
     # ntpdate ntp.ubuntu.com
     # apt install ntp -y
 }
@@ -140,7 +145,8 @@ download_hypernode() {
     mv hypernode-beta99 hypernode
     cd hypernode
     echo "Installing PIP requirements"
-    python3.7 -m pip install wheel fastecdsa
+    python3.7 -m pip install wheel
+    python3.7 -m pip install fastecdsa
     python3.7 -m pip install -r requirements.txt
     echo "Adjusting cron1.py for python3.7"
     sed -i -e "s/python3'/python3.7'/g" ./crontab/cron1.py
