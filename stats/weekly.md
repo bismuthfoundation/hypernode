@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 138  
-`python3 convert.py --action=week --param=138`
+Week 139  
+`python3 convert.py --action=week --param=139`
 
 ```
-Week 138
+Week 139
 -------------
-TS   1619251200
-UTC  2021-04-24T08:00:00Z
-Round 23482
+TS   1619856000
+UTC  2021-05-01T08:00:00Z
+Round 23650
 Slot  0
-Last PoS Round 23481
-PoW Height 2187277
-Real TS 1619251171.73
-Next TS 1619251237.61
-Balance 21753.83802827
-Balance (int) 21753
+Last PoS Round 23649
+PoW Height 2197353
+Real TS 1619855962.0
+Next TS 1619856089.08
+Balance 21698.65217827
+Balance (int) 21698
 ```
 
 week.json (week 10):
@@ -215,6 +215,16 @@ Week 137: No loss
 Week 138: 30K loss  
 Warning: PoW address 27d1176553d19d28126d5af6020bbcbf98402a2c6dbd61b36f2ebc0c, weight 0 instead of 3 - removing from list.  *  
 
+Week 139: 180K loss  
+Warning: PoW address 67122597f2918316c6ea326c7531e774678ea4d7fdf58edfd3925946, weight 1 instead of 3 - removing from list.  *  
+Warning: PoW address 3568feaef017e395e9a854fb4f13dd389d8bb55b3afdcad3c8790e48, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 3b13e6916cafb2787be375725e8c8fe87f5e3381b5e6ffd3c31091e9, weight 0 instead of 1 - removing from list.  *  
+Warning: PoW address d588e025050dcaed277dea61d11d61eaf0176f82b6b858d877c90dbd, weight 0 instead of 2 - removing from list.  *  
+Warning: PoW address 9f5a8f080854b061f892379fd4e12c8abc4332784cd796c1387eb1e0, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 91b3daa33f733a0a94b2a1ed5bf95c51c4b3af26a5dae928a310c38a, weight 0 instead of 1 - removing from list.  *  
+Warning: PoW address 3a3ce4220e7fb1748426b8b3b292e0e9b69193484e1c6d5c79b39942, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address f5ab1e0435f80485e6d3513967a2bdb4e0122af6ef765be6de97d654, weight 0 instead of 1 - removing from list.  *  
+Warning: PoW address 67786f1507a9818b55e1c8a4036b3dacc21ca19477b24b3f48a88dbd, weight 0 instead of 2 - removing from list.  *  
 
 
 ## Fill_stats
@@ -229,18 +239,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 138
-Total Weights at 0.0: 96539
-Full Weights: 109933
-Loss: 12.18%
-Max Reward 113.57 BIS, Token unit 18.93
-Total token rewards 661
+Calc Rewards for Week 139
+Total Weights at 0.0: 103278
+Full Weights: 112474
+Loss: 8.18%
+Max Reward 105.89 BIS, Token unit 17.65
+Total token rewards 674
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week138per_reward_address.csv
+Exported as rewards/week139per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week138per_hn_address.csv
+Exported as rewards/week139per_hn_address.csv
