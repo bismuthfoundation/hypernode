@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json file
 
-Week 144  
-`python3 convert.py --action=week --param=144`
+Week 145  
+`python3 convert.py --action=week --param=145`
 
 ```
-Week 144
+Week 145
 -------------
-TS   1622880000
-UTC  2021-06-05T08:00:00Z
-Round 24490
+TS   1623484800
+UTC  2021-06-12T08:00:00Z
+Round 24658
 Slot  0
-Last PoS Round 24489
-PoW Height 2247613
-Real TS 1622879957.49
-Next TS 1622880018.69
-Balance 21743.23338492
-Balance (int) 21743
+Last PoS Round 24657
+PoW Height 2257608
+Real TS 1623484795.92
+Next TS 1623484982.71
+Balance 21303.53532493
+Balance (int) 21303
 ```
 
 week.json (week 10):
@@ -237,6 +237,11 @@ Warning: PoW address e7cafb25c34de2a0a2ab2758ad2164bcfe67ab8b23a76f69854596a6, w
 
 Week 144: No Loss  
 
+Week 145: 60k Loss  
+Warning: PoW address e9aa9decc30e969678be62ea3a8762b9aef906e0362d2d3e691ce3c7, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 44ba9acf1e4252b40e920742f0e0d5cd7913f192635d96bfc036e47d, weight 0 instead of 3 - removing from list.  *  
+
+
 ## Fill_stats
 
 `time python3 fill_stats.py`  
@@ -249,18 +254,19 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 144
-Total Weights at 0.0: 99722
-Full Weights: 114416
-Loss: 12.84%
-Max Reward 109.24 BIS, Token unit 18.21
-Total token rewards 687
+Calc Rewards for Week 145
+Total Weights at 0.0: 95052
+Full Weights: 114842
+Loss: 17.23%
+Max Reward 112.96 BIS, Token unit 18.83
+Total token rewards 677
+
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week144per_reward_address.csv
+Exported as rewards/week145per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week144per_hn_address.csv
+Exported as rewards/week145per_hn_address.csv
