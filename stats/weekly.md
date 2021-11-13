@@ -9,23 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 166  
-`python3 convert.py --action=week --param=166`
+Week 167  
+`python3 convert.py --action=week --param=167`
 
 ```
-Week 166
+Week 167
 -------------
-TS   1636185600
-UTC  2021-11-06T08:00:00Z
-Round 28186
+TS   1636790400
+UTC  2021-11-13T08:00:00Z
+Round 28354
 Slot  0
-Last PoS Round 28185
-PoW Height 2468549
-Real TS 1636185564.43
-Next TS 1636185600.24
-Balance 21055.14915821
-Balance (int) 21055
-
+Last PoS Round 28353
+PoW Height 2478442
+Real TS 1636790349.82
+Next TS 1636790429.15
+Balance 20416.70318574
+Balance (int) 20416
 ```
 
 week.json (week 10):
@@ -290,6 +289,10 @@ Warning: PoW address f5cdaf364cd448ca90ca8bbc636af25f019cc2ad21c04cc007eeaea7, w
 
 Week 166: 40K Loss  
 
+Week 167: 10K Loss   
+Warning: PoW address d2a5bc9f3ba1b2eb66a98ca0262cb8a5785e5048cdcfed26c73c8924, weight 0 instead of 1 - removing from list. *  
+
+
 
 ## Fill_stats
 
@@ -303,19 +306,19 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 166
-Total Weights at 0.0: 82134
-Full Weights: 107586
-Loss: 23.66%
-Max Reward 123.05 BIS, Token unit 20.51
-Total token rewards 627
+Calc Rewards for Week 167
+Total Weights at 0.0: 89051
+Full Weights: 108983
+Loss: 18.29%
+Max Reward 115.55 BIS, Token unit 19.26
+Total token rewards 652
 
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week166per_reward_address.csv
+Exported as rewards/week167per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week166per_hn_address.csv
+Exported as rewards/week167per_hn_address.csv
