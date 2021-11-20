@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 167  
-`python3 convert.py --action=week --param=167`
+Week 168  
+`python3 convert.py --action=week --param=168`
 
 ```
-Week 167
+Week 168
 -------------
-TS   1636790400
-UTC  2021-11-13T08:00:00Z
-Round 28354
+TS   1637395200
+UTC  2021-11-20T08:00:00Z
+Round 28522
 Slot  0
-Last PoS Round 28353
-PoW Height 2478442
-Real TS 1636790349.82
-Next TS 1636790429.15
-Balance 20416.70318574
-Balance (int) 20416
+Last PoS Round 28521
+PoW Height 2488566
+Real TS 1637395092.58
+Next TS 1637395527.55
+Balance 20802.3390524
+Balance (int) 20802
 ```
 
 week.json (week 10):
@@ -292,7 +292,13 @@ Week 166: 40K Loss
 Week 167: 10K Loss   
 Warning: PoW address d2a5bc9f3ba1b2eb66a98ca0262cb8a5785e5048cdcfed26c73c8924, weight 0 instead of 1 - removing from list. *  
 
-
+Week 168: 150K Loss  
+Warning: PoW address 1af8f10f2ab8564953992a98c13364369569910c65be7f2c2a2bc442, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address 8a3e0d2d3eb34b29e5a9c22564b9d9012c0ffb1c67b164a33a5c9a34, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address 1df67f53550e408574295aef40a7e579c38d4c38f8ad2a429e8470d6, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address d2a5bc9f3ba1b2eb66a98ca0262cb8a5785e5048cdcfed26c73c8924, weight 0 instead of 1 - removing from list. *  
+Warning: PoW address c5943d3bf6dc1bda8f138b5de0d0ab3dcd0a36c863552d04e0d46f98, weight 0 instead of 3 - removing from list. *  
+Warning: PoW address Bis1Q6YkN5f8mPVaSam7ZNg9qAwRodPhH936q, weight 0 instead of 2 - removing from list. *  
 
 ## Fill_stats
 
@@ -306,19 +312,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 167
-Total Weights at 0.0: 89051
-Full Weights: 108983
-Loss: 18.29%
-Max Reward 115.55 BIS, Token unit 19.26
-Total token rewards 652
-
+Calc Rewards for Week 168
+Total Weights at 0.0: 97095
+Full Weights: 106682
+Loss: 8.99%
+Max Reward 107.34 BIS, Token unit 17.89
+Total token rewards 654
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week167per_reward_address.csv
+Exported as rewards/week168per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week167per_hn_address.csv
+Exported as rewards/week168per_hn_address.csv
