@@ -9,23 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 175  
-`python3 convert.py --action=week --param=175`
+Week 176  
+`python3 convert.py --action=week --param=176`
 
 ```
-Week 175
+Week 176
 -------------
-TS   1641628800
-UTC  2022-01-08T08:00:00Z
-Round 29698
+TS   1642233600
+UTC  2022-01-15T08:00:00Z
+Round 29866
 Slot  0
-Last PoS Round 29697
-PoW Height 2558894
-Real TS 1641628715.41
-Next TS 1641628872.75
-Balance 20259.48211582
-Balance (int) 20259
-
+Last PoS Round 29865
+PoW Height 2568965
+Real TS 1642233592.89
+Next TS 1642233617.3
+Balance 20429.38304249
+Balance (int) 20429
 ```
 
 week.json (week 10):
@@ -315,9 +314,11 @@ Week 173: no loss
 Week 174: no loss 
 
 Week 175: 60k loss  
-Warning: PoW address 8d571a1297c3c8304a432821ed59074eff2d3314e955919a7721a42c, weight 0 instead of 3 - removing from list.  
-Warning: PoW address 343d9e4e65691a88dfae298c9272440886d1492930445b6f64971598, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 8d571a1297c3c8304a432821ed59074eff2d3314e955919a7721a42c, weight 0 instead of 3 - removing from list.  *  
+Warning: PoW address 343d9e4e65691a88dfae298c9272440886d1492930445b6f64971598, weight 0 instead of 3 - removing from list.  *  
 
+Week 176:  20k loss  
+Warning: PoW address 3c4e412ea0e5d89b19b7d226912223fa870321494ba5b1444c404762, weight 0 instead of 2 - removing from list.  *  
 
 
 ## Fill_stats
@@ -332,18 +333,18 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 175
-Total Weights at 0.0: 82079
-Full Weights: 103801
-Loss: 20.93%
-Max Reward 123.66 BIS, Token unit 20.61
-Total token rewards 603
+Calc Rewards for Week 176
+Total Weights at 0.0: 84281
+Full Weights: 107845
+Loss: 21.85%
+Max Reward 122.17 BIS, Token unit 20.36
+Total token rewards 629
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week175per_reward_address.csv
+Exported as rewards/week176per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week175per_hn_address.csv
+Exported as rewards/week176per_hn_address.csv
