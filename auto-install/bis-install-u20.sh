@@ -10,7 +10,7 @@
 
 # This installs latest node and latest hn version
 
-VERSION="0.2.1"
+VERSION="0.2.2"
 
 create_swap() {
 	if [ -d /swapfile ]; then
