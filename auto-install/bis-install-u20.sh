@@ -59,6 +59,7 @@ install_dependencies() {
     apt install screen htop ufw unzip ntpdate sqlite3 build-essential python3-pip -y
     # Install optional packages that may be needed on some setups only
     apt install autoconf autogen pkg-config -y
+    apt install libffi-dev -y
     apt install libtool-bin -y
     apt install libsecp256k1-dev -y
     apt install libgmp3-dev -y
