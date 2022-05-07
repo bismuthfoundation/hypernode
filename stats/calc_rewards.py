@@ -81,4 +81,7 @@ if __name__ == "__main__":
         f.write("reward_address,reward,total_weights,total_tokens\n")
         for row in per_reward:
             # print(list(row))
-            f.write("{},{},{},{}\n".format(row[0], row[1], row[2], tokens_rewards[row[0]]))
+            try:
+                f.write("{},{},{},{}\n".format(row[0], row[1], row[2], tokens_rewards[row[0]]))
+            except Exception as e:
+                print(e)
