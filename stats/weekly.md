@@ -9,22 +9,22 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 193  
-`python3 convert.py --action=week --param=193`
+Week 194  
+`python3 convert.py --action=week --param=194`
 
 ```
-Week 193
+Week 194
 -------------
-TS   1652515200
-UTC  2022-05-14T08:00:00Z
-Round 32722
+TS   1653120000
+UTC  2022-05-21T08:00:00Z
+Round 32890
 Slot  0
-Last PoS Round 32721
-PoW Height 2740001
-Real TS 1652515173.19
-Next TS 1652515223.96
-Balance 19551.26407657
-Balance (int) 19551
+Last PoS Round 32889
+PoW Height 2750077
+Real TS 1653119993.44
+Next TS 1653120042.27
+Balance 19821.23725326
+Balance (int) 19821
 ```
 
 week.json (week 10):
@@ -163,6 +163,8 @@ Week 192:  No loss
 
 Week 193:  No loss  
 
+Week 194:  No loss  
+
 
 ## Fill_stats
 
@@ -176,12 +178,12 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 193
-Total Weights at 0.0: 79860
-Full Weights: 101883
-Loss: 21.62%
-Max Reward 123.39 BIS, Token unit 20.56
-Total token rewards 588
+Calc Rewards for Week 194
+Total Weights at 0.0: 82214
+Full Weights: 101063
+Loss: 18.65%
+Max Reward 121.51 BIS, Token unit 20.25
+Total token rewards 602
 ```
 
 The script exports:
