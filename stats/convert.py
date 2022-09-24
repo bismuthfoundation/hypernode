@@ -185,9 +185,14 @@ if __name__ == "__main__":
         height = int(args.param)
         print("PoW Height", args.param)
         print("-------------")
+        """
         balance = pow.quick_check_balance(
             "3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16", height
         )
+        """
+        pow_client = PoWAsyncClient(POW_IP, POW_PORT)
+        command = "HN_quick_check_balance {} {}".format("3e08b5538a4509d9daa99e01ca5912cda3e98a7f79ca01248c2bde16", height)
+        balance = pow_client.command(command, timeout=60)
         if balance:
             print("Balance", balance)
         else:
