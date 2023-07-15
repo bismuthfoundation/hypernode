@@ -9,22 +9,23 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 253  
-`python3 convert.py --action=week --param=253`
+Week 254  
+`python3 convert.py --action=week --param=254`
 
 ```
-Week 253
+Week 254
 -------------
-TS   1688803200
-UTC  2023-07-08T08:00:00Z
-Round 42802
+TS   1689408000
+UTC  2023-07-15T08:00:00Z
+Round 42970
 Slot  0
-Last PoS Round 42801
-PoW Height 3343596
-Real TS 1688803195.02
-Next TS 1688803222.17
-Balance 17687.56933467
-Balance (int) 17687
+Last PoS Round 42969
+PoW Height 3353701
+Real TS 1689407991.55
+Next TS 1689408027.12
+Balance 17866.10552464
+Balance (int) 17866
+
 ```
 
 week.json (week 10):
@@ -51,62 +52,13 @@ This will tell if any HN cheated on its balance (balance dropped below the regis
 
 ...
 
-Week 222:  no loss  
-
-Week 223:  no loss  
-
-Week 224:  no loss  
-
-Week 225:  no loss  
-
-Week 226:  no loss  
-
-Week 227:  no loss  
-
-Week 228:  no loss  
-
-Week 229:  no loss  
-
-Week 230:  no loss  
-
-Week 231:  no loss  
-
-Week 232:  no loss  
-
-Week 233:  no loss  
-
-Week 234:  no loss  
-
-Week 235:  no loss  
-
-Week 236:  no loss  
-
-Week 237:  no loss  
-
-Week 238:  no loss  
-
-Week 239:  no loss  
-
-Week 240:  no loss  
-
-Week 241:  no loss  
 
 Week 242:  20k loss  
 Warning: PoW address 7e356ae49ffeb45cfee0bc4c635b74a5762ba7a316a5a6df468101ad, weight 0 instead of 2 - removing from list.
 
-Week 243:  no loss  
+... 
 
-Week 244:  no loss  
-
-Week 245:  no loss  
-
-Week 246:  no loss  
-
-Week 247:  no loss  
-
-Week 248:  no loss  
-
-Week 251:  no loss  
+Week 255:  no loss  
 
 ## Fill_stats
 
@@ -120,18 +72,19 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 253
-Total Weights at 0.0: 58145
-Full Weights: 63375
-Loss: 8.25%
-Max Reward 147.84 BIS, Token unit 24.64
-Total token rewards 356
+Calc Rewards for Week 254
+Total Weights at 0.0: 49957
+Full Weights: 54262
+Loss: 7.93%
+Max Reward 145.91 BIS, Token unit 24.32
+Total token rewards 380
+
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week253per_reward_address.csv
+Exported as rewards/week254per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week253per_hn_address.csv
+Exported as rewards/week254per_hn_address.csv
