@@ -9,24 +9,29 @@ To be done only after Saturday, 08:00 UTC
 convert.py allows to deal with timestamp and block conversion.  
 The new "week" action gives all the required info from the Week Number and saves them to a week.json fi6e
 
-Week 258  
-`python3 convert.py --action=week --param=258`
+Week 259  
+`python3 convert.py --action=week --param=259`
 
 ```
-Week 258
+Week 259
 -------------
-TS   1691827200
-UTC  2023-08-12T08:00:00Z
-Round 43642
+TS   1692432000
+UTC  2023-08-19T08:00:00Z
+Round 43810
 Slot  0
-Last PoS Round 43641
-PoW Height 3393602
-Real TS 1691827063.38
-Next TS 1691827337.97
-Balance 17977.43974467
-Balance (int) 17977
+Last PoS Round 43809
+PoW Height 3403809
+Real TS 1692431994.68
+Next TS 1692432013.99
+Balance 17854.8284647
+Balance (int) 17854
+```Calc Rewards for Week 259
+Total Weights at 0.0: 57344
+Full Weights: 62391
+Loss: 8.09%
+Max Reward 145.71 BIS, Token unit 24.29
+Total token rewards 393
 
-```
 
 week.json (week 10):
 ```
@@ -58,7 +63,10 @@ Warning: PoW address 7e356ae49ffeb45cfee0bc4c635b74a5762ba7a316a5a6df468101ad, w
 
 ... 
 
-Week 258:  no loss  
+Week 259:  90k loss  
+Warning: PoW address a847eb256fd52fc052cc88369a6f8ef1e138a296256587edeb700534, weight 0 instead of 3 - removing from list.  
+Warning: PoW address f3ea769a1162e447cc7e54dab0a11fe7ba31f7461a8db6fe03400dfb, weight 0 instead of 3 - removing from list.  
+Warning: PoW address 65a24b0213499622a1e9729231a0a86de5f2bff95fa6c67465136067, weight 0 instead of 3 - removing from list.  
 
 ## Fill_stats
 
@@ -72,19 +80,20 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 258
-Total Weights at 0.0: 29413
-Full Weights: 32459
-Loss: 9.38%
-Max Reward 154.02 BIS, Token unit 25.67
-Total token rewards 384
+Calc Rewards for Week 259
+Total Weights at 0.0: 57344
+Full Weights: 62391
+Loss: 8.09%
+Max Reward 145.71 BIS, Token unit 24.29
+Total token rewards 393
+
 
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week258per_reward_address.csv
+Exported as rewards/week259per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week258per_hn_address.csv
+Exported as rewards/week259per_hn_address.csv
