@@ -13,18 +13,18 @@ Week 295
 `python3 convert.py --action=week --param=295`
 
 ```
-Week 295
+Week 296
 -------------
-TS   1714204800
-UTC  2024-04-27T08:00:00Z
-Round 49858
+TS   1714809600
+UTC  2024-05-04T08:00:00Z
+Round 50026
 Slot  0
-Last PoS Round 49857
-PoW Height 3765289
-Real TS 1714204767.58
-Next TS 1714204974.21
-Balance 16511.97635126
-Balance (int) 16511
+Last PoS Round 50025
+PoW Height 3775294
+Real TS 1714809580.24
+Next TS 1714809731.48
+Balance 16282.92664791
+Balance (int) 16282
 
 ```
 
@@ -66,7 +66,7 @@ Warning: PoW address 65a24b0213499622a1e9729231a0a86de5f2bff95fa6c67465136067, w
 Week 276: 10K loss  
 Warning: PoW address 98855f9b7054f4763a2a754976b26bf2d504105402743cb706c79961, weight 0 instead of 1 - removing from list.  
 
-Week 295: no loss  
+Week 296: no loss  
 
 
 ## Fill_stats
@@ -81,19 +81,19 @@ Now does all the requests. Check SCORE_TRIGGER inside this script.
 Trigger was lowered from 0.2 (initial setting) to 0.1 (current setting, to account for more HNs), now temporary to 0.
 
 ```
-Calc Rewards for Week 295
-Total Weights at 0.0: 50851
-Full Weights: 53361
-Loss: 4.70%
-Max Reward 159.75 BIS, Token unit 26.62
-Total token rewards 340
+Calc Rewards for Week 296
+Total Weights at 0.0: 46813
+Full Weights: 49047
+Loss: 4.55%
+Max Reward 160.69 BIS, Token unit 26.78
+Total token rewards 327
 
 ```
 
 The script exports:
  
 ## Rewards, per reward address  
-Exported as rewards/week295per_reward_address.csv
+Exported as rewards/week296per_reward_address.csv
 
 ## Rewards, per HN
-Exported as rewards/week295per_hn_address.csv
+Exported as rewards/week296per_hn_address.csv
